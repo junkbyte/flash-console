@@ -1,34 +1,26 @@
-﻿/*
-* Copyright (c) 2008 Lu Aye Oo (Atticmedia)
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-*/
-
-package com.atticmedia.console {
+﻿/**
+ * @class 		Timers
+ * @author 		Lu
+ * @version 	1.0
+ * @requires 	AS3
+ * 
+ * 
+ * 
+**/
+package com.atticmedia.console.core {
 	
 	import flash.utils.getTimer;
 
-	public class timers {
+	public class Timers {
 
 		private var _timers:Object;
 		private var _quiet:Boolean;
-		private var _channel:String = "C";
+		private var _reportFunction:Function;
 		
-		public function timers() {
+		public function Timers(reportFunction:Function = null) {
 			_timers = new Object();
 			_quiet = true;
+			_reportFunction = reportFunction;
 		}
 		public function get quiet():Boolean{
 			return _quiet? true : false;
@@ -75,10 +67,10 @@ package com.atticmedia.console {
 		//
 		//
 		private function report(txt:String, prio:Number=5):void {
-			if (c.exists) {
-				c.ch(_channel, "Timers: "+txt, prio);
+			if (_reportFunction != null) {
+				_reportFunction(new LogLineVO(txt,"C",prio,false,true));
 			} else {
-				trace("[Timers]: "+ txt);
+				trace("C: "+ txt);
 			}
 		}
 	}

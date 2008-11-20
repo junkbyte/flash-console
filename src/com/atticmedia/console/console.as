@@ -1,40 +1,21 @@
-﻿/*
-* Copyright (c) 2008 Lu Aye Oo (Atticmedia)
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-*/
-
-package com.atticmedia.console {
+﻿package com.atticmedia.console {
+	import com.atticmedia.console.core.*;
 	import flash.utils.getQualifiedClassName;
 	import flash.display.*;
-	import flash.utils.getTimer;
 	import flash.events.*;
-	import flash.text.TextField;
-	import flash.text.TextFieldType;
-	import flash.text.TextFormat;
+	import flash.text.*;
 	import flash.geom.Rectangle;
 	import flash.net.*;
 	
-	public class console extends Sprite {
+	public class Console extends Sprite {
 
-		public static const VERSION:Number = 0.9;
+		public static const VERSION:Number = 0.91;
+		
+		public static const remoteServerName:String = "ConsoleRemoteServer";
+		public static const remoteClientName:String = "ConsoleRemoteClient";
 		
 		public var maxLines:int = 500;
 		public var deleteLines:int = 1;
-		public var remoteServerName:String = "ConsoleRemoteServer";
-		public var remoteClientName:String = "ConsoleRemoteClient";
 		
 		private var _traceField:TextField;
 		private var _menuField:TextField;
@@ -60,7 +41,6 @@ package com.atticmedia.console {
 		private var _maxRepeats:Number = 100;
 		private var _repeated:Number;
 		private var _isRemoting:Boolean;
-		//private var _sharedRemote:SharedObject;
 		private var _sharedConnection:LocalConnection;
 		
 		private var _isRemote:Boolean = false;
@@ -81,15 +61,15 @@ package com.atticmedia.console {
 		private var _isScaling:Boolean;
 		private var _commandsHistory:Array;
 		private var _commandsInd:int;
-		private var _oMM:com.atticmedia.console.memoryMonitor;
-		private var _oFPS:com.atticmedia.console.fps;
-		private var _CL:com.atticmedia.console.command;
-		private var _ui:com.atticmedia.console.userinterface;
-		private var _timers:com.atticmedia.console.timers;
+		private var _oMM:MemoryMonitor;
+		private var _oFPS:FpsMonitor;
+		private var _CL:CommandLine;
+		private var _ui:UserInterface;
+		private var _timers:Timers;
 		private var _keyBinds:Object;
 		
-		public function console(pass:String = "") {
-			name = "Console";
+		public function Console(pass:String = "") {
+			name = "ConsoleComponent";
 			_password = pass;
 			_keyBinds = new Object();
 			//
@@ -165,10 +145,10 @@ package com.atticmedia.console {
 			_scaler.addEventListener(MouseEvent.DOUBLE_CLICK, onScalerDoubleClick);
             addChild(_scaler);
 			//
-			_ui = new userinterface(_background, _menuField, _traceField, _commandBackground, _commandField);
-			_oFPS = new com.atticmedia.console.fps(this);
-			_oMM = new com.atticmedia.console.memoryMonitor();
-			_timers = new com.atticmedia.console.timers();
+			_ui = new UserInterface(_background, _menuField, _traceField, _commandBackground, _commandField);
+			_oFPS = new FpsMonitor(this);
+			_oMM = new MemoryMonitor();
+			_timers = new Timers(addLogLine);
 			_lines = new Array();
 			_lineChanged = false;
 			_channels = new Array("global");
@@ -181,10 +161,10 @@ package com.atticmedia.console {
 			
 			_commandsHistory = new Array();
 			_commandsInd = 0;
-			_CL = new com.atticmedia.console.command(this.parent?this.parent:this);
+			_CL = new CommandLine(this, addLogLine);
 			_CL.store("C",c);
 			_CL.reserved.push("C");
-			_CL.addEventListener(com.atticmedia.console.command.SEARCH_REQUEST, onCommandSearch, false, 0, true);
+			_CL.addEventListener(CommandLine.SEARCH_REQUEST, onCommandSearch, false, 0, true);
 			//
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame, false, 0, true);
 			//
@@ -198,10 +178,10 @@ package com.atticmedia.console {
 			}
 			addLine("<b>v"+VERSION+", Happy bug fixing !</b>",-2,_consoleChannel);
 			//
-			Width = 420;
-			Height = 16;
+			width = 420;
+			height = 16;
 		}
-		public function get ui():com.atticmedia.console.userinterface{
+		public function get ui():UserInterface{
 			return _ui;
 		}
 		
@@ -258,7 +238,7 @@ package com.atticmedia.console {
 		}
 		private function refreshPage():void{
 			var str:String = "";
-			for each (var line:logLine in _lines ){
+			for each (var line:LogLineVO in _lines ){
 				
 				if((_viewingChannel.indexOf(_filterChannel)>=0 || line.c!=_filterChannel) && ((_CL.searchTerm && line.c != _consoleChannel && line.c != _filterChannel && line.text.toLowerCase().indexOf(_CL.searchTerm.toLowerCase())>=0 )|| (_viewingChannel.indexOf(line.c)>=0 || _viewingChannel.indexOf("global")>=0) && (line.p >= _priority || _priority == 0) )){
 					//
@@ -268,7 +248,7 @@ package com.atticmedia.console {
 			_traceField.htmlText = str;
 			_traceField.scrollV = _traceField.maxScrollV;
 		}
-		private function makeLine(line:logLine):String{
+		private function makeLine(line:LogLineVO):String{
 			var colour:String = _ui.getPriorityHex(line.p);
 			var str:String = "";
 			if(line.p >= 10){
@@ -284,7 +264,10 @@ package com.atticmedia.console {
 			}
 			return str;
 		}
-		protected function addLine(obj:Object,priority:Number = 0,channel:String = "",isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+		protected function addLogLine(line:LogLineVO):void{
+			addLine(line.text, line.p, line.c, line.r, line.s);
+		}
+		private function addLine(obj:Object,priority:Number = 0,channel:String = "",isRepeating:Boolean = false, skipSafe:Boolean = false):void{
 			if(!_enabled){
 				return;
 			}
@@ -303,7 +286,7 @@ package com.atticmedia.console {
 			if(_channels.indexOf(channel) <0 ){
 				_channels.push(channel);
 			}
-			var line:logLine = new logLine(txt,channel,priority, getTimer());
+			var line:LogLineVO = new LogLineVO(txt,channel,priority, isRepeating, skipSafe);
 			_lineChanged = true;
 			if(isRepeating && _isRepeating){
 				_lines.pop();
@@ -369,9 +352,9 @@ package com.atticmedia.console {
 		private function linkHandler(e:TextEvent):void{
 			stopDrag();
 			if(e.text == "min"){
-				Height = 18;
+				height = 18;
 			}else if(e.text == "max"){
-				Height = 200;
+				height = 200;
 			}else if(e.text == "resetFPS"){
 				if(_oFPS){
 					_oFPS.reset();
@@ -460,9 +443,9 @@ package com.atticmedia.console {
 		}
 		private function help():void{
 			addLine("___HELP_________________",-1);
-			addLine("[ R=Reset FPS, F=Toogle FPS, M=Memory, G=Garbage Collect, CL=Toogle CommandLine, C=Clear, T=Toogle tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
-			addLine("",0);
 			addLine("FPS Metre: Min-<b>Average</b>-Max: <b>current</b>",10);
+			addLine("[ R=Reset FPS, F=Toogle FPS, M=Memory, CL=Toogle CommandLine, C=Clear, T=Toogle tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
+			addLine("",0);
 			addLine("Use the arrow at bottom right to scale this window.", 10);
 			addLine("",0);
 			addLine("Use the tabs at the top to switch between channels.",10);
@@ -554,15 +537,9 @@ package com.atticmedia.console {
 				}
 			}
 		}
-		private function onGarbageCollected(e:Event):void{
-			var cur:int = _oMM.currentMemory;
-			// BOO
-			var dif:int = e['prevMem']-cur;
-			addLine("GARBAGE COLLECTED <b>"+(dif/1024)+"kb</b>. Current: "+(cur/1024)+"kb",-2,_mmChannel);
-		}
 		private function scaleByScaler():void{
-			Width = _scaler.x;
-			Height = _scaler.y;
+			width = _scaler.x;
+			height = _scaler.y+(_commandBackground.visible?_commandBackground.height:0);
 		}
 		private function minimise():void{
 			_isMinimised = true;
@@ -584,9 +561,9 @@ package com.atticmedia.console {
 			_ruler.visible = false;
 		}
 		private function onScalerDoubleClick(e:Event):void{
-			Height = Height <= _minHeight+1 ? 180 : _minHeight;
-			if(Width < 100){
-				Width = 200;
+			height =  height<= (_minHeight+(_commandBackground.visible?_commandBackground.height:0)+1) ? 180 : _minHeight;
+			if(width < 100){
+				width = 200;
 			}
 		}
 		private function onScalerMouseDown(e:Event):void{
@@ -611,13 +588,13 @@ package com.atticmedia.console {
 			add("ERROR: " + e, 5);
 		}
 		//
-		public function get mm():com.atticmedia.console.memoryMonitor{
+		public function get mm():MemoryMonitor{
 			return _oMM;
 		}
-		public function get fps():com.atticmedia.console.fps{
+		public function get fps():FpsMonitor{
 			return _oFPS;
 		}
-		public function get timers():com.atticmedia.console.timers{
+		public function get timers():Timers{
 			return _timers;
 		}
 		public function gc():void{
@@ -625,10 +602,10 @@ package com.atticmedia.console {
 			var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
 			addLine(str,(ok?-1:10),_consoleChannel);
 		}
-		public function get Width():Number{
+		override public function get width():Number{
 			return _background.width;
 		}
-		public function set Width(newW:Number):void{
+		override public function set width(newW:Number):void{
 			if(newW <= 50){
 				_traceField.visible = false;
 				newW = newW <_minWidth ? _minWidth: newW;
@@ -642,10 +619,10 @@ package com.atticmedia.console {
 			_commandField.width = newW;
 			_commandBackground.width = newW;
 		}
-		public function get Height():Number{
-			return _background.height;
-		}
-		public function set Height(newW:Number):void{
+		override public function set height(newW:Number):void{
+			if(_commandBackground.visible){
+				newW -= _commandBackground.height;
+			}
 			if(newW <_minHeight){
 				newW = _minHeight;
 			}
@@ -665,6 +642,9 @@ package com.atticmedia.console {
 			_scaler.y = newW;
 			_background.height = newW;
 			_traceField.scrollV = _traceField.maxScrollV;
+		}
+		override public function get height():Number{
+			return _background.height+(_commandBackground.visible?_commandBackground.height:0);
 		}
 		public function get currentChannel():String{
 			return _currentChannel;
@@ -697,6 +677,7 @@ package com.atticmedia.console {
 		}
 		public function destroy():void{
 			enabled = false;
+			closeSharedConnection();
 			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			if(stage){
 				stage.removeEventListener(KeyboardEvent.KEY_UP, keyDownHandler);
@@ -756,11 +737,6 @@ package com.atticmedia.console {
 			return _alwaysOnTop;
 		}
 		public function set memoryMonitor(newVar:int):void{
-			if(newVar == 3 && _memoryMode!=3){
-				_oMM.addEventListener("garbageCollected", onGarbageCollected, false, 0,true);
-			}else{
-				_oMM.removeEventListener("garbageCollected", onGarbageCollected);
-			}
 			_memoryMode = newVar;
 		}
 		public function get memoryMonitor():int{
@@ -770,7 +746,6 @@ package com.atticmedia.console {
 			if(newB){
 				_commandField.visible = true;
 				_commandBackground.visible = true;
-				addLine("<b>/help</b> for CommandLine help",0,_consoleChannel);
 			}else{
 				_commandField.visible = false;
 				_commandBackground.visible = false;
@@ -799,15 +774,15 @@ package com.atticmedia.console {
 				_isRemote = false;
 				_remoteDelayed = 0;
 				_remoteLinesQueue = new Array();
-				_sharedConnection = new LocalConnection();
-				_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
-				_sharedConnection.client = this;
+				startSharedConnection();
 				addLine("Remoting started",10,_consoleChannel);
 				try{
                 	_sharedConnection.connect(remoteClientName);
            		}catch (error:Error){
 					addLine("Could not connect to client server", 10,_consoleChannel);
            		}
+			}else{
+				closeSharedConnection();
 			}
 		}
 		public function get isRemote():Boolean{
@@ -817,9 +792,7 @@ package com.atticmedia.console {
 			_isRemote = newV ;
 			if(newV){
 				_isRemoting = false;
-				_sharedConnection = new LocalConnection();
-				_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
-				_sharedConnection.client = this;
+				startSharedConnection();
 				try{
                 	_sharedConnection.connect(remoteServerName);
 					addLine("Remote started",10,_consoleChannel);
@@ -827,10 +800,40 @@ package com.atticmedia.console {
 					_isRemoting = false;
 					addLine("Remoting is not possible", 10,_consoleChannel);
            		}
+			}else{
+				closeSharedConnection();
 			}
 		}
+		private function startSharedConnection():void{
+			_sharedConnection = new LocalConnection();
+			_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
+			_sharedConnection.client = this;
+		}
+		private function closeSharedConnection():void{
+			if(_sharedConnection){
+				try{
+					_sharedConnection.close();
+				}catch(error:Error){
+					//
+				}
+			}
+			_sharedConnection = null;
+		}
 		private function onSharedStatus(e:StatusEvent):void{
+			if(e.level == "error"){
+				
+			}
 			// this will get called quite often if there is no actual remote server running...
+		}
+		public static function get remoteIsRunning():Boolean{
+			var sCon:LocalConnection = new LocalConnection();
+			try{
+				sCon.connect(remoteServerName);
+			}catch(error:Error){
+				return true;
+			}
+			sCon.close();
+			return false;
 		}
 		public function remoteLogSend(lines:Object):void{
 			if(!_isRemote) return;
@@ -838,14 +841,16 @@ package com.atticmedia.console {
 				if(line){
 					var p:int = line["p"]?line["p"]:5;
 					var channel:String = line["c"]?line["c"]:"";
-					addLine(line["text"],p,channel);
+					var r:Boolean = line["r"];
+					var safe:Boolean = line["s"];
+					addLine(line["text"],p,channel,r,safe);
 				}
 			}
 		}
 		public function remoteRun(line:String):void{
 			_CL.run(line);
 		}
-		public function get cl():com.atticmedia.console.command{
+		public function get cl():CommandLine{
 			return _CL;
 		}
 		public function get forceLine():Number{
@@ -867,13 +872,6 @@ package com.atticmedia.console {
 			if(newV >= 0 && newV <= 2){
 				_menuMode = newV ;
 			}
-		}
-		public function listenErrors(obj:EventDispatcher):void{
-			// THIS SECTION NEED TO BE REVISITED IT DOES NOT WORK ON ALL ERROR TYPES
-			obj.addEventListener(IOErrorEvent.IO_ERROR, this.errorsHandler);
-			obj.addEventListener(SecurityErrorEvent.SECURITY_ERROR, this.errorsHandler);
-			obj.addEventListener(AsyncErrorEvent.ASYNC_ERROR, this.errorsHandler);
-			obj.addEventListener(ErrorEvent.ERROR, this.errorsHandler);
 		}
 		public function ch(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false, skipSafe:Boolean = false):void{
 			var chn:String;
@@ -901,17 +899,4 @@ package com.atticmedia.console {
 		}
 	}
 	
-}
-	
-class logLine {
-	public var text:String;
-	public var c:String;
-	public var p:int;
-	public var time:int;
-	public function logLine(t:String, c:String, p:int, time:int){
-			this.text = t;
-			this.c = c;
-			this.p = p;
-			this.time = time;
-	}
 }

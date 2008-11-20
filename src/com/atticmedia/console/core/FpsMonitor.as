@@ -1,21 +1,12 @@
-﻿/*
-* Copyright (c) 2008 Lu Aye Oo (Atticmedia)
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-*/
-
+﻿/**
+ * @class 		FramePerSecond
+ * @author 		Lu
+ * @version 	1.5
+ * @requires 	AS3
+ * 
+ * 
+ * 
+**/
 /*
 	USAGE:
 		
@@ -45,11 +36,11 @@
 		oFPS.mspf // (read) miliseconds per frame
 */
 
-package com.atticmedia.console {
+package com.atticmedia.console.core {
 	import flash.display.DisplayObjectContainer;
 	import flash.utils.getTimer;
 
-	public class fps {
+	public class FpsMonitor {
 
 		private var _mc:DisplayObjectContainer;
 		private var _previousTime:Number;
@@ -57,12 +48,17 @@ package com.atticmedia.console {
 		private var _mspf:Number;
 		private var _min:Number;
 		private var _max:Number;
+		private var _averageFPS:Number;
+		private var _averageMsPF:Number;
+		
 		private var _history:Array;
 		private var _defaultFormat:int = 1;
-		private var _base:Number = 75;
+		private var _base:Number = 50;
 		private var _isRunning:Boolean = false;
 		
-		public function fps(mc:DisplayObjectContainer) {
+		
+		
+		public function FpsMonitor(mc:DisplayObjectContainer) {
 			_mc = mc;
 			_isRunning = false;
 		}
@@ -140,10 +136,10 @@ package com.atticmedia.console {
 			return _min + _max / 2;
 		}
 		public function get averageFPS():Number {
-			return getAverage("fps");
+			return _averageFPS;
 		}
 		public function get averageMsPF():Number {
-			return getAverage("time");
+			return _averageMsPF;
 		}
 		public function get mspf():Number {
 			return _mspf;
@@ -171,19 +167,16 @@ package com.atticmedia.console {
 				if (_history.length>_base) {
 					delete _history.shift();
 				}
+				if(isNaN(_averageFPS)){
+					_averageFPS = _fps;
+				}
+				_averageFPS += ((_fps/_base)-(_averageFPS/_base));
+				if(isNaN(_averageMsPF)){
+					_averageMsPF = _mspf;
+				}
+				_averageMsPF += ((_mspf/_base)-(_averageMsPF/_base));
 			}
 			_previousTime = getTimer();
-		}
-		private function getAverage(str:String):Number {
-			if (_history.length) {
-				var total:Number = 0;
-				for (var X in _history) {
-					total+=_history[X][str];
-				}
-				return total / _history.length;
-			} else {
-				return NaN;
-			}
 		}
 	}
 }

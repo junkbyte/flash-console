@@ -1,30 +1,12 @@
-﻿/*
-* Copyright (c) 2008 Lu Aye Oo (Atticmedia)
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-
-
+﻿/**
  * @class Command Line
  * @author Lu
- * @version 0.95
- * @requires AS3
  * 
  * A tool to access properties and methods via command during run time.
  * 
- 
- 
+**/
+
+/*
 USAGE: 
 
 //Start functionaly by first assigning the stage's root
@@ -76,26 +58,28 @@ TODO:
 usage of array
 using space in text
 */
-package com.atticmedia.console{
+package com.atticmedia.console.core{
 	import flash.display.*;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.*;
 	import flash.events.*;
-	public class command extends EventDispatcher {
+	public class CommandLine extends EventDispatcher {
 
-		public static const VERSION:Number = 0.97;
 		public static const SEARCH_REQUEST:String = "SearchRequest";
 		
 		private var _saved:Weak;
 		private var _lastSearchTerm:String;
+		private var _reportFunction:Function;
 		
 		public var reserved:Array;
 
-		public function command(base:Object) {
+		public function CommandLine(base:Object, reportFunction:Function = null) {
+			_reportFunction = reportFunction;
 			_saved = new Weak();
 			_saved.set("_base",base);
 			_saved.set("returned",base);
 			reserved = new Array("_base", "returned","_lastMapBase");
+			report("<b>/help</b> for CommandLine help", 0);
 		}
 		public function set base(mc:Object):void {
 			var old:Object = _saved.get("_base");
@@ -111,6 +95,8 @@ package com.atticmedia.console{
 		}
 		public function destory():void {
 			_saved = null;
+			_reportFunction = null;
+			reserved = null;
 		}
 		public function store(n:String, obj:Object):void {
 			if(reserved.indexOf(n)>=0){
@@ -336,8 +322,6 @@ package com.atticmedia.console{
 			}
 			_saved.set("_lastMapBase", base); 
 			
-			report("Display map of "+base.name+":"+getQualifiedClassName(base)+"", 10);
-			report("Click on the name to return a reference to that clip. <br/>Note that clip references will be broken when display list is changed",-2);
 			
 			var list:Array = new Array();
 			var index:int = 0;
@@ -363,7 +347,8 @@ package com.atticmedia.console{
 				if(lastmcDO){
 					if(lastmcDO is DisplayObjectContainer && (lastmcDO as DisplayObjectContainer).contains(mcDO)){
 						steps++;
-						indexes.push((lastmcDO as DisplayObjectContainer).getChildIndex(mcDO));
+						//indexes.push((lastmcDO as DisplayObjectContainer).getChildIndex(mcDO));
+						indexes.push(mcDO.name);
 					}else{
 						while(lastmcDO){
 							lastmcDO = lastmcDO.parent;
@@ -374,7 +359,7 @@ package com.atticmedia.console{
 								}
 								if((lastmcDO as DisplayObjectContainer).contains(mcDO)){
 									steps++;
-									indexes.push((lastmcDO as DisplayObjectContainer).getChildIndex(mcDO));
+									indexes.push(mcDO.name);
 									break;
 								}
 							}
@@ -385,7 +370,7 @@ package com.atticmedia.console{
 				for(i=0;i<steps;i++){
 					str += (i==steps-1)?" ∟ ":" - ";
 				}
-				var n:String = "<a href='event:clip_"+indexes.join(",")+"'>"+mcDO.name+"</a>";
+				var n:String = "<a href='event:clip_"+indexes.join("|")+"'>"+mcDO.name+"</a>";
 				if(mcDO is DisplayObjectContainer){
 					n = "<b>"+n+"</b>";
 				}else{
@@ -395,17 +380,21 @@ package com.atticmedia.console{
 				report(str,mcDO is DisplayObjectContainer?5:2);
 				lastmcDO = mcDO;
 			}
+			
+			report(base.name+":"+getQualifiedClassName(base)+" has "+list.length+" children/sub-children.", 10);
+			report("Click on the name to return a reference to the child clip. <br/>Note that clip references will be broken when display list is changed",-2);
 		}
 		public function reportMapClipInfo(path:String):void{
 			var mc:DisplayObjectContainer = _saved.get("_lastMapBase") as DisplayObjectContainer;
-			var pathArr:Array = path.split(",");
+			var pathArr:Array = path.split("|");
 			var child:DisplayObject = mc as DisplayObject;
 			try{
 				if(path.length>0){
-					for each(var ind:int in pathArr){
-						child = mc.getChildAt(ind);
+					for each(var ind:String in pathArr){
+						child = mc.getChildByName(ind);
 						if(child is DisplayObjectContainer){
-							mc = mc.getChildAt(ind) as DisplayObjectContainer;
+							//mc = mc.getChildAt(ind) as DisplayObjectContainer;
+							mc = child as DisplayObjectContainer;;
 						}else{
 							// assume it reached to end since there can no longer be a child
 							break;
@@ -423,14 +412,13 @@ package com.atticmedia.console{
 			report("____Command Line Help___",10);
 			report("Gives you limited ability to read/write/execute properties and methods of anything in stage or to static classes",0);
 			report("__Example: ",10);
-			report("root.oObj => <b>root oObj</b>",5);
+			report("root.oObj => <b>oObj</b>",5);
 			report("(save obj reference) => <b>/save obj1</b>",5);
 			report("(load obj reference) => <b>$obj1</b>",5);
-			report("root.oObj2.myProperty => <b>root oObj2 myProperty</b>",5);
-			report("root.oObj2.myProperty = oObj => <b>root oObj2 myProperty = $obj1</b>",5);
-			report("(view info of last return) => <b>/inspect</b>",5);
-			report("(view all info of last return) => <b>/inspectall</b>",5);
-			report("(see display map of last return) => <b>/map</b>",5);
+			report("root.oObj2.myProperty => <b>oObj2 myProperty</b>",5);
+			report("root.oObj2.myProperty = oObj => <b>oObj2 myProperty = $obj1</b>",5);
+			report("(view info) => <b>/inspect obj1</b>",5);
+			report("(view all info) => <b>/inspectall obj2</b>",5);
 			report("__Use * to access static classes",10);
 			report("com.atticmedia.console.C => <b>*com.atticmedia.console.C</b>",5);
 			report("(save reference) => <b>/save c</b>",5);
@@ -443,8 +431,8 @@ package com.atticmedia.console{
 			report("__________",10);
 		}
 		private function report(txt:String, prio:Number=5):void {
-			if (c.exists) {
-				c.ch("C", txt, prio,false,true);
+			if (_reportFunction != null) {
+				_reportFunction(new LogLineVO(txt,"C",prio,false,true));
 			} else {
 				trace("C: "+ txt);
 			}
