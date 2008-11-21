@@ -9,13 +9,26 @@
 	
 	public class Console extends Sprite {
 
+		public static const NAME:String = "Console";
 		public static const VERSION:Number = 0.91;
+
+		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
+		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
+		public static const CONSOLE_CHANNEL:String = "C";
+		public static const FILTERED_CHANNEL:String = "Filtered";
+		public static const MINIMUM_HEIGHT:int = 16;
+		public static const MINIMUM_WIDTH:int = 20;
 		
-		public static const remoteServerName:String = "ConsoleRemoteServer";
-		public static const remoteClientName:String = "ConsoleRemoteClient";
-		
+		public var quiet:Boolean;
+		public var tracing:Boolean;
 		public var maxLines:int = 500;
 		public var deleteLines:int = 1;
+		public var prefixChannelNames:Boolean = true;
+		public var alwaysOnTop:Boolean = true;
+		public var maxRepeats:Number = 100;
+		public var memoryMonitor:int = 0;
+		public var remoteDelay:int = 25;
+		public var moveable:Boolean = true;
 		
 		private var _traceField:TextField;
 		private var _menuField:TextField;
@@ -23,75 +36,70 @@
 		private var _commandBackground:Shape;
 		private var _background:Shape;
 		private var _scaler:Sprite;
-		private var _ruler:Sprite;
-		private var _enabled:Boolean;
+		private var _ruler:Shape;
 		
+		private var _enabled:Boolean;
 		private var _password:String;
-		private var _passwordIndex:int = 0;
-		private var _priority:int = 0;
-		private var _tracing:Boolean = false;
-		private var _tracingChannel:Array = null;
-		private var _alwaysOnTop:Boolean = true;
-		private var _minHeight:Number = 16;
-		private var _minWidth:Number = 20;
+		private var _passwordIndex:int;
+		private var _priority:int;
+		private var _isPaused:Boolean;
+		private var _menuMode:int;
+		private var _isMinimised:Boolean;
+		private var _isScaling:Boolean;
+		private var _keyBinds:Object;
+		
+		private var _isRemoting:Boolean;
+		private var _isRemote:Boolean;
+		private var _sharedConnection:LocalConnection;
+		private var _remoteDelayed:int;
+		private var _remoteLinesQueue:Array;
+		private var _remoteFPS:int;
+		private var _remoteMem:int;
+		
+		private var _tracingChannels:Array;
 		private var _lines:Array;
-		private var _lineChanged:Boolean;
+		private var _linesChanged:Boolean;
 		private var _channels:Array;
 		private var _isRepeating:Boolean;
-		private var _maxRepeats:Number = 100;
-		private var _repeated:Number;
-		private var _isRemoting:Boolean;
-		private var _sharedConnection:LocalConnection;
-		
-		private var _isRemote:Boolean = false;
-		private var _remoteDelayed:int;
-		private var _remoteDelay:int = 25;
-		private var _remoteLinesQueue:Array;
-		
+		private var _repeated:int;
 		private var _viewingChannel:Array;
 		private var _currentChannel:String;
-		private var _consoleChannel:String = "C";
-		private var _filterChannel:String = "Filtered";
-		private var _mmChannel:String = "C";
-		private var _isPaused:Boolean = false;
-		private var _prefixChannelNames:Boolean = true;
-		private var _memoryMode:int = 0;
-		private var _menuMode:int;
-		private var _isMinimised:Boolean = false;
-		private var _isScaling:Boolean;
+		
 		private var _commandsHistory:Array;
 		private var _commandsInd:int;
-		private var _oMM:MemoryMonitor;
-		private var _oFPS:FpsMonitor;
+		private var _mm:MemoryMonitor;
+		private var _fps:FpsMonitor;
 		private var _CL:CommandLine;
 		private var _ui:UserInterface;
 		private var _timers:Timers;
-		private var _keyBinds:Object;
 		
 		public function Console(pass:String = "") {
-			name = "ConsoleComponent";
+			name = NAME;
 			_password = pass;
 			_keyBinds = new Object();
 			//
 			_background = new Shape();
+			_background.name = "background";
 			_background.graphics.beginFill(0xFFFFFF);
 			_background.graphics.drawRoundRect(0, 0, 100, 100,10,10);
 			var grid:Rectangle = new Rectangle(10, 10, 80, 80);
 			_background.scale9Grid = grid ;
 			addChild(_background);
 			//
-			var corner:Sprite = new Sprite();
+			var corner:Shape = new Shape();
+			corner.name = "rulerCorner";
 			corner.graphics.lineStyle(1, 0xFF0000);
-			corner.graphics.moveTo(_minWidth-1, 0);
-			corner.graphics.lineTo(_minWidth-1, _minHeight-1);
-			corner.graphics.moveTo(0, _minHeight-1);
-			corner.graphics.lineTo(_minWidth-1, _minHeight-1);
+			corner.graphics.moveTo(MINIMUM_WIDTH-1, 0);
+			corner.graphics.lineTo(MINIMUM_WIDTH-1, MINIMUM_HEIGHT-1);
+			corner.graphics.moveTo(0, MINIMUM_HEIGHT-1);
+			corner.graphics.lineTo(MINIMUM_WIDTH-1, MINIMUM_HEIGHT-1);
 			addChild(corner);
 			//
 			var format:TextFormat = new TextFormat();
             format.font = "Arial";
             format.size = 11;
 			_traceField = new TextField();
+			_traceField.name = "traceField";
 			_traceField.wordWrap = true;
 			_traceField.background  = false;
 			_traceField.multiline = true;
@@ -99,16 +107,17 @@
 			addChild(_traceField);
 			//
 			_menuField = new TextField();
+			_menuField.name = "menuField";
 			_menuField.selectable = false;
 			_menuField.height = 18;
-			_menuField.doubleClickEnabled = true;
-			_menuField.addEventListener(MouseEvent.MOUSE_DOWN, onMenuMouseDown);
-			_menuField.addEventListener(MouseEvent.MOUSE_UP,onMenuMouseUp);
+			_menuField.addEventListener(MouseEvent.MOUSE_DOWN, onMenuMouseDown, false, 0, true);
+			_menuField.addEventListener(MouseEvent.MOUSE_UP,onMenuMouseUp, false, 0, true);
 			_menuField.y = -2;
 			addEventListener(TextEvent.LINK, linkHandler);
 			addChild(_menuField);
 			//
 			_commandBackground = new Shape();
+			_commandBackground.name = "commandBackground";
 			_commandBackground.graphics.beginFill(0xFFFFFF);
 			_commandBackground.graphics.drawRoundRect(0, 0, 100, 18,8,8);
 			grid = new Rectangle(10, 8, 80, 8);
@@ -117,40 +126,43 @@
 			addChild(_commandBackground);
 			//
 			_commandField = new TextField();
+			_commandField.name = "commandField";
 			_commandField.type  = TextFieldType.INPUT;
 			_commandField.height = 18;
-			_commandField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown);
+			_commandField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown, false, 0, true);
 			_commandField.visible = false;
 			addChild(_commandField);
 			
 			//
-			_ruler = new Sprite();
+			_ruler = new Shape();
+			_ruler.name = "ruler";
 			_ruler.graphics.lineStyle(1, 0xFF0000);
-			_ruler.graphics.moveTo(_minWidth-1, -5);
-			_ruler.graphics.lineTo(_minWidth-1, 37);
-			_ruler.graphics.moveTo(-5, _minHeight-1);
-			_ruler.graphics.lineTo(45, _minHeight-1);
+			_ruler.graphics.moveTo(MINIMUM_WIDTH-1, -5);
+			_ruler.graphics.lineTo(MINIMUM_WIDTH-1, 37);
+			_ruler.graphics.moveTo(-5, MINIMUM_HEIGHT-1);
+			_ruler.graphics.lineTo(45, MINIMUM_HEIGHT-1);
 			_ruler.visible = false;
 			addChild(_ruler);
 			//
 			_scaler = new Sprite();
+			_scaler.name = "scaler";
 			_scaler.graphics.beginFill(0x000000, 0.6);
             _scaler.graphics.lineTo(-10, 0);
             _scaler.graphics.lineTo(0, -10);
             _scaler.graphics.endFill();
 			_scaler.buttonMode = true;
 			_scaler.doubleClickEnabled = true;
-			_scaler.addEventListener(MouseEvent.MOUSE_DOWN,onScalerMouseDown);
-			_scaler.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp);
-			_scaler.addEventListener(MouseEvent.DOUBLE_CLICK, onScalerDoubleClick);
+			_scaler.addEventListener(MouseEvent.MOUSE_DOWN,onScalerMouseDown, false, 0, true);
+			_scaler.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp, false, 0, true);
+			_scaler.addEventListener(MouseEvent.DOUBLE_CLICK, onScalerDoubleClick, false, 0, true);
             addChild(_scaler);
 			//
 			_ui = new UserInterface(_background, _menuField, _traceField, _commandBackground, _commandField);
-			_oFPS = new FpsMonitor(this);
-			_oMM = new MemoryMonitor();
+			_fps = new FpsMonitor(this);
+			_mm = new MemoryMonitor();
 			_timers = new Timers(addLogLine);
 			_lines = new Array();
-			_lineChanged = false;
+			_linesChanged = false;
 			_channels = new Array("global");
 			_currentChannel = "traces";
 			_viewingChannel = ["global"];
@@ -171,77 +183,207 @@
 			if(_password != ""){
 				if(stage){
 					stageAddedHandle();
-				}else{
-					addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
 				}
 				visible = false;
 			}
-			addLine("<b>v"+VERSION+", Happy bug fixing !</b>",-2,_consoleChannel);
+			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
+			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
+			addLine("<b>v"+VERSION+", Happy bug fixing!</b>",-2,CONSOLE_CHANNEL);
 			//
 			width = 420;
 			height = 16;
 		}
-		public function get ui():UserInterface{
-			return _ui;
-		}
-		
 		private function stageAddedHandle(e:Event=null):void{
-			if(e!=null){
-				this.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			}
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyDownHandler, false, 0, true);
 		}
-		private function onCommandSearch(e:Event=null):void{
-			clear(_filterChannel);
-			addLine("Filtering ["+_CL.searchTerm+"]", 10,_filterChannel);
-			viewingChannel = _filterChannel;
+		private function stageRemovedHandle(e:Event=null):void{
+			stage.removeEventListener(KeyboardEvent.KEY_UP, keyDownHandler);
 		}
 		
-		private function commandKeyDown(e:KeyboardEvent):void{
+		private function keyDownHandler(e:KeyboardEvent):void{
 			if(!_enabled){
 				return;
 			}
-			if( e.keyCode == 13){
-				if(_isRemote){
-					try{
-						_sharedConnection.send(remoteClientName, "remoteRun", _commandField.text);
-					}catch(err:Error){
-						addLine("Command could not be sent to client: " + err, 10,_consoleChannel);
+			if(e.keyLocation == 0){
+				var char:String = String.fromCharCode(e.charCode);
+				if(char == _password.substring(_passwordIndex,_passwordIndex+1)){
+					_passwordIndex++;
+					if(_passwordIndex >= _password.length){
+						toogleVisible();
+						_passwordIndex = 0;
 					}
 				}else{
-					_CL.run(_commandField.text);
-				}
-				_commandsHistory.unshift(_commandField.text);
-				_commandsInd = -1;
-				_commandField.text = "";
-				// maximum 50 history commands
-				if(_commandsHistory.length>50){
-					_commandsHistory.splice(50);
-				}
-			}else if( e.keyCode == 38 ){
-				if(_commandsInd<(_commandsHistory.length-1)){
-					_commandsInd++;
-					_commandField.text = _commandsHistory[_commandsInd];
-				}else{
-					_commandsInd = _commandsHistory.length;
-					_commandField.text = "";
-				}
-			}else if( e.keyCode == 40){
-				if(_commandsInd>0){
-					_commandsInd--;
-					_commandField.text = _commandsHistory[_commandsInd];
-				}else{
-					_commandsInd = -1;
-					_commandField.text = "";
+					_passwordIndex = 0;
+					
+					if(stage && stage.focus == _commandField){
+						return;
+					}
+					var key:String = char.toLowerCase()+(e.ctrlKey?"0":"1")+(e.altKey?"0":"1")+(e.shiftKey?"0":"1");
+					if(_keyBinds[key]){
+						var bind:Array = _keyBinds[key];
+						bind[0].apply(this, bind[1]);
+					}
 				}
 			}
 		}
+		private function toogleVisible():void{
+			visible = !visible;
+			if(visible && stage){
+				stage.focus = _commandField;
+			}
+		}
+		private function linkHandler(e:TextEvent):void{
+			stopDrag();
+			if(e.text == "resetFPS"){
+				if(_fps){
+					_fps.reset();
+				}
+			}else if(e.text == "help"){
+				help();
+			}else if(e.text == "clear"){
+				clear();
+			}else if(e.text == "fps"){
+				cycleFPS();
+			}else if(e.text == "memory"){
+				memoryMonitor++;
+				if(memoryMonitor>2){
+					memoryMonitor = 0;
+				}
+			}else if(e.text == "scrollUp"){
+				_traceField.scrollV -= 3;
+			}else if(e.text == "scrollDown"){
+				_traceField.scrollV += 3;
+			}else if(e.text == "close"){
+				visible = false;
+			}else if(e.text == "pause"){
+				paused = !paused;
+			}else if(e.text == "priority"){
+				cyclePriorities();
+			}else if(e.text == "command"){
+				commandLine = !commandLine;
+			}else if(e.text == "menu"){
+				_menuMode++;
+				if(_menuMode>2){
+					_menuMode = 0;
+				}
+			}else if(e.text == "gc"){
+				gc();
+			}else if(e.text == "trace"){
+				tracing = !tracing;
+				if(tracing){
+					addLine("Tracing turned [<b>On</b>]",-1,CONSOLE_CHANNEL);
+				}else{
+					addLine("Tracing turned [<b>Off</b>]",-1,CONSOLE_CHANNEL);
+				}
+			}else if(e.text == "alpha"){
+				cycleAlpha();
+			}else if(e.text.substring(0,8) == "channel_"){
+				viewingChannel = e.text.substring(8);
+			}else if(e.text.substring(0,5) == "clip_"){
+				var str:String = "/remap "+e.text.substring(5);
+				if(_isRemote){
+					_sharedConnection.send(REMOTER_CONN_NAME, "runCommand", str);
+				}else{
+					runCommand(str);
+				}
+			}
+		}
+		private function cycleFPS():void{
+			if(_fps.running){
+				if(_fps.format == 1){
+					_fps.format = 2;
+				}else if(_fps.format == 2){
+					_fps.format = 3;
+				}else if(_fps.format == 3){
+					_fps.format = 4;
+				}else{
+					_fps.pause();
+				}
+			}else {
+				_fps.start();
+				_fps.format = 1;
+			}
+		}
+		private function cyclePriorities():void{
+			if(_priority<10){
+				_priority++;
+			}else{
+				_priority = 0;
+			}
+			refreshPage();
+		}
+		private function cycleAlpha():void{
+			if(_ui.backgroundAlpha<1){
+				_ui.backgroundAlpha += 0.15;
+			}else{
+				_ui.backgroundAlpha = 0;
+			}
+		}
+		private function help():void{
+			addLine("___HELP_________________",-1);
+			addLine("[ R=Reset FPS, F=Toogle FPS, M=Memory, G=Garbage Collect, CL=CommandLine, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
+			addLine("",0);
+			addLine("Use the arrow at bottom right to scale this window.", 10);
+			addLine("",0);
+			addLine("Use the tabs at the top to switch between channels.",10);
+			addLine("'Global' channel show outputs from all channels",8);
+			addLine("________________________",-1);
+		}
+		private function scaleByScaler():void{
+			width = _scaler.x;
+			height = _scaler.y+(_commandBackground.visible?_commandBackground.height:0);
+		}
+		private function minimise():void{
+			_isMinimised = true;
+			_traceField.y = -2;
+			_traceField.x = 18;
+			_traceField.scrollH = 0;
+		}
+		private function maximise():void{
+			_isMinimised = false;
+			_traceField.y = 12;
+			_traceField.x = 0;
+		}
+		private function onMenuMouseDown(e:Event):void{
+			if(moveable){
+				startDrag();
+				_ruler.visible = true;
+			}
+		}
+		private function onMenuMouseUp(e:Event):void{
+			stopDrag();
+			_ruler.visible = false;
+		}
+		private function onScalerDoubleClick(e:Event):void{
+			height =  height<= (MINIMUM_HEIGHT+(_commandBackground.visible?_commandBackground.height:0)+1) ? 180 : MINIMUM_HEIGHT;
+			if(width < 100){
+				width = 200;
+			}
+		}
+		private function onScalerMouseDown(e:Event):void{
+			_scaler.startDrag(false, new Rectangle(MINIMUM_WIDTH, MINIMUM_HEIGHT, 1280, 1280));
+			_isScaling = true;
+			_ruler.visible = true;
+		}
+		private function onScalerMouseUp(e:Event):void{
+			stopDrag();
+			_isScaling = false;
+			_ruler.visible = false;
+			scaleByScaler();
+			traceRulerData();
+		}
+		private function traceRulerData():void{
+			var w:int = Math.round(_scaler.x-MINIMUM_WIDTH);
+			var h:int = Math.round(_scaler.y-MINIMUM_HEIGHT);
+			var d:Number = Math.round(Math.sqrt((w*w)+(h*h))*10)/10;
+			addLine("Ruler Width:<b>"+w +"</b>, Height:<b>"+h +"</b>, Diagonal:<b>"+d +"</b>.",-1,CONSOLE_CHANNEL);
+		}
+		//
+		//
 		private function refreshPage():void{
 			var str:String = "";
 			for each (var line:LogLineVO in _lines ){
-				
-				if((_viewingChannel.indexOf(_filterChannel)>=0 || line.c!=_filterChannel) && ((_CL.searchTerm && line.c != _consoleChannel && line.c != _filterChannel && line.text.toLowerCase().indexOf(_CL.searchTerm.toLowerCase())>=0 )|| (_viewingChannel.indexOf(line.c)>=0 || _viewingChannel.indexOf("global")>=0) && (line.p >= _priority || _priority == 0) )){
-					//
+				if((_viewingChannel.indexOf(FILTERED_CHANNEL)>=0 || line.c!=FILTERED_CHANNEL) && ((_CL.searchTerm && line.c != CONSOLE_CHANNEL && line.c != FILTERED_CHANNEL && line.text.toLowerCase().indexOf(_CL.searchTerm.toLowerCase())>=0 )|| (_viewingChannel.indexOf(line.c)>=0 || _viewingChannel.indexOf("global")>=0) && (line.p >= _priority || _priority == 0) )){
 					str += makeLine(line)+"<br>";
 				}
 			}
@@ -255,7 +397,7 @@
 				str += "<b>";
 			}
 			var txt:String = line.text;
-			if(_prefixChannelNames && _viewingChannel.indexOf("global")>=0 && line.c != _currentChannel){
+			if(prefixChannelNames && _viewingChannel.indexOf("global")>=0 && line.c != _currentChannel){
 				txt = "<a href=\"event:channel_"+line.c+"\">["+line.c+"</a>] "+txt;
 			}
 			str += "<font face=\"Verdana\" size=\"10\" color=\""+colour+"\">"+txt+"</font>";
@@ -264,8 +406,8 @@
 			}
 			return str;
 		}
-		protected function addLogLine(line:LogLineVO):void{
-			addLine(line.text, line.p, line.c, line.r, line.s);
+		private function addLogLine(line:LogLineVO):void{
+			addLine(line.text, line.p, line.c==null?CONSOLE_CHANNEL:line.c, line.r, line.s);
 		}
 		private function addLine(obj:Object,priority:Number = 0,channel:String = "",isRepeating:Boolean = false, skipSafe:Boolean = false):void{
 			if(!_enabled){
@@ -287,7 +429,7 @@
 				_channels.push(channel);
 			}
 			var line:LogLineVO = new LogLineVO(txt,channel,priority, isRepeating, skipSafe);
-			_lineChanged = true;
+			_linesChanged = true;
 			if(isRepeating && _isRepeating){
 				_lines.pop();
 				_lines.push(line);
@@ -296,9 +438,9 @@
 				_lines.push(line);
 				if(_lines.length > maxLines && maxLines > 0 ){
 					_lines.splice(0,deleteLines);
-					//addLine("Maximum lines ["+maxLines+"] reached. Deleted the first ["+_deleteLines+"] lines.",-1,_consoleChannel);
+					//addLine("Maximum lines ["+maxLines+"] reached. Deleted the first ["+_deleteLines+"] lines.",-1,CONSOLE_CHANNEL);
 				}
-				if( _tracing && (_tracingChannel == null || _tracingChannel.indexOf(channel)>=0) ){
+				if( tracing && (_tracingChannels == null || _tracingChannels.indexOf(channel)>=0) ){
 					trace("["+channel+"] "+tmpText);
 				}
 			}
@@ -308,150 +450,6 @@
 				_remoteLinesQueue.push(line);
 			}
 		}
-		private function keyDownHandler(e:KeyboardEvent):void{
-			if(!_enabled){
-				return;
-			}
-			if(e.keyLocation == 0){
-				var char:String = String.fromCharCode(e.charCode);
-				if(char == _password.substring(_passwordIndex,_passwordIndex+1)){
-					_passwordIndex++;
-					if(_passwordIndex >= _password.length){
-						toogleVisible();
-						_passwordIndex = 0;
-					}
-				}else{
-					_passwordIndex = 0;
-					
-					if(stage && stage.focus == _commandField){
-						return;
-					}
-					var key:String = char+(e.ctrlKey?"0":"1")+(e.altKey?"0":"1")+(e.shiftKey?"0":"1");
-					if(_keyBinds[key]){
-						var bind:Array = _keyBinds[key];
-						bind[0].apply(this, bind[1]);
-					}
-				}
-			}
-		}
-		public function bindKey(char:String, ctrl:Boolean, alt:Boolean, shift:Boolean, fun:Function ,args:Array):void{
-			var key:String = char+(ctrl?"0":"1")+(alt?"0":"1")+(shift?"0":"1");
-			if(fun is Function){
-				_keyBinds[key] = [fun,args];
-			}else{
-				delete _keyBinds[key];
-			}
-		}
-		private function toogleVisible():void{
-			visible = !visible;
-			paused = !visible;
-			if(visible && stage){
-				stage.focus = _commandField;
-			}
-		}
-		private function linkHandler(e:TextEvent):void{
-			stopDrag();
-			if(e.text == "min"){
-				height = 18;
-			}else if(e.text == "max"){
-				height = 200;
-			}else if(e.text == "resetFPS"){
-				if(_oFPS){
-					_oFPS.reset();
-				}
-			}else if(e.text == "help"){
-				help();
-			}else if(e.text == "clear"){
-				clear();
-			}else if(e.text == "fps"){
-				cycleFPS();
-			}else if(e.text == "memory"){
-				_memoryMode++;
-				if(_memoryMode>3){
-					_memoryMode = 0;
-				}
-			}else if(e.text == "scrollUp"){
-				_traceField.scrollV -= 3;
-			}else if(e.text == "scrollDown"){
-				_traceField.scrollV += 3;
-			}else if(e.text == "close"){
-				visible = false;
-			}else if(e.text == "pause"){
-				paused = !paused;
-			}else if(e.text == "priority"){
-				cyclePriorities();
-			}else if(e.text == "command"){
-				command = !command;
-			}else if(e.text == "menu"){
-				_menuMode++;
-				if(_menuMode>2){
-					_menuMode = 0;
-				}
-			}else if(e.text == "gc"){
-				gc();
-			}else if(e.text == "trace"){
-				_tracing = !_tracing;
-				if(_tracing){
-					addLine("Tracing turned [<b>On</b>]",-1,_consoleChannel);
-				}else{
-					addLine("Tracing turned [<b>Off</b>]",-1,_consoleChannel);
-				}
-			}else if(e.text == "alpha"){
-				cycleAlpha();
-			}else if(e.text.substring(0,8) == "channel_"){
-				changeChannel(e.text.substring(8));
-			}else if(e.text.substring(0,5) == "clip_"){
-				_CL.reportMapClipInfo(e.text.substring(5));
-			}
-		}
-		private function cycleFPS():void{
-			if(_oFPS.running){
-				if(_oFPS.format == 1){
-					_oFPS.format = 2;
-				}else if(_oFPS.format == 2){
-					_oFPS.format = 3;
-				}else if(_oFPS.format == 3){
-					_oFPS.format = 4;
-				}else{
-					_oFPS.pause();
-				}
-			}else {
-				_oFPS.start();
-				_oFPS.format = 1;
-			}
-		}
-		private function changeChannel(channel:String):void{
-			//if(channel != _viewingChannel){
-				viewingChannel = channel;
-				//refreshPage();
-			//}
-		}
-		private function cyclePriorities():void{
-			if(_priority<10){
-				_priority++;
-			}else{
-				_priority = 0;
-			}
-			refreshPage();
-		}
-		private function cycleAlpha():void{
-			if(_ui.backgroundAlpha<1){
-				_ui.backgroundAlpha += 0.15;
-			}else{
-				_ui.backgroundAlpha = 0;
-			}
-		}
-		private function help():void{
-			addLine("___HELP_________________",-1);
-			addLine("FPS Metre: Min-<b>Average</b>-Max: <b>current</b>",10);
-			addLine("[ R=Reset FPS, F=Toogle FPS, M=Memory, CL=Toogle CommandLine, C=Clear, T=Toogle tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
-			addLine("",0);
-			addLine("Use the arrow at bottom right to scale this window.", 10);
-			addLine("",0);
-			addLine("Use the tabs at the top to switch between channels.",10);
-			addLine("'Global' channel show outputs from all channels",8);
-			addLine("________________________",-1);
-		}
 		private function _onEnterFrame(e:Event):void{
 			if(!_enabled){
 				return;
@@ -459,43 +457,48 @@
 			if(_isScaling){
 				scaleByScaler();
 			}
-			if(_alwaysOnTop && parent &&  parent.getChildIndex(this) < (parent.numChildren-1)){
+			if(alwaysOnTop && parent &&  parent.getChildIndex(this) < (parent.numChildren-1)){
 				parent.setChildIndex(this,(parent.numChildren-1));
-				addLine("Attempted to move console on top (alwaysOnTop enabled)",-1,_consoleChannel);
+				if(!quiet){
+					addLine("Attempted to move console on top (alwaysOnTop enabled)",-1,CONSOLE_CHANNEL);
+				}
 			}
 			if( _isRepeating ){
 				_repeated++;
-				if(_repeated > _maxRepeats && _maxRepeats >= 0){
+				if(_repeated > maxRepeats && maxRepeats >= 0){
 					_isRepeating = false;
 				}
 			}
 			if(!_isPaused && visible){
-				_oFPS.update();
-				var arr:Array = _oMM.update();
+				_fps.update();
+				var arr:Array = _mm.update();
 				if(arr.length>0){
-					addLine("COLLECTED "+arr,10,_mmChannel);
+					addLine("COLLECTED "+arr,10,CONSOLE_CHANNEL);
 				}
 			}
 			if(_isMinimised){
-				if(_oFPS.running){
-					_menuField.htmlText = Math.round(_oFPS.averageFPS) +"]";
+				if(_fps.running){
+					_menuField.htmlText = Math.round(_fps.averageFPS) +"]";
 				}else{
 					_menuField.htmlText = "";
 				}
 			}else{
 				var str:String ="<p align=\"right\">";
-				if(_memoryMode == 1){
-					str += "<b>"+Math.round(_oMM.currentMemory/1024)+"kb </b> ";
-				}else if(_memoryMode > 1){
-					str += Math.round(_oMM.minMemory/1024)+"kb-";
-					str += "<b>"+Math.round(_oMM.currentMemory/1024)+"kb</b>-";
-					str += ""+Math.round(_oMM.maxMemory/1024)+"kb ";
-					if(_memoryMode == 3){
-						str += "*";
+				if(_isRemote){
+					if(memoryMonitor > 0){
+						str += "<b>"+Math.round(_remoteMem/1024)+"kb </b> ";
+					}
+				}else{
+					if(memoryMonitor == 1){
+						str += "<b>"+Math.round(_mm.currentMemory/1024)+"kb </b> ";
+					}else if(memoryMonitor > 1){
+						str += Math.round(_mm.minMemory/1024)+"kb-";
+						str += "<b>"+Math.round(_mm.currentMemory/1024)+"kb</b>-";
+						str += ""+Math.round(_mm.maxMemory/1024)+"kb ";
 					}
 				}
-				if(_oFPS.running){
-					str += _oFPS.get+" ";
+				if(_fps.running){
+					str += (_isRemote?_remoteFPS:_fps.get)+" ";
 				}
 				if(_menuMode != 2){
 					for each(var channel in _channels){
@@ -506,7 +509,7 @@
 				}
 				if(_menuMode != 1){
 					str += "[";
-					if(_oFPS.running){
+					if(_fps.running && !_isRemote){
 						str += "<a href=\"event:resetFPS\">R</a> ";
 					}
 					str += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> <a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] ";
@@ -525,82 +528,95 @@
 				str += "</p>";
 				_menuField.htmlText = str;
 			}
-			if(_lineChanged && !_isPaused && visible){
+			if(_linesChanged && !_isPaused && visible){
 				refreshPage();
-				_lineChanged = false;
+				_linesChanged = false;
 			}
 			if(_isRemoting){
 				_remoteDelayed++;
-				if(_remoteDelayed > _remoteDelay){
+				if(_remoteDelayed > remoteDelay){
 					updateRemote();
 					_remoteDelayed = 0;
 				}
 			}
 		}
-		private function scaleByScaler():void{
-			width = _scaler.x;
-			height = _scaler.y+(_commandBackground.visible?_commandBackground.height:0);
-		}
-		private function minimise():void{
-			_isMinimised = true;
-			_traceField.y = -2;
-			_traceField.x = 18;
-			_traceField.scrollH = 0;
-		}
-		private function maximise():void{
-			_isMinimised = false;
-			_traceField.y = 12;
-			_traceField.x = 0;
-		}
-		private function onMenuMouseDown(e:Event):void{
-			startDrag();
-			_ruler.visible = true;
-		}
-		private function onMenuMouseUp(e:Event):void{
-			stopDrag();
-			_ruler.visible = false;
-		}
-		private function onScalerDoubleClick(e:Event):void{
-			height =  height<= (_minHeight+(_commandBackground.visible?_commandBackground.height:0)+1) ? 180 : _minHeight;
-			if(width < 100){
-				width = 200;
+		public function destroy():void{
+			enabled = false;
+			closeSharedConnection();
+			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			if(stage){
+				stage.removeEventListener(KeyboardEvent.KEY_UP, keyDownHandler);
 			}
-		}
-		private function onScalerMouseDown(e:Event):void{
-			_scaler.startDrag(false, new Rectangle(_minWidth, _minHeight, 1280, 1280));
-			_isScaling = true;
-			_ruler.visible = true;
-		}
-		private function onScalerMouseUp(e:Event):void{
-			stopDrag();
-			_isScaling = false;
-			_ruler.visible = false;
-			scaleByScaler();
-			traceRulerData();
-		}
-		private function traceRulerData():void{
-			var w:int = Math.round(_scaler.x-_minWidth);
-			var h:int = Math.round(_scaler.y-_minHeight);
-			var d:Number = Math.round(Math.sqrt((w*w)+(h*h))*10)/10;
-			addLine("Ruler Width:<b>"+w +"</b>, Height:<b>"+h +"</b>, Diagonal:<b>"+d +"</b>.",-1,_consoleChannel);
-		}
-		private function errorsHandler(e:Event):void{
-			add("ERROR: " + e, 5);
+			_mm = null;
+			_fps.destory();
+			_fps = null;
+			_ui = null;
+			_lines = null;
+			_channels = null;
+			_CL.destory();
+			_timers = null;
 		}
 		//
-		public function get mm():MemoryMonitor{
-			return _oMM;
-		}
-		public function get fps():FpsMonitor{
-			return _oFPS;
+		// WARNING: key binding hard references the function. 
+		// This should only be used for development purposes only.
+		//
+		public function bindKey(char:String, ctrl:Boolean, alt:Boolean, shift:Boolean, fun:Function ,args:Array = null):void{
+			if(!char || char.length!=1){
+				addLine("Binding key must be a single character. You gave ["+char+"]", 10,CONSOLE_CHANNEL);
+				return;
+			}
+			var key:String = char.toLowerCase()+(ctrl?"0":"1")+(alt?"0":"1")+(shift?"0":"1");
+			if(fun is Function){
+				_keyBinds[key] = [fun,args];
+			}else{
+				delete _keyBinds[key];
+			}
+			if(!quiet){
+				addLine((fun is Function?"Bined":"Unbined")+" key <b>"+ char.toUpperCase() +"</b>"+ (ctrl?"+ctrl":"")+(alt?"+alt":"")+(shift?"+shift":"")+".",-1,CONSOLE_CHANNEL);
+			}
 		}
 		public function get timers():Timers{
 			return _timers;
 		}
-		public function gc():void{
-			var ok:Boolean = _oMM.gc();
-			var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
-			addLine(str,(ok?-1:10),_consoleChannel);
+		
+		public function set enabled(newB:Boolean):void{
+			if(_enabled && !newB){
+				addLine("Console is now [<b>Disabled</b>]",10,CONSOLE_CHANNEL);
+			}
+			var pre:Boolean = _enabled;
+			_enabled = newB;
+			if(!pre && newB){
+				addLine("Console is now [<b>Enabled</b>]",-1,CONSOLE_CHANNEL);
+			}
+		}
+		public function get enabled():Boolean{
+			return _enabled;
+		}
+		public function get paused():Boolean{
+			return _isPaused;
+		}
+		public function set paused(newV:Boolean):void{
+			if(newV){
+				this.addLine("Paused",10,CONSOLE_CHANNEL);
+				// refresh page here to show the message before it pauses.
+				refreshPage();
+			}else{
+				this.addLine("Resumed",-1,CONSOLE_CHANNEL);
+			}
+			_isPaused = newV;
+			refreshPage();
+		}
+		//
+		// UI CUSTOMIZATION
+		//
+		public function setPriorityColour(p:int, col:String):void{
+			_ui.setPriorityHex(p, col);
+		}
+		public function set uiPreset(p:int):void{
+			_ui.preset = p;
+		}
+		public function get uiPreset():int{
+			return _ui.preset;
 		}
 		override public function get width():Number{
 			return _background.width;
@@ -608,7 +624,10 @@
 		override public function set width(newW:Number):void{
 			if(newW <= 50){
 				_traceField.visible = false;
-				newW = newW <_minWidth ? _minWidth: newW;
+				newW = newW <MINIMUM_WIDTH ? MINIMUM_WIDTH: newW;
+				if(newW == MINIMUM_WIDTH){
+					commandLine = false;
+				}
 			}else{
 				_traceField.visible = true;
 			}
@@ -623,8 +642,8 @@
 			if(_commandBackground.visible){
 				newW -= _commandBackground.height;
 			}
-			if(newW <_minHeight){
-				newW = _minHeight;
+			if(newW <MINIMUM_HEIGHT){
+				newW = MINIMUM_HEIGHT;
 			}
 			if(!this._isMinimised && newW <= 40){
 				this.minimise();
@@ -646,6 +665,8 @@
 		override public function get height():Number{
 			return _background.height+(_commandBackground.visible?_commandBackground.height:0);
 		}
+		//
+		//
 		public function get currentChannel():String{
 			return _currentChannel;
 		}
@@ -661,35 +682,6 @@
 				refreshPage();
 			}
 		}
-		public function get paused():Boolean{
-			return _isPaused;
-		}
-		public function set paused(newV:Boolean):void{
-			if(newV){
-				this.addLine("Paused",10,_consoleChannel);
-				// refresh page here to show the message before it pauses.
-				refreshPage();
-			}else{
-				this.addLine("Resumed",-1,_consoleChannel);
-			}
-			_isPaused = newV;
-			refreshPage();
-		}
-		public function destroy():void{
-			enabled = false;
-			closeSharedConnection();
-			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
-			if(stage){
-				stage.removeEventListener(KeyboardEvent.KEY_UP, keyDownHandler);
-			}
-			_oMM = null;
-			_oFPS.destory();
-			_oFPS = null;
-			_ui = null;
-			_lines = null;
-			_channels = null;
-			_CL.destory();
-		}
 		public function clear(channel:String = null):void{
 			if(channel){
 				for(var i:int=(_lines.length-1);i>=0;i--){
@@ -699,66 +691,172 @@
 				}
 			}else{
 				_lines = new Array();
+				_channels = new Array("global");
 			}
 			refreshPage();
 		}
-		public function set enabled(newB:Boolean):void{
-			if(_enabled && !newB){
-				this.addLine("Console is now [<b>Disabled</b>]",10,_consoleChannel);
-			}
-			var pre:Boolean = _enabled;
-			_enabled = newB;
-			visible = newB;
-			if(!pre && newB){
-				this.addLine("Console is now [<b>Enabled</b>]",-1,_consoleChannel);
-			}
-		}
-		public function get enabled():Boolean{
-			return _enabled;
-		}
-		public function set tracing(newVar:Boolean):void{
-			_tracing = newVar;
-		}
-		public function get tracing():Boolean{
-			return _tracing;
-		}
-		public function set tracingChannel(newVar:String):void{
+		public function set tracingChannels(newVar:String):void{
 			if(newVar.length>0){
-				_tracingChannel = newVar.split(",");
+				_tracingChannels = newVar.split(",");
 			}
 		}
-		public function get tracingChannel():String{
-			return String(_tracingChannel);
+		public function get tracingChannels():String{
+			return String(_tracingChannels);
 		}
-		public function set alwaysOnTop(newVar:Boolean):void{
-			_alwaysOnTop = newVar;
+		public function get menuMode():int{
+			return _menuMode;
 		}
-		public function get alwaysOnTop():Boolean{
-			return _alwaysOnTop;
+		public function set menuMode(newV:int):void{
+			if(newV >= 0 && newV <= 2){
+				_menuMode = newV ;
+			}
 		}
-		public function set memoryMonitor(newVar:int):void{
-			_memoryMode = newVar;
+		//
+		// FPS
+		//
+		public function get fpsMode ():int{
+			return _fps.running?_fps.format:0;
 		}
-		public function get memoryMonitor():int{
-			return _memoryMode;
+		public function set fpsMode (v:int):void{
+			if(v == 0 && _fps.running){
+				_fps.pause();
+			}else if(!_fps.running && v>0){
+				_fps.start();
+			}
+			if(v>0){
+				_fps.format = v;
+			}
 		}
-		public function set command (newB:Boolean):void{
+		public function fpsReset():void{
+			_fps.reset();
+		}
+		public function get fpsBase():int{
+			return _fps.base;
+		}
+		public function set fpsBase(v:int):void{
+			_fps.base = v;
+		}
+		public function get fps():Number{
+			return _fps.current;
+		}
+		public function get averageFPS ():Number{
+			return _fps.averageFPS;
+		}
+		public function get mspf ():Number{
+			return _fps.mspf;
+		}
+		public function get averageMsPF ():Number{
+			return _fps.averageMsPF;
+		}
+		//
+		// Memory Monitor
+		//
+		public function watch(o:Object,n:String = null):void{
+			_mm.watch(o,n);
+		}
+		public function unwatch(n:String):void{
+			_mm.unwatch(n);
+		}
+		public function get minMemory():uint {
+			return _mm.minMemory;
+		}
+		public function get maxMemory():uint {
+			return _mm.maxMemory;
+		}
+		public function get currentMemory():uint {
+			return _mm.currentMemory;
+		}
+		public function gc():void{
+			var ok:Boolean = _mm.gc();
+			var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
+			addLine(str,(ok?-1:10),CONSOLE_CHANNEL);
+		}
+		//
+		//
+		// COMMAND LINE
+		//
+		public function set commandLine (newB:Boolean):void{
 			if(newB){
 				_commandField.visible = true;
 				_commandBackground.visible = true;
+				if(!quiet){
+					addLine("<b>/help</b> for CommandLine help",-1,CONSOLE_CHANNEL);
+				}
 			}else{
 				_commandField.visible = false;
 				_commandBackground.visible = false;
 			}
 		}
-		public function get command ():Boolean{
+		public function get commandLine ():Boolean{
 			return _commandField.visible;
 		}
+		public function runCommand(line:String):void{
+			_CL.run(line);
+		}
+		public function store(n:String, obj:Object):void{
+			_CL.store(n, obj);
+		}
+		public function inspect(obj:Object, detail:Boolean = true):void{
+			add("INSPECT: "+ _CL.inspect(obj,detail));
+		}
+		public function get commandBase():Object{
+			return _CL.base;
+		}
+		public function set commandBase(obj:Object):void{
+			_CL.base = obj;
+		}
+		private function commandKeyDown(e:KeyboardEvent):void{
+			if(!_enabled){
+				return;
+			}
+			if( e.keyCode == 13){
+				if(_isRemote){
+					addLine("Run command at remote: <b>"+_commandField.text+"</b>",-1,CONSOLE_CHANNEL);
+					try{
+						_sharedConnection.send(REMOTER_CONN_NAME, "runCommand", _commandField.text);
+					}catch(err:Error){
+						addLine("Command could not be sent to client: " + err, 10,CONSOLE_CHANNEL);
+					}
+				}else{
+					runCommand(_commandField.text);
+				}
+				_commandsHistory.unshift(_commandField.text);
+				_commandsInd = -1;
+				_commandField.text = "";
+				// maximum 20 commands history
+				if(_commandsHistory.length>20){
+					_commandsHistory.splice(20);
+				}
+			}else if( e.keyCode == 38 ){
+				if(_commandsInd<(_commandsHistory.length-1)){
+					_commandsInd++;
+					_commandField.text = _commandsHistory[_commandsInd];
+				}else{
+					_commandsInd = _commandsHistory.length;
+					_commandField.text = "";
+				}
+			}else if( e.keyCode == 40){
+				if(_commandsInd>0){
+					_commandsInd--;
+					_commandField.text = _commandsHistory[_commandsInd];
+				}else{
+					_commandsInd = -1;
+					_commandField.text = "";
+				}
+			}
+		}
+		private function onCommandSearch(e:Event=null):void{
+			clear(FILTERED_CHANNEL);
+			addLine("Filtering ["+_CL.searchTerm+"]", 10,FILTERED_CHANNEL);
+			viewingChannel = FILTERED_CHANNEL;
+		}
+		//
+		// REMOTING
+		//
 		private function updateRemote():void{
 			if(_remoteLinesQueue.length==0) return;
-			
 			try{
-				_sharedConnection.send(remoteServerName, "remoteLogSend", _remoteLinesQueue);
+				_sharedConnection.send(REMOTE_CONN_NAME, "remoteLogSend", [averageFPS, currentMemory, _remoteLinesQueue]);
 			}catch(e:Error){
 				// don't care
 			}
@@ -775,11 +873,11 @@
 				_remoteDelayed = 0;
 				_remoteLinesQueue = new Array();
 				startSharedConnection();
-				addLine("Remoting started",10,_consoleChannel);
+				addLine("Remoting started",10,CONSOLE_CHANNEL);
 				try{
-                	_sharedConnection.connect(remoteClientName);
+                	_sharedConnection.connect(REMOTER_CONN_NAME);
            		}catch (error:Error){
-					addLine("Could not connect to client server", 10,_consoleChannel);
+					addLine("Could not create client service. You will not be able to control this console with remote.", 10,CONSOLE_CHANNEL);
            		}
 			}else{
 				closeSharedConnection();
@@ -794,11 +892,11 @@
 				_isRemoting = false;
 				startSharedConnection();
 				try{
-                	_sharedConnection.connect(remoteServerName);
-					addLine("Remote started",10,_consoleChannel);
+                	_sharedConnection.connect(REMOTE_CONN_NAME);
+					addLine("Remote started",10,CONSOLE_CHANNEL);
            		}catch (error:Error){
 					_isRemoting = false;
-					addLine("Remoting is not possible", 10,_consoleChannel);
+					addLine("Could not create remote service. You might have a console remote already running.", 10,CONSOLE_CHANNEL);
            		}
 			}else{
 				closeSharedConnection();
@@ -820,23 +918,23 @@
 			_sharedConnection = null;
 		}
 		private function onSharedStatus(e:StatusEvent):void{
-			if(e.level == "error"){
-				
-			}
 			// this will get called quite often if there is no actual remote server running...
 		}
 		public static function get remoteIsRunning():Boolean{
 			var sCon:LocalConnection = new LocalConnection();
 			try{
-				sCon.connect(remoteServerName);
+				sCon.connect(REMOTE_CONN_NAME);
 			}catch(error:Error){
 				return true;
 			}
 			sCon.close();
 			return false;
 		}
-		public function remoteLogSend(lines:Object):void{
-			if(!_isRemote) return;
+		public function remoteLogSend(obj:Array):void{
+			if(!_isRemote || !obj) return;
+			_remoteFPS = obj[0];
+			_remoteMem = obj[1];
+			var lines:Array = obj[2];
 			for each( var line:Object in lines){
 				if(line){
 					var p:int = line["p"]?line["p"]:5;
@@ -847,33 +945,10 @@
 				}
 			}
 		}
-		public function remoteRun(line:String):void{
-			_CL.run(line);
-		}
-		public function get cl():CommandLine{
-			return _CL;
-		}
-		public function get forceLine():Number{
-			return _maxRepeats;
-		}
-		public function set forceLine(newV:Number):void{
-			_maxRepeats = newV ;
-		}
-		public function get prefixChannelNames():Boolean{
-			return _prefixChannelNames;
-		}
-		public function set prefixChannelNames(newV:Boolean):void{
-			_prefixChannelNames = newV ;
-		}
-		public function get menuMode():int{
-			return _menuMode;
-		}
-		public function set menuMode(newV:int):void{
-			if(newV >= 0 && newV <= 2){
-				_menuMode = newV ;
-			}
-		}
-		public function ch(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+		//
+		// LOGGING
+		//
+		public function ch(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
 			var chn:String;
 			if(channel is String){
 				chn = String(channel);
@@ -884,18 +959,18 @@
 			}else{
 				chn = _currentChannel;
 			}
-			addLine(newLine,priority,chn, isRepeating,skipSafe);
+			addLine(newLine,priority,chn, isRepeating);
 		}
-		public function pk(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+		public function pk(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
 			var chn:String = getQualifiedClassName(channel);
 			var ind:int = chn.lastIndexOf("::");
 			if(ind>=0){
 				chn = chn.substring(0,ind);
 			}
-			addLine(newLine,priority,chn, isRepeating,skipSafe);
+			addLine(newLine,priority,chn, isRepeating);
 		}
-		public function add(newLine:Object, priority:Number = 2, isRepeating:Boolean = false, skipSafe:Boolean = false):void{
-			addLine(newLine,priority, _currentChannel, isRepeating,skipSafe);
+		public function add(newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
+			addLine(newLine,priority, _currentChannel, isRepeating);
 		}
 	}
 	

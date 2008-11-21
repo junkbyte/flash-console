@@ -87,7 +87,7 @@
 		c.forceLine = 100; // (default:100)  frames before repeating line is forced to print to next line. set to -1 to never force. set to 0 to force every line.
 		
 		c.menuMode = 0 // (default:1) 0=channels+options 1=channels 2=options
-		c.command = true; // (default: false) enable command line
+		c.commandLine = true; // (default: false) enable command line
 		c.memoryMonitor = 1; // (default: 0) show memory usage in kb.
 		c.width = 200; // (defauilt: 420) change width of console
 		c.height = 200; //(defauilt: 16) change hight of console
@@ -110,7 +110,6 @@
 */
 		
 package com.atticmedia.console {
-	import flash.events.EventDispatcher;	
 	import flash.display.*;
 	import flash.system.Capabilities;
 	import com.atticmedia.console.core.*;
@@ -139,19 +138,19 @@ package com.atticmedia.console {
 		public static function get version():Number{
 			return Console.VERSION;
 		}
-		public static function ch(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+		public static function ch(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(_console){
-				_console.ch(channel,newLine,priority, isRepeating, skipSafe);
+				_console.ch(channel,newLine,priority, isRepeating);
 			}
 		}
-		public static function pk(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+		public static function pk(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(_console){
-				_console.pk(channel,newLine,priority, isRepeating, skipSafe);
+				_console.pk(channel,newLine,priority, isRepeating);
 			}
 		}
-		public static function add(newLine:Object, priority:Number = 2, isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+		public static function add(newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(_console){
-				_console.add(newLine,priority, isRepeating, skipSafe);
+				_console.add(newLine,priority, isRepeating);
 			}
 		}
 		public static function remove():void{
@@ -166,11 +165,6 @@ package com.atticmedia.console {
 		public static function clear(channel:String = null):void{
 			if(_console){
 				_console.clear(channel);
-			}
-		}
-		public static function fpsReset ():void{
-			if(_console){
-				_console.fps.reset();
 			}
 		}
 		//
@@ -205,12 +199,12 @@ package com.atticmedia.console {
 		//
 		public static function watch(o:Object,n:String = null):void{
 			if(_console){
-				_console.mm.watch(o,n);
+				_console.watch(o,n);
 			}
 		}
 		public static function unwatch(n:String):void{
 			if(_console){
-				_console.mm.unwatch(n);
+				_console.unwatch(n);
 			}
 		}
 		public static function gc():void {
@@ -221,9 +215,6 @@ package com.atticmedia.console {
 		//
 		//
 		//
-		public static function get ui():UserInterface{
-			return getter("ui") as UserInterface;
-		}
 		public static function get width():Number{
 			return getter("width") as Number;
 		}
@@ -260,10 +251,10 @@ package com.atticmedia.console {
 		public static function set viewingChannel(v:String):void{
 			setter("viewingChannel",v);
 		}
-		public static function get prefixChannelNames():String{
-			return getter("prefixChannelNames") as String;
+		public static function get prefixChannelNames():Boolean{
+			return getter("prefixChannelNames") as Boolean;
 		}
-		public static function set prefixChannelNames(v:String):void{
+		public static function set prefixChannelNames(v:Boolean):void{
 			setter("prefixChannelNames",v);
 		}
 		public static function get visible():Boolean{
@@ -282,6 +273,12 @@ package com.atticmedia.console {
 			var e:Boolean = _console? true: false;
 			return e;
 		}
+		public static function set quiet(v:Boolean):void{
+			setter("quiet",v);
+		}
+		public static function get quiet():Boolean{
+			return getter("quiet") as Boolean;
+		}
 		public static function set enabled(v:Boolean):void{
 			setter("enabled",v);
 		}
@@ -294,11 +291,11 @@ package com.atticmedia.console {
 		public static function get tracing():Boolean{
 			return getter("tracing") as Boolean;
 		}
-		public static function set tracingChannel(v:String):void{
-			setter("tracingChannel",v);
+		public static function set tracingChannels(v:String):void{
+			setter("tracingChannels",v);
 		}
-		public static function get tracingChannel():String{
-			return getter("tracingChannel") as String;
+		public static function get tracingChannels():String{
+			return getter("tracingChannels") as String;
 		}
 		public static function set alwaysOnTop(v:Boolean):void{
 			setter("alwaysOnTop",v);
@@ -324,11 +321,11 @@ package com.atticmedia.console {
 		public static function set deleteLines(v:int):void{
 			setter("deleteLines",v);
 		}
-		public static function set command (v:Boolean):void{
-			setter("command",v);
+		public static function set commandLine (v:Boolean):void{
+			setter("commandLine",v);
 		}
-		public static function get command ():Boolean{
-			return getter("command") as Boolean;
+		public static function get commandLine ():Boolean{
+			return getter("commandLine") as Boolean;
 		}
 		public static function get remoting():Boolean{
 			return getter("remoting") as Boolean;
@@ -342,11 +339,11 @@ package com.atticmedia.console {
 		public static function set isRemote(v:Boolean):void{
 			setter("isRemote",v);
 		}
-		public static function get forceLine():Number{
-			return getter("forceLine") as Number;
+		public static function get maxRepeats():Number{
+			return getter("maxRepeats") as Number;
 		}
-		public static function set forceLine(v:Number):void{
-			setter("forceLine",v);
+		public static function set maxRepeats(v:Number):void{
+			setter("maxRepeats",v);
 		}
 		public static function get menuMode():int{
 			return getter("menuMode") as int;
@@ -356,110 +353,78 @@ package com.atticmedia.console {
 		}
 		//
 		public static function get fpsMode ():int{
-			if(_console){
-				return _console.fps.running?_console.fps.format:0;
-			}
-			return 0;
+			return getter("fpsMode") as int;
 		}
 		public static function set fpsMode (v:int):void{
-			if(!_console) return;
-			if(v == 0 && _console.fps.running){
-				_console.fps.pause();
-			}else if(!_console.fps.running && v>0){
-				_console.fps.start();
-			}
-			if(v>0){
-				_console.fps.format = v;
+			setter("fpsMode",v);
+		}
+		//
+		public static function fpsReset ():void{
+			if(_console){
+				_console.fpsReset();
 			}
 		}
 		//
 		public static function get fpsBase():int{
-			if(_console){
-				return _console.fps.base;
-			}
-			return 0;
+			return getter("fpsBase") as int;
 		}
 		public static function set fpsBase(v:int):void{
-			if(_console){
-				_console.fps.base = v;
-			}
+			setter("fpsBase",v);
 		}
 		public static function get fps ():Number{
-			if(_console){
-				return _console.fps.current;
-			}
-			return 0;
+			return getter("fps") as int;
 		}
 		public static function get averageFPS ():Number{
-			if(_console){
-				return _console.fps.averageFPS;
-			}
-			return 0;
+			return getter("averageFPS") as int;
 		}
 		public static function get mspf ():Number{
-			if(_console){
-				return _console.fps.mspf;
-			}
-			return 0;
+			return getter("mspf") as int;
 		}
 		public static function get averageMsPF ():Number{
-			if(_console){
-				return _console.fps.averageMsPF;
-			}
-			return 0;
+			return getter("averageMsPF") as int;
 		}
 		//
 		//
 		//
 		public static function get minMemory():uint {
-			if(_console){
-				return _console.mm.minMemory;
-			}
-			return 0;
+			return getter("minMemory") as int;
 		}
 		public static function get maxMemory():uint {
-			if(_console){
-				return _console.mm.maxMemory;
-			}
-			return 0;
+			return getter("maxMemory") as int;
 		}
 		public static function get currentMemory():uint {
-			if(_console){
-				return _console.mm.currentMemory;
-			}
-			return 0;
+			return getter("currentMemory") as int;
 		}
 		//
 		//
 		//
 		
 		public static function inspect(obj:Object, detail:Boolean = true):void {
-			if(_console && _console.cl){
-				add("INSPECT: "+ _console.cl.inspect(obj,detail));
+			if(_console){
+				_console.inspect(obj,detail);
 			}
 		}
-		public static function get base():Object{
-			if(_console && _console.cl){
-				return _console.cl.base;
-			}
-			return null;
+		public static function get commandBase():Object{
+			return getter("commandBase") as int;
 		}
-		public static function set base(v:Object):void{
-			if(_console && _console.cl){
-				_console.cl.base = v;
-			}
+		public static function set commandBase(v:Object):void{
+			setter("commandBase",v);
 		}
 		public static function store(n:String, obj:Object):void{
-			if(_console  && _console.cl){
-				_console.cl.store(n, obj);
+			if(_console ){
+				_console.store(n, obj);
 			}
 		}
-		public static function run(o:String):void{
-			if(_console && _console.cl){
-				_console.cl.run(o);
+		public static function runCommand(str:String):void{
+			if(_console){
+				_console.runCommand(str);
 			}
 		}
-		public static function bindKey(char:String, ctrl:Boolean, alt:Boolean, shift:Boolean, fun:Function ,...args:Array):void{
+		//
+		// WARNING: key binding hard references the function. 
+		// This should only be used for development purposes only.
+		//
+		public static function bindKey(char:String, ctrl:Boolean, alt:Boolean, shift:Boolean, fun:Function ,args:Array = null):void{
 			if(_console){
 				_console.bindKey(char, ctrl, alt, shift, fun ,args);
 			}
@@ -467,9 +432,15 @@ package com.atticmedia.console {
 		// UI
 		// set ur own custom priority colour. pass in this format: "FFAA00"
 		public static function setPriorityColour(p:int, col:String):void{
-			if(_console  && _console.ui){
-				_console.ui.setPriorityHex(p, col);
+			if(_console){
+				_console.setPriorityColour(p, col);
 			}
+		}
+		public static function set uiPreset(v:int):void{
+			setter("uiPreset",v);
+		}
+		public static function get uiPreset():int{
+			return getter("uiPreset") as int;
 		}
 		//
 		//
@@ -490,8 +461,8 @@ package com.atticmedia.console {
 		}
 		//
 		//	This is for debugging of console.
-		//	DO NOT USE THIS!
-		public static function get me():Console{
+		//	PLEASE avoid using it!
+		public static function get instance():Console{
 			return _console;
 		}
 	}

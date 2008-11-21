@@ -68,7 +68,7 @@ package com.atticmedia.console.core {
 		//
 		private function report(txt:String, prio:Number=5):void {
 			if (_reportFunction != null) {
-				_reportFunction(new LogLineVO(txt,"C",prio,false,true));
+				_reportFunction(new LogLineVO(txt,null,prio,false,true));
 			} else {
 				trace("C: "+ txt);
 			}

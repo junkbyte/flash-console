@@ -79,7 +79,6 @@ package com.atticmedia.console.core{
 			_saved.set("_base",base);
 			_saved.set("returned",base);
 			reserved = new Array("_base", "returned","_lastMapBase");
-			report("<b>/help</b> for CommandLine help", 0);
 		}
 		public function set base(mc:Object):void {
 			var old:Object = _saved.get("_base");
@@ -116,6 +115,10 @@ package com.atticmedia.console.core{
 			var len:int = line.length;
 			if (line[0] == "/help") {
 				printHelp();
+			} else if (line[0] == "/remap") {
+				// this is a special case... no user will be able to do this command
+				line.shift();
+				reMap(line.join(""));
 			} else if (line[0] == "/save") {
 				if (_saved.get("returned")) {
 					if(reserved.indexOf(line[1])>=0){
@@ -384,7 +387,7 @@ package com.atticmedia.console.core{
 			report(base.name+":"+getQualifiedClassName(base)+" has "+list.length+" children/sub-children.", 10);
 			report("Click on the name to return a reference to the child clip. <br/>Note that clip references will be broken when display list is changed",-2);
 		}
-		public function reportMapClipInfo(path:String):void{
+		private function reMap(path:String):void{
 			var mc:DisplayObjectContainer = _saved.get("_lastMapBase") as DisplayObjectContainer;
 			var pathArr:Array = path.split("|");
 			var child:DisplayObject = mc as DisplayObject;
@@ -432,7 +435,7 @@ package com.atticmedia.console.core{
 		}
 		private function report(txt:String, prio:Number=5):void {
 			if (_reportFunction != null) {
-				_reportFunction(new LogLineVO(txt,"C",prio,false,true));
+				_reportFunction(new LogLineVO(txt,null,prio,false,true));
 			} else {
 				trace("C: "+ txt);
 			}
