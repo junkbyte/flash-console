@@ -114,11 +114,11 @@ package com.atticmedia.console {
 	import flash.system.Capabilities;
 	import com.atticmedia.console.core.*;
 	
-	public class c{
+	public class C{
 		
 		private static var _console:Console;
 		
-		public function c() {
+		public function C() {
 			throw new Error("[CONSOLE] Do not construct class. Please use c.start(mc:DisplayObjectContainer, password:String='')");
 		}
 		public static function start(mc:DisplayObjectContainer, pass:String = "", allowInBrowser:Boolean = true, forceRunOnRemote:Boolean = true):void{
@@ -197,10 +197,11 @@ package com.atticmedia.console {
 		}
 		//
 		//
-		public static function watch(o:Object,n:String = null):void{
+		public static function watch(o:Object,n:String = null):String{
 			if(_console){
-				_console.watch(o,n);
+				return _console.watch(o,n);
 			}
+			return null;
 		}
 		public static function unwatch(n:String):void{
 			if(_console){

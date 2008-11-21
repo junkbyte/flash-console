@@ -10,7 +10,7 @@
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 0.91;
+		public static const VERSION:Number = 0.95;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -174,7 +174,7 @@
 			_commandsHistory = new Array();
 			_commandsInd = 0;
 			_CL = new CommandLine(this, addLogLine);
-			_CL.store("C",c);
+			_CL.store("C",this);
 			_CL.reserved.push("C");
 			_CL.addEventListener(CommandLine.SEARCH_REQUEST, onCommandSearch, false, 0, true);
 			//
@@ -473,7 +473,7 @@
 				_fps.update();
 				var arr:Array = _mm.update();
 				if(arr.length>0){
-					addLine("COLLECTED "+arr,10,CONSOLE_CHANNEL);
+					addLine("GARBAGE COLLECTED: "+arr.join(", "),10,CONSOLE_CHANNEL);
 				}
 			}
 			if(_isMinimised){
@@ -751,8 +751,12 @@
 		//
 		// Memory Monitor
 		//
-		public function watch(o:Object,n:String = null):void{
-			_mm.watch(o,n);
+		public function watch(o:Object,n:String = null):String{
+			var nn:String = _mm.watch(o,n);
+			if(!quiet){
+				addLine("Watching <b>"+o+"</b> as <font color=\"#FF0000\"><b>"+ nn +"</b></font>.",-1,CONSOLE_CHANNEL);
+			}
+			return nn;
 		}
 		public function unwatch(n:String):void{
 			_mm.unwatch(n);
@@ -794,7 +798,11 @@
 			_CL.run(line);
 		}
 		public function store(n:String, obj:Object):void{
-			_CL.store(n, obj);
+			var nn:String = _CL.store(n, obj);
+			if(!quiet && nn){
+				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+obj+"</b> using WEAK reference");
+				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine "+ str +".",-1,CONSOLE_CHANNEL);
+			}
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			add("INSPECT: "+ _CL.inspect(obj,detail));
@@ -856,7 +864,7 @@
 		private function updateRemote():void{
 			if(_remoteLinesQueue.length==0) return;
 			try{
-				_sharedConnection.send(REMOTE_CONN_NAME, "remoteLogSend", [averageFPS, currentMemory, _remoteLinesQueue]);
+				_sharedConnection.send(REMOTE_CONN_NAME, "remoteLogSend", [_remoteLinesQueue,averageFPS, currentMemory]);
 			}catch(e:Error){
 				// don't care
 			}
@@ -903,6 +911,7 @@
 			}
 		}
 		private function startSharedConnection():void{
+			closeSharedConnection();
 			_sharedConnection = new LocalConnection();
 			_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
 			_sharedConnection.client = this;
@@ -932,9 +941,7 @@
 		}
 		public function remoteLogSend(obj:Array):void{
 			if(!_isRemote || !obj) return;
-			_remoteFPS = obj[0];
-			_remoteMem = obj[1];
-			var lines:Array = obj[2];
+			var lines:Array = obj[0];
 			for each( var line:Object in lines){
 				if(line){
 					var p:int = line["p"]?line["p"]:5;
@@ -944,6 +951,8 @@
 					addLine(line["text"],p,channel,r,safe);
 				}
 			}
+			_remoteFPS = obj[1];
+			_remoteMem = obj[2];
 		}
 		//
 		// LOGGING

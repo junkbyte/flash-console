@@ -97,14 +97,17 @@ package com.atticmedia.console.core{
 			_reportFunction = null;
 			reserved = null;
 		}
-		public function store(n:String, obj:Object):void {
+		public function store(n:String, obj:Object):String {
+			n = n.replace(/[^\w]*/g, "");
 			if(reserved.indexOf(n)>=0){
 				report("ERROR: The name ["+n+ "] is reserved",10);
+				return null;
 			}else{
 				// if it is a function it needs to be strong reference atm, 
 				// otherwise it fails if the function passed is from a dynamic class/instance
 				_saved.set(n, obj, (obj is Function?true:false));
 			}
+			return n;
 		}
 		public function get searchTerm():String{
 			return _lastSearchTerm;

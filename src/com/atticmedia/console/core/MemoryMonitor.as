@@ -16,26 +16,22 @@
 			_namesList = new Object();
 			_objectsList = new Dictionary(true);
 		}
-		public function watch(obj:Object, n:String = null):void{
-			
+		public function watch(obj:Object, n:String = null):String{
 			if(!n){
 				n = String(obj)+"@"+getTimer();
 			}
-			
 			if(_objectsList[obj]){
-				//c.ch("C","'"+obj+"' is already watched by GarbageMonitor for '"+_objectsList[obj]+"'. Replaced!",10);
-				
 				if(_namesList[_objectsList[obj]]){
 					unwatch(_objectsList[obj]);
 				}
 			}
 			if(_namesList[n] && _objectsList[obj] != n){
 				var nn:String = n+"@"+getTimer()+"_"+Math.floor(Math.random()*100);
-				//c.ch("C","'"+n+"' is already used in GarbageMonitor. Used new name: '"+nn+"'!",10);
 				n = nn;
 			}
 			_namesList[n] = true;
 			_objectsList[obj] = n;
+			return n;
 		}
 		public function unwatch(n:String):void{
 			for (var X in _objectsList) {
