@@ -1,4 +1,26 @@
-﻿package com.atticmedia.console {
+﻿/*
+* 
+* Copyright (c) 2008 Atticmedia
+* 
+* @author 		Lu Aye Oo
+*
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 1. The origin of this software must not be misrepresented; you must not
+* claim that you wrote the original software. If you use this software
+* in a product, an acknowledgment in the product documentation would be
+* appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+* misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+* 
+* 
+*/
+package com.atticmedia.console {
 	import com.atticmedia.console.core.*;
 	import flash.utils.getQualifiedClassName;
 	import flash.display.*;
@@ -10,7 +32,7 @@
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 0.95;
+		public static const VERSION:Number = 0.96;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -56,6 +78,7 @@
 		private var _remoteFPS:int;
 		private var _remoteMem:int;
 		
+		private var _menuText:String;
 		private var _tracingChannels:Array;
 		private var _lines:Array;
 		private var _linesChanged:Boolean;
@@ -158,7 +181,7 @@
             addChild(_scaler);
 			//
 			_ui = new UserInterface(_background, _menuField, _traceField, _commandBackground, _commandField);
-			_fps = new FpsMonitor(this);
+			_fps = new FpsMonitor();
 			_mm = new MemoryMonitor();
 			_timers = new Timers(addLogLine);
 			_lines = new Array();
@@ -190,7 +213,8 @@
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
 			addLine("<b>v"+VERSION+", Happy bug fixing!</b>",-2,CONSOLE_CHANNEL);
 			//
-			width = 420;
+			updateMenu();
+			width = 520;
 			height = 16;
 		}
 		private function stageAddedHandle(e:Event=null):void{
@@ -303,6 +327,7 @@
 				_fps.start();
 				_fps.format = 1;
 			}
+			updateMenu();
 		}
 		private function cyclePriorities():void{
 			if(_priority<10){
@@ -323,10 +348,10 @@
 			addLine("___HELP_________________",-1);
 			addLine("[ R=Reset FPS, F=Toogle FPS, M=Memory, G=Garbage Collect, CL=CommandLine, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
 			addLine("",0);
-			addLine("Use the arrow at bottom right to scale this window.", 10);
+			addLine("Use the arrow at bottom right to scale this window.", 1);
 			addLine("",0);
-			addLine("Use the tabs at the top to switch between channels.",10);
-			addLine("'Global' channel show outputs from all channels",8);
+			addLine("Use the tabs at the top to switch between channels.",1);
+			addLine("'Global' channel show outputs from all channels",1);
 			addLine("________________________",-1);
 		}
 		private function scaleByScaler():void{
@@ -484,6 +509,8 @@
 				}
 			}else{
 				var str:String ="<p align=\"right\">";
+				
+				// memory
 				if(_isRemote){
 					if(memoryMonitor > 0){
 						str += "<b>"+Math.round(_remoteMem/1024)+"kb </b> ";
@@ -497,24 +524,23 @@
 						str += ""+Math.round(_mm.maxMemory/1024)+"kb ";
 					}
 				}
+				// FPS
 				if(_fps.running){
 					str += (_isRemote?_remoteFPS:_fps.get)+" ";
 				}
+				// channels
 				if(_menuMode != 2){
 					for each(var channel in _channels){
-						var channelTxt:String = (_viewingChannel.indexOf(channel)>=0) ? "<b>"+channel+"</b>" : channel;
+						var channelTxt:String = (_viewingChannel.indexOf(channel)>=0) ? "<font color=\"#0099CC\"><b>"+channel+"</b></font>" : channel;
 						channelTxt = channel==_currentChannel ? "<i>"+channelTxt+"</i>" : channelTxt;
 						str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
 					}
 				}
+				// MENU
 				if(_menuMode != 1){
-					str += "[";
-					if(_fps.running && !_isRemote){
-						str += "<a href=\"event:resetFPS\">R</a> ";
-					}
-					str += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> <a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] ";
+					str += _menuText;
 				}
-				str += "<a href=\"event:menu\">@</a>"; 
+				str += "<font color=\"#77D077\"><b><a href=\"event:menu\">@</a></b></font>"; 
 				if(_traceField.scrollV > 1){
 					str += " <a href=\"event:scrollUp\">^</a>";
 				}else{
@@ -539,6 +565,13 @@
 					_remoteDelayed = 0;
 				}
 			}
+		}
+		private function updateMenu():void{
+			_menuText = "<font color=\"#FF8800\">[";
+			if(_fps.running && !_isRemote){
+				_menuText += "<a href=\"event:resetFPS\">R</a> ";
+			}
+			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> <a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] </font>";
 		}
 		public function destroy():void{
 			enabled = false;
@@ -726,6 +759,7 @@
 			if(v>0){
 				_fps.format = v;
 			}
+			updateMenu();
 		}
 		public function fpsReset():void{
 			_fps.reset();

@@ -1,48 +1,59 @@
-﻿/**
- * @class 		FramePerSecond
- * @author 		Lu
- * @version 	1.5
- * @requires 	AS3
- * 
- * 
- * 
-**/
-/*
+﻿/*
+* 
+* Copyright (c) 2008 Atticmedia
+* 
+* @author 		Lu Aye Oo
+*
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 1. The origin of this software must not be misrepresented; you must not
+* claim that you wrote the original software. If you use this software
+* in a product, an acknowledgment in the product documentation would be
+* appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+* misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+* 
+* 
+
 	USAGE:
 		
 		import com.atticmedia.console.*;
 		oFPS = new fps(this);
 		
+		oFPS.update(); - call every frame to get accurate frame rate.
+		
+
 		Methods:
 		oFPS.reset(); // reset records
 		oFPS.pause(); // pause recording
 		oFPS.start(); // start , use after pause
-		oFPS.remove(); // remove oFPS.
+		oFPS.destory(); // remove oFPS.
 		
 		Properties:
 		fps.get // get FPS data as html string format;
 		fps.format = 2 // change default format of 'get()';
 		fps.getInFormat(1) // get FPS data in the format number;
-		fps.instance  // (read) to get instance of last ftp (oFPS)
 		oFPS.running  // (read) true if it is not paused
-		oFPS.base; // maximum number of FPS history to record(which is used in caculating average)
+		oFPS.base; // average frame rate base
 		oFPS.current; // (read) current FPS
+		oFPS.averageFPS // (read) Average FPS
+		oFPS.mspf // (read) miliseconds per frame
+		oFPS.averageMsPF // (read) Average miliseconds per frame
 		oFPS.min; // (read) minimum FPS since last reset 
 		oFPS.max; // (read) maximum FPS since last reset
 		oFPS.mid; // (read) mid FPS since last reset 
-		oFPS.averageFPS // (read) Average FPS
-		oFPS.averageMin // (read) average Minimum FPS
-		oFPS.averageMax // (read) average Maximum FPS
-		oFPS.mspf // (read) miliseconds per frame
 */
 
 package com.atticmedia.console.core {
-	import flash.display.DisplayObjectContainer;
 	import flash.utils.getTimer;
 
 	public class FpsMonitor {
 
-		private var _mc:DisplayObjectContainer;
 		private var _previousTime:Number;
 		private var _fps:Number;
 		private var _mspf:Number;
@@ -58,8 +69,7 @@ package com.atticmedia.console.core {
 		
 		
 		
-		public function FpsMonitor(mc:DisplayObjectContainer) {
-			_mc = mc;
+		public function FpsMonitor() {
 			_isRunning = false;
 		}
 		public function reset():void {
@@ -85,16 +95,10 @@ package com.atticmedia.console.core {
 				break;
 				case 4:
 					var stageFrameRate:String = "";
-					if(_mc.stage){
-						stageFrameRate = "/"+_mc.stage.frameRate;
-					}
 					return Math.round(min)+"-<b>"+current.toFixed(1)+stageFrameRate+"</b>-"+ Math.round(max) + ": <b>" + Math.round(averageFPS) + "</b> " + Math.round(averageMsPF)+"ms-"+Math.round(mspf)+"ms";
 				break;
 				case 5:
 					var stageMS:String = "";
-					if(_mc.stage){
-						stageMS = "/"+Math.round(1000/_mc.stage.frameRate)+"ms";
-					}
 					return Math.round(averageMsPF)+"ms-"+Math.round(mspf)+"ms "+stageMS;
 				break;
 				default:
@@ -147,7 +151,6 @@ package com.atticmedia.console.core {
 		public function destory():void{
 			pause();
 			reset();
-			_mc = null;
 		}
 		public function update():void{
 			if(!_isRunning){

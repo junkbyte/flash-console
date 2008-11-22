@@ -1,37 +1,25 @@
-﻿/**
- * @class 		Console
- * @author 		Lu
- * @version 	1.6
- * @requires 	AS3, 
- * 				com.atticmedia.console.console, 
- * 				com.atticmedia.console.userinterface,  
- * 				com.atticmedia.console.fps,
- * 				com.atticmedia.console.memoryMonitor,  
- * 				com.atticmedia.console.command,
- * 				com.atticmedia.console.timers
- * 				
- * 
-- Build in FramesPerSecond which tells you minimum-average-maximum and current.
-- Trace in 10 'priority' levels where level 10 = red, level 0 = black (optional, default = 5)
-- Priorities can be filtered via a button at the top to show only the current level and above.
-- Trace in non-repeative mode. Sometimes when you want to trace onEnterFrame events you end up 
-	a long list of traces that cause confusion and slow in the end. With this mode on, it trace on the same line, 
-	keeping the total number of lines. You can forced-new-line by per N number of frames (default = evey 100 frames).
-- have multiple channels (optional) where global channel shows all traces and each individual channel show their own traces. 
-- as suggested by Joe :D
-- "CommandLine" lets you read-write-execute any methods and properties on stage or any static classes during run time. 
-	leting you read or write alot of things including stage.frameRate, stage.scaleMode. 
-- /viewall in command line lets you see all properties and methods of any class or object. type /help for details 
-	its does not directly follow AS coding.
-- console can be resized either by hard code or on run time. also draggable.
-- can have password to show/hide console. - allowing you to keep it secret from anyone else(e.g client) but you can always 
-	come back and see the traces/debugs.
-- keeps it self on top of other clips in the same level.
-- can be used as horizontal/vertical/diagonal ruler.
-- have maximum number of trace lines to record (overwritable) to free up memory/speed.
-**/
+﻿/*
+* 
+* Copyright (c) 2008 Atticmedia
+* 
+* @author 		Lu Aye Oo
+*
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 1. The origin of this software must not be misrepresented; you must not
+* claim that you wrote the original software. If you use this software
+* in a product, an acknowledgment in the product documentation would be
+* appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+* misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+* 
+* 
 
-/*
 	USAGE:
 		
 		import com.atticmedia.console.*;
