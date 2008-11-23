@@ -80,13 +80,13 @@ package com.atticmedia.console.core{
 			_saved.set("returned",base);
 			reserved = new Array("_base", "returned","_lastMapBase");
 		}
-		public function set base(mc:Object):void {
+		public function set base(obj:Object):void {
 			var old:Object = _saved.get("_base");
-			_saved.set("_base",mc);
+			_saved.set("_base",obj);
 			if (old) {
-				report("Set new commandLine base from "+old+ " to "+ mc, 10);
-			} else {
-				report("Set new commandLine base to "+ mc, 10);
+				report("Set new commandLine base from "+old+ " to "+ obj, 10);
+			}else{
+				_saved.set("returned",obj);
 			}
 		}
 		public function get base():Object {
@@ -113,7 +113,7 @@ package com.atticmedia.console.core{
 			return _lastSearchTerm;
 		}
 		public function run(str:String):void {
-			report(str, 0);
+			report("&gt; "+str, 0);
 			var line:Array = str.split(" ");
 			var len:int = line.length;
 			if (line[0] == "/help") {
@@ -136,33 +136,26 @@ package com.atticmedia.console.core{
 			} else if (line[0] == "/filter") {
 				_lastSearchTerm = str.substring(8);
 				dispatchEvent(new Event(SEARCH_REQUEST));
-			} else if (line[0] == "/inspect" || line[0] == "/inspectall") {
-				if (line[1]) {
-					_saved.set("returned",_saved.get(line[1]));
-				} else if (_saved.get("returned") == null) {
-					_saved.set("returned", _saved.get("_base"));
-				}
+			} else if (line[0] == "/inspect" || line[0] == "/inspectfull") {
 				if (_saved.get("returned")) {
 					var viewAll:Boolean = (line[0] == "/inspectall")? true: false;
 					report(inspect(_saved.get("returned"),viewAll));
 				} else {
 					report("Empty", 10);
 				}
-			}else if (line[0] == "/map") {
-				if (line[1]) {
-					_saved.set("returned",_saved.get(line[1]));
-				} else if (_saved.get("returned") == null) {
-					_saved.set("returned", _saved.get("_base"));
-				}
+			} else if (line[0] == "/map") {
 				if (_saved.get("returned")) {
 					map(_saved.get("returned") as DisplayObjectContainer);
 				} else {
 					report("Empty", 10);
 				}
+			} else if (line[0] == "/base") {
+				var b:Object = _saved.get("_base");
+				_saved.set("returned", b);
+				report("Returned "+ getQualifiedClassName(b) +": "+b,10);
 			} else {
 				var base:Object = _saved.get("returned");
 				var tree:Array = new Array(base);
-				//var base:Object = _saved.get("_base");
 				var SET:Object;
 				var isSaving:Boolean = false;
 				try {
@@ -328,7 +321,6 @@ package com.atticmedia.console.core{
 			}
 			_saved.set("_lastMapBase", base); 
 			
-			
 			var list:Array = new Array();
 			var index:int = 0;
 			list.push(base);
@@ -424,7 +416,8 @@ package com.atticmedia.console.core{
 			report("root.oObj2.myProperty => <b>oObj2 myProperty</b>",5);
 			report("root.oObj2.myProperty = oObj => <b>oObj2 myProperty = $obj1</b>",5);
 			report("(view info) => <b>/inspect obj1</b>",5);
-			report("(view all info) => <b>/inspectall obj2</b>",5);
+			report("(view all info) => <b>/inspectfull obj2</b>",5);
+			report("(see display map) => <b>/map</b>",5);
 			report("__Use * to access static classes",10);
 			report("com.atticmedia.console.C => <b>*com.atticmedia.console.C</b>",5);
 			report("(save reference) => <b>/save c</b>",5);

@@ -196,7 +196,7 @@ package com.atticmedia.console {
 			
 			_commandsHistory = new Array();
 			_commandsInd = 0;
-			_CL = new CommandLine(this, addLogLine);
+			_CL = new CommandLine(null, addLogLine);
 			_CL.store("C",this);
 			_CL.reserved.push("C");
 			_CL.addEventListener(CommandLine.SEARCH_REQUEST, onCommandSearch, false, 0, true);
@@ -218,6 +218,9 @@ package com.atticmedia.console {
 			height = 16;
 		}
 		private function stageAddedHandle(e:Event=null):void{
+			if(_CL.base == null && root){
+				_CL.base = root;
+			}
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyDownHandler, false, 0, true);
 		}
 		private function stageRemovedHandle(e:Event=null):void{
