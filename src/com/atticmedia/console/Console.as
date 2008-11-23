@@ -335,6 +335,7 @@ package com.atticmedia.console {
 			}else{
 				_priority = 0;
 			}
+			updateMenu();
 			refreshPage();
 		}
 		private function cycleAlpha():void{
@@ -346,7 +347,7 @@ package com.atticmedia.console {
 		}
 		private function help():void{
 			addLine("___HELP_________________",-1);
-			addLine("[ R=Reset FPS, F=Toogle FPS, M=Memory, G=Garbage Collect, CL=CommandLine, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
+			addLine("[ R=Reset FPS, F=FPS, M=Memory, G=Garbage Collect, CL=CommandLine, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
 			addLine("",0);
 			addLine("Use the arrow at bottom right to scale this window.", 1);
 			addLine("",0);
@@ -853,7 +854,7 @@ package com.atticmedia.console {
 			}
 			if( e.keyCode == 13){
 				if(_isRemote){
-					addLine("Run command at remote: <b>"+_commandField.text+"</b>",-1,CONSOLE_CHANNEL);
+					addLine("Run command at remote: <b>"+_commandField.text+"</b>",-2,CONSOLE_CHANNEL);
 					try{
 						_sharedConnection.send(REMOTER_CONN_NAME, "runCommand", _commandField.text);
 					}catch(err:Error){

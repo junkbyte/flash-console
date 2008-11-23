@@ -24,6 +24,7 @@ package com.atticmedia.console.samples {
 	import flash.utils.*;	
 	import flash.events.MouseEvent;	
 	import flash.display.*;
+	import flash.text.*;
 	import com.atticmedia.console.*;
 
 	public class Sample extends MovieClip{
@@ -53,7 +54,7 @@ package com.atticmedia.console.samples {
 
 			//
 			C.ch("myChannel", "Hello my Channel");
-			C.ch("myChannel", "Hello importnat message at my channel", 10);
+			C.ch("myChannel", "Hello important message at my channel", 10);
 
 			// press @ at the top for console menu.
 			// press H on second right for console menu help
@@ -70,15 +71,19 @@ package com.atticmedia.console.samples {
 			// you can press G in console menu (press @ at top) to force garbage collect
 			
 			
-			
+			txtPriority.restrict = "0-9";
+			txtPriority2.restrict = "0-9";
 			btnInterval.addEventListener(MouseEvent.CLICK, onButtonClick);
-			btnAdd.addEventListener(MouseEvent.CLICK, onButtonClick);
-			btnAddChannel.addEventListener(MouseEvent.CLICK, onButtonClick);
+			btnAdd1.addEventListener(MouseEvent.CLICK, onButtonClick);
+			btnAdd2.addEventListener(MouseEvent.CLICK, onButtonClick);
 		}
 		private function onButtonClick(e:MouseEvent):void{
 			switch(e.currentTarget){
-				case btnAdd:
-					C.add("adding test text");
+				case btnAdd1:
+					C.add(txtLog.text,int(txtPriority.text));
+				break;
+				case btnAdd2:
+					C.ch(txtChannel.text, txtLog2.text,int(txtPriority2.text));
 				break;
 				case btnInterval:
 					if(_interval){
@@ -89,9 +94,6 @@ package com.atticmedia.console.samples {
 						_interval = setInterval(onIntervalEvent,100);
 						btnInterval.label = "Stop Interval";
 					}
-				break;
-				case btnAddChannel:
-					C.ch("myChannel","adding test text");
 				break;
 			}
 		}
