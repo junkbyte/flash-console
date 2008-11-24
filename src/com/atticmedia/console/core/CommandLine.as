@@ -1,62 +1,24 @@
-﻿/**
- * @class Command Line
- * @author Lu
- * 
- * A tool to access properties and methods via command during run time.
- * 
-**/
-
-/*
-USAGE: 
-
-//Start functionaly by first assigning the stage's root
-command.base = root;
-
-
-After evey line of command it saves the returned value.
-use 'save' to save the return value to your custom named variable.
-
-
-// referencing to objects, properties and methods
-Obj.current=>Obj current
-// return Obj's property current
-Obj.current= 10=>Obj current = 10
-// set property 'current' to 10
-Obj.reset()=>Obj reset()
-// execute Obj's 'reset()' method
-Obj.withParameters(a,b,c)=>Obj withParameters(a,b,c)
-//do not use space in arguments
-
-
-//Classes
-com.myPackage.myClass=>*com.myPackage.myClass
-// saving and recalling
-(save last return)=> save temp
-(recall saved 'temp')=>$temp 
-( it would return [class myClass] for this example )
-(view temp's content) => /inspect temp
-(view temp's content including super) => /inspectall temp
-
-Example:
-// example here shows with a static class with static methods width and height
-// saves current width to variable 'w' and set the width to 640
-// then set the height to variable w's value.
-
-*com.atticmedia.console.console
-save C
-$C width
-save w
-$C add(CurrentConsoleWidth:,5)
-$C add($w,10)
-$C width = 640
-$C height = $w
-
-
-
-
-TODO:
-usage of array
-using space in text
+﻿/*
+* 
+* Copyright (c) 2008 Atticmedia
+* 
+* @author 		Lu Aye Oo
+*
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 1. The origin of this software must not be misrepresented; you must not
+* claim that you wrote the original software. If you use this software
+* in a product, an acknowledgment in the product documentation would be
+* appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+* misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+* 
+* 
 */
 package com.atticmedia.console.core{
 	import flash.display.*;

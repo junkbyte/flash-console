@@ -32,7 +32,7 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 0.96;
+		public static const VERSION:Number = 0.97;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -95,6 +95,8 @@ package com.atticmedia.console {
 		private var _CL:CommandLine;
 		private var _ui:UserInterface;
 		private var _timers:Timers;
+		private var _channelsPanel:ChannelsPanel;
+		private var _channelsPinned:Boolean;
 		
 		public function Console(pass:String = "") {
 			name = NAME;
@@ -136,6 +138,7 @@ package com.atticmedia.console {
 			_menuField.addEventListener(MouseEvent.MOUSE_DOWN, onMenuMouseDown, false, 0, true);
 			_menuField.addEventListener(MouseEvent.MOUSE_UP,onMenuMouseUp, false, 0, true);
 			_menuField.y = -2;
+			_menuField.selectable = false;
 			addEventListener(TextEvent.LINK, linkHandler);
 			addChild(_menuField);
 			//
@@ -304,8 +307,15 @@ package com.atticmedia.console {
 				}
 			}else if(e.text == "alpha"){
 				cycleAlpha();
+			}else if(e.text == "channels"){
+				showChannelsPanel();
+			}else if(e.text == "pinChannels"){
+				_channelsPinned = !_channelsPinned;
 			}else if(e.text.substring(0,8) == "channel_"){
 				viewingChannel = e.text.substring(8);
+				if(_channelsPanel && !_channelsPinned){
+					showChannelsPanel();
+				}
 			}else if(e.text.substring(0,5) == "clip_"){
 				var str:String = "/remap "+e.text.substring(5);
 				if(_isRemote){
@@ -313,6 +323,19 @@ package com.atticmedia.console {
 				}else{
 					runCommand(str);
 				}
+			}
+			e.stopPropagation();
+		}
+		private function showChannelsPanel():void{
+			if(_channelsPanel && contains(_channelsPanel)){
+				removeChild(_channelsPanel);
+				_channelsPanel = null;
+			}else{
+				_channelsPanel = new ChannelsPanel();
+				addChild(_channelsPanel);
+				_channelsPanel.x = mouseX;
+				_channelsPanel.y = 14;
+				_channelsPanel.update(_channels, _viewingChannel, _currentChannel, _channelsPinned);
 			}
 		}
 		private function cycleFPS():void{
@@ -533,13 +556,23 @@ package com.atticmedia.console {
 					str += (_isRemote?_remoteFPS:_fps.get)+" ";
 				}
 				// channels
-				if(_menuMode != 2){
-					for each(var channel in _channels){
-						var channelTxt:String = (_viewingChannel.indexOf(channel)>=0) ? "<font color=\"#0099CC\"><b>"+channel+"</b></font>" : channel;
-						channelTxt = channel==_currentChannel ? "<i>"+channelTxt+"</i>" : channelTxt;
-						str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
+				
+				if(_channelsPanel){
+					_channelsPanel.update(_channels, _viewingChannel, _currentChannel, _channelsPinned);
+				}else{
+					if(_menuMode != 2){
+						for(var ci:int = 0; (ci<_channels.length&& ci< 5);  ci++){
+							var channel:String = _channels[ci];
+							var channelTxt:String = (_viewingChannel.indexOf(channel)>=0) ? "<font color=\"#0099CC\"><b>"+channel+"</b></font>" : channel;
+							channelTxt = channel==_currentChannel ? "<i>"+channelTxt+"</i>" : channelTxt;
+							str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
+						}
 					}
 				}
+				if(_channelsPanel || _menuMode == 2 || _channels.length > 5){
+					str += "<font color=\"#0099CC\"><a href=\"event:channels\"><b>...</b>"+(_channelsPanel?"^":"v")+" </a></font> ";
+				}
+				
 				// MENU
 				if(_menuMode != 1){
 					str += _menuText;
