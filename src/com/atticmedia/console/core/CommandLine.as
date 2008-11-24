@@ -384,6 +384,9 @@ package com.atticmedia.console.core{
 			report("com.atticmedia.console.C => <b>*com.atticmedia.console.C</b>",5);
 			report("(save reference) => <b>/save c</b>",5);
 			report("com.atticmedia.console.C.add('test',10) => <b>$c add(test,10)</b>",5);
+			report("__Filtering:",10);
+			report("/filter &lt;text you want to filter&gt;",5);
+			report("This will create a new channel called filtered with all matching lines",5);
 			report("__Other useful examples:",10);
 			report("<b>stage width</b>",5);
 			report("<b>stage scaleMode = noScale</b>",5);
