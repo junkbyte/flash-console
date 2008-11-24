@@ -22,8 +22,8 @@
 
 	USAGE:
 		
-		import com.atticmedia.console.*;
-		oFPS = new fps(this);
+		import com.atticmedia.console.core.FpsMonitor;
+		var oFPS:FpsMonitor = new FpsMonitor();
 		
 		oFPS.update(); - call every frame to get accurate frame rate.
 		

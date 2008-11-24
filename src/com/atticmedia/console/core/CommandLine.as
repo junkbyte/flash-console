@@ -372,13 +372,13 @@ package com.atticmedia.console.core{
 			report("____Command Line Help___",10);
 			report("Gives you limited ability to read/write/execute properties and methods of anything in stage or to static classes",0);
 			report("__Example: ",10);
-			report("root.oObj => <b>oObj</b>",5);
-			report("(save obj reference) => <b>/save obj1</b>",5);
-			report("(load obj reference) => <b>$obj1</b>",5);
-			report("root.oObj2.myProperty => <b>oObj2 myProperty</b>",5);
-			report("root.oObj2.myProperty = oObj => <b>oObj2 myProperty = $obj1</b>",5);
-			report("(view info) => <b>/inspect obj1</b>",5);
-			report("(view all info) => <b>/inspectfull obj2</b>",5);
+			report("root.mc => <b>root mc</b>",5);
+			report("(save mc's reference) => <b>/save mc</b>",5);
+			report("(load mc's reference) => <b>$mc</b>",5);
+			report("root.mc.myProperty => <b>$mc myProperty</b>",5);
+			report("root.mc.myProperty = \"newProperty\" => <b>$mc myProperty = newProperty</b>",5);
+			report("(view info) => <b>/inspect</b>",5);
+			report("(view all info) => <b>/inspectfull</b>",5);
 			report("(see display map) => <b>/map</b>",5);
 			report("__Use * to access static classes",10);
 			report("com.atticmedia.console.C => <b>*com.atticmedia.console.C</b>",5);
@@ -388,7 +388,6 @@ package com.atticmedia.console.core{
 			report("<b>stage width</b>",5);
 			report("<b>stage scaleMode = noScale</b>",5);
 			report("<b>stage frameRate = 12</b>",5);
-			report("",0);
 			report("__________",10);
 		}
 		private function report(txt:String, prio:Number=5):void {
