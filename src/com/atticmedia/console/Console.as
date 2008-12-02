@@ -32,7 +32,7 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 0.97;
+		public static const VERSION:Number = 0.98;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -156,6 +156,7 @@ package com.atticmedia.console {
 			_commandField.type  = TextFieldType.INPUT;
 			_commandField.height = 18;
 			_commandField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown, false, 0, true);
+			_commandField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp, false, 0, true);
 			_commandField.visible = false;
 			addChild(_commandField);
 			
@@ -561,7 +562,7 @@ package com.atticmedia.console {
 					_channelsPanel.update(_channels, _viewingChannel, _currentChannel, _channelsPinned);
 				}else{
 					if(_menuMode != 2){
-						for(var ci:int = 0; (ci<_channels.length&& ci< 5);  ci++){
+						for(var ci:int = 0; (ci<_channels.length&& ci<= 5);  ci++){
 							var channel:String = _channels[ci];
 							var channelTxt:String = (_viewingChannel.indexOf(channel)>=0) ? "<font color=\"#0099CC\"><b>"+channel+"</b></font>" : channel;
 							channelTxt = channel==_currentChannel ? "<i>"+channelTxt+"</i>" : channelTxt;
@@ -872,7 +873,7 @@ package com.atticmedia.console {
 			var nn:String = _CL.store(n, obj);
 			if(!quiet && nn){
 				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+obj+"</b> using WEAK reference");
-				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine "+ str +".",-1,CONSOLE_CHANNEL);
+				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine for "+ getQualifiedClassName(str) +".",-1,CONSOLE_CHANNEL);
 			}
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
@@ -885,6 +886,9 @@ package com.atticmedia.console {
 			_CL.base = obj;
 		}
 		private function commandKeyDown(e:KeyboardEvent):void{
+			e.stopPropagation();
+		}
+		private function commandKeyUp(e:KeyboardEvent):void{
 			if(!_enabled){
 				return;
 			}
@@ -910,6 +914,7 @@ package com.atticmedia.console {
 				if(_commandsInd<(_commandsHistory.length-1)){
 					_commandsInd++;
 					_commandField.text = _commandsHistory[_commandsInd];
+					_commandField.setSelection(_commandField.text.length, _commandField.text.length);
 				}else{
 					_commandsInd = _commandsHistory.length;
 					_commandField.text = "";
@@ -918,11 +923,13 @@ package com.atticmedia.console {
 				if(_commandsInd>0){
 					_commandsInd--;
 					_commandField.text = _commandsHistory[_commandsInd];
+					_commandField.setSelection(_commandField.text.length, _commandField.text.length);
 				}else{
 					_commandsInd = -1;
 					_commandField.text = "";
 				}
 			}
+			e.stopPropagation();
 		}
 		private function onCommandSearch(e:Event=null):void{
 			clear(FILTERED_CHANNEL);

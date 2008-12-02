@@ -75,142 +75,198 @@ package com.atticmedia.console.core{
 			return _lastSearchTerm;
 		}
 		public function run(str:String):void {
-			report("&gt; "+str, 0);
+			report("&gt; "+str, -1);
 			var line:Array = str.split(" ");
-			var len:int = line.length;
-			if (line[0] == "/help") {
-				printHelp();
-			} else if (line[0] == "/remap") {
-				// this is a special case... no user will be able to do this command
-				line.shift();
-				reMap(line.join(""));
-			} else if (line[0] == "/save") {
-				if (_saved.get("returned")) {
-					if(reserved.indexOf(line[1])>=0){
-						report("ERROR: The name ["+line[1]+ "] is reserved",10);
-					}else{
-						_saved.set(line[1], _saved.get("returned"));
-						report("SAVED "+_saved.get("returned") + " at "+ line[1]);
+			if(line[0].charAt(0)=="/"){
+				if (line[0] == "/help") {
+					printHelp();
+				} else if (line[0] == "/remap") {
+					// this is a special case... no user will be able to do this command
+					line.shift();
+					reMap(line.join(""));
+				} else if (line[0] == "/save") {
+					if (_saved.get("returned")) {
+						if(!line[1]){
+							report("ERROR: Give a name to save.",10);
+						}else if(reserved.indexOf(line[1])>=0){
+							report("ERROR: The name ["+line[1]+ "] is reserved",10);
+						}else{
+							_saved.set(line[1], _saved.get("returned"));
+							report("SAVED "+getQualifiedClassName(_saved.get("returned")) + " at "+ line[1]);
+						}
+					} else {
+						report("Nothing to save", 10);
 					}
-				} else {
-					report("Nothing to save", 10);
+				} else if (line[0] == "/filter") {
+					_lastSearchTerm = str.substring(8);
+					dispatchEvent(new Event(SEARCH_REQUEST));
+				} else if (line[0] == "/inspect" || line[0] == "/inspectfull") {
+					if (_saved.get("returned")) {
+						var viewAll:Boolean = (line[0] == "/inspectfull")? true: false;
+						report(inspect(_saved.get("returned"),viewAll));
+					} else {
+						report("Empty", 10);
+					}
+				} else if (line[0] == "/map") {
+					if (_saved.get("returned")) {
+						map(_saved.get("returned") as DisplayObjectContainer);
+					} else {
+						report("Empty", 10);
+					}
+				} else if (line[0] == "/base") {
+					var b:Object = _saved.get("_base");
+					_saved.set("returned", b);
+					report("Returned "+ getQualifiedClassName(b) +": "+b,10);
+				}else{
+					report("Undefined commandLine syntex <b>/help</b> for info.",10);
 				}
-			} else if (line[0] == "/filter") {
-				_lastSearchTerm = str.substring(8);
-				dispatchEvent(new Event(SEARCH_REQUEST));
-			} else if (line[0] == "/inspect" || line[0] == "/inspectfull") {
-				if (_saved.get("returned")) {
-					var viewAll:Boolean = (line[0] == "/inspectall")? true: false;
-					report(inspect(_saved.get("returned"),viewAll));
-				} else {
-					report("Empty", 10);
-				}
-			} else if (line[0] == "/map") {
-				if (_saved.get("returned")) {
-					map(_saved.get("returned") as DisplayObjectContainer);
-				} else {
-					report("Empty", 10);
-				}
-			} else if (line[0] == "/base") {
-				var b:Object = _saved.get("_base");
-				_saved.set("returned", b);
-				report("Returned "+ getQualifiedClassName(b) +": "+b,10);
-			} else {
-				var base:Object = _saved.get("returned");
-				var tree:Array = new Array(base);
-				var SET:Object;
-				var isSaving:Boolean = false;
+			
+			}else {
+				
 				try {
-					for (var i:int=0; i<len; i++) {
-						var part:String = line[i];
-						var funIndex:int = part.indexOf("(");
-						var funIndex2:int = part.indexOf(")");
-						if (part == "this" && !isSaving) {
-							base = _saved.get("_base");
-						} else if (part.charAt(0)=="*") {
-							base = getDefinitionByName(part.substring(1));
-							tree.push(base);
-						} else if (part.charAt(0)=="$" && funIndex<0) {
-							if (isSaving) {
-								SET = _saved.get(part.substring(1));
-								tree[tree.length-2][line[i-2]] = SET;
-								report("SET "+tree[tree.length-2]+"."+line[i-2]+ " @ $"+SET, 10);
-								break;
-							} else {
-								base = _saved.get(part.substring(1));
-								tree.push(base);
-							}
-						} else if (part == "=") {
-							isSaving = true;
-						} else if ( funIndex > 0 ) {
-							//
-							//
-							//
-							var fun:Function;
-							var funstr:String = part.substring(0,funIndex);
-							if (funstr.charAt(0) == "$") {
-								fun = _saved.get(funstr.substring(1)) as Function;
-							}else{
-								fun = base[funstr];
-							}
-							var funArgs:Array = new Array();
-							if((funIndex+1) != funIndex2){
-								funArgs = part.substring(funIndex+1,funIndex2).split(",");
-								for(var X:String in funArgs){
-									funArgs[X] = reType(funArgs[X]);
-								}
-							}
-							report("Run: "+base + "."+funstr+"("+funArgs+")",0);
-							base = fun.apply(base,funArgs);
-							tree.push(base);
-							//
-							//
-							//
-						} else {
-							if (isSaving) {
-								SET = line[i];
-								SET = reType(SET);
-								tree[tree.length-2][line[i-2]] = SET;
-								report("SET "+tree[tree.length-2]+"."+line[i-2]+ " = "+SET, 10);
-								break;
-							} else {
-								if (base[line[i]] == undefined) {
-									report("[<b>"+line[i]+"</b>] doesn't exist in <b>"+base+"</b>.", 10);
-									base = null;
-									break;
-								}
-								base = base[line[i]];
-								tree.push(base);
-							}
+					
+					// Get objects and values before operation, such as (, ), =
+					var names:Array = new Array();
+					var values:Array = new Array();
+					line = str.split(/( |=|;)/);
+					var lineLen:int = line.length;
+					for (var i:int = 0;i<lineLen;i++){
+						var strPart:String = line[i];
+						if(!strPart || strPart==" " || strPart=="" || strPart==";"){
+							// ignore
+						}else if(strPart=="="){
+							names.push(strPart);
+							values.push(strPart);
+						} else{
+							var arr:Array = getPartData(line[i]);
+							names.push(arr[0]);
+							values.push(arr[1]);
 						}
 					}
-				} catch (e:Error) {
-					report(e.getStackTrace(),10);
-					base = null;
-				}
-				if (base != null && !isSaving) {
-					if(typeof(base) == "object"){
-						_saved.set("returned", base);
+					
+					// APPLY operation
+					var returned:Object;
+					for(i = 0;i<names.length;i++){
+						strPart = names[i];
+						if(strPart == "="){
+							var tarValArr:Array = values[i-1];
+							var tarNameArr:Array = names[i-1];
+							var srcValueArr:Object = values[i+1];
+							
+							tarValArr[1][tarNameArr[0]] = srcValueArr[0];
+							i++;
+							report("SET "+tarValArr[1]+"."+tarNameArr[0]+" = "+srcValueArr[0], 10);
+							returned = null;
+						}else{
+							returned = values[i][0];
+						}
 					}
-					report("Returned "+ getQualifiedClassName(base) +": "+base,10);
-				} else {
-					_saved.set("returned", null);
+					
+					if (returned == null) {
+						report("Ran successfully.",1);
+					}else{
+						if(typeof(returned) == "object"){
+							_saved.set("returned", returned);
+						}
+						report("Returned "+ getQualifiedClassName(returned) +": "+returned,10);
+					}
+				
+				}catch (e:Error) {
+					report(e.getStackTrace(),10);
 				}
 			}
 		}
-		private function reType(str:Object):Object{
+		private function getPartData(strPart:String):Array{
+			try{
+				var base:Object = _saved.get("returned");
+				var partNames:Array = new Array();
+				var partValues:Array = new Array();
+				
+				if(strPart.charAt(0)=="*"){
+					partNames.push(strPart.substring(1));
+					partValues.push(getDefinitionByName(strPart.substring(1)));
+				}else if(isTypeable(strPart)){
+					partNames.push(strPart);
+					partValues.push(reType(strPart));
+				}else{
+					var dotParts:Array = strPart.split(/(\.|\(|\)|\,)/);
+					var dotLen:int = dotParts.length;
+							
+					var obj:Object = null;
+					
+					for(var j:int = 0;j<dotLen;j++){
+						var dotPart:String = dotParts[j];
+						if(dotPart.charAt(0)=="."){
+							dotPart = null;
+						}else if(dotPart.charAt(0)=="("){
+							var funArr:Array = new Array();
+							var endIndex:int = dotParts.indexOf(")", j);
+							
+							for(var jj:int = (j+1);jj<endIndex;jj++){
+								if(dotParts[jj] && dotParts[jj] != ","){
+									var data:Array = getPartData(dotParts[jj]);
+									funArr.push(data[1][0]);
+								}
+							}
+							obj = (obj as Function).apply(base,funArr);
+							j = endIndex+1;
+						}else if(dotPart.charAt(0)==","){
+							dotPart = null;
+						}else if(dotPart.charAt(0)==")"){
+							dotPart = null;
+						}else if(dotPart.charAt(0)=="$"){
+							obj = _saved.get(dotPart.substring(1));
+						}else if(dotLen == 1 && (!base.hasOwnProperty(dotPart) || base[dotPart] == undefined)){
+							// this could be a string without '...'
+							partNames.unshift(dotPart);
+							partValues.unshift(dotPart);
+							report("Assumed "+dotPart+" is a String as "+getQualifiedClassName(base)+" do not have this property.", 7);
+							break;
+						}else if(!obj){
+							partNames.unshift(base);
+							partValues.unshift(base);
+							obj = base[dotPart];
+						}else{
+							obj = obj[dotPart];
+						}
+						if(dotPart){
+							partNames.unshift(dotPart);
+							partValues.unshift(obj);
+						}
+					}
+				}
+				if(partNames.length>0){
+					return [partNames,partValues];
+				}
+			}catch(e:Error){
+				report(e.getStackTrace(),10);
+			}
+			return [strPart,strPart];
+		}
+		private function isTypeable(str:String):Boolean{
+			if (str == "true" || str == "false" || str == "this" || str == "null" || str == "NaN" || !isNaN(Number(str))) {
+				return true;
+			}
+			if(str.charAt(0) == "'" && str.charAt(str.length-1) == "'"){
+				return true;
+			}
+			return false;
+		}
+		private function reType(str:String):Object{
 			if (str == "true") {
-				str = true;
+				return true;
 			}else if (str == "false") {
-				str = false;
-			}else if (!isNaN(Number(str))) {
-				str = Number(str);
-			}else if (str == "null") {
-				str = null;
+				return false;
 			}else if (str == "this") {
-				str = _saved.get("_base");
-			}else if ((str as String).charAt(0) == "$") {
-				str =  _saved.get((str as String).substring(1));
+				return _saved.get("returned");
+			}else if (!isNaN(Number(str))) {
+				return Number(str);
+			}else if (str == "null") {
+				return null;
+			}else if (str == "NaN") {
+				return NaN;
+			}else if(str.charAt(0) == "'" && str.charAt(str.length-1) == "'"){
+				return str.substring(1,(str.length-1));
 			}
 			return str;
 		}
@@ -337,7 +393,7 @@ package com.atticmedia.console.core{
 					n = "<i>"+n+"</i>";
 				}
 				str += n+" ("+getQualifiedClassName(mcDO)+")";
-				report(str,mcDO is DisplayObjectContainer?5:2);
+				report(str,mcDO is DisplayObjectContainer?5:2, true);
 				lastmcDO = mcDO;
 			}
 			
@@ -393,9 +449,9 @@ package com.atticmedia.console.core{
 			report("<b>stage frameRate = 12</b>",5);
 			report("__________",10);
 		}
-		private function report(txt:String, prio:Number=5):void {
+		private function report(txt:String, prio:Number=5, skipSafe:Boolean = false):void {
 			if (_reportFunction != null) {
-				_reportFunction(new LogLineVO(txt,null,prio,false,true));
+				_reportFunction(new LogLineVO(txt,null,prio,false,skipSafe));
 			} else {
 				trace("C: "+ txt);
 			}
