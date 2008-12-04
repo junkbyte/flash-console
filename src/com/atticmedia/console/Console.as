@@ -32,7 +32,7 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 0.98;
+		public static const VERSION:Number = 1;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -459,8 +459,10 @@ package com.atticmedia.console {
 			}
 			return str;
 		}
-		private function addLogLine(line:LogLineVO):void{
-			addLine(line.text, line.p, line.c==null?CONSOLE_CHANNEL:line.c, line.r, line.s);
+		private function addLogLine(line:LogLineVO, quiet:Boolean = false):void{
+			if(!(this.quiet && quiet)){
+				addLine(line.text, line.p, line.c==null?CONSOLE_CHANNEL:line.c, line.r, line.s);
+			}
 		}
 		private function addLine(obj:Object,priority:Number = 0,channel:String = "",isRepeating:Boolean = false, skipSafe:Boolean = false):void{
 			if(!_enabled){

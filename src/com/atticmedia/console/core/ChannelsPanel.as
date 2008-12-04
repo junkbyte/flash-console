@@ -77,10 +77,6 @@ package com.atticmedia.console.core {
 			}
 			_channelsField.htmlText = str+"</font></textformat>";
 			
-			//var format:TextFormat = new TextFormat();
-			//format.leading = 50;
-			//_channelsField.setTextFormat(format);
-			
 			_bg.width = _channelsField.width;
 			_bg.height = _channelsField.height;
 		}

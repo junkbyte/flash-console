@@ -39,8 +39,8 @@ package com.atticmedia.console.core{
 			_reportFunction = reportFunction;
 			_saved = new Weak();
 			_saved.set("_base",base);
-			_saved.set("returned",base);
-			reserved = new Array("_base", "returned","_lastMapBase");
+			_saved.set("_returned",base);
+			reserved = new Array("_base", "_returned","_returned2","_lastMapBase");
 		}
 		public function set base(obj:Object):void {
 			var old:Object = _saved.get("_base");
@@ -48,7 +48,7 @@ package com.atticmedia.console.core{
 			if (old) {
 				report("Set new commandLine base from "+old+ " to "+ obj, 10);
 			}else{
-				_saved.set("returned",obj);
+				_saved.set("_returned",obj);
 			}
 		}
 		public function get base():Object {
@@ -85,14 +85,14 @@ package com.atticmedia.console.core{
 					line.shift();
 					reMap(line.join(""));
 				} else if (line[0] == "/save") {
-					if (_saved.get("returned")) {
+					if (_saved.get("_returned")) {
 						if(!line[1]){
 							report("ERROR: Give a name to save.",10);
 						}else if(reserved.indexOf(line[1])>=0){
 							report("ERROR: The name ["+line[1]+ "] is reserved",10);
 						}else{
-							_saved.set(line[1], _saved.get("returned"));
-							report("SAVED "+getQualifiedClassName(_saved.get("returned")) + " at "+ line[1]);
+							_saved.set(line[1], _saved.get("_returned"));
+							report("SAVED "+getQualifiedClassName(_saved.get("_returned")) + " at "+ line[1]);
 						}
 					} else {
 						report("Nothing to save", 10);
@@ -101,23 +101,24 @@ package com.atticmedia.console.core{
 					_lastSearchTerm = str.substring(8);
 					dispatchEvent(new Event(SEARCH_REQUEST));
 				} else if (line[0] == "/inspect" || line[0] == "/inspectfull") {
-					if (_saved.get("returned")) {
+					if (_saved.get("_returned")) {
 						var viewAll:Boolean = (line[0] == "/inspectfull")? true: false;
-						report(inspect(_saved.get("returned"),viewAll));
+						report(inspect(_saved.get("_returned"),viewAll));
 					} else {
 						report("Empty", 10);
 					}
 				} else if (line[0] == "/map") {
-					if (_saved.get("returned")) {
-						map(_saved.get("returned") as DisplayObjectContainer);
+					if (_saved.get("_returned")) {
+						map(_saved.get("_returned") as DisplayObjectContainer);
 					} else {
 						report("Empty", 10);
 					}
-				} else if (line[0] == "/base") {
-					var b:Object = _saved.get("_base");
-					_saved.set("returned", b);
-					report("Returned "+ getQualifiedClassName(b) +": "+b,10);
-				}else{
+				} else if (line[0] == "/base" || line[0] == "//") {
+					var o:Object = line[0] == "//"?_saved.get("_returned2"):_saved.get("_base");
+					_saved.set("_returned2",_saved.get("_returned"));
+					_saved.set("_returned", o);
+					report("Returned "+ getQualifiedClassName(o) +": "+o,10);
+				} else{
 					report("Undefined commandLine syntex <b>/help</b> for info.",10);
 				}
 			
@@ -163,14 +164,16 @@ package com.atticmedia.console.core{
 					}
 					
 					if (returned == null) {
-						report("Ran successfully.",1);
+						report("Ran successfully.",1, false, true);
 					}else{
-						if(typeof(returned) == "object"){
-							_saved.set("returned", returned);
+						var newb:Boolean = false;
+						if(typeof(returned) == "object" && !(returned is Array) && !(returned is Date)){
+							newb = true;
+							_saved.set("_returned2",_saved.get("_returned"));
+							_saved.set("_returned", returned);
 						}
-						report("Returned "+ getQualifiedClassName(returned) +": "+returned,10);
+						report((newb?"+ ":"")+"Returned "+ getQualifiedClassName(returned) +": "+returned,10);
 					}
-				
 				}catch (e:Error) {
 					report(e.getStackTrace(),10);
 				}
@@ -178,7 +181,7 @@ package com.atticmedia.console.core{
 		}
 		private function getPartData(strPart:String):Array{
 			try{
-				var base:Object = _saved.get("returned");
+				var base:Object = _saved.get("_returned");
 				var partNames:Array = new Array();
 				var partValues:Array = new Array();
 				
@@ -220,7 +223,7 @@ package com.atticmedia.console.core{
 							// this could be a string without '...'
 							partNames.unshift(dotPart);
 							partValues.unshift(dotPart);
-							report("Assumed "+dotPart+" is a String as "+getQualifiedClassName(base)+" do not have this property.", 7);
+							report("Assumed "+dotPart+" is a String as "+getQualifiedClassName(base)+" do not have this property.", 7, false, true);
 							break;
 						}else if(!obj){
 							partNames.unshift(base);
@@ -258,7 +261,7 @@ package com.atticmedia.console.core{
 			}else if (str == "false") {
 				return false;
 			}else if (str == "this") {
-				return _saved.get("returned");
+				return _saved.get("_returned");
 			}else if (!isNaN(Number(str))) {
 				return Number(str);
 			}else if (str == "null") {
@@ -417,7 +420,7 @@ package com.atticmedia.console.core{
 						}
 					}
 				}
-				_saved.set("returned", child);
+				_saved.set("_returned", child);
 				report("Returned "+ child.name +": "+getQualifiedClassName(child),10);
 			} catch (e:Error) {
 				report("Problem getting the clip reference. Display list must have changed since last map request",10);
@@ -450,9 +453,9 @@ package com.atticmedia.console.core{
 			report("<b>stage.frameRate = 12</b>",5);
 			report("__________",10);
 		}
-		private function report(txt:String, prio:Number=5, skipSafe:Boolean = false):void {
+		private function report(txt:String, prio:Number=5, skipSafe:Boolean = false, quiet:Boolean = false):void {
 			if (_reportFunction != null) {
-				_reportFunction(new LogLineVO(txt,null,prio,false,skipSafe));
+				_reportFunction(new LogLineVO(txt,null,prio,false,skipSafe), quiet);
 			} else {
 				trace("C: "+ txt);
 			}
