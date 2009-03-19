@@ -21,10 +21,12 @@
 * 
 */
 package com.atticmedia.console.core {
-	import flash.events.MouseEvent;	
-	import flash.geom.Rectangle;	
-	import flash.text.*;
-	import flash.display.*;	
+	import flash.display.Shape;
+	import flash.display.Sprite;
+	import flash.events.MouseEvent;
+	import flash.geom.Rectangle;
+	import flash.text.TextField;
+	import flash.text.TextFieldAutoSize;		
 
 	public class ChannelsPanel extends Sprite{
 		

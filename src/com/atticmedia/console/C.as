@@ -98,10 +98,9 @@
 */
 		
 package com.atticmedia.console {
-	import flash.display.*;
-	import flash.system.Capabilities;
-	import com.atticmedia.console.core.*;
-	
+	import flash.display.DisplayObjectContainer;
+	import flash.system.Capabilities;		
+
 	public class C{
 		
 		private static var _console:Console;
@@ -398,6 +397,12 @@ package com.atticmedia.console {
 		}
 		public static function set commandBase(v:Object):void{
 			setter("commandBase",v);
+		}
+		public static function get strongRef():Boolean{
+			return getter("strongRef") as Boolean;
+		}
+		public static function set strongRef(v:Boolean):void{
+			setter("strongRef",v);
 		}
 		public static function store(n:String, obj:Object):void{
 			if(_console ){

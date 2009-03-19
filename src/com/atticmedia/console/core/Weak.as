@@ -22,8 +22,10 @@
 */
 package com.atticmedia.console.core {
 	import flash.utils.Dictionary;
+	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
 	
-	public class Weak {
+	dynamic class Weak extends Proxy{
 		private var _dir:Object;
 		
 		public function Weak() {
@@ -53,6 +55,15 @@ package com.atticmedia.console.core {
 				return X;
 			}
 			return null;
+		}
+		//
+		// PROXY
+		//
+		override flash_proxy function getProperty(n:*):* {
+			return get(n);
+		}
+		override flash_proxy function setProperty(n:*, v:*):void {
+			set(n,v);
 		}
 	}
 }

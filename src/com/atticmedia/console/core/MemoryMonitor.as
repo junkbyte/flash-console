@@ -21,12 +21,11 @@
 * 
 */
 package com.atticmedia.console.core {
-	import flash.utils.getTimer;	
-	import flash.events.*; 
 	import flash.system.System;
 	import flash.utils.Dictionary;
+	import flash.utils.getTimer;	
 
-	public class MemoryMonitor extends EventDispatcher{
+	public class MemoryMonitor {
 		
 		private var _namesList:Object;
 		private var _objectsList:Dictionary;

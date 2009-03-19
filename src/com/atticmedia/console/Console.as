@@ -21,23 +21,34 @@
 * 
 */
 package com.atticmedia.console {
-	import com.atticmedia.console.core.*;
-	import flash.utils.getQualifiedClassName;
-	import flash.display.*;
-	import flash.events.*;
-	import flash.text.*;
+	import flash.display.Shape;
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.KeyboardEvent;
+	import flash.events.MouseEvent;
+	import flash.events.StatusEvent;
+	import flash.events.TextEvent;
 	import flash.geom.Rectangle;
-	import flash.net.*;
+	import flash.net.LocalConnection;
+	import flash.text.TextField;
+	import flash.text.TextFieldType;
+	import flash.text.TextFormat;
+	import flash.ui.Keyboard;
+	import flash.utils.getQualifiedClassName;
 	
+	import com.atticmedia.console.core.*;	
+
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 1;
+		public static const VERSION:Number = 1.02;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
+		
 		public static const CONSOLE_CHANNEL:String = "C";
 		public static const FILTERED_CHANNEL:String = "Filtered";
+		public static const GLOBAL_CHANNEL:String = "global";
 		public static const MINIMUM_HEIGHT:int = 16;
 		public static const MINIMUM_WIDTH:int = 20;
 		
@@ -59,6 +70,7 @@ package com.atticmedia.console {
 		private var _background:Shape;
 		private var _scaler:Sprite;
 		private var _ruler:Shape;
+		private var _bottomLine:Shape;
 		
 		private var _enabled:Boolean;
 		private var _password:String;
@@ -97,6 +109,7 @@ package com.atticmedia.console {
 		private var _timers:Timers;
 		private var _channelsPanel:ChannelsPanel;
 		private var _channelsPinned:Boolean;
+		private var _shift:Boolean;
 		
 		public function Console(pass:String = "") {
 			name = NAME;
@@ -139,7 +152,7 @@ package com.atticmedia.console {
 			_menuField.addEventListener(MouseEvent.MOUSE_UP,onMenuMouseUp, false, 0, true);
 			_menuField.y = -2;
 			_menuField.selectable = false;
-			addEventListener(TextEvent.LINK, linkHandler);
+			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addChild(_menuField);
 			//
 			_commandBackground = new Shape();
@@ -170,6 +183,7 @@ package com.atticmedia.console {
 			_ruler.graphics.lineTo(45, MINIMUM_HEIGHT-1);
 			_ruler.visible = false;
 			addChild(_ruler);
+			
 			//
 			_scaler = new Sprite();
 			_scaler.name = "scaler";
@@ -183,6 +197,11 @@ package com.atticmedia.console {
 			_scaler.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp, false, 0, true);
 			_scaler.addEventListener(MouseEvent.DOUBLE_CLICK, onScalerDoubleClick, false, 0, true);
             addChild(_scaler);
+			
+			//
+			_bottomLine = new Shape();
+			_bottomLine.name = "blinkLine";
+			addChild(_bottomLine);
 			//
 			_ui = new UserInterface(_background, _menuField, _traceField, _commandBackground, _commandField);
 			_fps = new FpsMonitor();
@@ -190,9 +209,9 @@ package com.atticmedia.console {
 			_timers = new Timers(addLogLine);
 			_lines = new Array();
 			_linesChanged = false;
-			_channels = new Array("global");
+			_channels = new Array(GLOBAL_CHANNEL);
 			_currentChannel = "traces";
-			_viewingChannel = ["global"];
+			_viewingChannel = [GLOBAL_CHANNEL];
 			_isRepeating = false;
 			_isPaused = false;
 			_enabled = true;
@@ -225,15 +244,20 @@ package com.atticmedia.console {
 			if(_CL.base == null && root){
 				_CL.base = root;
 			}
-			stage.addEventListener(KeyboardEvent.KEY_UP, keyDownHandler, false, 0, true);
+			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
 		}
 		private function stageRemovedHandle(e:Event=null):void{
-			stage.removeEventListener(KeyboardEvent.KEY_UP, keyDownHandler);
+			stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
 		
 		private function keyDownHandler(e:KeyboardEvent):void{
 			if(!_enabled){
 				return;
+			}
+			if(e.keyCode == Keyboard.SHIFT){
+				_shift = true;
 			}
 			if(e.keyLocation == 0){
 				var char:String = String.fromCharCode(e.charCode);
@@ -255,6 +279,11 @@ package com.atticmedia.console {
 						bind[0].apply(this, bind[1]);
 					}
 				}
+			}
+		}
+		private function keyUpHandler(e:KeyboardEvent):void{
+			if(e.keyCode == Keyboard.SHIFT){
+				_shift = false;
 			}
 		}
 		private function toogleVisible():void{
@@ -313,7 +342,21 @@ package com.atticmedia.console {
 			}else if(e.text == "pinChannels"){
 				_channelsPinned = !_channelsPinned;
 			}else if(e.text.substring(0,8) == "channel_"){
-				viewingChannel = e.text.substring(8);
+				var chn:String = e.text.substring(8);
+				if(_shift && viewingChannel != GLOBAL_CHANNEL && chn != GLOBAL_CHANNEL){
+					var ind:int = _viewingChannel.indexOf(chn);
+					if(ind>=0){
+						_viewingChannel.splice(ind,1);
+						if(_viewingChannel.length == 0){
+							_viewingChannel = [GLOBAL_CHANNEL];
+						}
+					}else{
+						_viewingChannel.push(chn);
+					}
+					viewingChannel = String(_viewingChannel);
+				}else{
+					viewingChannel = chn;
+				}
 				if(_channelsPanel && !_channelsPinned){
 					showChannelsPanel();
 				}
@@ -436,12 +479,15 @@ package com.atticmedia.console {
 		private function refreshPage():void{
 			var str:String = "";
 			for each (var line:LogLineVO in _lines ){
-				if((_viewingChannel.indexOf(FILTERED_CHANNEL)>=0 || line.c!=FILTERED_CHANNEL) && ((_CL.searchTerm && line.c != CONSOLE_CHANNEL && line.c != FILTERED_CHANNEL && line.text.toLowerCase().indexOf(_CL.searchTerm.toLowerCase())>=0 )|| (_viewingChannel.indexOf(line.c)>=0 || _viewingChannel.indexOf("global")>=0) && (line.p >= _priority || _priority == 0) )){
+				if((_viewingChannel.indexOf(FILTERED_CHANNEL)>=0 || line.c!=FILTERED_CHANNEL) && ((_CL.searchTerm && line.c != CONSOLE_CHANNEL && line.c != FILTERED_CHANNEL && line.text.toLowerCase().indexOf(_CL.searchTerm.toLowerCase())>=0 )|| (_viewingChannel.indexOf(line.c)>=0 || _viewingChannel.indexOf(GLOBAL_CHANNEL)>=0) && (line.p >= _priority || _priority == 0) )){
 					str += makeLine(line)+"<br>";
 				}
 			}
+			var sd:Boolean = _traceField.scrollV == _traceField.maxScrollV;
 			_traceField.htmlText = str;
-			_traceField.scrollV = _traceField.maxScrollV;
+			if(sd){
+				_traceField.scrollV = _traceField.maxScrollV;
+			}
 		}
 		private function makeLine(line:LogLineVO):String{
 			var colour:String = _ui.getPriorityHex(line.p);
@@ -450,7 +496,7 @@ package com.atticmedia.console {
 				str += "<b>";
 			}
 			var txt:String = line.text;
-			if(prefixChannelNames && _viewingChannel.indexOf("global")>=0 && line.c != _currentChannel){
+			if(prefixChannelNames && (_viewingChannel.indexOf(GLOBAL_CHANNEL)>=0 || _viewingChannel.length>1) && line.c != _currentChannel){
 				txt = "<a href=\"event:channel_"+line.c+"\">["+line.c+"</a>] "+txt;
 			}
 			str += "<font face=\"Verdana\" size=\"10\" color=\""+colour+"\">"+txt+"</font>";
@@ -594,9 +640,15 @@ package com.atticmedia.console {
 				str += "</p>";
 				_menuField.htmlText = str;
 			}
-			if(_linesChanged && !_isPaused && visible){
-				refreshPage();
-				_linesChanged = false;
+			if(!_isPaused && visible){
+				if(_bottomLine.alpha>0){
+					_bottomLine.alpha -= 0.2;
+				}
+				if(_linesChanged){
+					_bottomLine.alpha = 1;
+					refreshPage();
+					_linesChanged = false;
+				}
 			}
 			if(_isRemoting){
 				_remoteDelayed++;
@@ -710,6 +762,11 @@ package com.atticmedia.console {
 			_background.width = newW;
 			_commandField.width = newW;
 			_commandBackground.width = newW;
+			
+			_bottomLine.graphics.clear();
+			_bottomLine.graphics.lineStyle(1, 0xFF0000);
+			_bottomLine.graphics.moveTo(5, 0);
+			_bottomLine.graphics.lineTo(newW-10, 0);
 		}
 		override public function set height(newW:Number):void{
 			if(_commandBackground.visible){
@@ -732,6 +789,7 @@ package com.atticmedia.console {
 			_commandField.y = newW;
 			_commandBackground.y = newW;
 			_scaler.y = newW;
+			_bottomLine.y = newW-1;
 			_background.height = newW;
 			_traceField.scrollV = _traceField.maxScrollV;
 		}
@@ -764,7 +822,7 @@ package com.atticmedia.console {
 				}
 			}else{
 				_lines = new Array();
-				_channels = new Array("global");
+				_channels = new Array(GLOBAL_CHANNEL);
 			}
 			refreshPage();
 		}
@@ -871,8 +929,8 @@ package com.atticmedia.console {
 		public function runCommand(line:String):void{
 			_CL.run(line);
 		}
-		public function store(n:String, obj:Object):void{
-			var nn:String = _CL.store(n, obj);
+		public function store(n:String, obj:Object, strong:Boolean = false):void{
+			var nn:String = _CL.store(n, obj, strong);
 			if(!quiet && nn){
 				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+obj+"</b> using WEAK reference");
 				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine for "+ getQualifiedClassName(str) +".",-1,CONSOLE_CHANNEL);
@@ -881,6 +939,12 @@ package com.atticmedia.console {
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			add("INSPECT: "+ _CL.inspect(obj,detail));
 		}
+		public function get strongRef():Boolean{
+			return _CL.useStrong;
+		}
+		public function set strongRef(obj:Boolean):void{
+			_CL.useStrong = obj;
+		}
 		public function get commandBase():Object{
 			return _CL.base;
 		}
@@ -888,7 +952,7 @@ package com.atticmedia.console {
 			_CL.base = obj;
 		}
 		private function commandKeyDown(e:KeyboardEvent):void{
-			e.stopPropagation();
+			//e.stopPropagation();
 		}
 		private function commandKeyUp(e:KeyboardEvent):void{
 			if(!_enabled){
@@ -1062,5 +1126,4 @@ package com.atticmedia.console {
 			addLine(newLine,priority, _currentChannel, isRepeating);
 		}
 	}
-	
 }

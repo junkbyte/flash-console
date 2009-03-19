@@ -20,11 +20,16 @@
 * 
 * 
 */
-package com.atticmedia.console.core{
-	import flash.display.*;
+package com.atticmedia.console.core {
+	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
-	import flash.utils.*;
-	import flash.events.*;
+	import flash.utils.getQualifiedClassName;
+	import flash.utils.getQualifiedSuperclassName;	
+	
 	public class CommandLine extends EventDispatcher {
 
 		public static const SEARCH_REQUEST:String = "SearchRequest";
@@ -34,6 +39,7 @@ package com.atticmedia.console.core{
 		private var _reportFunction:Function;
 		
 		public var reserved:Array;
+		public var useStrong:Boolean;
 
 		public function CommandLine(base:Object, reportFunction:Function = null) {
 			_reportFunction = reportFunction;
@@ -44,11 +50,11 @@ package com.atticmedia.console.core{
 		}
 		public function set base(obj:Object):void {
 			var old:Object = _saved.get("_base");
-			_saved.set("_base",obj);
+			_saved.set("_base",obj,useStrong);
 			if (old) {
 				report("Set new commandLine base from "+old+ " to "+ obj, 10);
 			}else{
-				_saved.set("_returned",obj);
+				_saved.set("_returned",obj,useStrong);
 			}
 		}
 		public function get base():Object {
@@ -59,15 +65,15 @@ package com.atticmedia.console.core{
 			_reportFunction = null;
 			reserved = null;
 		}
-		public function store(n:String, obj:Object):String {
+		public function store(n:String, obj:Object, strong:Boolean = false):String {
 			n = n.replace(/[^\w]*/g, "");
 			if(reserved.indexOf(n)>=0){
-				report("ERROR: The name ["+n+ "] is reserved",10);
+				report("ERROR: The name ["+n+"] is reserved",10);
 				return null;
 			}else{
 				// if it is a function it needs to be strong reference atm, 
 				// otherwise it fails if the function passed is from a dynamic class/instance
-				_saved.set(n, obj, (obj is Function?true:false));
+				_saved.set(n, obj, strong?true:(obj is Function?true:useStrong));
 			}
 			return n;
 		}
@@ -84,6 +90,18 @@ package com.atticmedia.console.core{
 					// this is a special case... no user will be able to do this command
 					line.shift();
 					reMap(line.join(""));
+				} else if (line[0] == "/strong") {
+					if(line[1] == "true"){
+						useStrong = true;
+						report("Now using STRONG referencing.", 10);
+					}else if (line[1] == "false"){
+						useStrong = false;
+						report("Now using WEAK referencing.", 10);
+					}else if(useStrong){
+						report("Using STRONG referencing. '/strong false' to use weak", -2);
+					}else{
+						report("Using WEAK referencing. '/strong true' to use strong", -2);
+					}
 				} else if (line[0] == "/save") {
 					if (_saved.get("_returned")) {
 						if(!line[1]){
@@ -91,7 +109,7 @@ package com.atticmedia.console.core{
 						}else if(reserved.indexOf(line[1])>=0){
 							report("ERROR: The name ["+line[1]+ "] is reserved",10);
 						}else{
-							_saved.set(line[1], _saved.get("_returned"));
+							_saved.set(line[1], _saved.get("_returned"),useStrong);
 							report("SAVED "+getQualifiedClassName(_saved.get("_returned")) + " at "+ line[1]);
 						}
 					} else {
@@ -115,8 +133,8 @@ package com.atticmedia.console.core{
 					}
 				} else if (line[0] == "/base" || line[0] == "//") {
 					var o:Object = line[0] == "//"?_saved.get("_returned2"):_saved.get("_base");
-					_saved.set("_returned2",_saved.get("_returned"));
-					_saved.set("_returned", o);
+					_saved.set("_returned2",_saved.get("_returned"),useStrong);
+					_saved.set("_returned", o,useStrong);
 					report("Returned "+ getQualifiedClassName(o) +": "+o,10);
 				} else{
 					report("Undefined commandLine syntex <b>/help</b> for info.",10);
@@ -169,8 +187,8 @@ package com.atticmedia.console.core{
 						var newb:Boolean = false;
 						if(typeof(returned) == "object" && !(returned is Array) && !(returned is Date)){
 							newb = true;
-							_saved.set("_returned2",_saved.get("_returned"));
-							_saved.set("_returned", returned);
+							_saved.set("_returned2",_saved.get("_returned"),useStrong);
+							_saved.set("_returned", returned,useStrong);
 						}
 						report((newb?"+ ":"")+"Returned "+ getQualifiedClassName(returned) +": "+returned,10);
 					}
@@ -205,14 +223,15 @@ package com.atticmedia.console.core{
 							var funArr:Array = new Array();
 							var endIndex:int = dotParts.indexOf(")", j);
 							
-							for(var jj:int = (j+1);jj<endIndex;jj++){
-								if(dotParts[jj] && dotParts[jj] != ","){
-									var data:Array = getPartData(dotParts[jj]);
-									funArr.push(data[1][0]);
-								}
-							}
+							while(++ j < endIndex){
+								var jj:int = dotParts.indexOf(",", j);
+								if (jj < 0)
+									jj = endIndex;
+								var data:Array = getPartData(dotParts.slice(j, jj).join(""));
+								funArr.push(data[1][0]);
+								j = jj;
+ 							}
 							obj = (obj as Function).apply(base,funArr);
-							j = endIndex+1;
 						}else if(dotPart.charAt(0)==","){
 							dotPart = null;
 						}else if(dotPart.charAt(0)==")"){
@@ -340,7 +359,7 @@ package com.atticmedia.console.core{
 				report("It is not a DisplayObjectContainer", 10);
 				return;
 			}
-			_saved.set("_lastMapBase", base); 
+			_saved.set("_lastMapBase", base,useStrong); 
 			
 			var list:Array = new Array();
 			var index:int = 0;
@@ -420,7 +439,7 @@ package com.atticmedia.console.core{
 						}
 					}
 				}
-				_saved.set("_returned", child);
+				_saved.set("_returned", child,useStrong);
 				report("Returned "+ child.name +": "+getQualifiedClassName(child),10);
 			} catch (e:Error) {
 				report("Problem getting the clip reference. Display list must have changed since last map request",10);
