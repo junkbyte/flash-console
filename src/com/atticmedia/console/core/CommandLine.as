@@ -225,10 +225,12 @@ package com.atticmedia.console.core {
 							
 							while(++ j < endIndex){
 								var jj:int = dotParts.indexOf(",", j);
-								if (jj < 0)
+								if (jj < 0){
 									jj = endIndex;
-								var data:Array = getPartData(dotParts.slice(j, jj).join(""));
-								funArr.push(data[1][0]);
+								}else{
+									var data:Array = getPartData(dotParts.slice(j, jj).join(""));
+									funArr.push(data[1][0]);
+								}
 								j = jj;
  							}
 							obj = (obj as Function).apply(base,funArr);
