@@ -223,17 +223,14 @@ package com.atticmedia.console.core {
 							var funArr:Array = new Array();
 							var endIndex:int = dotParts.indexOf(")", j);
 							
-							while(++ j < endIndex){
-								var jj:int = dotParts.indexOf(",", j);
-								if (jj < 0){
-									jj = endIndex;
-								}else{
-									var data:Array = getPartData(dotParts.slice(j, jj).join(""));
+							for(var jj:int = (j+1);jj<endIndex;jj++){
+								if(dotParts[jj] && dotParts[jj] != ","){
+									var data:Array = getPartData(dotParts[jj]);
 									funArr.push(data[1][0]);
 								}
-								j = jj;
- 							}
+							}
 							obj = (obj as Function).apply(base,funArr);
+							j = endIndex+1;
 						}else if(dotPart.charAt(0)==","){
 							dotPart = null;
 						}else if(dotPart.charAt(0)==")"){

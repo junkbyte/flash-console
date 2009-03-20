@@ -41,7 +41,7 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 1.02;
+		public static const VERSION:Number = 1.03;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -152,7 +152,6 @@ package com.atticmedia.console {
 			_menuField.addEventListener(MouseEvent.MOUSE_UP,onMenuMouseUp, false, 0, true);
 			_menuField.y = -2;
 			_menuField.selectable = false;
-			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addChild(_menuField);
 			//
 			_commandBackground = new Shape();
@@ -172,6 +171,8 @@ package com.atticmedia.console {
 			_commandField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp, false, 0, true);
 			_commandField.visible = false;
 			addChild(_commandField);
+			
+			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			
 			//
 			_ruler = new Shape();
@@ -253,9 +254,8 @@ package com.atticmedia.console {
 		}
 		
 		private function keyDownHandler(e:KeyboardEvent):void{
-			if(!_enabled){
-				return;
-			}
+			if(!_enabled) return;
+			
 			if(e.keyCode == Keyboard.SHIFT){
 				_shift = true;
 			}
@@ -952,7 +952,7 @@ package com.atticmedia.console {
 			_CL.base = obj;
 		}
 		private function commandKeyDown(e:KeyboardEvent):void{
-			//e.stopPropagation();
+			e.stopPropagation();
 		}
 		private function commandKeyUp(e:KeyboardEvent):void{
 			if(!_enabled){
