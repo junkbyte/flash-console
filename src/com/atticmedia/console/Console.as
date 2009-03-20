@@ -254,11 +254,15 @@ package com.atticmedia.console {
 		}
 		
 		private function keyDownHandler(e:KeyboardEvent):void{
-			if(!_enabled) return;
-			
 			if(e.keyCode == Keyboard.SHIFT){
 				_shift = true;
 			}
+		}
+		private function keyUpHandler(e:KeyboardEvent):void{
+			if(e.keyCode == Keyboard.SHIFT){
+				_shift = false;
+			}
+			if(!_enabled) return;
 			if(e.keyLocation == 0){
 				var char:String = String.fromCharCode(e.charCode);
 				if(char == _password.substring(_passwordIndex,_passwordIndex+1)){
@@ -279,11 +283,6 @@ package com.atticmedia.console {
 						bind[0].apply(this, bind[1]);
 					}
 				}
-			}
-		}
-		private function keyUpHandler(e:KeyboardEvent):void{
-			if(e.keyCode == Keyboard.SHIFT){
-				_shift = false;
 			}
 		}
 		private function toogleVisible():void{
