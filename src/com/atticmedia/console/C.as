@@ -82,19 +82,14 @@
 		c.x = 300; // (defauilt: 0) change x of console
 		c.y = 200; // (defauilt: 0) change y of console
 		c.maxLines = 500; // maximum number of lines allowed to store. 0 = unlimited. setting to very high will slow down as it grows
-		c.deleteLines = 200; // number of lines to delete when maximum line limit has reached
 		c.tracing = true; // (default: false) when set, all console input will be re-traced during authoring
 		c.alwaysOnTop = false; // (default: true) when set this console will try to keep it self on top of its parent display container.
 
 		c.currentChannel = "myChannel"; // (default: "traces") change default channel to print.
-		c.viewingChannel = "myChannel"; // (default: "global") change current channel view.
+		c.viewingChannel = "myChannel"; // (default: "global") change current channel view. If you want to view multiple channels, seperate the names with commas.
 		
-		
-		//c.remoting = true; // (default: false) set to broadcast traces to sharedobject
+		c.remoting = true; // (default: false) set to broadcast traces to sharedobject
 
-		TODO:
-		Remote tracing - using shared object to broadcast tracing to another swf - currently causing lag
-		
 */
 		
 package com.atticmedia.console {
@@ -302,12 +297,6 @@ package com.atticmedia.console {
 		}
 		public static function set maxLines(v:int):void{
 			setter("maxLines",v);
-		}
-		public static function get deleteLines():int{
-			return getter("deleteLines") as int;
-		}
-		public static function set deleteLines(v:int):void{
-			setter("deleteLines",v);
 		}
 		public static function set commandLine (v:Boolean):void{
 			setter("commandLine",v);

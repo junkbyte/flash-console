@@ -55,7 +55,6 @@ package com.atticmedia.console {
 		public var quiet:Boolean;
 		public var tracing:Boolean;
 		public var maxLines:int = 500;
-		public var deleteLines:int = 1;
 		public var prefixChannelNames:Boolean = true;
 		public var alwaysOnTop:Boolean = true;
 		public var maxRepeats:Number = 100;
@@ -537,8 +536,7 @@ package com.atticmedia.console {
 				_repeated = 0;
 				_lines.push(line);
 				if(_lines.length > maxLines && maxLines > 0 ){
-					_lines.splice(0,deleteLines);
-					//addLine("Maximum lines ["+maxLines+"] reached. Deleted the first ["+_deleteLines+"] lines.",-1,CONSOLE_CHANNEL);
+					_lines.splice(0,1);
 				}
 				if( tracing && (_tracingChannels == null || _tracingChannels.indexOf(channel)>=0) ){
 					trace("["+channel+"] "+tmpText);
@@ -641,7 +639,7 @@ package com.atticmedia.console {
 			}
 			if(!_isPaused && visible){
 				if(_bottomLine.alpha>0){
-					_bottomLine.alpha -= 0.2;
+					_bottomLine.alpha -= 0.25;
 				}
 				if(_linesChanged){
 					_bottomLine.alpha = 1;
@@ -669,7 +667,7 @@ package com.atticmedia.console {
 			closeSharedConnection();
 			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			if(stage){
-				stage.removeEventListener(KeyboardEvent.KEY_UP, keyDownHandler);
+				stageRemovedHandle();
 			}
 			_mm = null;
 			_fps.destory();
