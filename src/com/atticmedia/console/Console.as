@@ -41,7 +41,7 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 1.02;
+		public static const VERSION:Number = 1.03;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -68,7 +68,6 @@ package com.atticmedia.console {
 		private var _commandBackground:Shape;
 		private var _background:Shape;
 		private var _scaler:Sprite;
-		private var _ruler:Shape;
 		private var _bottomLine:Shape;
 		
 		private var _enabled:Boolean;
@@ -106,6 +105,7 @@ package com.atticmedia.console {
 		private var _CL:CommandLine;
 		private var _ui:UserInterface;
 		private var _timers:Timers;
+		private var _ruler:Ruler;
 		private var _channelsPanel:ChannelsPanel;
 		private var _channelsPinned:Boolean;
 		private var _shift:Boolean;
@@ -119,18 +119,8 @@ package com.atticmedia.console {
 			_background.name = "background";
 			_background.graphics.beginFill(0xFFFFFF);
 			_background.graphics.drawRoundRect(0, 0, 100, 100,10,10);
-			var grid:Rectangle = new Rectangle(10, 10, 80, 80);
-			_background.scale9Grid = grid ;
+			_background.scale9Grid = new Rectangle(10, 10, 80, 80);
 			addChild(_background);
-			//
-			var corner:Shape = new Shape();
-			corner.name = "rulerCorner";
-			corner.graphics.lineStyle(1, 0xFF0000);
-			corner.graphics.moveTo(MINIMUM_WIDTH-1, 0);
-			corner.graphics.lineTo(MINIMUM_WIDTH-1, MINIMUM_HEIGHT-1);
-			corner.graphics.moveTo(0, MINIMUM_HEIGHT-1);
-			corner.graphics.lineTo(MINIMUM_WIDTH-1, MINIMUM_HEIGHT-1);
-			addChild(corner);
 			//
 			var format:TextFormat = new TextFormat();
             format.font = "Arial";
@@ -150,15 +140,13 @@ package com.atticmedia.console {
 			_menuField.addEventListener(MouseEvent.MOUSE_DOWN, onMenuMouseDown, false, 0, true);
 			_menuField.addEventListener(MouseEvent.MOUSE_UP,onMenuMouseUp, false, 0, true);
 			_menuField.y = -2;
-			_menuField.selectable = false;
 			addChild(_menuField);
 			//
 			_commandBackground = new Shape();
 			_commandBackground.name = "commandBackground";
 			_commandBackground.graphics.beginFill(0xFFFFFF);
 			_commandBackground.graphics.drawRoundRect(0, 0, 100, 18,8,8);
-			grid = new Rectangle(10, 8, 80, 8);
-			_commandBackground.scale9Grid = grid ;
+			_commandBackground.scale9Grid = new Rectangle(10, 8, 80, 8);
 			_commandBackground.visible = false;
 			addChild(_commandBackground);
 			//
@@ -170,20 +158,6 @@ package com.atticmedia.console {
 			_commandField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp, false, 0, true);
 			_commandField.visible = false;
 			addChild(_commandField);
-			
-			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-			
-			//
-			_ruler = new Shape();
-			_ruler.name = "ruler";
-			_ruler.graphics.lineStyle(1, 0xFF0000);
-			_ruler.graphics.moveTo(MINIMUM_WIDTH-1, -5);
-			_ruler.graphics.lineTo(MINIMUM_WIDTH-1, 37);
-			_ruler.graphics.moveTo(-5, MINIMUM_HEIGHT-1);
-			_ruler.graphics.lineTo(45, MINIMUM_HEIGHT-1);
-			_ruler.visible = false;
-			addChild(_ruler);
-			
 			//
 			_scaler = new Sprite();
 			_scaler.name = "scaler";
@@ -197,7 +171,8 @@ package com.atticmedia.console {
 			_scaler.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp, false, 0, true);
 			_scaler.addEventListener(MouseEvent.DOUBLE_CLICK, onScalerDoubleClick, false, 0, true);
             addChild(_scaler);
-			
+			//
+			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			//
 			_bottomLine = new Shape();
 			_bottomLine.name = "blinkLine";
@@ -319,6 +294,8 @@ package com.atticmedia.console {
 				cyclePriorities();
 			}else if(e.text == "command"){
 				commandLine = !commandLine;
+			}else if(e.text == "ruler"){
+				startRuler();
 			}else if(e.text == "menu"){
 				_menuMode++;
 				if(_menuMode>2){
@@ -368,6 +345,23 @@ package com.atticmedia.console {
 			}
 			e.stopPropagation();
 		}
+		private function startRuler():void{
+			if(_ruler && contains(_ruler)){
+				addLine("Ruler is already running... something much have gone wrong :(", 10, CONSOLE_CHANNEL);
+				return;
+			}
+			_ruler = new Ruler();
+			_ruler.addEventListener(Ruler.EXIT, onRulerExit);
+			addChild(_ruler);
+			_ruler.start(addLogLine);
+			addLine("<b>Ruler started</b>", -1, CONSOLE_CHANNEL);
+		}
+		private function onRulerExit(e:Event):void{
+			if(_ruler && contains(_ruler)){
+				removeChild(_ruler);
+			}
+			_ruler = null;
+		}
 		private function showChannelsPanel():void{
 			if(_channelsPanel && contains(_channelsPanel)){
 				removeChild(_channelsPanel);
@@ -415,7 +409,7 @@ package com.atticmedia.console {
 		}
 		private function help():void{
 			addLine("___HELP_________________",-1);
-			addLine("[ R=Reset FPS, F=FPS, M=Memory, G=Garbage Collect, CL=CommandLine, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
+			addLine("[ R=Reset FPS, F=FPS, M=Memory, G=Garbage Collect, CL=CommandLine, RL=Ruler, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
 			addLine("",0);
 			addLine("Use the arrow at bottom right to scale this window.", 1);
 			addLine("",0);
@@ -441,12 +435,10 @@ package com.atticmedia.console {
 		private function onMenuMouseDown(e:Event):void{
 			if(moveable){
 				startDrag();
-				_ruler.visible = true;
 			}
 		}
 		private function onMenuMouseUp(e:Event):void{
 			stopDrag();
-			_ruler.visible = false;
 		}
 		private function onScalerDoubleClick(e:Event):void{
 			height =  height<= (MINIMUM_HEIGHT+(_commandBackground.visible?_commandBackground.height:0)+1) ? 180 : MINIMUM_HEIGHT;
@@ -457,20 +449,11 @@ package com.atticmedia.console {
 		private function onScalerMouseDown(e:Event):void{
 			_scaler.startDrag(false, new Rectangle(MINIMUM_WIDTH, MINIMUM_HEIGHT, 1280, 1280));
 			_isScaling = true;
-			_ruler.visible = true;
 		}
 		private function onScalerMouseUp(e:Event):void{
 			stopDrag();
 			_isScaling = false;
-			_ruler.visible = false;
 			scaleByScaler();
-			traceRulerData();
-		}
-		private function traceRulerData():void{
-			var w:int = Math.round(_scaler.x-MINIMUM_WIDTH);
-			var h:int = Math.round(_scaler.y-MINIMUM_HEIGHT);
-			var d:Number = Math.round(Math.sqrt((w*w)+(h*h))*10)/10;
-			addLine("Ruler Width:<b>"+w +"</b>, Height:<b>"+h +"</b>, Diagonal:<b>"+d +"</b>.",-1,CONSOLE_CHANNEL);
 		}
 		//
 		//
@@ -582,7 +565,6 @@ package com.atticmedia.console {
 				}
 			}else{
 				var str:String ="<p align=\"right\">";
-				
 				// memory
 				if(_isRemote){
 					if(memoryMonitor > 0){
@@ -602,7 +584,6 @@ package com.atticmedia.console {
 					str += (_isRemote?_remoteFPS:_fps.get)+" ";
 				}
 				// channels
-				
 				if(_channelsPanel){
 					_channelsPanel.update(_channels, _viewingChannel, _currentChannel, _channelsPinned);
 				}else{
@@ -636,6 +617,7 @@ package com.atticmedia.console {
 				}
 				str += "</p>";
 				_menuField.htmlText = str;
+				_menuField.scrollH = _menuField.maxScrollH;
 			}
 			if(!_isPaused && visible){
 				if(_bottomLine.alpha>0){
@@ -660,7 +642,7 @@ package com.atticmedia.console {
 			if(_fps.running && !_isRemote){
 				_menuText += "<a href=\"event:resetFPS\">R</a> ";
 			}
-			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> <a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] </font>";
+			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> <a href=\"event:ruler\">RL</a> <a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] </font>";
 		}
 		public function destroy():void{
 			enabled = false;

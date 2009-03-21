@@ -38,7 +38,7 @@ package com.atticmedia.console.samples {
 			C.commandLine = true; // enable command line
 			
 			C.fpsMode = 2; // enable FPS monitor with setting 2
-			
+			C.menuMode = 2;
 			C.width = 600;
 			C.height = 200;//C.tracing = true; // trace on flash's normal trace
 			
