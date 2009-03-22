@@ -34,7 +34,7 @@ package com.atticmedia.console.core {
 
 	public class Ruler extends Sprite{
 		
-		public static const NAME:String = "Ruler";
+		public static const NAME:String = "ruler";
 		public static const EXIT:String = "exit";
 		
 		private var _reportFunction:Function;
@@ -58,6 +58,7 @@ package com.atticmedia.console.core {
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
 		}
 		private function onMouseClick(e:MouseEvent):void{
+			e.stopPropagation();
 			var p:Point;
 			if(_points.length==0){
 				p = new Point(e.localX, e.localY);
@@ -80,24 +81,6 @@ package com.atticmedia.console.core {
 				graphics.lineStyle(1, 0xAAAAAA);
 				graphics.drawCircle(mp.x, mp.y, 4);
 				//
-				var loc1:TextField = makeTxtField();
-				loc1.text = p.x+","+ p.y;
-				loc1.x = p.x;
-				loc1.y = p.y;
-				addChild(loc1);
-				//
-				var loc2:TextField = makeTxtField();
-				loc2.text = p2.x+","+ p2.y;
-				loc2.x = p2.x, p2.y;
-				loc2.y = p2.y;
-				addChild(loc2);
-				//
-				var loc3:TextField = makeTxtField();
-				loc3.text = mp.x+","+ mp.y;
-				loc3.x = mp.x, mp.y;
-				loc3.y = mp.y;
-				addChild(loc3);
-				//
 				var xmin:Point = p;
 				var xmax:Point = p2;
 				if(p.x>p2.x){
@@ -113,6 +96,41 @@ package com.atticmedia.console.core {
 				//
 				var w:Number = xmax.x-xmin.x;
 				var h:Number = ymax.y-ymin.y;
+				var d:Number = Point.distance(p, p2);
+				//
+				var txt:TextField = makeTxtField();
+				txt.text = Utils.round(p.x,10)+","+ Utils.round(p.y,10);
+				txt.x = p.x;
+				txt.y = p.y-(ymin==p?14:0);
+				addChild(txt);
+				//
+				txt = makeTxtField();
+				txt.text = Utils.round(p2.x,10)+","+ Utils.round(p2.y,10);
+				txt.x = p2.x;
+				txt.y = p2.y-(ymin==p2?14:0);;
+				addChild(txt);
+				//
+				if(w>40 || h>25){
+					txt = makeTxtField(0x00AA00);
+					txt.text = Utils.round(mp.x,10)+","+ Utils.round(mp.y,10);
+					txt.x = mp.x;
+					txt.y = mp.y;
+					addChild(txt);
+					/*
+					txt = makeTxtField(0x00AA00, false);
+					txt.text = xmin.x+","+ ymin.y;
+					txt.x = xmin.x;
+					txt.y = (xmin.y==ymin.y)?ymax.y:(ymin.y-14);
+					addChild(txt);
+					//
+					txt = makeTxtField(0x00AA00, false);
+					txt.text = xmax.x+","+ ymax.y;
+					txt.x = xmax.x;
+					txt.y = (xmax.y==ymax.y)?(ymin.y-14):ymax.y;
+					addChild(txt);
+					*/
+				}
+				//
 				graphics.lineStyle(1, 0xAACC00, 0.5);
 				graphics.moveTo(_area.x, ymin.y);
 				graphics.lineTo(_area.x+_area.width, ymin.y);
@@ -123,20 +141,19 @@ package com.atticmedia.console.core {
 				graphics.moveTo(xmax.x, _area.y);
 				graphics.lineTo(xmax.x, _area.y+_area.height);
 				//
-				var a1:Number = Math.round(angle(p,p2)*100)/100;
-				var a2:Number = Math.round(angle(p2,p)*100)/100;
-				graphics.lineStyle(1, 0xAA0000, 0.6);
-				drawCircleSegment(graphics, 10,p, a1, -90);
-				graphics.lineStyle(1, 0xCC8800, 0.6);
-				drawCircleSegment(graphics, 10,p2, a2, -90);
+				var a1:Number = Utils.round(Utils.angle(p,p2),100);
+				var a2:Number = Utils.round(Utils.angle(p2,p),100);
+				graphics.lineStyle(1, 0xAA0000, 0.8);
+				Utils.drawCircleSegment(graphics, 10,p, a1, -90);
+				graphics.lineStyle(1, 0xCC8800, 0.8);
+				Utils.drawCircleSegment(graphics, 10,p2, a2, -90);
 				//
 				graphics.lineStyle(2, 0x00FF00, 0.7);
 				graphics.moveTo(p.x, p.y);
 				graphics.lineTo(p2.x, p2.y);
 				//
-				var d:Number = Point.distance(p, p2);
 				report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", -2);
-				report("Distance: <b>"+Math.round(d*100)/100 +"</b>", -2);
+				report("Distance: <b>"+Utils.round(d,100) +"</b>", -2);
 				report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", -2);
 				report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", -2);
 				report("Angle from first point (red): <b>"+a1+"°</b>", -2);
@@ -150,8 +167,8 @@ package com.atticmedia.console.core {
 			_reportFunction = null;
 			dispatchEvent(new Event(EXIT));
 		}
-		private function makeTxtField():TextField{
-			var format:TextFormat = new TextFormat("Arial", 11, 0x00FF00, true, true, null, null, TextFormatAlign.RIGHT);
+		private function makeTxtField(col:Number = 0x00FF00, b:Boolean = true):TextField{
+			var format:TextFormat = new TextFormat("Arial", 11, col, b, true, null, null, TextFormatAlign.RIGHT);
 			var txt:TextField = new TextField();
 			txt.autoSize = TextFieldAutoSize.RIGHT;
 			txt.selectable = false;
@@ -164,48 +181,6 @@ package com.atticmedia.console.core {
 			} else {
 				trace("C: "+ txt);
 			}
-		}
-		
-		//
-		public static function angle(srcP:Point, point:Point):Number {
-			var X: Number = point.x - srcP.x;
-			var Y: Number = point.y - srcP.y;
-			var a:Number = Math.atan2(Y , X)/Math.PI * 180;
-			a +=90;
-			if(a>180){
-				a -= 360;
-			}
-			return a;
-		}
-		public static function drawCircleSegment(g:Graphics, radius:Number,pos:Point = null, deg:Number = 180, startDeg:Number = 0):Point
-		{
-			if(!pos) pos = new Point();
-			var reversed:Boolean = false;
-			if(deg<0){
-				reversed = true;
-				deg = Math.abs(deg);
-			}
-			var rad:Number = (deg*Math.PI)/180;
-			var rad2:Number = (startDeg*Math.PI)/180;
-			var p:Point = getPointOnCircle(radius, rad2);
-			p.offset(pos.x,pos.y);
-			g.moveTo(p.x,p.y);
-			var pra:Number = 0;
-			for (var i:int = 1; i<=(rad+1); i++) {
-				var ra:Number = i<=rad?i:rad;
-				var diffr:Number = ra-pra;
-				var offr:Number = 1+(0.12*diffr*diffr);
-				var ap:Point = getPointOnCircle(radius*offr, ((ra-(diffr/2))*(reversed?-1:1))+rad2);
-				ap.offset(pos.x,pos.y);
-				p = getPointOnCircle(radius, (ra*(reversed?-1:1))+rad2);
-				p.offset(pos.x,pos.y);
-				g.curveTo(ap.x,ap.y, p.x,p.y);
-				pra = ra;
-			}
-			return p;
-		}
-		public static function getPointOnCircle(radius:Number, rad:Number):Point {
-			return new Point(radius * Math.cos(rad),radius * Math.sin(rad));
 		}
 	}
 }

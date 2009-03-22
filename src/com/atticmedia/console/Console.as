@@ -21,6 +21,7 @@
 * 
 */
 package com.atticmedia.console {
+	import flash.geom.Point;	
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -106,6 +107,7 @@ package com.atticmedia.console {
 		private var _ui:UserInterface;
 		private var _timers:Timers;
 		private var _ruler:Ruler;
+		private var _roller:DisplayRoller;
 		private var _channelsPanel:ChannelsPanel;
 		private var _channelsPinned:Boolean;
 		private var _shift:Boolean;
@@ -296,6 +298,8 @@ package com.atticmedia.console {
 				commandLine = !commandLine;
 			}else if(e.text == "ruler"){
 				startRuler();
+			}else if(e.text == "roller"){
+				startRoller();
 			}else if(e.text == "menu"){
 				_menuMode++;
 				if(_menuMode>2){
@@ -332,7 +336,7 @@ package com.atticmedia.console {
 				}else{
 					viewingChannel = chn;
 				}
-				if(_channelsPanel && !_channelsPinned){
+				if(_channelsPanel && !_channelsPinned && !_shift){
 					showChannelsPanel();
 				}
 			}else if(e.text.substring(0,5) == "clip_"){
@@ -347,20 +351,35 @@ package com.atticmedia.console {
 		}
 		private function startRuler():void{
 			if(_ruler && contains(_ruler)){
-				addLine("Ruler is already running... something much have gone wrong :(", 10, CONSOLE_CHANNEL);
 				return;
 			}
 			_ruler = new Ruler();
-			_ruler.addEventListener(Ruler.EXIT, onRulerExit);
+			_ruler.addEventListener(Ruler.EXIT, onRulerExit, false, 0, true);
 			addChild(_ruler);
 			_ruler.start(addLogLine);
-			addLine("<b>Ruler started</b>", -1, CONSOLE_CHANNEL);
+			addLine("<b>Ruler started. Click on two locations to measure.</b>", -1, CONSOLE_CHANNEL);
 		}
 		private function onRulerExit(e:Event):void{
 			if(_ruler && contains(_ruler)){
 				removeChild(_ruler);
 			}
 			_ruler = null;
+		}
+		private function startRoller():void{
+			if(_roller && contains(_roller)){
+				return;
+			}
+			_roller = new DisplayRoller();
+			_roller.addEventListener(DisplayRoller.EXIT, onRollerExit, false, 0, true);
+			addChild(_roller);
+			_roller.start(addLogLine);
+			addLine("<b>Roller started.</b>", -1, CONSOLE_CHANNEL);
+		}
+		private function onRollerExit(e:Event):void{
+			if(_roller && contains(_roller)){
+				removeChild(_roller);
+			}
+			_roller = null;
 		}
 		private function showChannelsPanel():void{
 			if(_channelsPanel && contains(_channelsPanel)){
@@ -636,6 +655,12 @@ package com.atticmedia.console {
 					_remoteDelayed = 0;
 				}
 			}
+			//
+			/*var objs:Array = parent.getObjectsUnderPoint(new Point(parent.mouseX, parent.mouseY));
+			for(var X:String in objs){
+				objs[X] = objs[X].name;
+			}
+			C.add(objs,2,true);*/
 		}
 		private function updateMenu():void{
 			_menuText = "<font color=\"#FF8800\">[";
