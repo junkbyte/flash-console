@@ -21,6 +21,10 @@
 * 
 */
 package com.atticmedia.console.core {
+	import flash.utils.getQualifiedClassName;	
+	import flash.display.DisplayObjectContainer;	
+	import flash.display.DisplayObject;	
+	import flash.text.TextFormat;	
 	import flash.geom.Point;	
 	import flash.events.MouseEvent;	
 	import flash.text.TextFieldAutoSize;	
@@ -35,9 +39,8 @@ package com.atticmedia.console.core {
 		public static const NAME:String = "roller";
 		public static const EXIT:String = "exit";
 		
-		private var _reportFunction:Function;
-		
-		private var _channelsField:TextField;
+		private var _txtField:TextField;
+		private var _base:DisplayObjectContainer;
 		private var _bg:Shape;
 		
 		
@@ -52,19 +55,16 @@ package com.atticmedia.console.core {
 			_bg.scale9Grid = grid ;
 			addChild(_bg);
 			
-			_channelsField = new TextField();
-			_channelsField.name = "rollerprints";
-			_channelsField.wordWrap = true;
-			_channelsField.background  = false;
-			_channelsField.multiline = true;
-			_channelsField.autoSize = TextFieldAutoSize.LEFT;
-			_channelsField.width = 160;
-			_channelsField.x = -120;
-			_channelsField.selectable = false;
-			_channelsField.addEventListener(MouseEvent.MOUSE_DOWN, onFieldMouseDown, false, 0, true);
-			_channelsField.addEventListener(MouseEvent.MOUSE_UP, onFieldMouseUp, false, 0, true);
-			addChild(_channelsField);
-			_bg.x = _channelsField.x;
+			_txtField = new TextField();
+			_txtField.name = "rollerprints";
+			_txtField.background  = false;
+			_txtField.multiline = true;
+			_txtField.autoSize = TextFieldAutoSize.LEFT;
+			_txtField.selectable = false;
+			_txtField.defaultTextFormat = new TextFormat("Arial", 11, 0xDD5500);
+			_txtField.addEventListener(MouseEvent.MOUSE_DOWN, onFieldMouseDown, false, 0, true);
+			_txtField.addEventListener(MouseEvent.MOUSE_UP, onFieldMouseUp, false, 0, true);
+			addChild(_txtField);
 		}
 		private function onFieldMouseDown(e:MouseEvent):void{
 			startDrag();
@@ -72,32 +72,31 @@ package com.atticmedia.console.core {
 		private function onFieldMouseUp(e:MouseEvent):void{
 			stopDrag();
 		}
-		public function start(reportFunction:Function = null):void{
-			_reportFunction = reportFunction;
+		public function start(base:DisplayObjectContainer):void{
+			_base = base;
 			addEventListener(Event.ENTER_FRAME, _onFrame, false, 0, true);
 		}
 		
 		private function _onFrame(e:Event):void{
-			var objs:Array = parent.parent.getObjectsUnderPoint(new Point(parent.parent.mouseX, parent.parent.mouseY));
-			for(var X:String in objs){
-				objs[X] = objs[X].name;
+			if(!_base || !_base.stage){
+				exit();
+				return;
 			}
-			_channelsField.htmlText = "<font color=\"#DD5500\"><b>"+objs.toString()+"</font>";
-			_bg.width = _channelsField.width;
-			_bg.height = _channelsField.height;
+			var objs:Array = _base.getObjectsUnderPoint(new Point(_base.mouseX, _base.mouseY));
+			for(var X:String in objs){
+				var ca:String = "<b>"+getQualifiedClassName(objs[X]).split("::").pop()+"</b>";
+				objs[X] = ca+": "+objs[X].name+"<br/>";
+			}
+			_txtField.htmlText = objs.join("");
+			_txtField.autoSize = TextFieldAutoSize.LEFT;
+			_bg.width = _txtField.width+4;
+			_bg.height = _txtField.height;
 		}
 		
 		public function exit():void{
 			removeEventListener(Event.ENTER_FRAME, _onFrame);
-			_reportFunction = null;
+			_base = null;
 			dispatchEvent(new Event(EXIT));
-		}
-		private function report(txt:String, prio:Number=5, skipSafe:Boolean = false, quiet:Boolean = false):void {
-			if (_reportFunction != null) {
-				_reportFunction(new LogLineVO(txt,null,prio,false,skipSafe), quiet);
-			} else {
-				trace("C: "+ txt);
-			}
 		}
 	}
 }

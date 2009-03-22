@@ -357,6 +357,7 @@ package com.atticmedia.console {
 			_ruler.addEventListener(Ruler.EXIT, onRulerExit, false, 0, true);
 			addChild(_ruler);
 			_ruler.start(addLogLine);
+			updateMenu();
 			addLine("<b>Ruler started. Click on two locations to measure.</b>", -1, CONSOLE_CHANNEL);
 		}
 		private function onRulerExit(e:Event):void{
@@ -364,6 +365,7 @@ package com.atticmedia.console {
 				removeChild(_ruler);
 			}
 			_ruler = null;
+			updateMenu();
 		}
 		private function startRoller():void{
 			if(_roller && contains(_roller)){
@@ -375,7 +377,8 @@ package com.atticmedia.console {
 			addChild(_roller);
 			_roller.x = mouseX;
 			_roller.y = 14;
-			_roller.start(addLogLine);
+			_roller.start(parent);
+			updateMenu();
 			addLine("<b>Roller started.</b>", -1, CONSOLE_CHANNEL);
 		}
 		private function onRollerExit(e:Event = null):void{
@@ -383,6 +386,7 @@ package com.atticmedia.console {
 				removeChild(_roller);
 			}
 			_roller = null;
+			updateMenu();
 		}
 		private function showChannelsPanel():void{
 			if(_channelsPanel && contains(_channelsPanel)){
@@ -431,11 +435,10 @@ package com.atticmedia.console {
 		}
 		private function help():void{
 			addLine("___HELP_________________",-1);
-			addLine("[ R=Reset FPS, F=FPS, M=Memory, G=Garbage Collect, CL=CommandLine, RL=Ruler, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
+			addLine("[ R=Reset FPS, F=FPS, M=Memory, G=Garbage Collect, CL=CommandLine, RL=Ruler, Ro=DisplayRoller, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
 			addLine("",0);
 			addLine("Use the arrow at bottom right to scale this window.", 1);
-			addLine("",0);
-			addLine("Use the tabs at the top to switch between channels.",1);
+			addLine("Use the tabs at the top to switch between channels, shift click to select multiple channels.",1);
 			addLine("'Global' channel show outputs from all channels",1);
 			addLine("________________________",-1);
 		}
@@ -664,7 +667,10 @@ package com.atticmedia.console {
 			if(_fps.running && !_isRemote){
 				_menuText += "<a href=\"event:resetFPS\">R</a> ";
 			}
-			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> <a href=\"event:ruler\">RL</a> <a href=\"event:roller\">Ro</a> <a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] </font>";
+			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> ";
+			_menuText += (_ruler?"<b>":"")+"<a href=\"event:ruler\">RL</a> "+(_ruler?"</b>":"");
+			_menuText += (_roller?"<b>":"")+"<a href=\"event:roller\">Ro</a> "+(_roller?"</b>":"");
+			_menuText += "<a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] </font>";
 		}
 		public function destroy():void{
 			enabled = false;
