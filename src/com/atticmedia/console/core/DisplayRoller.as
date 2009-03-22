@@ -21,6 +21,9 @@
 * 
 */
 package com.atticmedia.console.core {
+	import flash.geom.Point;	
+	import flash.events.MouseEvent;	
+	import flash.text.TextFieldAutoSize;	
 	import flash.geom.Rectangle;	
 	import flash.text.TextField;	
 	import flash.display.Shape;	
@@ -48,13 +51,44 @@ package com.atticmedia.console.core {
 			var grid:Rectangle = new Rectangle(10, 8, 80, 8);
 			_bg.scale9Grid = grid ;
 			addChild(_bg);
+			
+			_channelsField = new TextField();
+			_channelsField.name = "rollerprints";
+			_channelsField.wordWrap = true;
+			_channelsField.background  = false;
+			_channelsField.multiline = true;
+			_channelsField.autoSize = TextFieldAutoSize.LEFT;
+			_channelsField.width = 160;
+			_channelsField.x = -120;
+			_channelsField.selectable = false;
+			_channelsField.addEventListener(MouseEvent.MOUSE_DOWN, onFieldMouseDown, false, 0, true);
+			_channelsField.addEventListener(MouseEvent.MOUSE_UP, onFieldMouseUp, false, 0, true);
+			addChild(_channelsField);
+			_bg.x = _channelsField.x;
+		}
+		private function onFieldMouseDown(e:MouseEvent):void{
+			startDrag();
+		}
+		private function onFieldMouseUp(e:MouseEvent):void{
+			stopDrag();
 		}
 		public function start(reportFunction:Function = null):void{
 			_reportFunction = reportFunction;
-			
+			addEventListener(Event.ENTER_FRAME, _onFrame, false, 0, true);
+		}
+		
+		private function _onFrame(e:Event):void{
+			var objs:Array = parent.parent.getObjectsUnderPoint(new Point(parent.parent.mouseX, parent.parent.mouseY));
+			for(var X:String in objs){
+				objs[X] = objs[X].name;
+			}
+			_channelsField.htmlText = "<font color=\"#DD5500\"><b>"+objs.toString()+"</font>";
+			_bg.width = _channelsField.width;
+			_bg.height = _channelsField.height;
 		}
 		
 		public function exit():void{
+			removeEventListener(Event.ENTER_FRAME, _onFrame);
 			_reportFunction = null;
 			dispatchEvent(new Event(EXIT));
 		}

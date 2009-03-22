@@ -367,15 +367,18 @@ package com.atticmedia.console {
 		}
 		private function startRoller():void{
 			if(_roller && contains(_roller)){
+				_roller.exit();
 				return;
 			}
 			_roller = new DisplayRoller();
 			_roller.addEventListener(DisplayRoller.EXIT, onRollerExit, false, 0, true);
 			addChild(_roller);
+			_roller.x = mouseX;
+			_roller.y = 14;
 			_roller.start(addLogLine);
 			addLine("<b>Roller started.</b>", -1, CONSOLE_CHANNEL);
 		}
-		private function onRollerExit(e:Event):void{
+		private function onRollerExit(e:Event = null):void{
 			if(_roller && contains(_roller)){
 				removeChild(_roller);
 			}
@@ -655,19 +658,13 @@ package com.atticmedia.console {
 					_remoteDelayed = 0;
 				}
 			}
-			//
-			/*var objs:Array = parent.getObjectsUnderPoint(new Point(parent.mouseX, parent.mouseY));
-			for(var X:String in objs){
-				objs[X] = objs[X].name;
-			}
-			C.add(objs,2,true);*/
 		}
 		private function updateMenu():void{
 			_menuText = "<font color=\"#FF8800\">[";
 			if(_fps.running && !_isRemote){
 				_menuText += "<a href=\"event:resetFPS\">R</a> ";
 			}
-			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> <a href=\"event:ruler\">RL</a> <a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] </font>";
+			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> <a href=\"event:ruler\">RL</a> <a href=\"event:roller\">Ro</a> <a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] </font>";
 		}
 		public function destroy():void{
 			enabled = false;
