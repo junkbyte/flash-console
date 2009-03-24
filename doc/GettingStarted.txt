@@ -1,0 +1,102 @@
+You can find a copy of this file at project wiki:
+http://code.google.com/p/flash-console/w/list
+
+
+=Getting started=
+
+==Introduction==
+
+The main class you will need to use for console is `C`, (`com.atticmedia.console.C`). `C` is a static / singleton adapter for `Console` (`com.atticmedia.console.Console`). 
+
+In a later date when you don't need console in your flash project, you can just remove `C.start(..)` from your code and the rest of console related codes will stop executing to save memory and performance.
+
+
+==Basics==
+{{{
+import com.atticmedia.console.*;
+
+// SET UP
+C.start(this, ""); 
+// If you want to set a keyword for console to start, assign at second parameter. 
+// Use letters and numbers only. Console will start hidden if you set a password.
+// You will need to type the keyword in correct sequence to show the console.
+// Recommended keyword: ` or # or ~
+// 
+C.commandLine = true; // (optional) enable command line
+C.fpsMode = 2; // (optional) enable FPS monitor with setting 2
+C.memoryMonitor = 1; // (optional) enable memory usage monitor with setting 1
+C.width = 600; // (optional)
+C.height =300; // (optional)
+//C.tracing = true; // (optional) trace on flash's normal 'trace'
+
+// LOGGING
+C.add("Hello world");
+C.add("This is important!", 10);
+C.add("This is not really important", 7);
+C.add("This is totally a dummy", 0);
+
+//
+C.ch("myChannel","Hello my Channel");
+C.ch("myChannel","Hello, important message at my channel", 10);
+
+// press @ at the top for console menu.
+// press H on second right for console menu help
+}}}
+
+==Advanced==
+
+====Command line====
+
+  * Write `/help` in command line area for help.
+  * Read CommandLineHelp for detailed info on how to take advantage of Command Line.
+
+====Garbage collection monitor====
+{{{
+import flash.display.Sprite;
+var aSprite = new Sprite();
+C.watch(aSprite, "aSprite");
+aSprite = null;
+}}}
+Above example creates a Sprite and then remove its reference. This marks the Sprite to be garbage collected, but it will probably never get collected straight away.
+If you have a debugger version of flash player installed, you can press G in console menu (press @ at top) to force garbage collect. 
+If you start using this in fairly big flash project, you will see that objects that have lost reference to will properly get collected and notified in console.
+
+
+==Optionals==
+{{{
+
+// enable remoting broadcast
+// start broadcasting logs. It will also keep logging for it self
+// it can not be a remote while it is remoting...
+C.remoting = true;
+
+// recieve remoting broadcasts
+// start logging broadcasted logs from another swf.
+// it can not be remoting while it is a remote...
+C.isRemote = true;
+
+
+
+// Change viewing channel
+// This is the same as pressing the channel on channels tab at the top.
+C.viewingChannel = "myChannel";
+
+// pause console
+// This is the same as pressing P button from console menu
+// It will keep logging but will stop all update processes
+C.paused = true;
+
+// hide console
+// This is the same as pressing H button from console menu
+// It will keep logging but will stop all update processes
+C.visible = false;
+
+// disable console
+// It will stop all processes until you enable by code again
+C.enabled = false;
+
+// disable always on top (default is on)
+// when disabled console will stop from keeping it self at the top of the display list
+// this can sometimes fix some problems if you need to manage the display list
+C.alwaysOnTop = false;
+}}}
