@@ -84,22 +84,23 @@ package com.atticmedia.console.core {
 			}
 			var str:String = "";
 			var objs:Array = _base.getObjectsUnderPoint(new Point(_base.mouseX, _base.mouseY));
+			//
 			// TODO: need to make it work 'better' and 'properly'...
-			for(var X:String in objs){
-				var child:DisplayObject = objs[X];
-				var obj:DisplayObject = child.parent;
-				var i:uint = uint(X);
-				while(i>0){
-					var prev:DisplayObjectContainer = objs[i-1].parent as DisplayObjectContainer;
-					if(prev && prev.contains(obj)){
-						i--;
-						str += "-";
+			//
+			objs = objs.reverse();
+			for(var i:uint=0;i<objs.length;i++){
+				var child:DisplayObject = objs[i];
+				var ca:String = child.name+"("+getQualifiedClassName(child).split("::").pop()+")<br/>";
+				var par:DisplayObjectContainer = child.parent;
+				while(par){
+					if(par.name){
+						ca = par.name+"-"+ca;
 					}else{
-						break;
+						ca = "("+getQualifiedClassName(par).split("::").pop()+")-"+ca;
 					}
+					par = par.parent;
 				}
-				var ca:String = "<b>"+getQualifiedClassName(obj).split("::").pop()+"</b>";
-				str += ca+": "+obj.name+"<br/>";
+				str += ca;
 			}
 			_txtField.htmlText = str;
 			_txtField.autoSize = TextFieldAutoSize.LEFT;
