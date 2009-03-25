@@ -63,13 +63,14 @@ package com.atticmedia.console.core {
 			_txtField.selectable = false;
 			_txtField.defaultTextFormat = new TextFormat("Arial", 11, 0xDD5500);
 			_txtField.addEventListener(MouseEvent.MOUSE_DOWN, onFieldMouseDown, false, 0, true);
-			_txtField.addEventListener(MouseEvent.MOUSE_UP, onFieldMouseUp, false, 0, true);
 			addChild(_txtField);
 		}
 		private function onFieldMouseDown(e:MouseEvent):void{
 			startDrag();
+			stage.addEventListener(MouseEvent.MOUSE_UP, onFieldMouseUp, false, 0, true);
 		}
 		private function onFieldMouseUp(e:MouseEvent):void{
+			stage.removeEventListener(MouseEvent.MOUSE_UP, onFieldMouseUp);
 			stopDrag();
 		}
 		public function start(base:DisplayObjectContainer):void{
@@ -87,13 +88,12 @@ package com.atticmedia.console.core {
 			//
 			// TODO: need to make it work 'better' and 'properly'...
 			//
-			objs = objs.reverse();
 			for(var i:uint=0;i<objs.length;i++){
 				var child:DisplayObject = objs[i];
 				var ca:String = child.name+"("+getQualifiedClassName(child).split("::").pop()+")<br/>";
 				var par:DisplayObjectContainer = child.parent;
 				while(par){
-					if(par.name){
+					if(par.name && par.name.search(/(instance)\d+/)<0){
 						ca = par.name+"-"+ca;
 					}else{
 						ca = "("+getQualifiedClassName(par).split("::").pop()+")-"+ca;
