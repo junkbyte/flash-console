@@ -21,6 +21,7 @@
 * 
 */
 package com.atticmedia.console.core {
+	import flash.utils.Dictionary;	
 	import flash.utils.getQualifiedClassName;	
 	import flash.display.DisplayObjectContainer;	
 	import flash.display.DisplayObject;	
@@ -88,19 +89,29 @@ package com.atticmedia.console.core {
 			//
 			// TODO: need to make it work 'better' and 'properly'...
 			//
-			for(var i:uint=0;i<objs.length;i++){
-				var child:DisplayObject = objs[i];
-				var ca:String = child.name+"("+getQualifiedClassName(child).split("::").pop()+")<br/>";
+			var stepMap:Dictionary = new Dictionary(true);
+			for each(var child:DisplayObject in objs){
+				var chain:Array = new Array(child);
 				var par:DisplayObjectContainer = child.parent;
 				while(par){
-					if(par.name && par.name.search(/(instance)\d+/)<0){
-						ca = par.name+"-"+ca;
-					}else{
-						ca = "("+getQualifiedClassName(par).split("::").pop()+")-"+ca;
-					}
+					chain.unshift(par);
 					par = par.parent;
 				}
-				str += ca;
+				var len:uint = chain.length;
+				for (var i:uint=0; i<len; i++){
+					var obj:DisplayObject = chain[i];
+					if(stepMap[obj] == undefined){
+						stepMap[obj] = i;
+						for(var j:uint = i;j>0;j--){
+							str += j==1?" ∟":" -";
+						}
+						if(i == len-1){
+							str +=  "<b>"+obj.name+"("+getQualifiedClassName(obj).split("::").pop()+")</b><br/>";
+						}else{
+							str +=  "<i>"+obj.name+"("+getQualifiedClassName(obj).split("::").pop()+")</i><br/>";
+						}
+					}
+				}
 			}
 			_txtField.htmlText = str;
 			_txtField.autoSize = TextFieldAutoSize.LEFT;
