@@ -523,12 +523,12 @@ package com.atticmedia.console {
 			var txt:String = String(obj);
 			var tmpText:String = txt;
 			if(!skipSafe){
-				var unSafeHtml:RegExp = /<(.*?)>/gim;
-				var safeHtml:RegExp = /&lt;([\/]{0,1}[ ]*(b|i|br|p|font)([ ]{1}.*?)*)&gt;/gim;
- 				txt = txt.replace(unSafeHtml, "&lt;$1&gt;");
- 				txt = txt.replace(safeHtml, "<$1>");
+				// TODO: any way to tidy / speed this up ?
+ 				txt = txt.replace(/</gim, "&lt;");
+ 				txt = txt.replace(/>/gim, "&gt;");
+ 				txt = txt.replace(/(&lt;([ ]*(b|i|br|p|font)([ ].*)?)&gt;)(.*?)(&lt;([\/][ ]*\3)&gt;)/gim, "<$3>$5</$3>");
+ 				txt = txt.replace(/&lt;[ ]*br[ ]*([\/]?)&gt;/gim, "<br$1>");
 			}
-			//
 			if(channel == ""){
 				channel = _currentChannel;
 			}
