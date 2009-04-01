@@ -25,8 +25,6 @@ package com.atticmedia.console.samples {
 	import com.atticmedia.console.C;
 	
 	public class Package extends MovieClip{
-		public function Package(){
-			var _C:C;
-		}
+		private var _C:C;
 	}
 }
