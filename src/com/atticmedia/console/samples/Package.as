@@ -21,10 +21,12 @@
 * 
 */
 package com.atticmedia.console.samples {
-	import com.atticmedia.console.*;
+	import flash.display.MovieClip;
+	import com.atticmedia.console.C;
 	
-	private var _C:C;
 	public class Package extends MovieClip{
-		
+		public function Package(){
+			var _C:C;
+		}
 	}
 }
