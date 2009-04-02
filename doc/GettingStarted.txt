@@ -12,36 +12,50 @@ In a later date when you don't need console in your flash project, you can just 
 
 
 ==Basics==
+
+If you want to set a keyword for console to start, assign at second parameter. 
+Use letters and numbers only. Console will start hidden if you set a password.
+You will need to type the keyword in correct sequence to show the console.
+Recommended keyword: ` or # or ~
+
 {{{
-import com.atticmedia.console.*;
+import com.atticmedia.console.C;
+C.start(this, "");
+}}}
 
-// SET UP
-C.start(this, ""); 
-// If you want to set a keyword for console to start, assign at second parameter. 
-// Use letters and numbers only. Console will start hidden if you set a password.
-// You will need to type the keyword in correct sequence to show the console.
-// Recommended keyword: ` or # or ~
-// 
-C.commandLine = true; // (optional) enable command line
-C.fpsMode = 2; // (optional) enable FPS monitor with setting 2
-C.memoryMonitor = 1; // (optional) enable memory usage monitor with setting 1
-C.width = 600; // (optional)
-C.height =300; // (optional)
-//C.tracing = true; // (optional) trace on flash's normal 'trace'
+If you are using Flex you need to wrap Console into a flex friendly component. Use ConsoleWrapper as below instead of doing C.start():
 
-// LOGGING
+{{{
+import com.atticmedia.console.C;
+import com.atticmedia.console.flex.ConsoleWrapper;
+ConsoleWrapper.start(this);
+}}}
+
+Below is recommended (but optional) settings.
+{{{
+C.commandLine = true; // enable command line
+C.fpsMode = 2; // enable FPS monitor with setting 2
+C.memoryMonitor = 1; // enable memory usage monitor with setting 1
+C.width = 600;
+C.height = 300;
+//C.tracing = true; // trace on flash's normal 'trace'
+}}}
+
+Logging...
+
+{{{
 C.add("Hello world");
 C.add("This is important!", 10);
 C.add("This is not really important", 7);
 C.add("This is totally a dummy", 0);
-
+//
 //
 C.ch("myChannel","Hello my Channel");
 C.ch("myChannel","Hello, important message at my channel", 10);
-
-// press @ at the top for console menu.
-// press H on second right for console menu help
 }}}
+
+Press @ at the top for console menu.
+Press H on second right for console menu help.
 
 ==Advanced==
 
