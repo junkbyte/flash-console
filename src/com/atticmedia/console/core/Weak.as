@@ -25,7 +25,7 @@ package com.atticmedia.console.core {
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
-	dynamic class Weak extends Proxy{
+	public dynamic class Weak extends Proxy{
 		private var _dir:Object;
 		
 		public function Weak() {

@@ -398,10 +398,11 @@ package com.atticmedia.console {
 				_console.store(n, obj);
 			}
 		}
-		public static function runCommand(str:String):void{
+		public static function runCommand(str:String):Object{
 			if(_console){
-				_console.runCommand(str);
+				return _console.runCommand(str);
 			}
+			return null;
 		}
 		//
 		// WARNING: key binding hard references the function. 

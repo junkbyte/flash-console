@@ -21,7 +21,7 @@
 * 
 */
 package com.atticmedia.console {
-	import flash.geom.Point;	
+	
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -42,7 +42,7 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 1.05;
+		public static const VERSION:Number = 1.1;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -933,8 +933,8 @@ package com.atticmedia.console {
 		public function get commandLine ():Boolean{
 			return _commandField.visible;
 		}
-		public function runCommand(line:String):void{
-			_CL.run(line);
+		public function runCommand(line:String):Object{
+			return _CL.run(line);
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void{
 			var nn:String = _CL.store(n, obj, strong);

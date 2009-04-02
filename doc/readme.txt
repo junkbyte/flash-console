@@ -8,7 +8,7 @@ http://code.google.com/p/flash-console/w/list
 
 ==Flash Console==
 
-  * Version: 2.02 (Mar 2009)
+  * Version: 1.1 (April 2009)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo
 
@@ -25,6 +25,12 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 == Change Log ==
+===1.1===
+  * *DisplayRoller (Ro)*: Shows you the display map under your mouse as you roll around - when turned on.
+  * *Ruler (Ru)*: Improved ruller tool. Press Ru at menu to use.
+  * Fixed bug with not printing HTML/XML traces properly.
+
+
 ===1.02===
   * *Multiple channel selections*: At run time holding down shift key or in code pass with comma delimiters, such as `C.viewingChannel = "shell,game";`
   * *Strong referencing*: Now you can set console to work in strong referencing. In command line type `/strong true` or in code. `C.strongRef = true;` This is useful when you are trying to store objects that will not persist for the time you need to debug with. But be careful as these items will not get garbage collected.

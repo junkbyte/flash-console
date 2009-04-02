@@ -80,8 +80,9 @@ package com.atticmedia.console.core {
 		public function get searchTerm():String{
 			return _lastSearchTerm;
 		}
-		public function run(str:String):void {
+		public function run(str:String):Object {
 			report("&gt; "+str, -1);
+			var returned:Object;
 			var line:Array = str.split(" ");
 			if(line[0].charAt(0)=="/"){
 				if (line[0] == "/help") {
@@ -164,7 +165,6 @@ package com.atticmedia.console.core {
 					}
 					
 					// APPLY operation
-					var returned:Object;
 					for(i = 0;i<names.length;i++){
 						strPart = names[i];
 						if(strPart == "="){
@@ -196,6 +196,7 @@ package com.atticmedia.console.core {
 					report(e.getStackTrace(),10);
 				}
 			}
+			return returned;
 		}
 		private function getPartData(strPart:String):Array{
 			try{

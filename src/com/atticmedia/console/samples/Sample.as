@@ -73,9 +73,21 @@ package com.atticmedia.console.samples {
 			
 			txtPriority.restrict = "0-9";
 			txtPriority2.restrict = "0-9";
-			btnInterval.addEventListener(MouseEvent.CLICK, onButtonClick);
-			btnAdd1.addEventListener(MouseEvent.CLICK, onButtonClick);
-			btnAdd2.addEventListener(MouseEvent.CLICK, onButtonClick);
+			setUpButton(btnInterval, "Start interval");
+			setUpButton(btnAdd1, "Add");
+			setUpButton(btnAdd2, "Add");
+		}
+		private function setUpButton(btn:MovieClip, t:String):void{
+			btn.stop();
+			btn.buttonMode = true;
+			btn.mouseChildren = false;
+			btn.txt.text = t;
+			btn.addEventListener(MouseEvent.CLICK, onButtonClick);
+			btn.addEventListener(MouseEvent.ROLL_OVER, onButtonEvent);
+			btn.addEventListener(MouseEvent.ROLL_OUT, onButtonEvent);
+		}
+		private function onButtonEvent(e:MouseEvent):void{
+			MovieClip(e.currentTarget).gotoAndStop(e.type==MouseEvent.ROLL_OVER?"over":"out")
 		}
 		private function onButtonClick(e:MouseEvent):void{
 			switch(e.currentTarget){
@@ -89,10 +101,10 @@ package com.atticmedia.console.samples {
 					if(_interval){
 						clearInterval(_interval);
 						_interval = 0;
-						btnInterval.label = "Start Interval";
+						btnInterval.txt.text = "Start Interval";
 					}else{
 						_interval = setInterval(onIntervalEvent,100);
-						btnInterval.label = "Stop Interval";
+						btnInterval.txt.text = "Stop Interval";
 					}
 				break;
 			}
