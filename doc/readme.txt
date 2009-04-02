@@ -16,7 +16,17 @@ http://code.google.com/p/flash-console/w/list
   * Authoring: Flash, Flex or AIR
 
 
-NOTE: To use in flex or AIR, you need to pass in a UIImage (which is somewhere on stage) as console's base display. Passing in document class or stage does not work in Flex, for some reason. - will be looked at very soon.
+NOTE: To use in flex or AIR you need to wrap Console into a flex friendly component. use ConsoleWrapper as below:
+
+{{{
+import com.atticmedia.console.C;
+import com.atticmedia.console.flex.ConsoleWrapper;
+
+
+ConsoleWrapper.start(this);
+C.add("Hello Flex World");
+}}}
+
 ---- 
 
 ==Short description==

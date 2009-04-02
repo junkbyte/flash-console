@@ -111,6 +111,7 @@ package com.atticmedia.console {
 		private var _channelsPanel:ChannelsPanel;
 		private var _channelsPinned:Boolean;
 		private var _shift:Boolean;
+		private var _txtFormat:TextFormat;
 		
 		public function Console(pass:String = "") {
 			name = NAME;
@@ -135,9 +136,12 @@ package com.atticmedia.console {
 			_traceField.defaultTextFormat = format;
 			addChild(_traceField);
 			//
+			_txtFormat = new TextFormat();
+            _txtFormat.font = "Arial";
+            _txtFormat.size = 12;
 			_menuField = new TextField();
 			_menuField.name = "menuField";
-			_menuField.selectable = false;
+			_menuField.defaultTextFormat = _txtFormat;
 			_menuField.height = 18;
 			_menuField.addEventListener(MouseEvent.MOUSE_DOWN, onMenuMouseDown, false, 0, true);
 			_menuField.addEventListener(MouseEvent.MOUSE_UP,onMenuMouseUp, false, 0, true);
@@ -589,7 +593,7 @@ package com.atticmedia.console {
 					_menuField.htmlText = "";
 				}
 			}else{
-				var str:String ="<p align=\"right\">";
+				var str:String ="<p align=\"right\"><font color=\"#FFFFFF\">";
 				// memory
 				if(_isRemote){
 					if(memoryMonitor > 0){
@@ -626,6 +630,7 @@ package com.atticmedia.console {
 				}
 				
 				// MENU
+				str += "</font>";
 				if(_menuMode != 1){
 					str += _menuText;
 				}
@@ -642,6 +647,7 @@ package com.atticmedia.console {
 				}
 				str += "</p>";
 				_menuField.htmlText = str;
+				_menuField.setTextFormat(_txtFormat);
 				_menuField.scrollH = _menuField.maxScrollH;
 			}
 			if(!_isPaused && visible){

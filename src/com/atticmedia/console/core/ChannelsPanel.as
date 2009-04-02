@@ -53,7 +53,7 @@ package com.atticmedia.console.core {
 			_channelsField.autoSize = TextFieldAutoSize.LEFT;
 			_channelsField.width = 160;
 			_channelsField.x = -120;
-			_channelsField.selectable = false;
+			//_channelsField.selectable = false;
 			_channelsField.addEventListener(MouseEvent.MOUSE_DOWN, onFieldMouseDown, false, 0, true);
 			_channelsField.addEventListener(MouseEvent.MOUSE_UP, onFieldMouseUp, false, 0, true);
 			
