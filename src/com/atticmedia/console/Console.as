@@ -435,7 +435,7 @@ package com.atticmedia.console {
 		}
 		private function help():void{
 			addLine("___HELP_________________",-1);
-			addLine("[ R=Reset FPS, F=FPS, M=Memory, G=Garbage Collect, CL=CommandLine, RL=Ruler, Ro=DisplayRoller, C=Clear, T=Tracing, P#=Priortiy filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
+			addLine("[ R=Reset FPS, F=FPS, M=Memory, G=Garbage Collect, CL=CommandLine, RL=Ruler, Ro=DisplayRoller, C=Clear, T=Tracing, P#=Priority filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
 			addLine("",0);
 			addLine("Use the arrow at bottom right to scale this window.", 1);
 			addLine("Use the tabs at the top to switch between channels, shift click to select multiple channels.",1);
