@@ -18,7 +18,7 @@ package com.atticmedia.console.flex
 		{
 			if(C.exists && C.alwaysOnTop){
 				if(!_wrapper.parent || _wrapper.parent != e.currentTarget){
-					e.currentTarget.removeEventListener(Event.ADDED, _wrapper.listChanged);
+					(e.currentTarget as Container).removeEventListener(Event.ADDED, _wrapper.listChanged);
 				}else{
 					_wrapper.parent.setChildIndex(_wrapper,_wrapper.parent.numChildren-1);
 				}

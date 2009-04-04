@@ -72,7 +72,7 @@ package com.atticmedia.console.core {
 			var str:String = "<textformat leading=\"2\"><font face=\"Arial\" size=\"11\" color=\"#FFFFFF\" >";
 			
 			str += "<font color=\"#DD5500\"><b><a href=\"event:pinChannels\">"+(pinned?"^^":"vv")+"</a>]</b></font> ";
-			for each(var channel in list){
+			for each(var channel:String in list){
 				var channelTxt:String = (viewing.indexOf(channel)>=0) ? "<font color=\"#0099CC\"><b>"+channel+"</b></font>" : channel;
 				channelTxt = channel==current ? "<i>"+channelTxt+"</i>" : channelTxt;
 				str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";

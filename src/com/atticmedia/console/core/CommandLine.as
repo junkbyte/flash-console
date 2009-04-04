@@ -324,7 +324,7 @@ package com.atticmedia.console.core {
 					}
 				}
 				var vals:String = "";
-				for (var X in obj) {
+				for (var X:String in obj) {
 					vals += X +"="+obj[X]+"; ";
 				}
 				if (vals) {
@@ -380,7 +380,7 @@ package com.atticmedia.console.core {
 			var steps:int = 0;
 			var lastmcDO:DisplayObject = null;
 			var indexes:Array = new Array();
-			for (var X in list){
+			for (var X:String in list){
 				mcDO = list[X];
 				if(lastmcDO){
 					if(lastmcDO is DisplayObjectContainer && (lastmcDO as DisplayObjectContainer).contains(mcDO)){

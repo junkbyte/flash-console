@@ -55,7 +55,7 @@ package com.atticmedia.console.core {
 			return n;
 		}
 		public function unwatch(n:String):void{
-			for (var X in _objectsList) {
+			for (var X:Object in _objectsList) {
 				if(_objectsList[X] == n){
 					delete _objectsList[X];
 				}
@@ -76,10 +76,10 @@ package com.atticmedia.console.core {
 			//
 			var arr:Array = new Array();
 			var o:Object = new Object();
-			for (var X in _objectsList) {
+			for (var X:Object in _objectsList) {
 				o[_objectsList[X]] = true;
 			}
-			for(var Y in _namesList){
+			for(var Y:String in _namesList){
 				if(!o[Y]){
 					arr.push(Y);
 					delete _namesList[Y];

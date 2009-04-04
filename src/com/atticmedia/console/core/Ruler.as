@@ -21,8 +21,7 @@
 * 
 */
 package com.atticmedia.console.core {
-	import flash.geom.Rectangle;	
-	import flash.display.Graphics;	
+	import flash.geom.Rectangle;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
