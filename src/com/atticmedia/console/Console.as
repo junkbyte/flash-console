@@ -528,9 +528,10 @@ package com.atticmedia.console {
 			var tmpText:String = txt;
 			if(!skipSafe){
 				// TODO: any way to tidy / speed this up ?
- 				txt = txt.replace(/</gim, "&lt;");
+				// try <font color="#FFCC00"><b>TEXT</b></font> .
+				txt = txt.replace(/</gim, "&lt;");
  				txt = txt.replace(/>/gim, "&gt;");
- 				txt = txt.replace(/(&lt;([ ]*(b|i|br|p|font)([ ].*)?)&gt;)(.*?)(&lt;([\/][ ]*\3)&gt;)/gim, "<$3>$5</$3>");
+ 				txt = txt.replace(/(&lt;([ ]*(b|i|br|p|font)([ ].*?)?)&gt;)(.*?)(&lt;([\/][ ]*\3)&gt;)/gim, "<$2>$5</$3>");
  				txt = txt.replace(/&lt;[ ]*br[ ]*([\/]?)&gt;/gim, "<br$1>");
 			}
 			if(channel == ""){
@@ -946,7 +947,7 @@ package com.atticmedia.console {
 			var nn:String = _CL.store(n, obj, strong);
 			if(!quiet && nn){
 				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+obj+"</b> using WEAK reference");
-				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine for "+ getQualifiedClassName(str) +".",-1,CONSOLE_CHANNEL);
+				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine for "+ getQualifiedClassName(str) +".",-1,CONSOLE_CHANNEL,false,true);
 			}
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
