@@ -381,7 +381,7 @@ package com.atticmedia.console {
 			addChild(_roller);
 			_roller.x = mouseX;
 			_roller.y = 14;
-			_roller.start(parent);
+			_roller.start(stage);
 			updateMenu();
 			addLine("<b>Roller started.</b>", -1, CONSOLE_CHANNEL);
 		}
