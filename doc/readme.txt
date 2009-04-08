@@ -35,6 +35,9 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 == Change Log ==
+===1.11===
+  * *Major bug fix with not tracing /inspect and other HTML prints. - still HTML safe checking is not perfect yet.
+
 ===1.1===
   * *DisplayRoller (Ro)*: Shows you the display map under your mouse as you roll around - when turned on.
   * *Ruler (Ru)*: Improved ruller tool. Press Ru at menu to use.
