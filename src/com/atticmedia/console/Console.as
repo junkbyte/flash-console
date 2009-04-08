@@ -42,7 +42,7 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 1.1;
+		public static const VERSION:Number = 1.11;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -900,7 +900,7 @@ package com.atticmedia.console {
 		public function watch(o:Object,n:String = null):String{
 			var nn:String = _mm.watch(o,n);
 			if(!quiet){
-				addLine("Watching <b>"+o+"</b> as <font color=\"#FF0000\"><b>"+ nn +"</b></font>.",-1,CONSOLE_CHANNEL);
+				addLine("Watching <b>"+o+"</b> as <font color=\"#FF0000\"><b>"+ nn +"</b></font>.",-1,CONSOLE_CHANNEL, false, true);
 			}
 			return nn;
 		}
@@ -946,8 +946,8 @@ package com.atticmedia.console {
 		public function store(n:String, obj:Object, strong:Boolean = false):void{
 			var nn:String = _CL.store(n, obj, strong);
 			if(!quiet && nn){
-				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+obj+"</b> using WEAK reference");
-				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine for "+ getQualifiedClassName(str) +".",-1,CONSOLE_CHANNEL,false,true);
+				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+getQualifiedClassName(obj)+"</b> using WEAK reference");
+				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine for "+ str +".",-1,CONSOLE_CHANNEL,false,true);
 			}
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{

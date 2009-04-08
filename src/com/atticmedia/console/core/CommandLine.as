@@ -122,7 +122,7 @@ package com.atticmedia.console.core {
 				} else if (line[0] == "/inspect" || line[0] == "/inspectfull") {
 					if (_saved.get("_returned")) {
 						var viewAll:Boolean = (line[0] == "/inspectfull")? true: false;
-						report(inspect(_saved.get("_returned"),viewAll));
+						report(inspect(_saved.get("_returned"),viewAll), 5,true);
 					} else {
 						report("Empty", 10);
 					}
