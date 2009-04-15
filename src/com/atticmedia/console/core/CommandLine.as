@@ -309,9 +309,10 @@ package com.atticmedia.console.core {
 				}
 				str += "<br><font color=\"#FF0000\"><b>Accessors:</b></font> ";
 				nodes = V..accessor;
+				var s:String;
 				for each (node in nodes) {
 					if ( typeStr == node.@declaredBy || viewAll) {
-						var s:String = (node.@access=="readonly") ? "<i>"+node.@name+"</i>" : node.@name;
+						s = (node.@access=="readonly") ? "<i>"+node.@name+"</i>" : node.@name;
 						if(viewAll){
 							try {
 								str += "<br><b>"+s+"</b>="+ obj[node.@name];
@@ -321,6 +322,20 @@ package com.atticmedia.console.core {
 						}else{
 							str += s+"; ";
 						}
+					}
+				}
+				str += "<br><font color=\"#FF0000\"><b>Variables:</b></font> ";
+				nodes = V..variable;
+				for each (node in nodes) {
+					s = node.@name+"("+node.@type+")";
+					if(viewAll){
+						try {
+							str += "<br><b>"+s+"</b>="+ obj[node.@name];
+						}catch (e:Error){
+							str += "<br><b>"+s+"</b>; ";
+						}
+					}else{
+						str += s+"; ";
 					}
 				}
 				var vals:String = "";
