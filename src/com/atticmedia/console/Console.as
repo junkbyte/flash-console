@@ -1058,7 +1058,6 @@ package com.atticmedia.console {
 				_isRemoting = false;
 				startSharedConnection();
 				try{
-					_sharedConnection.allowDomain("*");
                 	_sharedConnection.connect(REMOTE_CONN_NAME);
 					addLine("Remote started",10,CONSOLE_CHANNEL);
            		}catch (error:Error){
@@ -1072,8 +1071,11 @@ package com.atticmedia.console {
 		private function startSharedConnection():void{
 			closeSharedConnection();
 			_sharedConnection = new LocalConnection();
+			_sharedConnection.allowDomain("*", "localhost");
+			_sharedConnection.allowInsecureDomain("*", "localhost");
 			_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
 			_sharedConnection.client = this;
+			// TODO: security measures may need to be looked at.
 		}
 		private function closeSharedConnection():void{
 			if(_sharedConnection){
