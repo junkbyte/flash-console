@@ -42,7 +42,7 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 1.11;
+		public static const VERSION:Number = 1.12;
 
 		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
 		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
@@ -1058,6 +1058,7 @@ package com.atticmedia.console {
 				_isRemoting = false;
 				startSharedConnection();
 				try{
+					_sharedConnection.allowDomain("*");
                 	_sharedConnection.connect(REMOTE_CONN_NAME);
 					addLine("Remote started",10,CONSOLE_CHANNEL);
            		}catch (error:Error){
