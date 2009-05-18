@@ -32,11 +32,11 @@ package com.atticmedia.console.core {
 		public var time:int;
 		public var r:Boolean;
 		public var s:Boolean;
-		public function LogLineVO(t:String, c:String, p:int, repeating:Boolean = false, skipSafe:Boolean = false, time:int = 0){
+		public function LogLineVO(t:String, ch:String, pr:int, repeating:Boolean = false, skipSafe:Boolean = false, ti:int = 0){
 			this.text = t;
-			this.c = c;
-			this.p = p;
-			this.time = time;
+			this.c = ch;
+			this.p = pr;
+			this.time = ti;
 			this.r = repeating;
 			this.s = skipSafe;
 		}

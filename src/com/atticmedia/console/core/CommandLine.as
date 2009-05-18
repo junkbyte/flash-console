@@ -302,20 +302,20 @@ package com.atticmedia.console.core {
 				var V:XML = describeType(obj);
 				str += "<font color=\"#FF0000\"><b>Methods:</b></font> ";
 				var nodes:XMLList = V..method;
-				for each (var node:XML in nodes) {
-					if ( typeStr == node.@declaredBy || viewAll) {
-						str += "<b>"+node.@name+"</b>(<i>"+node.children().length()+"</i>):"+node.@returnType+"; ";
+				for each (var method:XML in nodes) {
+					if ( typeStr == method.@declaredBy || viewAll) {
+						str += "<b>"+method.@name+"</b>(<i>"+method.children().length()+"</i>):"+method.@returnType+"; ";
 					}
 				}
 				str += "<br><font color=\"#FF0000\"><b>Accessors:</b></font> ";
 				nodes = V..accessor;
 				var s:String;
-				for each (node in nodes) {
-					if ( typeStr == node.@declaredBy || viewAll) {
-						s = (node.@access=="readonly") ? "<i>"+node.@name+"</i>" : node.@name;
+				for each (var accessor:XML  in nodes) {
+					if ( typeStr == accessor.@declaredBy || viewAll) {
+						s = (accessor.@access=="readonly") ? "<i>"+accessor.@name+"</i>" : accessor.@name;
 						if(viewAll){
 							try {
-								str += "<br><b>"+s+"</b>="+ obj[node.@name];
+								str += "<br><b>"+s+"</b>="+ obj[accessor.@name];
 							}catch (e:Error){
 								str += "<br><b>"+s+"</b>; ";
 							}
@@ -326,11 +326,11 @@ package com.atticmedia.console.core {
 				}
 				str += "<br><font color=\"#FF0000\"><b>Variables:</b></font> ";
 				nodes = V..variable;
-				for each (node in nodes) {
-					s = node.@name+"("+node.@type+")";
+				for each (var variable:XML in nodes) {
+					s = variable.@name+"("+variable.@type+")";
 					if(viewAll){
 						try {
-							str += "<br><b>"+s+"</b>="+ obj[node.@name];
+							str += "<br><b>"+s+"</b>="+ obj[variable.@name];
 						}catch (e:Error){
 							str += "<br><b>"+s+"</b>; ";
 						}
