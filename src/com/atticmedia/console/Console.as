@@ -21,7 +21,7 @@
 * 
 */
 package com.atticmedia.console {
-	
+	import flash.system.Security;	
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -42,10 +42,10 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 1.13;
+		public static const VERSION:Number = 1.15;
 
-		public static const REMOTE_CONN_NAME:String = "ConsoleRemote";
-		public static const REMOTER_CONN_NAME:String = "ConsoleRemoter";
+		public static const REMOTE_CONN_NAME:String = "_ConsoleRemote";
+		public static const REMOTER_CONN_NAME:String = "_ConsoleRemoter";
 		
 		public static const CONSOLE_CHANNEL:String = "C";
 		public static const FILTERED_CHANNEL:String = "Filtered";
@@ -594,7 +594,7 @@ package com.atticmedia.console {
 					_menuField.htmlText = "";
 				}
 			}else{
-				var str:String ="<p align=\"right\"><font color=\"#FFFFFF\">";
+				var str:String ="<p align=\"right\"><font color=\"#DDDDDD\">";
 				// memory
 				if(_isRemote){
 					if(memoryMonitor > 0){
@@ -1039,8 +1039,9 @@ package com.atticmedia.console {
 				_remoteDelayed = 0;
 				_remoteLinesQueue = new Array();
 				startSharedConnection();
-				addLine("Remoting started",10,CONSOLE_CHANNEL);
+				addLine("Remoting started [sandboxType: "+Security.sandboxType+"]",10,CONSOLE_CHANNEL);
 				try{
+					_sharedConnection.allowInsecureDomain("*", "localhost");
                 	_sharedConnection.connect(REMOTER_CONN_NAME);
            		}catch (error:Error){
 					addLine("Could not create client service. You will not be able to control this console with remote.", 10,CONSOLE_CHANNEL);
@@ -1058,8 +1059,9 @@ package com.atticmedia.console {
 				_isRemoting = false;
 				startSharedConnection();
 				try{
+					_sharedConnection.allowInsecureDomain("*", "localhost");
                 	_sharedConnection.connect(REMOTE_CONN_NAME);
-					addLine("Remote started",10,CONSOLE_CHANNEL);
+					addLine("Remote started [sandboxType: "+Security.sandboxType+"]",10,CONSOLE_CHANNEL);
            		}catch (error:Error){
 					_isRemoting = false;
 					addLine("Could not create remote service. You might have a console remote already running.", 10,CONSOLE_CHANNEL);
@@ -1071,8 +1073,6 @@ package com.atticmedia.console {
 		private function startSharedConnection():void{
 			closeSharedConnection();
 			_sharedConnection = new LocalConnection();
-			_sharedConnection.allowDomain("*", "localhost");
-			_sharedConnection.allowInsecureDomain("*", "localhost");
 			_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
 			_sharedConnection.client = this;
 			// TODO: security measures may need to be looked at.
@@ -1093,6 +1093,7 @@ package com.atticmedia.console {
 		public static function get remoteIsRunning():Boolean{
 			var sCon:LocalConnection = new LocalConnection();
 			try{
+				sCon.allowInsecureDomain("*", "localhost");
 				sCon.connect(REMOTE_CONN_NAME);
 			}catch(error:Error){
 				return true;
