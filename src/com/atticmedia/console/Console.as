@@ -21,6 +21,7 @@
 * 
 */
 package com.atticmedia.console {
+	import flash.utils.getTimer;	
 	import flash.system.Security;	
 	import flash.display.Shape;
 	import flash.display.Sprite;
@@ -898,9 +899,13 @@ package com.atticmedia.console {
 		// Memory Monitor
 		//
 		public function watch(o:Object,n:String = null):String{
+			var className:String = getQualifiedClassName(o);
+			if(!n){
+				n = className+"@"+getTimer();
+			}
 			var nn:String = _mm.watch(o,n);
 			if(!quiet){
-				addLine("Watching <b>"+o+"</b> as <font color=\"#FF0000\"><b>"+ nn +"</b></font>.",-1,CONSOLE_CHANNEL, false, true);
+				addLine("Watching <b>"+className+"</b> as <font color=\"#FF0000\"><b>"+ nn +"</b></font>.",-1,CONSOLE_CHANNEL, false, true);
 			}
 			return nn;
 		}
@@ -1082,7 +1087,7 @@ package com.atticmedia.console {
 				try{
 					_sharedConnection.close();
 				}catch(error:Error){
-					//
+					addLine("closeSharedConnection: "+error, 10,CONSOLE_CHANNEL);
 				}
 			}
 			_sharedConnection = null;

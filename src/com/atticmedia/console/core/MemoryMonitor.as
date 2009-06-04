@@ -37,10 +37,7 @@ package com.atticmedia.console.core {
 			_namesList = new Object();
 			_objectsList = new Dictionary(true);
 		}
-		public function watch(obj:Object, n:String = null):String{
-			if(!n){
-				n = String(obj)+"@"+getTimer();
-			}
+		public function watch(obj:Object, n:String):String{
 			if(_objectsList[obj]){
 				if(_namesList[_objectsList[obj]]){
 					unwatch(_objectsList[obj]);
