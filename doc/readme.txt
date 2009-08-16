@@ -8,7 +8,7 @@ http://code.google.com/p/flash-console/w/list
 
 ==Flash Console==
 
-  * Version: 1.11 (April 2009)
+  * Version: 1.15 (April 2009)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo
 
@@ -35,6 +35,14 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 == Change Log ==
+
+===1.15===
+  * `C.inspect(...)` or commandline: `/inspect` should now also print 'variables' of the object.
+  * Fixed bug with ignoring HTML tags - still not perfect.
+  * DisplayRoller now look from stage no matter where console sits.
+  * Included console in SWC file
+  * Remote and Remoter now print their sandbox type so that you can try match local/network sandbox, they won't log if you are on different sandbox.
+
 ===1.11===
   * *Major bug fix with not tracing /inspect and other HTML prints. - still HTML safe checking is not perfect yet.
 
