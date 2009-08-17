@@ -101,7 +101,7 @@ package com.atticmedia.console {
 		private static var _console:Console;
 		
 		public function C() {
-			throw new Error("[CONSOLE] Do not construct class. Please use c.start(mc:DisplayObjectContainer, password:String='')");
+			throw new Error("[CONSOLE] Do not construct class. Please use C.start(mc:DisplayObjectContainer, password:String='')");
 		}
 		public static function start(mc:DisplayObjectContainer, pass:String = "", allowInBrowser:Boolean = true, forceRunOnRemote:Boolean = true):void{
 			if(!allowInBrowser && mc.stage && (Capabilities.playerType == "PlugIn" || Capabilities.playerType == "ActiveX")){

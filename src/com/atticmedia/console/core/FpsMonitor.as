@@ -54,6 +54,8 @@ package com.atticmedia.console.core {
 
 	public class FpsMonitor {
 
+		public static const MAX_FORMAT_INT:uint = 5;
+		
 		private var _previousTime:Number;
 		private var _fps:Number;
 		private var _mspf:Number;
@@ -64,7 +66,7 @@ package com.atticmedia.console.core {
 		
 		private var _history:Array;
 		private var _defaultFormat:int = 1;
-		private var _base:Number = 50;
+		private var _base:Number = 100;
 		private var _isRunning:Boolean = false;
 		
 		
@@ -87,6 +89,12 @@ package com.atticmedia.console.core {
 		}
 		public function getInFormat(preset:Number = 0):String{
 			switch(preset){
+				case 0:
+					return ""; // just for speed when turned off
+				break;
+				case 1:
+					return current.toFixed(1);
+				break;
 				case 2:
 					return Math.round(min)+"-<b>"+current.toFixed(1) +"</b>-"+ Math.round(max);
 				break;
@@ -102,7 +110,7 @@ package com.atticmedia.console.core {
 					return Math.round(averageMsPF)+"ms-"+Math.round(mspf)+"ms "+stageMS;
 				break;
 				default:
-					return current.toFixed(1);
+					return "";
 				break;
 			}
 		}
@@ -152,13 +160,17 @@ package com.atticmedia.console.core {
 			pause();
 			reset();
 		}
-		public function update():void{
+		public function update(rmspf:int = 0):void{
 			if(!_isRunning){
 				return;
 			}
 			if (_previousTime) {
-				var time:int = getTimer();
-				_mspf = time-_previousTime;
+				if(rmspf>0){
+					_mspf = rmspf;
+				}else{
+					var time:int = getTimer();
+					_mspf = time-_previousTime;
+				}
 				_fps = 1000/_mspf;
 				if (!_min || _fps < _min) {
 					_min = _fps;

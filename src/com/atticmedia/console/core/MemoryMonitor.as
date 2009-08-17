@@ -27,11 +27,16 @@ package com.atticmedia.console.core {
 
 	public class MemoryMonitor {
 		
+		public static const MAX_FORMAT_INT:uint = 4;
+		
 		private var _namesList:Object;
 		private var _objectsList:Dictionary;
 		private var _minMemory:uint;
 		private var _maxMemory:uint;
-		private var _previousMemory:uint;
+		private var _currentMemory:uint;
+		//private var _previousMemory:uint;
+		
+		public var format:uint;
 		//
 		public function MemoryMonitor() {
 			_namesList = new Object();
@@ -62,8 +67,9 @@ package com.atticmedia.console.core {
 		//
 		//
 		//
-		public function update():Array {
-			var m:uint = currentMemory;
+		public function update(mem:uint = 0):Array {
+			var m:uint = mem>0?mem:System.totalMemory;
+			_currentMemory = m;
 			if(m<_minMemory || _minMemory == 0){
 				_minMemory = m;
 			}
@@ -83,13 +89,12 @@ package com.atticmedia.console.core {
 				}
 			}
 			/*
-			//
 			//this don't seem to be working well..
 			if(m<_previousMemory){
 				dispatchEvent(new garbageCollected(_previousMemory));
 			}
-			*/
 			_previousMemory = m;
+			*/
 			return arr;
 		}
 		public function get minMemory():uint {
@@ -99,7 +104,38 @@ package com.atticmedia.console.core {
 			return _maxMemory;
 		}
 		public function get currentMemory():uint {
-			return System.totalMemory;
+			return _currentMemory;
+		}
+		public function get get():String{
+			return getInFormat(format);
+		}
+		public function getInFormat(preset:int):String{
+			var str:String = "";
+			switch(preset){
+				case 0:
+					return ""; // just for speed when turned off
+				break;
+				case 1:
+					str += "<b>"+Math.round(_currentMemory/1048576)+"mb </b> ";
+				break;
+				case 2:
+					str += Math.round(_minMemory/1048576)+"mb-";
+					str += "<b>"+Math.round(_currentMemory/1048576)+"mb</b>-";
+					str += ""+Math.round(_maxMemory/1048576)+"mb ";
+				break;
+				case 3:
+					str += "<b>"+Math.round(_currentMemory/1024)+"kb </b> ";
+				break;
+				case 4:
+					str += Math.round(_minMemory/1024)+"kb-";
+					str += "<b>"+Math.round(_currentMemory/1024)+"kb</b>-";
+					str += ""+Math.round(_maxMemory/1024)+"kb ";
+				break;
+				default:
+					return "";
+				break;
+			}
+			return str;
 		}
 		//
 		// only works in debugger player version

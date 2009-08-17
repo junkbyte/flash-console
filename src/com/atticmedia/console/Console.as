@@ -60,7 +60,6 @@ package com.atticmedia.console {
 		public var prefixChannelNames:Boolean = true;
 		public var alwaysOnTop:Boolean = true;
 		public var maxRepeats:Number = 100;
-		public var memoryMonitor:int = 0;
 		public var remoteDelay:int = 25;
 		public var moveable:Boolean = true;
 		
@@ -87,7 +86,7 @@ package com.atticmedia.console {
 		private var _sharedConnection:LocalConnection;
 		private var _remoteDelayed:int;
 		private var _remoteLinesQueue:Array;
-		private var _remoteFPS:int;
+		private var _remoteMSPF:int;
 		private var _remoteMem:int;
 		
 		private var _menuText:String;
@@ -283,11 +282,23 @@ package com.atticmedia.console {
 			}else if(e.text == "clear"){
 				clear();
 			}else if(e.text == "fps"){
-				cycleFPS();
+				if(_fps.running){
+					if(_fps.format >= 1 && _fps.format <= 3){
+						_fps.format++;
+					}else{
+						_fps.format=0;
+						_fps.pause();
+					}
+				}else {
+					_fps.start();
+					_fps.format = 1;
+				}
+				updateMenu();
 			}else if(e.text == "memory"){
-				memoryMonitor++;
-				if(memoryMonitor>2){
-					memoryMonitor = 0;
+				if(_mm.format<MemoryMonitor.MAX_FORMAT_INT){
+					_mm.format++;
+				}else{
+					_mm.format = 0;
 				}
 			}else if(e.text == "scrollUp"){
 				_traceField.scrollV -= 3;
@@ -404,23 +415,6 @@ package com.atticmedia.console {
 				_channelsPanel.y = 14;
 				_channelsPanel.update(_channels, _viewingChannel, _currentChannel, _channelsPinned);
 			}
-		}
-		private function cycleFPS():void{
-			if(_fps.running){
-				if(_fps.format == 1){
-					_fps.format = 2;
-				}else if(_fps.format == 2){
-					_fps.format = 3;
-				}else if(_fps.format == 3){
-					_fps.format = 4;
-				}else{
-					_fps.pause();
-				}
-			}else {
-				_fps.start();
-				_fps.format = 1;
-			}
-			updateMenu();
 		}
 		private function cyclePriorities():void{
 			if(_priority<10){
@@ -582,8 +576,8 @@ package com.atticmedia.console {
 				}
 			}
 			if(!_isPaused && visible){
-				_fps.update();
-				var arr:Array = _mm.update();
+				_fps.update(_isRemote?_remoteMSPF:0);
+				var arr:Array = _mm.update(_isRemote?_remoteMem:0);
 				if(arr.length>0){
 					addLine("GARBAGE COLLECTED: "+arr.join(", "),10,CONSOLE_CHANNEL);
 				}
@@ -597,22 +591,10 @@ package com.atticmedia.console {
 			}else{
 				var str:String ="<p align=\"right\"><font color=\"#DDDDDD\">";
 				// memory
-				if(_isRemote){
-					if(memoryMonitor > 0){
-						str += "<b>"+Math.round(_remoteMem/1024)+"kb </b> ";
-					}
-				}else{
-					if(memoryMonitor == 1){
-						str += "<b>"+Math.round(_mm.currentMemory/1024)+"kb </b> ";
-					}else if(memoryMonitor > 1){
-						str += Math.round(_mm.minMemory/1024)+"kb-";
-						str += "<b>"+Math.round(_mm.currentMemory/1024)+"kb</b>-";
-						str += ""+Math.round(_mm.maxMemory/1024)+"kb ";
-					}
-				}
+				str += _mm.get;
 				// FPS
 				if(_fps.running){
-					str += (_isRemote?_remoteFPS:_fps.get)+" ";
+					str += _fps.get+" ";
 				}
 				// channels
 				if(_channelsPanel){
@@ -672,7 +654,7 @@ package com.atticmedia.console {
 		}
 		private function updateMenu():void{
 			_menuText = "<font color=\"#FF8800\">[";
-			if(_fps.running && !_isRemote){
+			if(_fps.running){
 				_menuText += "<a href=\"event:resetFPS\">R</a> ";
 			}
 			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> ";
@@ -1027,7 +1009,7 @@ package com.atticmedia.console {
 		private function updateRemote():void{
 			if(_remoteLinesQueue.length==0) return;
 			try{
-				_sharedConnection.send(REMOTE_CONN_NAME, "remoteLogSend", [_remoteLinesQueue,averageFPS, currentMemory]);
+				_sharedConnection.send(REMOTE_CONN_NAME, "remoteLogSend", [_remoteLinesQueue,mspf, currentMemory]);
 			}catch(e:Error){
 				// don't care
 			}
@@ -1118,7 +1100,7 @@ package com.atticmedia.console {
 					addLine(line["text"],p,channel,r,safe);
 				}
 			}
-			_remoteFPS = obj[1];
+			_remoteMSPF = obj[1];
 			_remoteMem = obj[2];
 		}
 		//
