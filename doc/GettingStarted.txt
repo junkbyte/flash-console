@@ -23,13 +23,11 @@ import com.atticmedia.console.C;
 C.start(this, "");
 }}}
 
-If you are using Flex you need to wrap Console into a flex friendly component. Use ConsoleWrapper as below instead of doing C.start():
-class file can be found in (project)/flexwrapper/com/atticmedia/console/flex/ConsoleWrapper - copy to src folder.
+If you are using Flex, it may be easier to start console on stage, using C.startOnStage(), where first parameter can be any display which is already on stage or to be added later.
 
 {{{
 import com.atticmedia.console.C;
-import com.atticmedia.console.flex.ConsoleWrapper;
-ConsoleWrapper.start(this);
+ConsoleWrapper.startOnStage(this);
 }}}
 
 Logging...
@@ -75,7 +73,7 @@ C.remoting = true;
 // recieve remoting broadcasts
 // start logging broadcasted logs from another swf.
 // it can not be remoting while it is a remote...
-C.isRemote = true;
+C.remote = true;
 
 
 

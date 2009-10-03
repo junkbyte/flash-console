@@ -108,37 +108,6 @@ package com.atticmedia.console.core {
 		public function get notifyGC():Boolean{
 			return _notifyGC;
 		}*/
-		public function get get():String{
-			return getInFormat(format);
-		}
-		public function getInFormat(preset:int):String{
-			var str:String = "";
-			switch(preset){
-				case 0:
-					return ""; // just for speed when turned off
-				break;
-				case 1:
-					str += "<b>"+Math.round(_currentMemory/1048576)+"mb </b> ";
-				break;
-				case 2:
-					str += Math.round(_minMemory/1048576)+"mb-";
-					str += "<b>"+Math.round(_currentMemory/1048576)+"mb</b>-";
-					str += ""+Math.round(_maxMemory/1048576)+"mb ";
-				break;
-				case 3:
-					str += "<b>"+Math.round(_currentMemory/1024)+"kb </b> ";
-				break;
-				case 4:
-					str += Math.round(_minMemory/1024)+"kb-";
-					str += "<b>"+Math.round(_currentMemory/1024)+"kb</b>-";
-					str += ""+Math.round(_maxMemory/1024)+"kb ";
-				break;
-				default:
-					return "";
-				break;
-			}
-			return str;
-		}
 		//
 		// only works in debugger player version
 		//

@@ -8,25 +8,13 @@ http://code.google.com/p/flash-console/w/list
 
 ==Flash Console==
 
-  * Version: 2.0 beta2 (Sept 2009)
+  * Version: 2.0 (Oct 2009)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo
 
   * Required: `ActionScript 3.0`, Flash player 9 or above
   * Authoring: Flash, Flex or AIR
 
-
-NOTE: To use in flex or AIR you need to wrap Console into a flex friendly component. use ConsoleWrapper as below:
-class file can be found in (project)/flexwrapper/com/atticmedia/console/flex/ConsoleWrapper - copy to src folder.
-
-{{{
-import com.atticmedia.console.C;
-import com.atticmedia.console.flex.ConsoleWrapper;
-
-
-ConsoleWrapper.start(this);
-C.add("Hello Flex World");
-}}}
 
 ---- 
 
@@ -39,10 +27,12 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 ===2.0===
   * MAJOR revamp to interface and code structure.
+  * Added C.startOnStage() which should be an easier way to use Console in flex.
   * Features such as fpsMonitor and MemoryMonitor are now independent panels.
   * Graphing feature added.
-  * Minor C. accessor name changes, such as fpsMode is now changed to fpsMonitor
+  * Minor C. accessor name changes, such as isRemote to remote, fpsMode to fpsMonitor.
   * Console logs will no longer render HTML, it will appear as plain text.
+  * Improvements to command line such as /string - string block adding and more stable display mapping.
 
 
 ===1.15===
