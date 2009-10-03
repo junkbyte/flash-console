@@ -27,7 +27,7 @@ If you are using Flex, it may be easier to start console on stage, using C.start
 
 {{{
 import com.atticmedia.console.C;
-ConsoleWrapper.startOnStage(this);
+C.startOnStage(this);
 }}}
 
 Logging...
