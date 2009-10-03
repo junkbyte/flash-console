@@ -1,8 +1,11 @@
 /*
 * 
-* Copyright (c) 2008 Atticmedia
+* Copyright (c) 2008-2009 Lu Aye Oo
 * 
 * @author 		Lu Aye Oo
+* 
+* http://code.google.com/p/flash-console/
+* 
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -18,7 +21,6 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 * 
-* 
 */
 package com.atticmedia.console.samples {
 	
@@ -32,14 +34,13 @@ package com.atticmedia.console.samples {
 
 		public function Remote() {
 			C.start(this, "");
-			C.isRemote = true;
+			C.remote = true;
 			C.commandLine = true;
-			C.menuMode = 0;
 			
 			//
 			// This is special case for remote to disable scaling and moving
-			C.instance.getChildByName("scaler").visible = false;
-			C.instance.moveable = false;
+			C.instance.panels.mainPanel.moveable = false;
+			C.instance.panels.mainPanel.scalable = false;
 			//
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;

@@ -1,8 +1,11 @@
 ﻿/*
 * 
-* Copyright (c) 2008 Atticmedia
+* Copyright (c) 2008-2009 Lu Aye Oo
 * 
 * @author 		Lu Aye Oo
+* 
+* http://code.google.com/p/flash-console/
+* 
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -18,195 +21,109 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 * 
-* 
 */
 package com.atticmedia.console {
-	import flash.utils.getTimer;	
-	import flash.system.Security;	
-	import flash.display.Shape;
+	import com.atticmedia.console.view.RollerPanel;	
+	import com.atticmedia.console.core.CommandLine;
+	import com.atticmedia.console.core.LogLineVO;
+	import com.atticmedia.console.core.MemoryMonitor;
+	import com.atticmedia.console.core.Remoting;
+	import com.atticmedia.console.view.AbstractPanel;
+	import com.atticmedia.console.view.ChannelsPanel;
+	import com.atticmedia.console.view.FPSPanel;
+	import com.atticmedia.console.view.MainPanel;
+	import com.atticmedia.console.view.PanelsManager;
+	import com.atticmedia.console.view.Style;
+	
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
-	import flash.events.MouseEvent;
-	import flash.events.StatusEvent;
-	import flash.events.TextEvent;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.net.LocalConnection;
-	import flash.text.TextField;
-	import flash.text.TextFieldType;
-	import flash.text.TextFormat;
-	import flash.ui.Keyboard;
+	import flash.system.System;
 	import flash.utils.getQualifiedClassName;
-	
-	import com.atticmedia.console.core.*;	
+	import flash.utils.getTimer;		
 
 	public class Console extends Sprite {
 
 		public static const NAME:String = "Console";
-		public static const VERSION:Number = 1.15;
-
-		public static const REMOTE_CONN_NAME:String = "_ConsoleRemote";
-		public static const REMOTER_CONN_NAME:String = "_ConsoleRemoter";
+		public static const PANEL_MAIN:String = "mainPanel";
+		public static const PANEL_CHANNELS:String = "channelsPanel";
+		public static const PANEL_FPS:String = "fpsPanel";
+		public static const PANEL_MEMORY:String = "memoryPanel";
+		public static const PANEL_ROLLER:String = "rollerPanel";
+		public static const FPS_MAX_LAG_FRAMES:uint = 25;
+		
+		public static const VERSION:Number = 2;
+		public static const VERSION_STAGE:String = "";
+		
+		// you can change this if you need BEFORE starting remote / remoting
+		public static var REMOTE_CONN_NAME:String = "ConsoleRemote2";
+		public static var CLIENT_CONN_NAME:String = "ConsoleClient2";
 		
 		public static const CONSOLE_CHANNEL:String = "C";
-		public static const FILTERED_CHANNEL:String = "Filtered";
+		public static const FILTERED_CHANNEL:String = "filtered";
 		public static const GLOBAL_CHANNEL:String = "global";
-		public static const MINIMUM_HEIGHT:int = 16;
-		public static const MINIMUM_WIDTH:int = 20;
-		
+		//
+		public var style:Style;
+		public var panels:PanelsManager;
+		private var mm:MemoryMonitor;
+		public var cl:CommandLine;
+		private var remoter:Remoting;
+		//
 		public var quiet:Boolean;
-		public var tracing:Boolean;
 		public var maxLines:int = 500;
 		public var prefixChannelNames:Boolean = true;
 		public var alwaysOnTop:Boolean = true;
-		public var maxRepeats:Number = 100;
-		public var remoteDelay:int = 25;
-		public var moveable:Boolean = true;
-		
-		private var _traceField:TextField;
-		private var _menuField:TextField;
-		private var _commandField:TextField;
-		private var _commandBackground:Shape;
-		private var _background:Shape;
-		private var _scaler:Sprite;
-		private var _bottomLine:Shape;
-		
-		private var _enabled:Boolean;
+		public var maxRepeats:Number = 75;
+		public var remoteDelay:int = 20;
+		public var defaultChannel:String = "traces";
+		public var tracingPriority:int = 0;
+		public var rulerHidesMouse:Boolean = true;
+		//
+		private var _isPaused:Boolean;
+		private var _enabled:Boolean = true;
 		private var _password:String;
 		private var _passwordIndex:int;
-		private var _priority:int;
-		private var _isPaused:Boolean;
-		private var _menuMode:int;
-		private var _isMinimised:Boolean;
-		private var _isScaling:Boolean;
-		private var _keyBinds:Object;
+		private var _tracing:Boolean = false;
+		private var _filterText:String;
+		private var _keyBinds:Object = {};
+		private var _mspf:Number;
+		private var _previousTime:Number;
+		private var _traceCall:Function = trace;
+		private var _rollerCaptureKey:String;
 		
-		private var _isRemoting:Boolean;
-		private var _isRemote:Boolean;
-		private var _sharedConnection:LocalConnection;
-		private var _remoteDelayed:int;
-		private var _remoteLinesQueue:Array;
-		private var _remoteMSPF:int;
-		private var _remoteMem:int;
-		
-		private var _menuText:String;
-		private var _tracingChannels:Array;
-		private var _lines:Array;
-		private var _linesChanged:Boolean;
-		private var _channels:Array;
+		private var _channels:Array = [GLOBAL_CHANNEL];
+		private var _viewingChannels:Array = [GLOBAL_CHANNEL];
+		private var _tracingChannels:Array = [];
 		private var _isRepeating:Boolean;
 		private var _repeated:int;
-		private var _viewingChannel:Array;
-		private var _currentChannel:String;
+		private var _lines:Array = [];
+		private var _linesChanged:Boolean;
 		
-		private var _commandsHistory:Array;
-		private var _commandsInd:int;
-		private var _mm:MemoryMonitor;
-		private var _fps:FpsMonitor;
-		private var _CL:CommandLine;
-		private var _ui:UserInterface;
-		private var _timers:Timers;
-		private var _ruler:Ruler;
-		private var _roller:DisplayRoller;
-		private var _channelsPanel:ChannelsPanel;
-		private var _channelsPinned:Boolean;
-		private var _shift:Boolean;
-		private var _txtFormat:TextFormat;
-		
-		public function Console(pass:String = "") {
+		/**
+		 * Console is the main class. However please use C for singleton Console adapter.
+		 * Using Console through C will also make sure you can remove console in a later date
+		 * by simply removing C.start() or C.startOnStage()
+		 * 
+		 * @see com.atticmedia.console.C
+		 * @see http://code.google.com/p/flash-console/
+		 */
+		public function Console(pass:String = "", uiset:int = 1) {
 			name = NAME;
 			_password = pass;
-			_keyBinds = new Object();
+			tabChildren = false; // Tabbing is not supported
 			//
-			_background = new Shape();
-			_background.name = "background";
-			_background.graphics.beginFill(0xFFFFFF);
-			_background.graphics.drawRoundRect(0, 0, 100, 100,10,10);
-			_background.scale9Grid = new Rectangle(10, 10, 80, 80);
-			addChild(_background);
+			style = new Style(uiset);
+			panels = new PanelsManager(this, new MainPanel(this, _lines, _channels));
+			mm = new MemoryMonitor();
+			cl = new CommandLine(this);
+			remoter = new Remoting(this);
+			remoter.logsend = remoteLogSend; // Don't want to expose remoteLogSend in this class
 			//
-			var format:TextFormat = new TextFormat();
-            format.font = "Arial";
-            format.size = 11;
-			_traceField = new TextField();
-			_traceField.name = "traceField";
-			_traceField.wordWrap = true;
-			_traceField.background  = false;
-			_traceField.multiline = true;
-			_traceField.defaultTextFormat = format;
-			addChild(_traceField);
-			//
-			_txtFormat = new TextFormat();
-            _txtFormat.font = "Arial";
-            _txtFormat.size = 12;
-			_menuField = new TextField();
-			_menuField.name = "menuField";
-			_menuField.defaultTextFormat = _txtFormat;
-			_menuField.height = 18;
-			_menuField.addEventListener(MouseEvent.MOUSE_DOWN, onMenuMouseDown, false, 0, true);
-			_menuField.addEventListener(MouseEvent.MOUSE_UP,onMenuMouseUp, false, 0, true);
-			_menuField.y = -2;
-			addChild(_menuField);
-			//
-			_commandBackground = new Shape();
-			_commandBackground.name = "commandBackground";
-			_commandBackground.graphics.beginFill(0xFFFFFF);
-			_commandBackground.graphics.drawRoundRect(0, 0, 100, 18,8,8);
-			_commandBackground.scale9Grid = new Rectangle(10, 8, 80, 8);
-			_commandBackground.visible = false;
-			addChild(_commandBackground);
-			//
-			_commandField = new TextField();
-			_commandField.name = "commandField";
-			_commandField.type  = TextFieldType.INPUT;
-			_commandField.height = 18;
-			_commandField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown, false, 0, true);
-			_commandField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp, false, 0, true);
-			_commandField.visible = false;
-			addChild(_commandField);
-			//
-			_scaler = new Sprite();
-			_scaler.name = "scaler";
-			_scaler.graphics.beginFill(0x000000, 0.6);
-            _scaler.graphics.lineTo(-10, 0);
-            _scaler.graphics.lineTo(0, -10);
-            _scaler.graphics.endFill();
-			_scaler.buttonMode = true;
-			_scaler.doubleClickEnabled = true;
-			_scaler.addEventListener(MouseEvent.MOUSE_DOWN,onScalerMouseDown, false, 0, true);
-			_scaler.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp, false, 0, true);
-			_scaler.addEventListener(MouseEvent.DOUBLE_CLICK, onScalerDoubleClick, false, 0, true);
-            addChild(_scaler);
-			//
-			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-			//
-			_bottomLine = new Shape();
-			_bottomLine.name = "blinkLine";
-			addChild(_bottomLine);
-			//
-			_ui = new UserInterface(_background, _menuField, _traceField, _commandBackground, _commandField);
-			_fps = new FpsMonitor();
-			_mm = new MemoryMonitor();
-			_timers = new Timers(addLogLine);
-			_lines = new Array();
-			_linesChanged = false;
-			_channels = new Array(GLOBAL_CHANNEL);
-			_currentChannel = "traces";
-			_viewingChannel = [GLOBAL_CHANNEL];
-			_isRepeating = false;
-			_isPaused = false;
-			_enabled = true;
-			_menuMode = 1;
-			
-			_commandsHistory = new Array();
-			_commandsInd = 0;
-			_CL = new CommandLine(null, addLogLine);
-			_CL.store("C",this);
-			_CL.reserved.push("C");
-			_CL.addEventListener(CommandLine.SEARCH_REQUEST, onCommandSearch, false, 0, true);
-			//
-			addEventListener(Event.ENTER_FRAME, _onEnterFrame, false, 0, true);
-			//
+			var t:String = VERSION_STAGE?(" "+VERSION_STAGE):"";
+			report("<b>Console v"+VERSION+t+", Happy bug fixing!</b>",-2);
 			if(_password != ""){
 				if(stage){
 					stageAddedHandle();
@@ -215,48 +132,39 @@ package com.atticmedia.console {
 			}
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
-			addLine("<b>v"+VERSION+", Happy bug fixing!</b>",-2,CONSOLE_CHANNEL);
-			//
-			updateMenu();
-			width = 520;
-			height = 16;
 		}
 		private function stageAddedHandle(e:Event=null):void{
-			if(_CL.base == null && root){
-				_CL.base = root;
+			if(cl.base == null && root){
+				cl.base = root;
 			}
-			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+			addEventListener(Event.ENTER_FRAME, _onEnterFrame, false, 0, true);
+			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyUpHandler, false, 0, true);
 		}
 		private function stageRemovedHandle(e:Event=null):void{
-			stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyUpHandler);
 		}
-		
-		private function keyDownHandler(e:KeyboardEvent):void{
-			if(e.keyCode == Keyboard.SHIFT){
-				_shift = true;
-			}
+		private function onStageMouseLeave(e:Event):void{
+			panels.tooltip(null);
 		}
 		private function keyUpHandler(e:KeyboardEvent):void{
-			if(e.keyCode == Keyboard.SHIFT){
-				_shift = false;
-			}
 			if(!_enabled) return;
 			if(e.keyLocation == 0){
 				var char:String = String.fromCharCode(e.charCode);
 				if(char == _password.substring(_passwordIndex,_passwordIndex+1)){
 					_passwordIndex++;
 					if(_passwordIndex >= _password.length){
-						toogleVisible();
 						_passwordIndex = 0;
+						if(visible && !panels.mainPanel.visible){
+							panels.mainPanel.visible = true;
+						}else{
+							visible = !visible;
+						}
 					}
 				}else{
 					_passwordIndex = 0;
-					
-					if(stage && stage.focus == _commandField){
-						return;
-					}
 					var key:String = char.toLowerCase()+(e.ctrlKey?"0":"1")+(e.altKey?"0":"1")+(e.shiftKey?"0":"1");
 					if(_keyBinds[key]){
 						var bind:Array = _keyBinds[key];
@@ -265,418 +173,38 @@ package com.atticmedia.console {
 				}
 			}
 		}
-		private function toogleVisible():void{
-			visible = !visible;
-			if(visible && stage){
-				stage.focus = _commandField;
-			}
-		}
-		private function linkHandler(e:TextEvent):void{
-			stopDrag();
-			if(e.text == "resetFPS"){
-				if(_fps){
-					_fps.reset();
-				}
-			}else if(e.text == "help"){
-				help();
-			}else if(e.text == "clear"){
-				clear();
-			}else if(e.text == "fps"){
-				if(_fps.running){
-					if(_fps.format >= 1 && _fps.format <= 3){
-						_fps.format++;
-					}else{
-						_fps.format=0;
-						_fps.pause();
-					}
-				}else {
-					_fps.start();
-					_fps.format = 1;
-				}
-				updateMenu();
-			}else if(e.text == "memory"){
-				if(_mm.format<MemoryMonitor.MAX_FORMAT_INT){
-					_mm.format++;
-				}else{
-					_mm.format = 0;
-				}
-			}else if(e.text == "scrollUp"){
-				_traceField.scrollV -= 3;
-			}else if(e.text == "scrollDown"){
-				_traceField.scrollV += 3;
-			}else if(e.text == "close"){
-				visible = false;
-			}else if(e.text == "pause"){
-				paused = !paused;
-			}else if(e.text == "priority"){
-				cyclePriorities();
-			}else if(e.text == "command"){
-				commandLine = !commandLine;
-			}else if(e.text == "ruler"){
-				startRuler();
-			}else if(e.text == "roller"){
-				startRoller();
-			}else if(e.text == "menu"){
-				_menuMode++;
-				if(_menuMode>2){
-					_menuMode = 0;
-				}
-			}else if(e.text == "gc"){
-				gc();
-			}else if(e.text == "trace"){
-				tracing = !tracing;
-				if(tracing){
-					addLine("Tracing turned [<b>On</b>]",-1,CONSOLE_CHANNEL);
-				}else{
-					addLine("Tracing turned [<b>Off</b>]",-1,CONSOLE_CHANNEL);
-				}
-			}else if(e.text == "alpha"){
-				cycleAlpha();
-			}else if(e.text == "channels"){
-				showChannelsPanel();
-			}else if(e.text == "pinChannels"){
-				_channelsPinned = !_channelsPinned;
-			}else if(e.text.substring(0,8) == "channel_"){
-				var chn:String = e.text.substring(8);
-				if(_shift && viewingChannel != GLOBAL_CHANNEL && chn != GLOBAL_CHANNEL){
-					var ind:int = _viewingChannel.indexOf(chn);
-					if(ind>=0){
-						_viewingChannel.splice(ind,1);
-						if(_viewingChannel.length == 0){
-							_viewingChannel = [GLOBAL_CHANNEL];
-						}
-					}else{
-						_viewingChannel.push(chn);
-					}
-					viewingChannel = String(_viewingChannel);
-				}else{
-					viewingChannel = chn;
-				}
-				if(_channelsPanel && !_channelsPinned && !_shift){
-					showChannelsPanel();
-				}
-			}else if(e.text.substring(0,5) == "clip_"){
-				var str:String = "/remap "+e.text.substring(5);
-				if(_isRemote){
-					_sharedConnection.send(REMOTER_CONN_NAME, "runCommand", str);
-				}else{
-					runCommand(str);
-				}
-			}
-			e.stopPropagation();
-		}
-		private function startRuler():void{
-			if(_ruler && contains(_ruler)){
-				return;
-			}
-			_ruler = new Ruler();
-			_ruler.addEventListener(Ruler.EXIT, onRulerExit, false, 0, true);
-			addChild(_ruler);
-			_ruler.start(addLogLine);
-			updateMenu();
-			addLine("<b>Ruler started. Click on two locations to measure.</b>", -1, CONSOLE_CHANNEL);
-		}
-		private function onRulerExit(e:Event):void{
-			if(_ruler && contains(_ruler)){
-				removeChild(_ruler);
-			}
-			_ruler = null;
-			updateMenu();
-		}
-		private function startRoller():void{
-			if(_roller && contains(_roller)){
-				_roller.exit();
-				return;
-			}
-			_roller = new DisplayRoller();
-			_roller.addEventListener(DisplayRoller.EXIT, onRollerExit, false, 0, true);
-			addChild(_roller);
-			_roller.x = mouseX;
-			_roller.y = 14;
-			_roller.start(stage);
-			updateMenu();
-			addLine("<b>Roller started.</b>", -1, CONSOLE_CHANNEL);
-		}
-		private function onRollerExit(e:Event = null):void{
-			if(_roller && contains(_roller)){
-				removeChild(_roller);
-			}
-			_roller = null;
-			updateMenu();
-		}
-		private function showChannelsPanel():void{
-			if(_channelsPanel && contains(_channelsPanel)){
-				removeChild(_channelsPanel);
-				_channelsPanel = null;
-			}else{
-				_channelsPanel = new ChannelsPanel();
-				addChild(_channelsPanel);
-				_channelsPanel.x = mouseX;
-				_channelsPanel.y = 14;
-				_channelsPanel.update(_channels, _viewingChannel, _currentChannel, _channelsPinned);
-			}
-		}
-		private function cyclePriorities():void{
-			if(_priority<10){
-				_priority++;
-			}else{
-				_priority = 0;
-			}
-			updateMenu();
-			refreshPage();
-		}
-		private function cycleAlpha():void{
-			if(_ui.backgroundAlpha<1){
-				_ui.backgroundAlpha += 0.15;
-			}else{
-				_ui.backgroundAlpha = 0;
-			}
-		}
-		private function help():void{
-			addLine("___HELP_________________",-1);
-			addLine("[ R=Reset FPS, F=FPS, M=Memory, G=Garbage Collect, CL=CommandLine, RL=Ruler, Ro=DisplayRoller, C=Clear, T=Tracing, P#=Priority filter level, A=Background Alpha, P=Pause, H=Help, X=Close ]",10);
-			addLine("",0);
-			addLine("Use the arrow at bottom right to scale this window.", 1);
-			addLine("Use the tabs at the top to switch between channels, shift click to select multiple channels.",1);
-			addLine("'Global' channel show outputs from all channels",1);
-			addLine("________________________",-1);
-		}
-		private function scaleByScaler():void{
-			width = _scaler.x;
-			height = _scaler.y+(_commandBackground.visible?_commandBackground.height:0);
-		}
-		private function minimise():void{
-			_isMinimised = true;
-			_traceField.y = -2;
-			_traceField.x = 18;
-			_traceField.scrollH = 0;
-		}
-		private function maximise():void{
-			_isMinimised = false;
-			_traceField.y = 12;
-			_traceField.x = 0;
-		}
-		private function onMenuMouseDown(e:Event):void{
-			if(moveable){
-				startDrag();
-			}
-		}
-		private function onMenuMouseUp(e:Event):void{
-			stopDrag();
-		}
-		private function onScalerDoubleClick(e:Event):void{
-			height =  height<= (MINIMUM_HEIGHT+(_commandBackground.visible?_commandBackground.height:0)+1) ? 180 : MINIMUM_HEIGHT;
-			if(width < 100){
-				width = 200;
-			}
-		}
-		private function onScalerMouseDown(e:Event):void{
-			_scaler.startDrag(false, new Rectangle(MINIMUM_WIDTH, MINIMUM_HEIGHT, 1280, 1280));
-			_isScaling = true;
-		}
-		private function onScalerMouseUp(e:Event):void{
-			stopDrag();
-			_isScaling = false;
-			scaleByScaler();
-		}
-		//
-		//
-		private function refreshPage():void{
-			var str:String = "";
-			for each (var line:LogLineVO in _lines ){
-				if((_viewingChannel.indexOf(FILTERED_CHANNEL)>=0 || line.c!=FILTERED_CHANNEL) && ((_CL.searchTerm && line.c != CONSOLE_CHANNEL && line.c != FILTERED_CHANNEL && line.text.toLowerCase().indexOf(_CL.searchTerm.toLowerCase())>=0 )|| (_viewingChannel.indexOf(line.c)>=0 || _viewingChannel.indexOf(GLOBAL_CHANNEL)>=0) && (line.p >= _priority || _priority == 0) )){
-					str += makeLine(line)+"<br>";
-				}
-			}
-			var sd:Boolean = _traceField.scrollV == _traceField.maxScrollV;
-			_traceField.htmlText = str;
-			if(sd){
-				_traceField.scrollV = _traceField.maxScrollV;
-			}
-		}
-		private function makeLine(line:LogLineVO):String{
-			var colour:String = _ui.getPriorityHex(line.p);
-			var str:String = "";
-			if(line.p >= 10){
-				str += "<b>";
-			}
-			var txt:String = line.text;
-			if(prefixChannelNames && (_viewingChannel.indexOf(GLOBAL_CHANNEL)>=0 || _viewingChannel.length>1) && line.c != _currentChannel){
-				txt = "<a href=\"event:channel_"+line.c+"\">["+line.c+"</a>] "+txt;
-			}
-			str += "<font face=\"Verdana\" size=\"10\" color=\""+colour+"\">"+txt+"</font>";
-			if(line.p >= 10){
-				str += "</b>";
-			}
-			return str;
-		}
-		private function addLogLine(line:LogLineVO, q:Boolean = false):void{
-			if(!(this.quiet && q)){
-				addLine(line.text, line.p, line.c==null?CONSOLE_CHANNEL:line.c, line.r, line.s);
-			}
-		}
-		private function addLine(obj:Object,priority:Number = 0,channel:String = "",isRepeating:Boolean = false, skipSafe:Boolean = false):void{
-			if(!_enabled){
-				return;
-			}
-			var txt:String = String(obj);
-			var tmpText:String = txt;
-			if(!skipSafe){
-				// TODO: any way to tidy / speed this up ?
-				// try <font color="#FFCC00"><b>TEXT</b></font> .
-				txt = txt.replace(/</gim, "&lt;");
- 				txt = txt.replace(/>/gim, "&gt;");
- 				txt = txt.replace(/(&lt;([ ]*(b|i|br|p|font)([ ].*?)?)&gt;)(.*?)(&lt;([\/][ ]*\3)&gt;)/gim, "<$2>$5</$3>");
- 				txt = txt.replace(/&lt;[ ]*br[ ]*([\/]?)&gt;/gim, "<br$1>");
-			}
-			if(channel == ""){
-				channel = _currentChannel;
-			}
-			if(_channels.indexOf(channel) <0 ){
-				_channels.push(channel);
-			}
-			var line:LogLineVO = new LogLineVO(txt,channel,priority, isRepeating, skipSafe);
-			_linesChanged = true;
-			if(isRepeating && _isRepeating){
-				_lines.pop();
-				_lines.push(line);
-			}else{
-				_repeated = 0;
-				_lines.push(line);
-				if(_lines.length > maxLines && maxLines > 0 ){
-					_lines.splice(0,1);
-				}
-				if( tracing && (_tracingChannels == null || _tracingChannels.indexOf(channel)>=0) ){
-					trace("["+channel+"] "+tmpText);
-				}
-			}
-			_isRepeating = isRepeating;
-			
-			if(_isRemoting){
-				_remoteLinesQueue.push(line);
-			}
-		}
-		private function _onEnterFrame(e:Event):void{
-			if(!_enabled){
-				return;
-			}
-			if(_isScaling){
-				scaleByScaler();
-			}
-			if(alwaysOnTop && parent &&  parent.getChildIndex(this) < (parent.numChildren-1)){
-				parent.setChildIndex(this,(parent.numChildren-1));
-				if(!quiet){
-					addLine("Attempted to move console on top (alwaysOnTop enabled)",-1,CONSOLE_CHANNEL);
-				}
-			}
-			if( _isRepeating ){
-				_repeated++;
-				if(_repeated > maxRepeats && maxRepeats >= 0){
-					_isRepeating = false;
-				}
-			}
-			if(!_isPaused && visible){
-				_fps.update(_isRemote?_remoteMSPF:0);
-				var arr:Array = _mm.update(_isRemote?_remoteMem:0);
-				if(arr.length>0){
-					addLine("GARBAGE COLLECTED: "+arr.join(", "),10,CONSOLE_CHANNEL);
-				}
-			}
-			if(_isMinimised){
-				if(_fps.running){
-					_menuField.htmlText = Math.round(_fps.averageFPS) +"]";
-				}else{
-					_menuField.htmlText = "";
-				}
-			}else{
-				var str:String ="<p align=\"right\"><font color=\"#DDDDDD\">";
-				// memory
-				str += _mm.get;
-				// FPS
-				if(_fps.running){
-					str += _fps.get+" ";
-				}
-				// channels
-				if(_channelsPanel){
-					_channelsPanel.update(_channels, _viewingChannel, _currentChannel, _channelsPinned);
-				}else{
-					if(_menuMode != 2){
-						for(var ci:int = 0; (ci<_channels.length&& ci<= 5);  ci++){
-							var channel:String = _channels[ci];
-							var channelTxt:String = (_viewingChannel.indexOf(channel)>=0) ? "<font color=\"#0099CC\"><b>"+channel+"</b></font>" : channel;
-							channelTxt = channel==_currentChannel ? "<i>"+channelTxt+"</i>" : channelTxt;
-							str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
-						}
-					}
-				}
-				if(_channelsPanel || _menuMode == 2 || _channels.length > 5){
-					str += "<font color=\"#0099CC\"><a href=\"event:channels\"><b>...</b>"+(_channelsPanel?"^":"v")+" </a></font> ";
-				}
-				
-				// MENU
-				str += "</font>";
-				if(_menuMode != 1){
-					str += _menuText;
-				}
-				str += "<font color=\"#77D077\"><b><a href=\"event:menu\">@</a></b></font>"; 
-				if(_traceField.scrollV > 1){
-					str += " <a href=\"event:scrollUp\">^</a>";
-				}else{
-					str += " -";
-				}
-				if(_traceField.scrollV< _traceField.maxScrollV){
-					str += " <a href=\"event:scrollDown\">v</a>";
-				}else{
-					str += " -";
-				}
-				str += "</p>";
-				_menuField.htmlText = str;
-				_menuField.setTextFormat(_txtFormat);
-				_menuField.scrollH = _menuField.maxScrollH;
-			}
-			if(!_isPaused && visible){
-				if(_bottomLine.alpha>0){
-					_bottomLine.alpha -= 0.25;
-				}
-				if(_linesChanged){
-					_bottomLine.alpha = 1;
-					refreshPage();
-					_linesChanged = false;
-				}
-			}
-			if(_isRemoting){
-				_remoteDelayed++;
-				if(_remoteDelayed > remoteDelay){
-					updateRemote();
-					_remoteDelayed = 0;
-				}
-			}
-		}
-		private function updateMenu():void{
-			_menuText = "<font color=\"#FF8800\">[";
-			if(_fps.running){
-				_menuText += "<a href=\"event:resetFPS\">R</a> ";
-			}
-			_menuText += "<a href=\"event:fps\">F</a> <a href=\"event:memory\">M</a> <a href=\"event:gc\">G</a> <a href=\"event:command\">CL</a> ";
-			_menuText += (_ruler?"<b>":"")+"<a href=\"event:ruler\">RL</a> "+(_ruler?"</b>":"");
-			_menuText += (_roller?"<b>":"")+"<a href=\"event:roller\">Ro</a> "+(_roller?"</b>":"");
-			_menuText += "<a href=\"event:clear\">C</a> <a href=\"event:trace\">T</a> <a href=\"event:priority\">P"+_priority+"</a> <a href=\"event:alpha\">A</a> <a href=\"event:pause\">P</a> <a href=\"event:help\">H</a> <a href=\"event:close\">X</a>] </font>";
-		}
 		public function destroy():void{
 			enabled = false;
-			closeSharedConnection();
+			remoter.close();
 			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			cl.destory();
 			if(stage){
 				stageRemovedHandle();
 			}
-			_mm = null;
-			_fps.destory();
-			_fps = null;
-			_ui = null;
-			_lines = null;
-			_channels = null;
-			_CL.destory();
-			_timers = null;
+		}
+		public static function get remoteIsRunning():Boolean{
+			var sCon:LocalConnection = new LocalConnection();
+			try{
+				sCon.allowInsecureDomain("*");
+				sCon.connect(REMOTE_CONN_NAME);
+			}catch(error:Error){
+				return true;
+			}
+			sCon.close();
+			return false;
+		}
+		public function addGraph(n:String, obj:Object, prop:String, col:Number, key:String, rect:Rectangle = null, inverse:Boolean = false):void{
+			if(obj == null) {
+				report("ERROR: Graph ["+n+"] received a null object to graph property ["+prop+"].", 10);
+				return;
+			}
+			panels.addGraph(n,obj,prop,col,key,rect,inverse);
+		}
+		public function fixGraphRange(n:String, min:Number = NaN, max:Number = NaN):void{
+			panels.fixGraphRange(n, min, max);
+		}
+		public function removeGraph(n:String, obj:Object = null, prop:String = null):void{
+			panels.removeGraph(n, obj, prop);
 		}
 		//
 		// WARNING: key binding hard references the function. 
@@ -684,31 +212,141 @@ package com.atticmedia.console {
 		//
 		public function bindKey(char:String, ctrl:Boolean, alt:Boolean, shift:Boolean, fun:Function ,args:Array = null):void{
 			if(!char || char.length!=1){
-				addLine("Binding key must be a single character. You gave ["+char+"]", 10,CONSOLE_CHANNEL);
+				report("Binding key must be a single character. You gave ["+char+"]", 10);
 				return;
 			}
-			var key:String = char.toLowerCase()+(ctrl?"0":"1")+(alt?"0":"1")+(shift?"0":"1");
-			if(fun is Function){
-				_keyBinds[key] = [fun,args];
-			}else{
-				delete _keyBinds[key];
-			}
+			bindByKey(getKey(char, ctrl, alt, shift), fun, args);
 			if(!quiet){
-				addLine((fun is Function?"Bined":"Unbined")+" key <b>"+ char.toUpperCase() +"</b>"+ (ctrl?"+ctrl":"")+(alt?"+alt":"")+(shift?"+shift":"")+".",-1,CONSOLE_CHANNEL);
+				report((fun is Function?"Bined":"Unbined")+" key <b>"+ char.toUpperCase() +"</b>"+ (ctrl?"+ctrl":"")+(alt?"+alt":"")+(shift?"+shift":"")+".",-1);
 			}
 		}
-		public function get timers():Timers{
-			return _timers;
+		private function bindByKey(key:String, fun:Function ,args:Array = null):void{
+			if(fun==null){
+				delete _keyBinds[key];
+			}else{
+				_keyBinds[key] = [fun,args];
+			}
 		}
-		
+		private function getKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):String{
+			return char.toLowerCase()+(ctrl?"0":"1")+(alt?"0":"1")+(shift?"0":"1");
+		}
+		public function setPanelPosition(panelname:String, p:Point):void{
+			var panel:AbstractPanel = panels.getPanel(panelname);
+			if(panel){
+				panel.x = p.x;
+				panel.y = p.y;
+			}
+		}
+		public function setPanelArea(panelname:String, rect:Rectangle):void{
+			var panel:AbstractPanel = panels.getPanel(panelname);
+			if(panel){
+				panel.x = rect.x;
+				panel.y = rect.y;
+				panel.width = rect.width;
+				panel.height = rect.height;
+			}
+		}
+		//
+		// Panel settings
+		// basically passing through to panels manager to save lines
+		//
+		public function get channelsPanel():Boolean{
+			return panels.channelsPanel;
+		}
+		public function set channelsPanel(b:Boolean):void{
+			panels.channelsPanel = b;
+			if(b){
+				var chPanel:ChannelsPanel = panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
+				chPanel.start(_channels);
+			}
+			panels.updateMenu();
+		}
+		//
+		public function get displayRoller():Boolean{
+			return panels.displayRoller;
+		}
+		public function set displayRoller(b:Boolean):void{
+			panels.displayRoller = b;
+		}
+		public function setRollerCaptureKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):void{
+			if(_rollerCaptureKey){
+				bindByKey(_rollerCaptureKey, null);
+			}
+			if(char && char.length==1){
+				_rollerCaptureKey = getKey(char, ctrl, alt, shift);
+				bindByKey(_rollerCaptureKey, onRollerCaptureKey);
+			}
+		}
+		private function onRollerCaptureKey():void{
+			if(displayRoller){
+				report("Display Roller Capture:"+RollerPanel(panels.getPanel(PANEL_ROLLER)).capture(), -1);
+			}
+		}
+		//
+		public function get fpsMonitor():int{
+			return panels.fpsMonitor;
+		}
+		public function set fpsMonitor(n:int):void{
+			panels.fpsMonitor = n;
+		}
+		//
+		public function get memoryMonitor():int{
+			return panels.memoryMonitor;
+		}
+		public function set memoryMonitor(n:int):void{
+			panels.memoryMonitor = n;
+		}
+		//
+		public function watch(o:Object,n:String = null):String{
+			var className:String = getQualifiedClassName(o);
+			if(!n) n = className+"@"+getTimer();
+			var nn:String = mm.watch(o,n);
+			if(!quiet)
+				report("Watching <b>"+className+"</b> as <p5>"+ nn +"</p5>.",-1);
+			return nn;
+		}
+		public function unwatch(n:String):void{
+			mm.unwatch(n);
+		}
+		public function gc():void{
+			if(remote){
+				try{
+					report("Sending garbage collection request to client",-1);
+					remoter.send("gc");
+				}catch(e:Error){
+					report(e,10);
+				}
+			}else{
+				var ok:Boolean = mm.gc();
+				var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
+				report(str,(ok?-1:10));
+			}
+		}
+		public function store(n:String, obj:Object, strong:Boolean = false):void{
+			var nn:String = cl.store(n, obj, strong);
+			if(!quiet && nn){
+				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+getQualifiedClassName(obj)+"</b> using WEAK reference");
+				report("Stored <p5>$"+nn+"</p5> in commandLine for "+ str +".",-1);
+			}
+		}
+		public function get strongRef():Boolean{
+			return cl.useStrong;
+		}
+		public function set strongRef(b:Boolean):void{
+			cl.useStrong = b;
+		}
+		public function inspect(obj:Object, detail:Boolean = true):void{
+			report("INSPECT: "+ cl.inspect(obj,detail),5);
+		}
 		public function set enabled(newB:Boolean):void{
+			if(_enabled == newB) return;
 			if(_enabled && !newB){
-				addLine("Console is now [<b>Disabled</b>]",10,CONSOLE_CHANNEL);
+				report("Disabled",10);
 			}
 			var pre:Boolean = _enabled;
 			_enabled = newB;
 			if(!pre && newB){
-				addLine("Console is now [<b>Enabled</b>]",-1,CONSOLE_CHANNEL);
+				report("Enabled",-1);
 			}
 		}
 		public function get enabled():Boolean{
@@ -718,378 +356,111 @@ package com.atticmedia.console {
 			return _isPaused;
 		}
 		public function set paused(newV:Boolean):void{
+			if(_isPaused == newV) return;
 			if(newV){
-				this.addLine("Paused",10,CONSOLE_CHANNEL);
-				// refresh page here to show the message before it pauses.
-				refreshPage();
+				report("Paused",10);
 			}else{
-				this.addLine("Resumed",-1,CONSOLE_CHANNEL);
+				report("Resumed",-1);
 			}
 			_isPaused = newV;
-			refreshPage();
+			panels.mainPanel.updateMenu(true);
+			panels.mainPanel.refresh();
 		}
 		//
-		// UI CUSTOMIZATION
 		//
-		public function setPriorityColour(p:int, col:String):void{
-			_ui.setPriorityHex(p, col);
-		}
-		public function set uiPreset(p:int):void{
-			_ui.preset = p;
-		}
-		public function get uiPreset():int{
-			return _ui.preset;
-		}
+		//
 		override public function get width():Number{
-			return _background.width;
+			return panels.mainPanel.width;
 		}
 		override public function set width(newW:Number):void{
-			if(newW <= 50){
-				_traceField.visible = false;
-				newW = newW <MINIMUM_WIDTH ? MINIMUM_WIDTH: newW;
-				if(newW == MINIMUM_WIDTH){
-					commandLine = false;
-				}
-			}else{
-				_traceField.visible = true;
-			}
-			_traceField.width = newW;
-			_menuField.width = newW;
-			_scaler.x = newW;
-			_background.width = newW;
-			_commandField.width = newW;
-			_commandBackground.width = newW;
-			
-			_bottomLine.graphics.clear();
-			_bottomLine.graphics.lineStyle(1, 0xFF0000);
-			_bottomLine.graphics.moveTo(5, 0);
-			_bottomLine.graphics.lineTo(newW-10, 0);
+			panels.mainPanel.width = newW;
 		}
 		override public function set height(newW:Number):void{
-			if(_commandBackground.visible){
-				newW -= _commandBackground.height;
-			}
-			if(newW <MINIMUM_HEIGHT){
-				newW = MINIMUM_HEIGHT;
-			}
-			if(!this._isMinimised && newW <= 40){
-				this.minimise();
-			}
-			if(this._isMinimised && newW > 40){
-				this.maximise();
-			}
-			if(this._isMinimised){
-				_traceField.height = newW+6;
-			}else{
-				_traceField.height = newW-12;
-			}
-			_commandField.y = newW;
-			_commandBackground.y = newW;
-			_scaler.y = newW;
-			_bottomLine.y = newW-1;
-			_background.height = newW;
-			_traceField.scrollV = _traceField.maxScrollV;
+			panels.mainPanel.height = newW;
 		}
 		override public function get height():Number{
-			return _background.height+(_commandBackground.visible?_commandBackground.height:0);
+			return panels.mainPanel.height;
+		}
+		override public function get x():Number{
+			return panels.mainPanel.x;
+		}
+		override public function set x(newW:Number):void{
+			panels.mainPanel.x = newW;
+		}
+		override public function set y(newW:Number):void{
+			panels.mainPanel.y = newW;
+		}
+		override public function get y():Number{
+			return panels.mainPanel.y;
 		}
 		//
 		//
-		public function get currentChannel():String{
-			return _currentChannel;
-		}
-		public function set currentChannel(newV:String):void{
-			_currentChannel = newV ;
-		}
-		public function get viewingChannel():String{
-			return String(_viewingChannel);
-		}
-		public function set viewingChannel(newV:String):void{
-			if(newV.length>0){
-				_viewingChannel = newV.split(",");
-				refreshPage();
-			}
-		}
-		public function clear(channel:String = null):void{
-			if(channel){
-				for(var i:int=(_lines.length-1);i>=0;i--){
-					if(_lines[i] && _lines[i].c == channel){
-						delete _lines[i];
-					}
-				}
-			}else{
-				_lines = new Array();
-				_channels = new Array(GLOBAL_CHANNEL);
-			}
-			refreshPage();
-		}
-		public function set tracingChannels(newVar:String):void{
-			if(newVar.length>0){
-				_tracingChannels = newVar.split(",");
-			}
-		}
-		public function get tracingChannels():String{
-			return String(_tracingChannels);
-		}
-		public function get menuMode():int{
-			return _menuMode;
-		}
-		public function set menuMode(newV:int):void{
-			if(newV >= 0 && newV <= 2){
-				_menuMode = newV ;
-			}
-		}
 		//
-		// FPS
-		//
-		public function get fpsMode ():int{
-			return _fps.running?_fps.format:0;
-		}
-		public function set fpsMode (v:int):void{
-			if(v == 0 && _fps.running){
-				_fps.pause();
-			}else if(!_fps.running && v>0){
-				_fps.start();
-			}
-			if(v>0){
-				_fps.format = v;
-			}
-			updateMenu();
-		}
-		public function fpsReset():void{
-			_fps.reset();
-		}
-		public function get fpsBase():int{
-			return _fps.base;
-		}
-		public function set fpsBase(v:int):void{
-			_fps.base = v;
-		}
-		public function get fps():Number{
-			return _fps.current;
-		}
-		public function get averageFPS ():Number{
-			return _fps.averageFPS;
-		}
-		public function get mspf ():Number{
-			return _fps.mspf;
-		}
-		public function get averageMsPF ():Number{
-			return _fps.averageMsPF;
-		}
-		//
-		// Memory Monitor
-		//
-		public function watch(o:Object,n:String = null):String{
-			var className:String = getQualifiedClassName(o);
-			if(!n){
-				n = className+"@"+getTimer();
-			}
-			var nn:String = _mm.watch(o,n);
-			if(!quiet){
-				addLine("Watching <b>"+className+"</b> as <font color=\"#FF0000\"><b>"+ nn +"</b></font>.",-1,CONSOLE_CHANNEL, false, true);
-			}
-			return nn;
-		}
-		public function unwatch(n:String):void{
-			_mm.unwatch(n);
-		}
-		public function get minMemory():uint {
-			return _mm.minMemory;
-		}
-		public function get maxMemory():uint {
-			return _mm.maxMemory;
-		}
-		public function get currentMemory():uint {
-			return _mm.currentMemory;
-		}
-		public function gc():void{
-			var ok:Boolean = _mm.gc();
-			var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
-			addLine(str,(ok?-1:10),CONSOLE_CHANNEL);
-		}
-		//
-		//
-		// COMMAND LINE
-		//
-		public function set commandLine (newB:Boolean):void{
-			if(newB){
-				_commandField.visible = true;
-				_commandBackground.visible = true;
-				if(!quiet){
-					addLine("<b>/help</b> for CommandLine help",-1,CONSOLE_CHANNEL);
-				}
-			}else{
-				_commandField.visible = false;
-				_commandBackground.visible = false;
-			}
-		}
-		public function get commandLine ():Boolean{
-			return _commandField.visible;
-		}
-		public function runCommand(line:String):Object{
-			return _CL.run(line);
-		}
-		public function store(n:String, obj:Object, strong:Boolean = false):void{
-			var nn:String = _CL.store(n, obj, strong);
-			if(!quiet && nn){
-				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+getQualifiedClassName(obj)+"</b> using WEAK reference");
-				addLine("Stored <font color=\"#FF0000\"><b>$"+nn+"</b></font> in commandLine for "+ str +".",-1,CONSOLE_CHANNEL,false,true);
-			}
-		}
-		public function inspect(obj:Object, detail:Boolean = true):void{
-			add("INSPECT: "+ _CL.inspect(obj,detail));
-		}
-		public function get strongRef():Boolean{
-			return _CL.useStrong;
-		}
-		public function set strongRef(obj:Boolean):void{
-			_CL.useStrong = obj;
-		}
-		public function get commandBase():Object{
-			return _CL.base;
-		}
-		public function set commandBase(obj:Object):void{
-			_CL.base = obj;
-		}
-		private function commandKeyDown(e:KeyboardEvent):void{
-			e.stopPropagation();
-		}
-		private function commandKeyUp(e:KeyboardEvent):void{
+		private function _onEnterFrame(e:Event):void{
 			if(!_enabled){
 				return;
 			}
-			if( e.keyCode == 13){
-				if(_isRemote){
-					addLine("Run command at remote: <b>"+_commandField.text+"</b>",-2,CONSOLE_CHANNEL);
-					try{
-						_sharedConnection.send(REMOTER_CONN_NAME, "runCommand", _commandField.text);
-					}catch(err:Error){
-						addLine("Command could not be sent to client: " + err, 10,CONSOLE_CHANNEL);
-					}
-				}else{
-					runCommand(_commandField.text);
-				}
-				_commandsHistory.unshift(_commandField.text);
-				_commandsInd = -1;
-				_commandField.text = "";
-				// maximum 20 commands history
-				if(_commandsHistory.length>20){
-					_commandsHistory.splice(20);
-				}
-			}else if( e.keyCode == 38 ){
-				if(_commandsInd<(_commandsHistory.length-1)){
-					_commandsInd++;
-					_commandField.text = _commandsHistory[_commandsInd];
-					_commandField.setSelection(_commandField.text.length, _commandField.text.length);
-				}else{
-					_commandsInd = _commandsHistory.length;
-					_commandField.text = "";
-				}
-			}else if( e.keyCode == 40){
-				if(_commandsInd>0){
-					_commandsInd--;
-					_commandField.text = _commandsHistory[_commandsInd];
-					_commandField.setSelection(_commandField.text.length, _commandField.text.length);
-				}else{
-					_commandsInd = -1;
-					_commandField.text = "";
+			var time:int = getTimer();
+			_mspf = time-_previousTime;
+
+			_previousTime = time;
+			if(alwaysOnTop && parent &&  parent.getChildIndex(this) < (parent.numChildren-1)){
+				parent.setChildIndex(this,(parent.numChildren-1));
+				if(!quiet){
+					report("Attempted to move console on top (alwaysOnTop enabled)",-1);
 				}
 			}
-			e.stopPropagation();
+			if( _isRepeating ){
+				_repeated++;
+				if(_repeated > maxRepeats && maxRepeats >= 0){
+					_isRepeating = false;
+				}
+			}
+			if(!_isPaused && visible){
+				var arr:Array = mm.update();
+				if(arr.length>0){
+					report("GARBAGE COLLECTED "+arr.length+" item(s): "+arr.join(", "),10);
+				}
+				panels.mainPanel.update(!_isPaused && _linesChanged);
+				if(_linesChanged) {
+					var chPanel:ChannelsPanel = panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
+					if(chPanel){
+						chPanel.update();
+					}
+				}
+				_linesChanged = false;
+			}
+			if(remoter.remoting){
+				remoter.update(_mspf, stage?stage.frameRate:0);
+			}
 		}
-		private function onCommandSearch(e:Event=null):void{
-			clear(FILTERED_CHANNEL);
-			addLine("Filtering ["+_CL.searchTerm+"]", 10,FILTERED_CHANNEL);
-			viewingChannel = FILTERED_CHANNEL;
+		public function get fps():Number{
+			return 1000/mspf;
+		}
+		public function get mspf():Number{
+			return _mspf;
+		}
+		public function get currentMemory():uint {
+			return remoter.isRemote?remoter.remoteMem:System.totalMemory;
 		}
 		//
 		// REMOTING
 		//
-		private function updateRemote():void{
-			if(_remoteLinesQueue.length==0) return;
-			try{
-				_sharedConnection.send(REMOTE_CONN_NAME, "remoteLogSend", [_remoteLinesQueue,mspf, currentMemory]);
-			}catch(e:Error){
-				// don't care
-			}
-			_remoteLinesQueue = new Array();
-		}
 		public function get remoting():Boolean{
-			return _isRemoting;
+			return remoter.remoting;
 		}
 		public function set remoting(newV:Boolean):void{
-			_isRemoting = newV ;
-			_remoteLinesQueue = null;
-			if(newV){
-				_isRemote = false;
-				_remoteDelayed = 0;
-				_remoteLinesQueue = new Array();
-				startSharedConnection();
-				addLine("Remoting started [sandboxType: "+Security.sandboxType+"]",10,CONSOLE_CHANNEL);
-				try{
-					_sharedConnection.allowInsecureDomain("*", "localhost");
-                	_sharedConnection.connect(REMOTER_CONN_NAME);
-           		}catch (error:Error){
-					addLine("Could not create client service. You will not be able to control this console with remote.", 10,CONSOLE_CHANNEL);
-           		}
-			}else{
-				closeSharedConnection();
-			}
+			remoter.remoting = newV;
 		}
-		public function get isRemote():Boolean{
-			return _isRemote;
+		public function get remote():Boolean{
+			return remoter.isRemote;
 		}
-		public function set isRemote(newV:Boolean):void{
-			_isRemote = newV ;
-			if(newV){
-				_isRemoting = false;
-				startSharedConnection();
-				try{
-					_sharedConnection.allowInsecureDomain("*", "localhost");
-                	_sharedConnection.connect(REMOTE_CONN_NAME);
-					addLine("Remote started [sandboxType: "+Security.sandboxType+"]",10,CONSOLE_CHANNEL);
-           		}catch (error:Error){
-					_isRemoting = false;
-					addLine("Could not create remote service. You might have a console remote already running.", 10,CONSOLE_CHANNEL);
-           		}
-			}else{
-				closeSharedConnection();
-			}
+		public function set remote(newV:Boolean):void{
+			remoter.isRemote = newV;
+			panels.updateMenu();
 		}
-		private function startSharedConnection():void{
-			closeSharedConnection();
-			_sharedConnection = new LocalConnection();
-			_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
-			_sharedConnection.client = this;
-			// TODO: security measures may need to be looked at.
-		}
-		private function closeSharedConnection():void{
-			if(_sharedConnection){
-				try{
-					_sharedConnection.close();
-				}catch(error:Error){
-					addLine("closeSharedConnection: "+error, 10,CONSOLE_CHANNEL);
-				}
-			}
-			_sharedConnection = null;
-		}
-		private function onSharedStatus(e:StatusEvent):void{
-			// this will get called quite often if there is no actual remote server running...
-		}
-		public static function get remoteIsRunning():Boolean{
-			var sCon:LocalConnection = new LocalConnection();
-			try{
-				sCon.allowInsecureDomain("*", "localhost");
-				sCon.connect(REMOTE_CONN_NAME);
-			}catch(error:Error){
-				return true;
-			}
-			sCon.close();
-			return false;
-		}
-		public function remoteLogSend(obj:Array):void{
-			if(!_isRemote || !obj) return;
+		private function remoteLogSend(obj:Array):void{
+			if(!remoter.isRemote || !obj) return;
 			var lines:Array = obj[0];
 			for each( var line:Object in lines){
 				if(line){
@@ -1100,13 +471,149 @@ package com.atticmedia.console {
 					addLine(line["text"],p,channel,r,safe);
 				}
 			}
-			_remoteMSPF = obj[1];
-			_remoteMem = obj[2];
+			var remoteMSPFs:Array = obj[1];
+			if(remoteMSPFs){
+				var fpsp:FPSPanel = panels.getPanel(PANEL_FPS) as FPSPanel;
+				if(fpsp){
+					// the first value is stage.FrameRate
+					var highest:Number = remoteMSPFs[0];
+					fpsp.highest = highest;
+					var len:int = remoteMSPFs.length;
+					for(var i:int = 1; i<len;i++){
+						var fps:Number = 1000/remoteMSPFs[i];
+						if(fps > highest) fps = highest;
+						fpsp.addCurrent(fps);
+					}
+					fpsp.updateKeyText();
+					fpsp.drawGraph();
+				}
+			}
+			remoter.remoteMem = obj[2];
+		}
+		//
+		//
+		//
+		public function set viewingChannel(str:String):void{
+			if(str){
+				viewingChannels = [str];
+			}else{
+				viewingChannels = [GLOBAL_CHANNEL];
+			}
+		}
+		public function get viewingChannel():String{
+			return _viewingChannels.join(",");
+		}
+		public function get viewingChannels():Array{
+			return _viewingChannels.concat();
+		}
+		public function set viewingChannels(a:Array):void{
+			_viewingChannels.splice(0);
+			if(a && a.length){
+				_viewingChannels.push.apply(this, a);
+			}else{
+				_viewingChannels.push(GLOBAL_CHANNEL);
+			}
+			panels.mainPanel.refresh();
+			panels.updateMenu();
+		}
+		public function set tracingChannels(newVar:Array):void{
+			_tracingChannels = newVar?newVar.concat():[];
+		}
+		public function get tracingChannels():Array{
+			return _tracingChannels;
+		}
+		//
+		public function get tracing():Boolean{
+			return _tracing;
+		}
+		public function set tracing(b:Boolean):void{
+			_tracing = b;
+			panels.mainPanel.updateMenu();
+		}
+		public function set traceCall (f:Function):void{
+			if(f==null){
+				report("C.traceCall function setter must be not be null.", 10);
+			}else{
+				_traceCall = f;
+			}
+		}
+		public function get traceCall ():Function{
+			return _traceCall;
+		}
+		public function report(obj:*,priority:Number = 0):void{
+			addLine(obj, priority, CONSOLE_CHANNEL, false, true);
+		}
+		private function addLine(obj:*,priority:Number = 0,channel:String = "",isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+			if(!_enabled){
+				return;
+			}
+			var isRepeat:Boolean = (isRepeating && _isRepeating);
+			var txt:String = String(obj);
+			if( _tracing && !isRepeat && (_tracingChannels.indexOf(channel)>=0) ){
+				if(tracingPriority <= priority || tracingPriority <= 0){
+					_traceCall("["+channel+"] "+txt);
+				}
+			}
+			if(!skipSafe){
+				txt = txt.replace(/</gim, "&lt;");
+ 				txt = txt.replace(/>/gim, "&gt;");
+			}
+			if(!channel){
+				channel = defaultChannel;
+			}
+			if(_channels.indexOf(channel) < 0){
+				_channels.push(channel);
+			}
+			_linesChanged = true;
+			var line:LogLineVO = new LogLineVO(txt,channel,priority, isRepeating, skipSafe);
+			if(isRepeat){
+				_lines.pop();
+				_lines.push(line);
+			}else{
+				_repeated = 0;
+				_lines.push(line);
+				if(_lines.length > maxLines && maxLines > 0 ){
+					_lines.splice(0,1);
+				}
+			}
+			_isRepeating = isRepeating;
+			
+			if(remoter.remoting){
+				remoter.addLineQueue(line);
+			}
+		}
+		//
+		// COMMAND LINE
+		//
+		public function set commandLine (newB:Boolean):void{
+			panels.mainPanel.commandLine = newB;
+		}
+		public function get commandLine ():Boolean{
+			return panels.mainPanel.commandLine;
+		}
+		public function set commandBase (v:Object):void{
+			if(v) cl.base = v;
+		}
+		public function get commandBase ():Object{
+			return cl.base;
+		}
+		public function runCommand(line:String):Object{
+			if(remoter.isRemote){
+				report("Run command at remote: "+line,-2);
+				try{
+					remoter.send("runCommand", line);
+				}catch(err:Error){
+					report("Command could not be sent to client: " + err, 10);
+				}
+			}else{
+				return cl.run(line);
+			}
+			return null;
 		}
 		//
 		// LOGGING
 		//
-		public function ch(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
+		public function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			var chn:String;
 			if(channel is String){
 				chn = String(channel);
@@ -1115,20 +622,48 @@ package com.atticmedia.console {
 				var ind:int = chn.lastIndexOf("::");
 				chn = chn.substring(ind>=0?(ind+2):0);
 			}else{
-				chn = _currentChannel;
+				chn = defaultChannel;
 			}
 			addLine(newLine,priority,chn, isRepeating);
 		}
-		public function pk(channel:Object, newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
+		/*public function pk(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			var chn:String = getQualifiedClassName(channel);
 			var ind:int = chn.lastIndexOf("::");
 			if(ind>=0){
 				chn = chn.substring(0,ind);
 			}
 			addLine(newLine,priority,chn, isRepeating);
+		}*/
+		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
+			addLine(newLine,priority, defaultChannel, isRepeating);
 		}
-		public function add(newLine:Object, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(newLine,priority, _currentChannel, isRepeating);
+		public function set filterText(str:String):void{
+			_filterText = str;
+			if(str){
+				clear(FILTERED_CHANNEL);
+				addLine("Filtering ["+str+"]", 10,FILTERED_CHANNEL);
+				viewingChannels = [FILTERED_CHANNEL];
+			}else if(viewingChannel == FILTERED_CHANNEL){
+				viewingChannels = [GLOBAL_CHANNEL];
+			}
+		}
+		public function get filterText():String{
+			return _filterText;
+		}
+		public function clear(channel:String = null):void{
+			if(channel){
+				for(var i:int=(_lines.length-1);i>=0;i--){
+					if(_lines[i] && _lines[i].c == channel){
+						delete _lines[i];
+					}
+				}
+			}else{
+				_lines.splice(0);
+				_channels.splice(0);
+				_channels.push(GLOBAL_CHANNEL);
+			}
+			panels.mainPanel.refresh();
+			panels.updateMenu();
 		}
 	}
 }

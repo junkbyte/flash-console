@@ -8,7 +8,7 @@ http://code.google.com/p/flash-console/w/list
 
 ==Flash Console==
 
-  * Version: 1.15 (Aug 2009)
+  * Version: 2.0 beta2 (Sept 2009)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo
 
@@ -17,6 +17,7 @@ http://code.google.com/p/flash-console/w/list
 
 
 NOTE: To use in flex or AIR you need to wrap Console into a flex friendly component. use ConsoleWrapper as below:
+class file can be found in (project)/flexwrapper/com/atticmedia/console/flex/ConsoleWrapper - copy to src folder.
 
 {{{
 import com.atticmedia.console.C;
@@ -31,10 +32,18 @@ C.add("Hello Flex World");
 
 ==Short description==
 Console is an as3 logger, debugger which runs inside the flash app.
-Features include: priorities, channels, FPS display, memory/garbage collection monitor, remote logging, non-repeative tracing, ruler tool, display mapping, and many more!
+Features include: priorities, channels, FPS display, memory/garbage collection monitor, graphing, remote logging, non-repeative tracing, ruler tool, display mapping, and many more!
 
 
 == Change Log ==
+
+===2.0===
+  * MAJOR revamp to interface and code structure.
+  * Features such as fpsMonitor and MemoryMonitor are now independent panels.
+  * Graphing feature added.
+  * Minor C. accessor name changes, such as fpsMode is now changed to fpsMonitor
+  * Console logs will no longer render HTML, it will appear as plain text.
+
 
 ===1.15===
   * `C.inspect(...)` or commandline: `/inspect` should now also print 'variables' of the object.

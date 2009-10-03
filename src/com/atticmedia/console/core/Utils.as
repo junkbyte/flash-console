@@ -1,8 +1,11 @@
 /*
 * 
-* Copyright (c) 2008 Atticmedia
+* Copyright (c) 2008-2009 Lu Aye Oo
 * 
 * @author 		Lu Aye Oo
+* 
+* http://code.google.com/p/flash-console/
+* 
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -18,9 +21,7 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 * 
-* 
 */
-
 package com.atticmedia.console.core {
 	import flash.display.Graphics;	
 	import flash.geom.Point;	
@@ -70,6 +71,13 @@ package com.atticmedia.console.core {
 		}
 		public static function getPointOnCircle(radius:Number, rad:Number):Point {
 			return new Point(radius * Math.cos(rad),radius * Math.sin(rad));
+		}
+		//
+		
+		public static function averageOut(current:Number, addition:Number, over:Number):Number {
+			// this does not output an absolute average - you would need a history of values for this
+			// This way is more light weight but not as accurate.
+			return current+((addition-current)/over);
 		}
 	}
 }

@@ -1,8 +1,11 @@
 /*
 * 
-* Copyright (c) 2008 Atticmedia
+* Copyright (c) 2008-2009 Lu Aye Oo
 * 
 * @author 		Lu Aye Oo
+* 
+* http://code.google.com/p/flash-console/
+* 
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -18,43 +21,86 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 * 
-* 
 */
-package com.atticmedia.console.core {
-	import flash.geom.Rectangle;
+package com.atticmedia.console.view {
+	import flash.display.BlendMode;	
+	import flash.ui.Mouse;	
+	import flash.display.Shape;	
+	
+	import com.atticmedia.console.Console;
+	import com.atticmedia.console.core.Utils;
+	
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
+	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;		
 
 	public class Ruler extends Sprite{
-		
-		public static const NAME:String = "ruler";
 		public static const EXIT:String = "exit";
+		private static const POINTER_DISTANCE:int = 12;
 		
-		private var _reportFunction:Function;
+		private var _master:Console;
 		private var _area:Rectangle;
+		private var _pointer:Shape;
+		
+		private var _posTxt:TextField;
 		
 		private var _points:Array;
 		
 		public function Ruler() {
-			name = NAME;
+			
 		}
-		public function start(reportFunction:Function = null):void{
-			_reportFunction = reportFunction;
+		public function start(console:Console):void{
+			_master = console;
 			buttonMode = true;
 			_points = new Array();
+			_pointer = new Shape();
+			addChild(_pointer);
 			var p:Point = new Point();
 			p = globalToLocal(p);
 			_area = new Rectangle(-stage.stageWidth*1.5+p.x, -stage.stageHeight*1.5+p.y, stage.stageWidth*3, stage.stageHeight*3);
-			graphics.beginFill(0x000000, 0.2);
+			graphics.beginFill(0x000000, 0.1);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
+			//
+			_posTxt = new TextField();
+			_posTxt.name = "positionText";
+			_posTxt.autoSize = TextFieldAutoSize.LEFT;
+            _posTxt.background = true;
+            _posTxt.backgroundColor = _master.style.tooltipBackgroundColor;
+			_posTxt.styleSheet = console.style.css;
+			_posTxt.mouseEnabled = false;
+			addChild(_posTxt);
+			//
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
+			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, false, 0, true);
+			onMouseMove();
+			if(_master.rulerHidesMouse) Mouse.hide();
+			_master.report("<b>Ruler started. Click on two locations to measure.</b>", -1);
+		}
+		private function onMouseMove(e:MouseEvent = null):void{
+			_pointer.graphics.clear();
+			_pointer.graphics.lineStyle(1, 0xAACC00, 1);
+			_pointer.graphics.moveTo(_area.x, mouseY);
+			_pointer.graphics.lineTo(_area.x+_area.width, mouseY);
+			_pointer.graphics.moveTo(mouseX, _area.y);
+			_pointer.graphics.lineTo(mouseX, _area.y+_area.height);
+			_pointer.blendMode = BlendMode.INVERT;
+			_posTxt.text = "<s>"+mouseX+","+mouseY+"</s>";
+			//
+			_posTxt.x = mouseX-_posTxt.width-POINTER_DISTANCE;
+			_posTxt.y = mouseY-_posTxt.height-POINTER_DISTANCE;
+			if(_posTxt.x < 0){
+				_posTxt.x = mouseX+POINTER_DISTANCE;
+			}
+			if(_posTxt.y < 0){
+				_posTxt.y = mouseY+POINTER_DISTANCE;
+			}
 		}
 		private function onMouseClick(e:MouseEvent):void{
 			e.stopPropagation();
@@ -65,6 +111,10 @@ package com.atticmedia.console.core {
 				graphics.drawCircle(p.x, p.y, 3);
 				_points.push(p);
 			}else if(_points.length==1){
+				if(_master.rulerHidesMouse) Mouse.show();
+				removeChild(_pointer);
+				removeChild(_posTxt);
+				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 				p = _points[0];
 				var p2:Point =  new Point(e.localX, e.localY);
 				_points.push(p2);
@@ -151,19 +201,19 @@ package com.atticmedia.console.core {
 				graphics.moveTo(p.x, p.y);
 				graphics.lineTo(p2.x, p2.y);
 				//
-				report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", -2);
-				report("Distance: <b>"+Utils.round(d,100) +"</b>", -2);
-				report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", -2);
-				report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", -2);
-				report("Angle from first point (red): <b>"+a1+"°</b>", -2);
-				report("Angle from second point (orange): <b>"+a2+"°</b>", -2);
+				_master.report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", -2);
+				_master.report("Distance: <b>"+Utils.round(d,100) +"</b>", -2);
+				_master.report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", -2);
+				_master.report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", -2);
+				_master.report("Angle from first point (red): <b>"+a1+"°</b>", -2);
+				_master.report("Angle from second point (orange): <b>"+a2+"°</b>", -2);
 			}else{
 				exit();
 			}
 		}
 		public function exit():void{
 			_points = null;
-			_reportFunction = null;
+			_master = null;
 			dispatchEvent(new Event(EXIT));
 		}
 		private function makeTxtField(col:Number = 0x00FF00, b:Boolean = true):TextField{
@@ -173,13 +223,6 @@ package com.atticmedia.console.core {
 			txt.selectable = false;
         	txt.defaultTextFormat = format;
            	return txt;
-		}
-		private function report(txt:String, prio:Number=5, skipSafe:Boolean = false, quiet:Boolean = false):void {
-			if (_reportFunction != null) {
-				_reportFunction(new LogLineVO(txt,null,prio,false,skipSafe), quiet);
-			} else {
-				trace("C: "+ txt);
-			}
 		}
 	}
 }

@@ -24,21 +24,12 @@ C.start(this, "");
 }}}
 
 If you are using Flex you need to wrap Console into a flex friendly component. Use ConsoleWrapper as below instead of doing C.start():
+class file can be found in (project)/flexwrapper/com/atticmedia/console/flex/ConsoleWrapper - copy to src folder.
 
 {{{
 import com.atticmedia.console.C;
 import com.atticmedia.console.flex.ConsoleWrapper;
 ConsoleWrapper.start(this);
-}}}
-
-Below is recommended (but optional) settings.
-{{{
-C.commandLine = true; // enable command line
-C.fpsMode = 2; // enable FPS monitor with setting 2
-C.memoryMonitor = 1; // enable memory usage monitor with setting 1
-C.width = 600;
-C.height = 300;
-//C.tracing = true; // trace on flash's normal 'trace'
 }}}
 
 Logging...
@@ -53,9 +44,6 @@ C.add("This is totally a dummy", 0);
 C.ch("myChannel","Hello my Channel");
 C.ch("myChannel","Hello, important message at my channel", 10);
 }}}
-
-Press @ at the top for console menu.
-Press H on second right for console menu help.
 
 ==Advanced==
 
@@ -101,7 +89,6 @@ C.viewingChannel = "myChannel";
 C.paused = true;
 
 // hide console
-// This is the same as pressing H button from console menu
 // It will keep logging but will stop all update processes
 C.visible = false;
 

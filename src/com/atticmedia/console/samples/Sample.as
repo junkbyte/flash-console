@@ -1,8 +1,11 @@
 ﻿/*
 * 
-* Copyright (c) 2008 Atticmedia
+* Copyright (c) 2008-2009 Lu Aye Oo
 * 
 * @author 		Lu Aye Oo
+* 
+* http://code.google.com/p/flash-console/
+* 
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -18,46 +21,44 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 * 
-* 
 */
 package com.atticmedia.console.samples {
+	import flash.geom.Rectangle;	
 	import flash.utils.*;	
 	import flash.events.MouseEvent;	
 	import flash.display.*;
 	import flash.text.*;
 	import com.atticmedia.console.*;
 
-	public class Sample extends MovieClip{
+	public dynamic class Sample extends MovieClip{
 
 		public function Sample() {
 			//
 			// SET UP
-			C.start(this, ""); 
-			// "" - change for password. this will start hidden
-			
+			//C.start(this, "", 2);
+			C.start(this, "`"); 
+			// "`" - change for password. This will start hidden
+			C.visible = true; // show console, because having password hides console.
+			C.tracing = true; // trace on flash's normal trace
 			C.commandLine = true; // enable command line
 			
-			C.fpsMode = 2; // enable FPS monitor with setting 2
-			C.menuMode = 2;
 			C.width = 600;
-			C.height = 200;//C.tracing = true; // trace on flash's normal trace
+			C.height = 200;
 			
 			C.remoting = true;
 
 			// LOGGING
 			C.add("This is an important error alert! (priority 10)", 10);
-			C.add("This is a less importnat error alert. (priority 9)", 9);
+			C.add("This is a less important error alert. (priority 9)", 9);
 			C.add("This is a warning! (priority 8)", 8);
 			C.add("This is a message (priority 5)", 5);
 			C.add("This is a default log level (priority 2)", 2);
 			C.add("This is totally a dummy (priority 0)", 0);
-
+			
+			C.setRollerCaptureKey("c");
 			//
 			C.ch("myChannel", "Hello my Channel");
 			C.ch("myChannel", "Hello important message at my channel", 10);
-
-			// press @ at the top for console menu.
-			// press H on second right for console menu help
 
 			// if you want to use command line, please type /help 
 			// in command line at the bottom for examples
@@ -65,14 +66,19 @@ package com.atticmedia.console.samples {
 			// garbage collection monitor
 			var aSprite:Sprite = new Sprite();
 			C.watch(aSprite, "aSprite");
+			C.store("sprite", aSprite);
 			aSprite = null;
 			// it will probably never get collected in this example
 			// but if you have debugger version of flash player installed,
-			// you can press G in console menu (press @ at top) to force garbage collect
+			// you can open memory monitor (M) and then press G in that panel to force garbage collect
 			
+			//Add graph show the mouse X/Y positions
+			C.addGraph("mouse", this,"mouseX", 0xff3333,"mouseX");
+			C.addGraph("mouse", this,"mouseY", 0x3333ff,"Y", new Rectangle(340,210,80,80), true);
+			//C.fixGraphRange("mouse", 100,300);
 			
-			txtPriority.restrict = "0-9";
-			txtPriority2.restrict = "0-9";
+			TextField(txtPriority).restrict = "0-9";
+			TextField(txtPriority2).restrict = "0-9";
 			setUpButton(btnInterval, "Start interval");
 			setUpButton(btnAdd1, "Add");
 			setUpButton(btnAdd2, "Add");
@@ -87,7 +93,7 @@ package com.atticmedia.console.samples {
 			btn.addEventListener(MouseEvent.ROLL_OUT, onButtonEvent);
 		}
 		private function onButtonEvent(e:MouseEvent):void{
-			MovieClip(e.currentTarget).gotoAndStop(e.type==MouseEvent.ROLL_OVER?"over":"out")
+			MovieClip(e.currentTarget).gotoAndStop(e.type==MouseEvent.ROLL_OVER?"over":"out");
 		}
 		private function onButtonClick(e:MouseEvent):void{
 			switch(e.currentTarget){

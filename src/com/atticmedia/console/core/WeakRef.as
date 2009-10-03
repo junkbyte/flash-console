@@ -1,8 +1,11 @@
-﻿/*
+/*
 * 
-* Copyright (c) 2008 Atticmedia
+* Copyright (c) 2008-2009 Lu Aye Oo
 * 
 * @author 		Lu Aye Oo
+* 
+* http://code.google.com/p/flash-console/
+* 
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -18,52 +21,56 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 * 
-* 
 */
 package com.atticmedia.console.core {
 	import flash.utils.Dictionary;
-	import flash.utils.Proxy;
-	import flash.utils.flash_proxy;
 	
-	public dynamic class Weak extends Proxy{
-		private var _dir:Object;
+	public class WeakRef{
 		
-		public function Weak() {
-			_dir = new Object();
+		private var _val:*;
+		private var _strong:Boolean;
+		
+		//
+		// There is abilty to use strong reference incase you need to mix - 
+		// weak and strong references together somewhere
+		public function WeakRef(ref:*, strong:Boolean = false) {
+			_strong = strong;
+			reference = ref;
 		}
-		
-		
-		public function set(n:String,obj:Object, strong:Boolean = false):void{
-			if(obj == null){
-				return;
-			}
-			var dic:Dictionary = new Dictionary(!strong);
-			dic[obj] = null;
-			_dir[n] = dic;
-		}
-		
-		public function get(n:String):Object{
-			if(_dir[n]){
-				return extract(_dir[n]);
+		//
+		//
+		//
+		public function get reference():*{
+			if(_strong){
+				return _val;
+			}else{
+				//there should be only 1 key in it anyway
+				for(var X:* in _val){
+					return X;
+				}
 			}
 			return null;
 		}
-		
-		private function extract(dir:Dictionary):Object{
-			//there should be only 1 key in it anyway
-			for(var X:Object in dir){
-				return X;
+		public function set reference(ref:*):void{
+			if(_strong){
+				_val = ref;
+			}else{
+				_val = new Dictionary(true);
+				_val[ref] = null;
 			}
-			return null;
 		}
 		//
-		// PROXY
 		//
-		override flash_proxy function getProperty(n:*):* {
-			return get(n);
+		//
+		public function get strong():Boolean{
+			return _strong;
 		}
-		override flash_proxy function setProperty(n:*, v:*):void {
-			set(n,v);
+		public function set strong(b:Boolean):void{
+			if(_strong != b){
+				var ref:* = reference;
+				_strong = b;
+				reference = ref;
+			}
 		}
 	}
 }

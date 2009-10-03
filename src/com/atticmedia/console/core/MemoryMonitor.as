@@ -1,8 +1,11 @@
 ﻿/*
 * 
-* Copyright (c) 2008 Atticmedia
+* Copyright (c) 2008-2009 Lu Aye Oo
 * 
 * @author 		Lu Aye Oo
+* 
+* http://code.google.com/p/flash-console/
+* 
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -18,25 +21,22 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 * 
-* 
 */
 package com.atticmedia.console.core {
+	import flash.events.EventDispatcher;
 	import flash.system.System;
 	import flash.utils.Dictionary;
-	import flash.utils.getTimer;	
+	import flash.utils.getTimer;		
 
-	public class MemoryMonitor {
+	public class MemoryMonitor extends EventDispatcher{
 		
-		public static const MAX_FORMAT_INT:uint = 4;
+		//public static const GARBAGE_COLLECTED:String = "garbageCollected";
+		//private static const DUMMY_GARBAGE:String = "_memoryMonitor_dummy_garbage";
 		
 		private var _namesList:Object;
 		private var _objectsList:Dictionary;
-		private var _minMemory:uint;
-		private var _maxMemory:uint;
-		private var _currentMemory:uint;
-		//private var _previousMemory:uint;
-		
-		public var format:uint;
+		//private var _notifyGC:Boolean;
+		//
 		//
 		public function MemoryMonitor() {
 			_namesList = new Object();
@@ -67,45 +67,47 @@ package com.atticmedia.console.core {
 		//
 		//
 		//
-		public function update(mem:uint = 0):Array {
-			var m:uint = mem>0?mem:System.totalMemory;
-			_currentMemory = m;
-			if(m<_minMemory || _minMemory == 0){
-				_minMemory = m;
-			}
-			if(m>_maxMemory){
-				_maxMemory = m;
-			}
-			//
+		public function update():Array {
 			var arr:Array = new Array();
 			var o:Object = new Object();
 			for (var X:Object in _objectsList) {
 				o[_objectsList[X]] = true;
 			}
+			//var gced:Boolean = false;
 			for(var Y:String in _namesList){
 				if(!o[Y]){
-					arr.push(Y);
+					//gced = true;
+					//if(Y != DUMMY_GARBAGE){
+						arr.push(Y);
+					//}
 					delete _namesList[Y];
 				}
 			}
-			/*
-			//this don't seem to be working well..
-			if(m<_previousMemory){
-				dispatchEvent(new garbageCollected(_previousMemory));
-			}
-			_previousMemory = m;
-			*/
+			/*if(_notifyGC && gced){
+				dispatchEvent(new Event(GARBAGE_COLLECTED));
+				seedGCDummy();
+			}*/
 			return arr;
 		}
-		public function get minMemory():uint {
-			return _minMemory;
+		/*private function seedGCDummy():void{
+			if(!_namesList[DUMMY_GARBAGE]){
+				// using MovieClip as dummy garbate as it doenst get collected straight away like others
+				watch(new MovieClip(), DUMMY_GARBAGE);
+			}
 		}
-		public function get maxMemory():uint {
-			return _maxMemory;
+		public function set notifyGC(b:Boolean):void{
+			if(_notifyGC != b){
+				_notifyGC = b;
+				if(b){
+					seedGCDummy();
+				}else if(!b){
+					unwatch(DUMMY_GARBAGE);
+				}
+			}
 		}
-		public function get currentMemory():uint {
-			return _currentMemory;
-		}
+		public function get notifyGC():Boolean{
+			return _notifyGC;
+		}*/
 		public function get get():String{
 			return getInFormat(format);
 		}
