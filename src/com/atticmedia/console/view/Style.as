@@ -62,7 +62,7 @@ package com.atticmedia.console.view {
 			commandLineColor = 0x10AA00;
 			bottomLineColor = 0xFF0000;
 			tooltipBackgroundColor = 0;
-			panelBackgroundAlpha = 0.6;
+			panelBackgroundAlpha = 0.75;
 			textFormat = new TextFormat('Arial', 12, 0xFFFFFF);
 			//
 			css.setStyle("r",{textAlign:'right', display:'inline'});
@@ -79,7 +79,7 @@ package com.atticmedia.console.view {
 			css.setStyle("p",{fontFamily:'Verdana', fontSize:'11'});
 			css.setStyle("l1",{color:'#0099CC'});
 			css.setStyle("l2",{color:'#FF8800'});
-			css.setStyle("p0",{color:'#000000', display:'inline'});
+			css.setStyle("p0",{color:'#336633', display:'inline'});
 			css.setStyle("p1",{color:'#33AA33', display:'inline'});
 			css.setStyle("p2",{color:'#77D077', display:'inline'});
 			css.setStyle("p3",{color:'#AAEEAA', display:'inline'});
@@ -88,8 +88,8 @@ package com.atticmedia.console.view {
 			css.setStyle("p6",{color:'#FFD6D6', display:'inline'});
 			css.setStyle("p7",{color:'#FFAAAA', display:'inline'});
 			css.setStyle("p8",{color:'#FF7777', display:'inline'});
-			css.setStyle("p9",{color:'#FF4444', display:'inline'});
-			css.setStyle("p10",{color:'#FF0000', fontWeight:'bold', display:'inline'});
+			css.setStyle("p9",{color:'#FF2222', display:'inline'});
+			css.setStyle("p10",{color:'#FF2222', fontWeight:'bold', display:'inline'});
 			css.setStyle("p-1",{color:'#0099CC', display:'inline'});
 			css.setStyle("p-2",{color:'#FF8800', display:'inline'});
 		}

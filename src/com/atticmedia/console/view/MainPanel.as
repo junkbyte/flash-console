@@ -112,6 +112,7 @@ package com.atticmedia.console.view {
 			_commandField = new TextField();
 			_commandField.name = "commandField";
 			_commandField.type  = TextFieldType.INPUT;
+			_commandField.x = 4;
 			_commandField.height = 18;
 			_commandField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown, false, 0, true);
 			_commandField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp, false, 0, true);
@@ -194,7 +195,7 @@ package com.atticmedia.console.view {
 			super.width = n;
 			_traceField.width = n;
 			_menuField.width = n;
-			_commandField.width = n-10;
+			_commandField.width = n-15;
 			_commandBackground.width = n;
 			
 			_bottomLine.graphics.clear();
