@@ -1,4 +1,4 @@
-/*
+﻿/*
 * 
 * Copyright (c) 2008-2009 Lu Aye Oo
 * 
@@ -27,10 +27,12 @@ package com.atticmedia.console.core {
 	
 	import flash.events.EventDispatcher;
 	import flash.events.StatusEvent;
-	import flash.net.LocalConnection;
-	import flash.system.Security;		
+	import flash.net.LocalConnection;	
 
 	public class Remoting extends EventDispatcher{
+		
+		public static const REMOTE_PREFIX:String = "R";
+		public static const CLIENT_PREFIX:String = "C";
 		
 		private var _master:Console;
 		private var _isRemoting:Boolean;
@@ -70,7 +72,7 @@ package com.atticmedia.console.core {
 			}
 		}
 		public function send(command:String, ...args):void{
-			var target:String = _isRemote?Console.CLIENT_CONN_NAME:Console.REMOTE_CONN_NAME;
+			var target:String = Console.REMOTING_CONN_NAME+(_isRemote?CLIENT_PREFIX:REMOTE_PREFIX);
 			args = [target, command].concat(args);
 			try{
 				_sharedConnection.send.apply(this, args);
@@ -91,7 +93,7 @@ package com.atticmedia.console.core {
 				_remoteLinesQueue = new Array();
 				startSharedConnection();
 				try{
-                	_sharedConnection.connect(Console.CLIENT_CONN_NAME);
+                	_sharedConnection.connect(Console.REMOTING_CONN_NAME+CLIENT_PREFIX);
 					_master.report("<b>Remoting started.</b> "+getInfo(),-1);
 					_isRemoting = true;
            		}catch (error:Error){
@@ -111,7 +113,7 @@ package com.atticmedia.console.core {
 				_isRemoting = false;
 				startSharedConnection();
 				try{
-                	_sharedConnection.connect(Console.REMOTE_CONN_NAME);
+                	_sharedConnection.connect(Console.REMOTING_CONN_NAME+REMOTE_PREFIX);
 					_master.report("<b>Remote started.</b> "+getInfo(),-1);
            		}catch (error:Error){
 					_isRemoting = false;
@@ -122,11 +124,13 @@ package com.atticmedia.console.core {
 			}
 		}
 		private function getInfo():String{
-			return "sandboxType:<p5>"+Security.sandboxType+"</p5> remote:<p5>"+Console.REMOTE_CONN_NAME+"</p5> client:<p5>"+Console.CLIENT_CONN_NAME+"</p5>.";
+			return "</p5>channel:<p5>"+Console.REMOTING_CONN_NAME;
 		}
 		private function startSharedConnection():void{
 			close();
 			_sharedConnection = new LocalConnection();
+			_sharedConnection.allowDomain("*");
+			_sharedConnection.allowInsecureDomain("*");
 			_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
 			_sharedConnection.allowInsecureDomain("*");
 			// just for sort of security

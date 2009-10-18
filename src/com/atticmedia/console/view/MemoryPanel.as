@@ -45,8 +45,8 @@ package com.atticmedia.console.view {
 			add(this, "current", 0x5060FF, "Memory");
 		}
 		public override function close():void {
-			//master.mm.notifyGC = false;
 			super.close();
+			master.panels.updateMenu(); // should be black boxed :/
 		}
 		public function get current():Number{
 			// in MB, up to 2 decimal

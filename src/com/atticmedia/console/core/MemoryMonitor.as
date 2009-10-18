@@ -73,20 +73,12 @@ package com.atticmedia.console.core {
 			for (var X:Object in _objectsList) {
 				o[_objectsList[X]] = true;
 			}
-			//var gced:Boolean = false;
 			for(var Y:String in _namesList){
 				if(!o[Y]){
-					//gced = true;
-					//if(Y != DUMMY_GARBAGE){
-						arr.push(Y);
-					//}
+					arr.push(Y);
 					delete _namesList[Y];
 				}
 			}
-			/*if(_notifyGC && gced){
-				dispatchEvent(new Event(GARBAGE_COLLECTED));
-				seedGCDummy();
-			}*/
 			return arr;
 		}
 		/*private function seedGCDummy():void{

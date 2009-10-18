@@ -23,6 +23,8 @@
 * 
 */
 package com.atticmedia.console {
+	import flash.display.DisplayObject;	
+	
 	import com.atticmedia.console.view.RollerPanel;	
 	import com.atticmedia.console.core.CommandLine;
 	import com.atticmedia.console.core.LogLineVO;
@@ -55,16 +57,20 @@ package com.atticmedia.console {
 		public static const PANEL_ROLLER:String = "rollerPanel";
 		public static const FPS_MAX_LAG_FRAMES:uint = 25;
 		
-		public static const VERSION:Number = 2;
-		public static const VERSION_STAGE:String = "";
+		public static const VERSION:Number = 2.1;
+		public static const VERSION_STAGE:String = "beta";
 		
-		// you can change this if you need BEFORE starting remote / remoting
-		public static var REMOTE_CONN_NAME:String = "ConsoleRemote2";
-		public static var CLIENT_CONN_NAME:String = "ConsoleClient2";
+		// You can change this if you don't want to use default channel
+		// Other remotes with different remoting channel won't be able to connect your flash.
+		// Start with _ to work in any domain + platform (air/swf - local / network)
+		// Change BEFORE starting remote / remoting
+		public static var REMOTING_CONN_NAME:String = "_Console";
 		
 		public static const CONSOLE_CHANNEL:String = "C";
 		public static const FILTERED_CHANNEL:String = "filtered";
 		public static const GLOBAL_CHANNEL:String = "global";
+		//
+		public static const MAPPING_SPLITTER:String = "|";
 		//
 		public var style:Style;
 		public var panels:PanelsManager;
@@ -76,6 +82,7 @@ package com.atticmedia.console {
 		public var maxLines:int = 500;
 		public var prefixChannelNames:Boolean = true;
 		public var alwaysOnTop:Boolean = true;
+		public var moveTopAttempts:int = 50;
 		public var maxRepeats:Number = 75;
 		public var remoteDelay:int = 20;
 		public var defaultChannel:String = "traces";
@@ -93,6 +100,7 @@ package com.atticmedia.console {
 		private var _previousTime:Number;
 		private var _traceCall:Function = trace;
 		private var _rollerCaptureKey:String;
+		private var _needToMoveTop:Boolean;
 		
 		private var _channels:Array = [GLOBAL_CHANNEL];
 		private var _viewingChannels:Array = [GLOBAL_CHANNEL];
@@ -115,11 +123,11 @@ package com.atticmedia.console {
 			_password = pass;
 			tabChildren = false; // Tabbing is not supported
 			//
+			cl = new CommandLine(this);
+			remoter = new Remoting(this);
 			style = new Style(uiset);
 			panels = new PanelsManager(this, new MainPanel(this, _lines, _channels));
 			mm = new MemoryMonitor();
-			cl = new CommandLine(this);
-			remoter = new Remoting(this);
 			remoter.logsend = remoteLogSend; // Don't want to expose remoteLogSend in this class
 			//
 			var t:String = VERSION_STAGE?(" "+VERSION_STAGE):"";
@@ -138,13 +146,18 @@ package com.atticmedia.console {
 				cl.base = root;
 			}
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame, false, 0, true);
+			parent.addEventListener(Event.ADDED, onParentDisplayAdded, false, 0, true);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyUpHandler, false, 0, true);
 		}
 		private function stageRemovedHandle(e:Event=null):void{
 			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			parent.removeEventListener(Event.ADDED, onParentDisplayAdded);
 			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyUpHandler);
+		}
+		private function onParentDisplayAdded(e:Event):void{
+			if((e.target as DisplayObject).parent == parent) _needToMoveTop = true;
 		}
 		private function onStageMouseLeave(e:Event):void{
 			panels.tooltip(null);
@@ -186,14 +199,14 @@ package com.atticmedia.console {
 			var sCon:LocalConnection = new LocalConnection();
 			try{
 				sCon.allowInsecureDomain("*");
-				sCon.connect(REMOTE_CONN_NAME);
+				sCon.connect(REMOTING_CONN_NAME+Remoting.REMOTE_PREFIX);
 			}catch(error:Error){
 				return true;
 			}
 			sCon.close();
 			return false;
 		}
-		public function addGraph(n:String, obj:Object, prop:String, col:Number, key:String, rect:Rectangle = null, inverse:Boolean = false):void{
+		public function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
 			if(obj == null) {
 				report("ERROR: Graph ["+n+"] received a null object to graph property ["+prop+"].", 10);
 				return;
@@ -363,7 +376,6 @@ package com.atticmedia.console {
 				report("Resumed",-1);
 			}
 			_isPaused = newV;
-			panels.mainPanel.updateMenu(true);
 			panels.mainPanel.refresh();
 		}
 		//
@@ -402,12 +414,14 @@ package com.atticmedia.console {
 			}
 			var time:int = getTimer();
 			_mspf = time-_previousTime;
-
 			_previousTime = time;
-			if(alwaysOnTop && parent &&  parent.getChildIndex(this) < (parent.numChildren-1)){
+			
+			if(_needToMoveTop && alwaysOnTop && moveTopAttempts>0){
+				_needToMoveTop = false;
+				moveTopAttempts--;
 				parent.setChildIndex(this,(parent.numChildren-1));
 				if(!quiet){
-					report("Attempted to move console on top (alwaysOnTop enabled)",-1);
+					report("Moved console on top (alwaysOnTop enabled), "+moveTopAttempts+" attempts left.",-1);
 				}
 			}
 			if( _isRepeating ){
@@ -416,11 +430,13 @@ package com.atticmedia.console {
 					_isRepeating = false;
 				}
 			}
-			if(!_isPaused && visible){
+			if(!_isPaused){
 				var arr:Array = mm.update();
 				if(arr.length>0){
 					report("GARBAGE COLLECTED "+arr.length+" item(s): "+arr.join(", "),10);
 				}
+			}
+			if(visible){
 				panels.mainPanel.update(!_isPaused && _linesChanged);
 				if(_linesChanged) {
 					var chPanel:ChannelsPanel = panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
@@ -532,7 +548,7 @@ package com.atticmedia.console {
 		}
 		public function set traceCall (f:Function):void{
 			if(f==null){
-				report("C.traceCall function setter must be not be null.", 10);
+				report("C.traceCall function setter can not be null.", 10);
 			}else{
 				_traceCall = f;
 			}
@@ -540,8 +556,8 @@ package com.atticmedia.console {
 		public function get traceCall ():Function{
 			return _traceCall;
 		}
-		public function report(obj:*,priority:Number = 0):void{
-			addLine(obj, priority, CONSOLE_CHANNEL, false, true);
+		public function report(obj:*,priority:Number = 0, skipSafe:Boolean = true):void{
+			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe);
 		}
 		private function addLine(obj:*,priority:Number = 0,channel:String = "",isRepeating:Boolean = false, skipSafe:Boolean = false):void{
 			if(!_enabled){
@@ -549,7 +565,7 @@ package com.atticmedia.console {
 			}
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
 			var txt:String = String(obj);
-			if( _tracing && !isRepeat && (_tracingChannels.indexOf(channel)>=0) ){
+			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
 				if(tracingPriority <= priority || tracingPriority <= 0){
 					_traceCall("["+channel+"] "+txt);
 				}
@@ -586,10 +602,24 @@ package com.atticmedia.console {
 		// COMMAND LINE
 		//
 		public function set commandLine (newB:Boolean):void{
-			panels.mainPanel.commandLine = newB;
+			if(!newB || cl.permission>0){
+				panels.mainPanel.commandLine = newB;
+			}else{
+				panels.updateMenu();
+				report("CommandLine is disabled. Set commandLinePermission from source code to allow.");
+			}
 		}
 		public function get commandLine ():Boolean{
 			return panels.mainPanel.commandLine;
+		}
+		public function set commandLinePermission (v:uint):void{
+			cl.permission = v;
+			if(v==0 && commandLine){
+				commandLine = false;
+			}
+		}
+		public function get commandLinePermission ():uint{
+			return cl.permission;
 		}
 		public function set commandBase (v:Object):void{
 			if(v) cl.base = v;
@@ -597,7 +627,7 @@ package com.atticmedia.console {
 		public function get commandBase ():Object{
 			return cl.base;
 		}
-		public function runCommand(line:String):Object{
+		public function runCommand(line:String):*{
 			if(remoter.isRemote){
 				report("Run command at remote: "+line,-2);
 				try{
@@ -637,6 +667,38 @@ package com.atticmedia.console {
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			addLine(newLine,priority, defaultChannel, isRepeating);
 		}
+		public function log(...args):void{
+			addLine(args.join(" "),1);
+		}
+		public function message(...args):void{
+			addLine(args.join(" "),3);
+		}
+		public function debug(...args):void{
+			addLine(args.join(" "),6);
+		}
+		public function warning(...args):void{
+			addLine(args.join(" "),8);
+		}
+		public function error(...args):void{
+			addLine(args.join(" "),10);
+		}
+		public function logch(channel:*, ...args):void{
+			ch(channel, args.join(" "),1);
+		}
+		public function messagech(channel:*, ...args):void{
+			ch(channel, args.join(" "),3);
+		}
+		public function debugch(channel:*, ...args):void{
+			ch(channel, args.join(" "),6);
+		}
+		public function warningch(channel:*, ...args):void{
+			ch(channel, args.join(" "),8);
+		}
+		public function errorch(channel:*, ...args):void{
+			ch(channel, args.join(" "),10);
+		}
+		
+		
 		public function set filterText(str:String):void{
 			_filterText = str;
 			if(str){

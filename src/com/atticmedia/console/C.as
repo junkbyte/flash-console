@@ -192,6 +192,56 @@ package com.atticmedia.console {
 				_console.ch(channel,newLine,priority, isRepeating);
 			}
 		}
+		public static function log(...args):void{
+			if(_console){
+				_console.log.apply(null, args);
+			}
+		}
+		public static function message(...args):void{
+			if(_console){
+				_console.message.apply(null, args);
+			}
+		}
+		public static function debug(...args):void{
+			if(_console){
+				_console.debug.apply(null, args);
+			}
+		}
+		public static function warning(...args):void{
+			if(_console){
+				_console.warning.apply(null, args);
+			}
+		}
+		public static function error(...args):void{
+			if(_console){
+				_console.error.apply(null, args);
+			}
+		}
+		public static function logch(channel:*, ...args):void{
+			if(_console){
+				_console.logch.apply(null, [channel].concat(args));
+			}
+		}
+		public static function messagech(channel:*, ...args):void{
+			if(_console){
+				_console.messagech.apply(null, [channel].concat(args));
+			}
+		}
+		public static function debugch(channel:*, ...args):void{
+			if(_console){
+				_console.debugch.apply(null, [channel].concat(args));
+			}
+		}
+		public static function warningch(channel:*, ...args):void{
+			if(_console){
+				_console.warningch.apply(null, [channel].concat(args));
+			}
+		}
+		public static function errorch(channel:*, ...args):void{
+			if(_console){
+				_console.errorch.apply(null, [channel].concat(args));
+			}
+		}
 		/**
 		 * Remove console from it's parent display and clean up
 		 */
@@ -592,6 +642,24 @@ package com.atticmedia.console {
 			return getter("commandLine") as Boolean;
 		}
 		/**
+		 * Command line security permission level. default: 1
+		 * <p>
+		 * CommandLine is a big security hole for your code and flash. It is a very good
+		 * practice to either completely disable it or have it on medium security after development phase.
+		 * On the other hand having it on full access will let you debug the code easier.
+		 * level 0: disable command line
+		 * level 1: read/write properties and methods only. No exe/write access to flash.system.Security
+		 * level 2: full access.
+		 * 
+		 * TODO: to implement level 1 security
+		 */
+		public static function set commandLinePermission (v:uint):void{
+			setter("commandLinePermission",v);
+		}
+		public static function get commandLinePermission ():uint{
+			return getter("commandLinePermission") as uint;
+		}
+		/**
 		 * Command line base.
 		 * The value returned from /base in commandLine.
 		 * <p>
@@ -636,7 +704,7 @@ package com.atticmedia.console {
 		 *
 		 * @param  String to run
 		 */
-		public static function runCommand(str:String):Object{
+		public static function runCommand(str:String):*{
 			if(_console){
 				return _console.runCommand(str);
 			}

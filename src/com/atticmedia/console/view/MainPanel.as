@@ -1,4 +1,4 @@
-/*
+﻿/*
 * 
 * Copyright (c) 2008-2009 Lu Aye Oo
 * 
@@ -24,6 +24,11 @@
 */
 
 package com.atticmedia.console.view {
+	import flash.events.MouseEvent;
+	import flash.text.TextFieldAutoSize;
+
+	import com.atticmedia.console.core.CommandLine;
+
 	import flash.ui.Keyboard;	
 	import flash.events.Event;	
 	
@@ -40,7 +45,7 @@ package com.atticmedia.console.view {
 
 	public class MainPanel extends AbstractPanel {
 		
-		private static const CHANNELS_IN_MENU:int = 4;
+		private static const CHANNELS_IN_MENU:int = 5;
 		
 		public static const TOOLTIPS:Object = {
 				fps:"Frames Per Second",
@@ -57,11 +62,13 @@ package com.atticmedia.console.view {
 				close:"Close",
 				viewall:"View all channels",
 				scrollUp:"Scroll up",
-				scrollDown:"Scroll down"
+				scrollDown:"Scroll down",
+				scope:"Current scope::(CommandLine)"
 		};
 		
 		private var _traceField:TextField;
 		private var _menuField:TextField;
+		private var _commandPrefx:TextField;
 		private var _commandField:TextField;
 		private var _commandBackground:Shape;
 		private var _bottomLine:Shape;
@@ -91,6 +98,7 @@ package com.atticmedia.console.view {
 			_traceField.multiline = true;
 			_traceField.styleSheet = style.css;
 			_traceField.y = 12;
+			_traceField.addEventListener(Event.SCROLL, onTraceScroll, false, 0, true);
 			addChild(_traceField);
 			//
 			_menuField = new TextField();
@@ -112,17 +120,34 @@ package com.atticmedia.console.view {
 			_commandField = new TextField();
 			_commandField.name = "commandField";
 			_commandField.type  = TextFieldType.INPUT;
-			_commandField.x = 4;
+			_commandField.x = 40;
 			_commandField.height = 18;
 			_commandField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown, false, 0, true);
 			_commandField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp, false, 0, true);
 			_commandField.defaultTextFormat = style.textFormat;
 			addChild(_commandField);
+			
+			_commandPrefx = new TextField();
+			_commandPrefx.name = "commandPrefx";
+			_commandPrefx.type  = TextFieldType.DYNAMIC;
+			_commandPrefx.x = 2;
+			_commandPrefx.height = 18;
+			_commandPrefx.selectable = false;
+			_commandPrefx.styleSheet = style.css;
+			_commandPrefx.text = " ";
+			_commandPrefx.addEventListener(MouseEvent.MOUSE_DOWN, onCmdPrefMouseDown, false, 0, true);
+			_commandPrefx.addEventListener(MouseEvent.MOUSE_MOVE, onCmdPrefRollOverOut, false, 0, true);
+			_commandPrefx.addEventListener(MouseEvent.ROLL_OUT, onCmdPrefRollOverOut, false, 0, true);
+			addChild(_commandPrefx);
 			//
 			_bottomLine = new Shape();
 			_bottomLine.name = "blinkLine";
 			_bottomLine.alpha = 0.2;
 			addChild(_bottomLine);
+			
+			_commandField.visible = false;
+			_commandPrefx.visible = false;
+			_commandBackground.visible = false;
 			//
 			init(420,100,true);
 			registerDragger(_menuField);
@@ -130,7 +155,11 @@ package com.atticmedia.console.view {
 			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
+			
+			master.cl.addEventListener(CommandLine.CHANGED_SCOPE, onUpdateCommandLineScope, false, 0, true);
 		}
+		
+
 		private function stageAddedHandle(e:Event=null):void{
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
@@ -138,6 +167,13 @@ package com.atticmedia.console.view {
 		private function stageRemovedHandle(e:Event=null):void{
 			stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+		}
+		private function onCmdPrefRollOverOut(e : MouseEvent) : void {
+			master.panels.tooltip(e.type==MouseEvent.MOUSE_MOVE?TOOLTIPS["scope"]:"", this);
+		}
+		private function onCmdPrefMouseDown(e : MouseEvent) : void {
+			stage.focus = _commandField;
+			_commandField.setSelection(_commandField.text.length, _commandField.text.length);
 		}
 		private function keyDownHandler(e:KeyboardEvent):void{
 			if(e.keyCode == Keyboard.SHIFT){
@@ -195,13 +231,14 @@ package com.atticmedia.console.view {
 			super.width = n;
 			_traceField.width = n;
 			_menuField.width = n;
-			_commandField.width = n-15;
+			_commandField.width = width-15-_commandField.x;
 			_commandBackground.width = n;
 			
 			_bottomLine.graphics.clear();
 			_bottomLine.graphics.lineStyle(1, style.bottomLineColor);
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
+			onUpdateCommandLineScope();
 			updateMenu();
 		}
 		override public function set height(n:Number):void{
@@ -220,6 +257,7 @@ package com.atticmedia.console.view {
 			_traceField.height = n-(_commandField.visible?16:0)-(minimize?0:12);
 			var cmdy:Number = n-18;
 			_commandField.y = cmdy;
+			_commandPrefx.y = cmdy;
 			_commandBackground.y = cmdy;
 			_bottomLine.y = _commandField.visible?cmdy:n;
 			_traceField.scrollV = _traceField.maxScrollV;
@@ -228,6 +266,9 @@ package com.atticmedia.console.view {
 		//
 		//
 		//
+		private function onTraceScroll(e:Event):void{
+			updateMenu();
+		}
 		public function updateMenu(instant:Boolean = false):void{
 			if(instant){
 				_updateMenu();
@@ -239,7 +280,7 @@ package com.atticmedia.console.view {
 			var str:String = "<r><w>";
 			if(!master.channelsPanel){
 				str += "<chs>";
-				for(var ci:int = 0; (ci<_channels.length && ci<= CHANNELS_IN_MENU);  ci++){
+				for(var ci:int = 0; (ci<_channels.length && ci< CHANNELS_IN_MENU);  ci++){
 					var channel:String = _channels[ci];
 					var channelTxt:String = (master.viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
 					channelTxt = channel==master.defaultChannel? "<i>"+channelTxt+"</i>" : channelTxt;
@@ -250,9 +291,11 @@ package com.atticmedia.console.view {
 			str += "<menu>[ <b>";
 			str += doActive("<a href=\"event:fps\">F</a>", master.fpsMonitor>0);
 			str += doActive(" <a href=\"event:mm\">M</a>", master.memoryMonitor>0);
+			if(master.commandLinePermission>0){
+				str += doActive(" <a href=\"event:command\">CL</a>", commandLine);
+			}
 			if(!master.remote){
 				str += doActive(" <a href=\"event:roller\">Ro</a>", master.displayRoller);
-				str += doActive(" <a href=\"event:command\">CL</a>", commandLine);
 				str += doActive(" <a href=\"event:ruler\">RL</a>", master.panels.rulerActive);
 			}
 			str += " ¦</b>";
@@ -300,10 +343,8 @@ package com.atticmedia.console.view {
 			stopDrag();
 			if(e.text == "scrollUp"){
 				_traceField.scrollV -= 3;
-				updateMenu();
 			}else if(e.text == "scrollDown"){
 				_traceField.scrollV += 3;
-				updateMenu();
 			}else if(e.text == "pause"){
 				if(master.paused){
 					master.paused = false;
@@ -322,6 +363,7 @@ package com.atticmedia.console.view {
 			}else if(e.text == "close"){
 				master.panels.tooltip();
 				visible = false;
+				dispatchEvent(new Event(AbstractPanel.CLOSED));
 			}else if(e.text == "channels"){
 				master.channelsPanel = !master.channelsPanel;
 			}else if(e.text == "fps"){
@@ -351,8 +393,11 @@ package com.atticmedia.console.view {
 				var str:String = "/remap "+e.text.substring(5);
 				master.runCommand(str);
 			}else if(e.text.substring(0,6) == "sclip_"){
-				master.cl.reMap(e.text.substring(6), stage);
+				//var str:String = "/remap 0|"+e.text.substring(6);
+				master.runCommand("/remap 0"+Console.MAPPING_SPLITTER+e.text.substring(6));
+				//master.cl.reMap(e.text.substring(6), stage);
 			}
+			_menuField.setSelection(0, 0);
 			e.stopPropagation();
 		}
 		public function onChannelPressed(chn:String):void{
@@ -412,12 +457,26 @@ package com.atticmedia.console.view {
 			}
 			e.stopPropagation();
 		}
+		private function onUpdateCommandLineScope(e:Event=null):void{
+			_commandPrefx.autoSize = TextFieldAutoSize.LEFT;
+			_commandPrefx.htmlText = "<w><p1>"+master.cl.scopeString+":</p1></w>";
+			var w:Number = width-48;
+			if(_commandPrefx.width > 120 || _commandPrefx.width > w){
+				_commandPrefx.autoSize = TextFieldAutoSize.NONE;
+				_commandPrefx.width = w>120?120:w;
+				_commandPrefx.scrollH = _commandPrefx.maxScrollH;
+			}
+			_commandField.x = _commandPrefx.width+2;
+			_commandField.width = width-15-_commandField.x;
+		}
 		public function set commandLine (b:Boolean):void{
-			if(b){
+			if(b && master.commandLinePermission>0){
 				_commandField.visible = true;
+				_commandPrefx.visible = true;
 				_commandBackground.visible = true;
 			}else{
 				_commandField.visible = false;
+				_commandPrefx.visible = false;
 				_commandBackground.visible = false;
 			}
 			this.height = height;

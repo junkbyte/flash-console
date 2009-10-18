@@ -222,8 +222,12 @@ package com.atticmedia.console.view {
 					var txtRect:Rectangle = _tooltipField.getBounds(_master);
 					var panRect:Rectangle = new Rectangle(panel.x,panel.y,panel.width,panel.height);
 					var doff:Number = txtRect.bottom - panRect.bottom;
-					if(doff>0 && (_tooltipField.y - doff)>(_master.mouseY+15)){
-						_tooltipField.y -= doff;
+					if(doff>0){
+						if((_tooltipField.y - doff)>(_master.mouseY+15)){
+							_tooltipField.y -= doff;
+						}else if(panRect.y<(_master.mouseY-24) && txtRect.y>panRect.bottom){
+							_tooltipField.y = _master.mouseY-_tooltipField.height-15;
+						}
 					}
 					var loff:Number = txtRect.left - panRect.left;
 					var roff:Number = txtRect.right - panRect.right;

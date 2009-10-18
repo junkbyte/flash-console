@@ -34,6 +34,7 @@ package com.atticmedia.console.core {
 		// There is abilty to use strong reference incase you need to mix - 
 		// weak and strong references together somewhere
 		public function WeakRef(ref:*, strong:Boolean = false) {
+			if(ref is Function) strong = true; // Function must be strong ref, for now :/
 			_strong = strong;
 			reference = ref;
 		}

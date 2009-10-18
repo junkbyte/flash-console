@@ -79,5 +79,8 @@ package com.atticmedia.console.core {
 			// This way is more light weight but not as accurate.
 			return current+((addition-current)/over);
 		}
+		public static function replaceByIndexes(str:String, replace:String, start:int, end:int):String {
+			return str.substring(0,start)+replace+str.substring(end);
+		}
 	}
 }

@@ -23,6 +23,8 @@
 * 
 */
 package com.atticmedia.console.core {
+	import flash.events.Event;
+
 	import com.atticmedia.console.Console;
 	
 	import flash.display.DisplayObject;
@@ -34,26 +36,30 @@ package com.atticmedia.console.core {
 	import flash.utils.getQualifiedSuperclassName;		
 
 	public class CommandLine extends EventDispatcher {
+		public static const CHANGED_SCOPE:String = "changedScope";
 		
-		private static const MAPPING_SPLITTER:String = "|";
+		private static const VALUE_CONST:String = "^";
+		private static const MAX_INTERNAL_STACK_TRACE:int = 1;
 		
 		private var _saved:WeakObject;
 		
-		private var _returned:WeakRef;
-		private var _returned2:WeakRef;
+		private var _returned:*;
+		private var _returned2:*;
 		private var _mapBases:WeakObject;
-		private var _mapBaseIndex:uint;
+		private var _mapBaseIndex:uint = 1;
 		private var _reserved:Array;
+		private var _values:Array;
 		
 		private var _master:Console;
 		
 		public var useStrong:Boolean;
+		public var permission:uint = 1;	//TODO: to implement level 1 security
 
 		public function CommandLine(m:Console) {
 			_master = m;
 			_saved = new WeakObject();
 			_mapBases = new WeakObject();
-			_returned = new WeakRef(m);
+			_returned = m;
 			_saved.set("C", m);
 			_reserved = new Array("base", "C");
 		}
@@ -61,7 +67,8 @@ package com.atticmedia.console.core {
 			if (base) {
 				report("Set new commandLine base from "+base+ " to "+ obj, 10);
 			}else{
-				_returned = new WeakRef(obj, useStrong);
+				_returned = obj;
+				dispatchEvent(new Event(CHANGED_SCOPE));
 			}
 			_saved.set("base", obj, useStrong);
 		}
@@ -85,248 +92,348 @@ package com.atticmedia.console.core {
 			}
 			return n;
 		}
-		public function run(str:String):Object {
-			report("&gt; "+str, -1);
-			var returned:Object;
-			var line:Array = str.split(" ");
-			if(line[0].charAt(0)=="/"){
-				if (line[0] == "/help") {
-					printHelp();
-				} else if (line[0] == "/remap") {
-					// this is a special case... no user will be able to do this command
-					line.shift();
-					reMap(line.join(""));
-				} else if (line[0] == "/strong") {
-					if(line[1] == "true"){
-						useStrong = true;
-						report("Now using STRONG referencing.", 10);
-					}else if (line[1] == "false"){
-						useStrong = false;
-						report("Now using WEAK referencing.", 10);
-					}else if(useStrong){
-						report("Using STRONG referencing. '/strong false' to use weak", -2);
-					}else{
-						report("Using WEAK referencing. '/strong true' to use strong", -2);
-					}
-				} else if (line[0] == "/save") {
-					if (_returned.reference) {
-						if(!line[1]){
-							report("ERROR: Give a name to save.",10);
-						}else if(_reserved.indexOf(line[1])>=0){
-							report("ERROR: The name ["+line[1]+ "] is reserved",10);
-						}else{
-							_saved.set(line[1], _returned.reference,useStrong);
-							report("SAVED "+getQualifiedClassName(_returned.reference) + " at "+ line[1]);
-						}
-					} else {
-						report("Nothing to save", 10);
-					}
-				} else if (line[0] == "/string") {
-					if(line.length>1){
-						var savestring:String = line.slice(1).join(" ");
-						report("String with "+savestring.length+" chars stored. Use /save <i>(name)</i> to save.", -2);
-						_returned = new WeakRef(savestring, useStrong);
-					}
-				} else if (line[0] == "/saved") {
-					report("Saved vars: ", -1);
-					var sii:uint = 0;
-					var sii2:uint = 0;
-					for(var X:String in _saved){
-						var sao:* = _saved[X];
-						sii++;
-						if(sao==null) sii2++;
-						report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
-					}
-					report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
-				} else if (line[0] == "/filter") {
-					_master.filterText = str.substring(8);
-				} else if (line[0] == "/inspect" || line[0] == "/inspectfull") {
-					if (_returned.reference) {
-						var viewAll:Boolean = (line[0] == "/inspectfull")? true: false;
-						report(inspect(_returned.reference,viewAll), 5);
-					} else {
-						report("Empty", 10);
-					}
-				} else if (line[0] == "/map") {
-					if (_returned.reference) {
-						map(_returned.reference as DisplayObjectContainer);
-					} else {
-						report("Empty", 10);
-					}
-				} else if (line[0] == "/base" || line[0] == "//") {
-					var o:Object = line[0] == "//"?(_returned2?_returned2.reference:null):base;
-					_returned2 = new WeakRef(_returned.reference, useStrong);
-					_returned = new WeakRef(o, useStrong);
-					
-					report("+ Returned "+ getQualifiedClassName(o) +": "+o,10);
-				} else{
-					report("Undefined commandLine syntex <b>/help</b> for info.",10);
-				}
-			
-			}else {
-				
-				try {
-					
-					// Get objects and values before operation, such as (, ), =
-					var names:Array = new Array();
-					var values:Array = new Array();
-					line = str.split(/( |=|;)/);
-					var lineLen:int = line.length;
-					for (var i:int = 0;i<lineLen;i++){
-						var strPart:String = line[i];
-						if(!strPart || strPart==" " || strPart=="" || strPart==";"){
-							// ignore
-						}else if(strPart=="="){
-							names.push(strPart);
-							values.push(strPart);
-						} else{
-							var arr:Array = getPartData(line[i]);
-							if(arr == null) return null; // had error and already done stack trace
-							names.push(arr[0]);
-							values.push(arr[1]);
-						}
-					}
-					
-					// APPLY operation
-					for(i = 0;i<names.length;i++){
-						strPart = names[i];
-						if(strPart == "="){
-							var tarValArr:Array = values[i-1];
-							var tarNameArr:Array = names[i-1];
-							var srcValueArr:Object = values[i+1];
-							
-							tarValArr[1][tarNameArr[0]] = srcValueArr[0];
-							i++;
-							report("SET "+getQualifiedClassName(tarValArr[1])+"."+tarNameArr[0]+" = "+srcValueArr[0], 10);
-							returned = null;
-						}else{
-							returned = values[i][0];
-						}
-					}
-					
-					if (returned == null) {
-						report("Ran successfully.",1);
-					}else{
-						var newb:Boolean = false;
-						if(typeof(returned) == "object" && !(returned is Array) && !(returned is Date)){
-							newb = true;
-							_returned2 = new WeakRef(_returned.reference, useStrong);
-							_returned = new WeakRef(returned, useStrong);
-						}
-						report((newb?"+ ":"")+"Returned "+ getQualifiedClassName(returned) +": "+returned,10);
-					}
-				}catch (e:Error) {
+		public function get scopeString():String{
+			var str:String = getQualifiedClassName(_returned);
+			var ind:int = str.lastIndexOf("::");
+			if(ind>=0){
+				str = str.substring(ind+2);
+			}
+			return str;
+		}
+		public function run(str:String):* {
+			report("&gt; "+str,5, false);
+			if(str.charAt(0) == "/"){
+				try{
+					doCommand(str);
+				}catch(e:Error){
 					reportStackTrace(e.getStackTrace());
 				}
+				return;
 			}
-			return returned;
+			// incase you are calling a new command from commandLine... paradox?
+			// EXAMPLE: $C.runCommand('/help') - but why would you?
+			var isclean:Boolean = _values?false:true;
+			if(isclean){
+				_values = [];
+			}
+			// STRIP empty strings "",''
+			var matchstring:String;
+			var strReg:RegExp = /('')|("")/g;
+			var result:Object = strReg.exec(str);
+			while(result != null){
+				var ind:int = result["index"];
+				matchstring = result[0];
+				str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, ind, ind+matchstring.length);
+				_values.push(new Value("", "", matchstring));
+				strReg.lastIndex = ind+1;
+				result = strReg.exec(str);
+			}
+			// STRIP strings - '...' and "..." wihle ignoring \' \" inside.
+			// have to do again after empty string strip because matching string got extra first char
+			strReg = /([^\\]'(.*?[^\\])')|([^\\]"(.*?[^\\])")/g;
+			result = strReg.exec(str);
+			while(result != null){
+				matchstring = result[0];
+				var substring:String = result[2]?result[2]:result[4]?result[4]:"";
+				var ind2:int = result["index"]+matchstring.indexOf(substring);
+				strReg.lastIndex = ind2+1;
+				str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, ind2-1, ind2+substring.length+1);
+				report(VALUE_CONST+_values.length+" = "+substring, 2, false);
+				_values.push(new Value(substring));
+				result = strReg.exec(str);
+			}
+			// All strings will have replaced by ^0, ^1, etc
+			//
+			// Run each line
+			var v:* = null;
+			var lineBreaks:Array = str.split(/\s*;\s*/);
+			for each(var line:String in lineBreaks){
+				if(line.length){
+					v = runLine(line);
+				}
+			}
+			if(isclean){
+				_values = null;
+			}
+			return v;
+		}
+		// com.atticmedia.console.C.instance.visible
+		// com.atticmedia.console.C.instance.addGraph('test',stage,'mouseX')
+		// test('simple stuff. what ya think?');
+		// test('He\'s cool! (not really)','',"yet 'another string', what ya think?");
+		// this.getChildAt(0); 
+		// stage.addChild(root.addChild(this.getChildAt(0)));
+		// third(second(first('console'))).final(0).alpha;
+		// getChildByName(String('Console')).getChildByName('message').alpha = 0.5;
+		// getChildByName(String('Console').abcd().asdf).getChildByName('message').alpha = 0.5;
+		// com.atticmedia.console.C.add('Hey how are you?');
+		// $f = this;
+		private function runLine(line:String):*{
+			try{
+				var majorParts:Array = line.split(/\s*\=\s*/);
+				majorParts.reverse();
+				var v:Value = execChunk(majorParts[0]);
+				for(var i:int = 1;i<majorParts.length;i++){
+					var vtoset:Value = execChunk(majorParts[i]);
+					//report("Target base = "+vtoset.base + " prop = "+vtoset.prop);
+					vtoset.base[vtoset.prop] = v.value;
+					report("<b>SET</b> "+getQualifiedClassName(vtoset.base)+"."+vtoset.prop+" = <b>"+v.value+"</b>", -2);
+				}
+				doReturn(v.value);
+				return v.value;
+			}catch(e:Error){
+				reportStackTrace(e.getStackTrace());
+			}
+			return null;
+		}
+		private function doReturn(returned:*, isNew:Boolean = false):void{
+			var newb:Boolean = false;
+			if(returned && (returned is Function || isNew || (returned != _returned && typeof(returned) == "object") && !(returned is Array) && !(returned is Date))){
+				newb = true;
+				_returned2 = _returned;
+				_returned = returned;
+				dispatchEvent(new Event(CHANGED_SCOPE));
+			}
+			report((newb?"<b>+</b> ":"")+"Returned "+ getQualifiedClassName(returned) +": <b>"+returned+"</b>", -2);
+		}
+		private function execChunk(line:String):Value{
+			// exec values inside functions (params of functions)
+			var indOpen:int = line.lastIndexOf("(");
+			while(indOpen>0){
+				var firstchar:String = line.charAt(indOpen+1);
+				if(firstchar!=")"){
+					// increment closing if there r more opening inside
+					var indopen2:int = indOpen;
+					var indClose:int = indOpen+1;
+					while(indopen2>=0 && indopen2<indClose){
+						indopen2++;
+						indopen2 = line.indexOf("(",indopen2);
+						indClose = line.indexOf(")",indClose+1);
+					}
+					//
+					var inside:String = line.substring(indOpen+1, indClose);
+					line = Utils.replaceByIndexes(line, VALUE_CONST+_values.length, indOpen+1, indClose);
+					var params:Array = inside.split(",");
+					_values.push(new Value(params));
+					for(var X:String in params){
+						params[X] = execNest(params[X].replace(/\s*(.+)\s*/,"$1")).value;
+					}
+					//report("^"+_values.length+" stores params ["+params+"]");
+					//report(line);
+				}
+				indOpen = line.lastIndexOf("(", indOpen-1);
+			}
+			return execNest(line);
+		}
+		private function execNest(str:String):Value{
+			var v:Value = new Value();
+			
+			var reg:RegExp = /\.|\(/g;
+			var result:Object = reg.exec(str);
+			if(result==null || !isNaN(Number(str))){
+				return execValue(str, null);
+			}
+			// AUTOMATICALLY detect classes in packages rather than using *...* 
+			var firstparts:Array = str.split("(")[0].split(".");
+			if(firstparts.length>0){
+				while(firstparts.length){
+					var classstr:String = firstparts.join(".");
+					try{
+						var def:* = getDefinitionByName(classstr);
+						var havemore:Boolean = str.length>classstr.length;
+						//report(classstr+" is a class "+def);
+						str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, 0, classstr.length);
+						_values.push(new Value(def, def, classstr));
+						if(havemore){
+							reg.lastIndex = 0;
+							result = reg.exec(str);
+						}else{
+							return execValue(str, null);
+						}
+						break;
+					}catch(e:Error){
+						firstparts.pop();
+					}
+				}
+			}
+			//
+			// dot syntex and simple function steps
+			//
+			var previndex:int = 0;
+			while(result != null){
+				var index:int = result.index;
+				var isFun:Boolean = str.charAt(index)=="(";
+				var basestr:String = str.substring(previndex, index);
+				//report("scopestr = "+basestr+ " v.base = "+v.base);
+				var newv:Value = execValue(basestr, v.base);
+				var newbase:* = newv.value;
+				v.base = newv.base;
+				//report("scope = "+newbase+"  isFun:"+isFun);
+				if(isFun){
+					var closeindex:int = str.indexOf(")", index);
+					var paramstr:String = str.substring(index+1, closeindex);
+					var params:Array = [];
+					if(paramstr){
+						params = execValue(paramstr).value;
+					}
+					//report("params = "+params.length+" - ["+ params+"]");
+					v.value = (newbase as Function).apply(v.base, params);
+					v.base = v.value;
+					index = closeindex+1;
+				}else{
+					v.value = newbase;
+				}
+				v.prop = basestr;
+				previndex = index+1;
+				reg.lastIndex = index+1;
+				result = reg.exec(str);
+				if(result != null){
+					v.base = v.value;
+				}else if(index+1 < str.length){
+					//report("no more result: index="+index+" str.length="+str.length);
+					//report("LEFT: "+str.substring(index+1, str.length));
+					v.base = v.value;
+					reg.lastIndex = str.length;
+					result = {index:str.length};
+				}
+			}
+			return v;
+		}
+		private function execValue(str:String, base:* = null):Value{
+			var nobase:Boolean = base?false:true;
+			base = base?base:_returned;
+			var v:Value = new Value(null, base, str);
+			if (str == "true") {
+				v.value = true;
+			}else if (str == "false") {
+				v.value = false;
+			}else if (str == "this") {
+				v.base = _returned;
+				v.value = _returned;
+			}else if (str == "null") {
+				v.value = null;
+			}else if (str == "NaN") {
+				v.value = NaN;
+			}else if (!isNaN(Number(str))) {
+				v.value = Number(str);
+			}else if(str.indexOf(VALUE_CONST)==0){
+				var vv:Value = _values[str.substring(VALUE_CONST.length)];
+				//report(VALUE_CONST+str.substring(VALUE_CONST.length)+" = " +vv);
+				v.base = vv.base;
+				v.value = vv.value;
+			}else if(str.charAt(0) == "$"){
+				v.base = _saved[str.substring(1)];
+				v.value = v.base;
+			}else if(nobase){
+				try{
+					v.value = getDefinitionByName(str);
+					v.base = v.value;
+				}catch(e:Error){
+					v.value = v.base[str];
+				}
+			}else{
+				v.value = v.base[str];
+			}
+			//report("value: "+str+" = "+getQualifiedClassName(v.value)+" - "+v.value+" base:"+v.base);
+			return v;
+		}
+		private function doCommand(str:String):void{
+			var brk:int = str.indexOf(" ");
+			var cmd:String = str.substring(1, brk>0?brk:str.length);
+			var param:String = brk>0?str.substring(brk+1):"";
+			//report("doCommand: "+ cmd+(param?(": "+param):""));
+			if (cmd == "help") {
+				printHelp();
+			} else if (cmd == "remap") {
+				// this is a special case... no user will be able to do this command
+				reMap(param);
+			} else if (cmd == "strong") {
+				if(param == "true"){
+					useStrong = true;
+					report("Now using STRONG referencing.", 10);
+				}else if (param == "false"){
+					useStrong = false;
+					report("Now using WEAK referencing.", 10);
+				}else if(useStrong){
+					report("Using STRONG referencing. '/strong false' to use weak", -2);
+				}else{
+					report("Using WEAK referencing. '/strong true' to use strong", -2);
+				}
+			} else if (cmd == "save") {
+				if (_returned) {
+					if(!param){
+						report("ERROR: Give a name to save.",10);
+					}else if(_reserved.indexOf(param)>=0){
+						report("ERROR: The name ["+param+ "] is reserved",10);
+					}else{
+						_saved.set(param, _returned,useStrong);
+						report("SAVED "+getQualifiedClassName(_returned) + " at "+ param);
+					}
+				} else {
+					report("Nothing to save", 10);
+				}
+			} else if (cmd == "string") {
+				report("String with "+param.length+" chars stored. Use /save <i>(name)</i> to save.", -2);
+				_returned = param;
+				dispatchEvent(new Event(CHANGED_SCOPE));
+			} else if (cmd == "saved") {
+				report("Saved vars: ", -1);
+				var sii:uint = 0;
+				var sii2:uint = 0;
+				for(var X:String in _saved){
+					var sao:* = _saved[X];
+					sii++;
+					if(sao==null) sii2++;
+					report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
+				}
+				report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
+			} else if (cmd == "filter") {
+				_master.filterText = str.substring(8);
+			} else if (cmd == "inspect" || cmd == "inspectfull") {
+				if (_returned) {
+					var viewAll:Boolean = (cmd == "inspectfull")? true: false;
+					report(inspect(_returned,viewAll), 5);
+				} else {
+					report("Empty", 10);
+				}
+			} else if (cmd == "map") {
+				if (_returned) {
+					map(_returned as DisplayObjectContainer);
+				} else {
+					report("Empty", 10);
+				}
+			} else if (cmd == "/") {
+				doReturn(_returned2?_returned2:base);
+			} else if (cmd == "base") {
+				doReturn(base);
+			} else if (cmd == "new") {
+				// TODO: accept params
+				doReturn(new (getDefinitionByName(param))(), true);
+			}else{
+				report("Undefined commandLine syntex <b>/help</b> for info.",10);
+			}
 		}
 		private function reportStackTrace(str:String):void{
 			var lines:Array = str.split(/\n\s*/);
 			var p:int = 10;
+			var internalerrs:int = 0;
+			var self:String = getQualifiedClassName(this);
 			var block:String = "";
-			for each(var line:String in lines){
-				block += "<p"+p+">&gt;&nbsp;"+line.replace(/\s/, "&nbsp;")+"</p"+p+"><br/>";
+			var len:int = lines.length;
+			for (var i:int = 0; i < len; i++){
+				var line:String = lines[i];
+				if(MAX_INTERNAL_STACK_TRACE >=0 && line.search(new RegExp("\\s*at "+self)) == 0 ){
+					// don't trace too many internal errors :)
+					if(internalerrs>=MAX_INTERNAL_STACK_TRACE && i > 0) {
+						break;
+					}
+					internalerrs++;
+				}
+				block += "<p"+p+">&gt;&nbsp;"+line.replace(/\s/, "&nbsp;")+"</p"+p+">\n";
 				if(p>6) p--;
 			}
 			report(block, 9);
 			
-		}
-		private function getPartData(strPart:String):Array{
-			try{
-				var base:Object = _returned.reference;
-				var partNames:Array = new Array();
-				var partValues:Array = new Array();
-				
-				if(strPart.charAt(0)=="*"){
-					partNames.push(strPart.substring(1));
-					partValues.push(getDefinitionByName(strPart.substring(1)));
-				}else if(isTypeable(strPart)){
-					partNames.push(strPart);
-					partValues.push(reType(strPart));
-				}else{
-					var dotParts:Array = strPart.split(/(\.|\(|\)|\,)/);
-					var dotLen:int = dotParts.length;
-							
-					var obj:Object = null;
-					
-					for(var j:int = 0;j<dotLen;j++){
-						var dotPart:String = dotParts[j];
-						if(dotPart.charAt(0)=="."){
-							dotPart = null;
-						}else if(dotPart.charAt(0)=="("){
-							var funArr:Array = new Array();
-							var endIndex:int = dotParts.indexOf(")", j);
-							
-							for(var jj:int = (j+1);jj<endIndex;jj++){
-								if(dotParts[jj] && dotParts[jj] != ","){
-									var data:Array = getPartData(dotParts[jj]);
-									if(data == null) return null; // had error and already done stack trace
-									funArr.push(data[1][0]);
-								}
-							}
-							obj = (obj as Function).apply(base,funArr);
-							j = endIndex+1;
-						}else if(dotPart.charAt(0)==","){
-							dotPart = null;
-						}else if(dotPart.charAt(0)==")"){
-							dotPart = null;
-						}else if(dotPart.charAt(0)=="$"){
-							obj = _saved.get(dotPart.substring(1));
-						}else if(dotLen == 1 && !base.hasOwnProperty(dotPart)){
-							// this could be a string without '...'
-							partNames.unshift(dotPart);
-							partValues.unshift(dotPart);
-							report("Assumed "+dotPart+" is a String as "+getQualifiedClassName(base)+" do not have this property.", 7);
-							break;
-						}else if(!obj){
-							partNames.unshift(base);
-							partValues.unshift(base);
-							obj = base[dotPart];
-						}else{
-							obj = obj[dotPart];
-						}
-						if(dotPart){
-							partNames.unshift(dotPart);
-							partValues.unshift(obj);
-						}
-					}
-				}
-				if(partNames.length>0){
-					return [partNames,partValues];
-				}
-			}catch(e:Error){
-				reportStackTrace(e.getStackTrace());
-				return null;
-			}
-			return [strPart,strPart];
-		}
-		private function isTypeable(str:String):Boolean{
-			if (str == "true" || str == "false" || str == "this" || str == "null" || str == "NaN" || !isNaN(Number(str))) {
-				return true;
-			}
-			if(str.charAt(0) == "'" && str.charAt(str.length-1) == "'"){
-				return true;
-			}
-			return false;
-		}
-		private function reType(str:String):Object{
-			if (str == "true") {
-				return true;
-			}else if (str == "false") {
-				return false;
-			}else if (str == "this") {
-				return _returned.reference;
-			}else if (!isNaN(Number(str))) {
-				return Number(str);
-			}else if (str == "null") {
-				return null;
-			}else if (str == "NaN") {
-				return NaN;
-			}else if(str.charAt(0) == "'" && str.charAt(str.length-1) == "'"){
-				return str.substring(1,(str.length-1));
-			}
-			return str;
 		}
 		public function inspect(obj:Object, viewAll:Boolean= true):String {
 			var typeStr:String = getQualifiedClassName(obj);
@@ -411,7 +518,7 @@ package com.atticmedia.console.core {
 				return;
 			}
 			_mapBases[_mapBaseIndex] = base;
-			var basestr:String = _mapBaseIndex+MAPPING_SPLITTER;
+			var basestr:String = _mapBaseIndex+Console.MAPPING_SPLITTER;
 			
 			var list:Array = new Array();
 			var index:int = 0;
@@ -460,7 +567,7 @@ package com.atticmedia.console.core {
 				for(i=0;i<steps;i++){
 					str += (i==steps-1)?" ∟ ":" - ";
 				}
-				var n:String = "<a href='event:clip_"+basestr+indexes.join(MAPPING_SPLITTER)+"'>"+mcDO.name+"</a>";
+				var n:String = "<a href='event:clip_"+basestr+indexes.join(Console.MAPPING_SPLITTER)+"'>"+mcDO.name+"</a>";
 				if(mcDO is DisplayObjectContainer){
 					n = "<b>"+n+"</b>";
 				}else{
@@ -475,26 +582,28 @@ package com.atticmedia.console.core {
 			report("Click on the name to return a reference to the child clip. <br/>Note that clip references will be broken when display list is changed",-2);
 		}
 		public function reMap(path:String, mc:DisplayObjectContainer = null):void{
-			var pathArr:Array = path.split(MAPPING_SPLITTER);
+			var pathArr:Array = path.split(Console.MAPPING_SPLITTER);
 			if(!mc){
 				var first:String = pathArr.shift();
-				mc = _mapBases[first];
+				if(first == "0"){
+					mc = _master.stage;
+				}else{
+					mc = _mapBases[first];
+				}
 			}
 			var child:DisplayObject = mc as DisplayObject;
 			try{
-				if(path.length>0){
-					for each(var ind:String in pathArr){
-						child = mc.getChildByName(ind);
-						if(child is DisplayObjectContainer){
-							mc = child as DisplayObjectContainer;;
-						}else{
-							// assume it reached to end since there can no longer be a child
-							break;
-						}
+				for each(var nn:String in pathArr){
+					if(!nn) break;
+					child = mc.getChildByName(nn);
+					if(child is DisplayObjectContainer){
+						mc = child as DisplayObjectContainer;;
+					}else{
+						// assume it reached to end since there can no longer be a child
+						break;
 					}
 				}
-				_returned = new WeakRef(child, useStrong);
-				report("+ Returned "+ child.name +": "+getQualifiedClassName(child),10);
+				doReturn(child);
 			} catch (e:Error) {
 				report("Problem getting the clip reference. Display list must have changed since last map request",10);
 				//reportStackTrace(e.getStackTrace());
@@ -513,10 +622,9 @@ package com.atticmedia.console.core {
 			report("(view all info) => <b>/inspectfull</b>",5);
 			report("(see display map) => <b>/map</b>",5);
 			report("__Use * to access static classes",10);
-			report("com.atticmedia.console.C => <b>*com.atticmedia.console.C</b>",5);
+			report("com.atticmedia.console.C => <b>*com.atticmedia.console.C*</b>",5);
 			report("(save reference) => <b>/save c</b>",5);
 			report("com.atticmedia.console.C.add('test',10) => <b>$C.add('test',10)</b>",5);
-			report("Strings can not have spaces...",7);
 			report("__Filtering:",10);
 			report("/filter &lt;text you want to filter&gt;",5);
 			report("This will create a new channel called filtered with all matching lines",5);
@@ -526,8 +634,20 @@ package com.atticmedia.console.core {
 			report("<b>stage.frameRate = 12</b>",5);
 			report("__________",10);
 		}
-		public function report(obj:*,priority:Number = 0):void{
-			_master.report(obj, priority);
+		public function report(obj:*,priority:Number = 1, skipSafe:Boolean = true):void{
+			_master.report(obj, priority, skipSafe);
 		}
+	}
+}
+class Value{
+	// this is a class to remember the base object and property name that holds the value...
+	public var base:Object;
+	public var prop:String;
+	public var value:*;
+	
+	public function Value(v:* = null, b:Object = null, p:String = null):void{
+		base = b;
+		prop = p;
+		value = v;
 	}
 }

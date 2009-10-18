@@ -40,6 +40,10 @@ package com.atticmedia.console.view {
 			minimumWidth = 32;
 			add(this, "current", 0xFF3333, "FPS");
 		}
+		public override function close():void {
+			super.close();
+			master.panels.updateMenu(); // should be black boxed :/
+		}
 		public override function reset():void {
 			//lowest = NaN;
 			super.reset();

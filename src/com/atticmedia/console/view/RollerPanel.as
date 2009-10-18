@@ -42,7 +42,6 @@ package com.atticmedia.console.view {
 		private var _txtField:TextField;
 		private var _base:DisplayObjectContainer;
 		
-		
 		public function RollerPanel(m:Console) {
 			super(m);
 			name = Console.PANEL_ROLLER;
@@ -132,12 +131,13 @@ package com.atticmedia.console.view {
 				arr.push(mc.name);
 				mc = mc.parent;
 			}
-			return arr.reverse().join("|");
+			return arr.reverse().join(Console.MAPPING_SPLITTER);
 		}
 		public override function close():void {
 			removeEventListener(Event.ENTER_FRAME, _onFrame);
 			_base = null;
 			super.close();
+			master.panels.updateMenu(); // should be black boxed :/
 		}
 		protected function linkHandler(e:TextEvent):void{
 			if(e.text == "close"){

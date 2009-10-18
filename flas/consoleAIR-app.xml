@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<application xmlns="http://ns.adobe.com/air/application/1.5">
+
+  <id>com.luaye.console.RemoteAIR</id>
+
+  <version>1.0</version>
+
+  <filename>ConsoleRemote</filename>
+
+  <description>flash-console Remote</description>
+
+  
+
+
+
+  
+
+<!-- To localize the description, use the following format for the description element.<description><text xml:lang="en">English App description goes here</text><text xml:lang="fr">French App description goes here</text><text xml:lang="ja">Japanese App description goes here</text></description>-->
+
+  <name>ConsoleRemote</name>
+
+  
+
+
+
+  
+
+<!-- To localize the name, use the following format for the name element.<name><text xml:lang="en">English App name goes here</text><text xml:lang="fr">French App name goes here</text><text xml:lang="ja">Japanese App name goes here</text></name>-->
+
+  <copyright>Lu Aye Oo</copyright>
+
+  <initialWindow>
+    <content>consoleAIR.swf</content>
+    <systemChrome>none</systemChrome>
+    <transparent>true</transparent>
+    <visible>true</visible>
+  </initialWindow>
+
+  <icon/>
+
+  <customUpdateUI>false</customUpdateUI>
+
+  <allowBrowserInvocation>false</allowBrowserInvocation>
+
+
+
+
+</application>

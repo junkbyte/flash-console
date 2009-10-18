@@ -1,4 +1,4 @@
-/*
+﻿/*
 * 
 * Copyright (c) 2008-2009 Lu Aye Oo
 * 
@@ -138,6 +138,10 @@ package com.atticmedia.console.view {
 		public function preset4():void{
 			preset2();
 			panelBackgroundAlpha = 1;
+		}
+		public function preset5():void{
+			preset1();
+			panelBackgroundAlpha = 0.45;
 		}
 	}
 }

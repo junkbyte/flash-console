@@ -1,8 +1,8 @@
-/*
+﻿/*
 * 
 * Copyright (c) 2008-2009 Lu Aye Oo
 * 
-* @author 		Lu Aye Oo
+* @author Lu Aye Oo
 * 
 * http://code.google.com/p/flash-console/
 * 
@@ -22,35 +22,51 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.atticmedia.console.samples {
-	
+package {
+
 
 	import com.atticmedia.console.*;
+	import com.atticmedia.console.view.*;
 
 	import flash.display.*;
 	import flash.events.*;
+	import flash.filters.GlowFilter;
 
-	public class Remote extends MovieClip {
+	public class RemoteAIR extends MovieClip {
 
-		public function Remote() {
-			C.start(this, "");
+		public function RemoteAIR() {
+
+			
+			C.start(stage, "`", 5);
+			C.visible = true;
 			C.remote = true;
 			C.commandLine = true;
+			C.x = 5;
+			C.y = 5;
+			var console:Console = C.instance;
 			
+			console.panels.mainPanel.addEventListener(AbstractPanel.STARTED_DRAGGING, moveHandle);
+			console.panels.mainPanel.addEventListener(AbstractPanel.STARTED_SCALING, scaleHandle);
+			console.panels.mainPanel.addEventListener(AbstractPanel.CLOSED, closeHandle);
+			console.filters = [new GlowFilter(0, 0.8, 5, 5)];
 			//
-			// This is special case for remote to disable scaling and moving
-			C.instance.panels.mainPanel.moveable = false;
-			C.instance.panels.mainPanel.scalable = false;
-			//
-			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			stage.addEventListener(Event.RESIZE, onStageResize);
 			onStageResize();
 		}
-		private function onStageResize(e : Event = null) : void {
-			C.width = stage.stageWidth;
-			C.height = stage.stageHeight;
+		private function moveHandle(e:Event):void {
+			stage.nativeWindow.startMove();
+		}
+		private function scaleHandle(e:Event):void {
+			stage.nativeWindow.startResize(NativeWindowResize.BOTTOM_RIGHT);
+		}
+		private function closeHandle(e:Event):void {
+			stage.nativeWindow.close();
+		}
+		private function onStageResize(e : Event = null):void {
+			C.width = stage.stageWidth-10;
+			C.height = stage.stageHeight-10;
 		}
 	}
 }

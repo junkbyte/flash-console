@@ -22,12 +22,35 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.atticmedia.console.samples {
-	import flash.display.MovieClip;
-	import com.atticmedia.console.C;
+package {
 	
-	// This class is for exporting to swc from flash.
-	public class Package extends MovieClip{
-		public var _C:C;
+
+	import com.atticmedia.console.*;
+
+	import flash.display.*;
+	import flash.events.*;
+
+	public class Remote extends MovieClip {
+
+		public function Remote() {
+			C.start(this, "");
+			C.remote = true;
+			C.commandLine = true;
+			
+			//
+			// This is special case for remote to disable scaling and moving
+			C.instance.panels.mainPanel.moveable = false;
+			C.instance.panels.mainPanel.scalable = false;
+			//
+			
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+			stage.addEventListener(Event.RESIZE, onStageResize);
+			onStageResize();
+		}
+		private function onStageResize(e : Event = null) : void {
+			C.width = stage.stageWidth;
+			C.height = stage.stageHeight;
+		}
 	}
 }
