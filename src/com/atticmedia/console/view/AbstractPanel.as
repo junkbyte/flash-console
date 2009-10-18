@@ -195,9 +195,9 @@ package com.atticmedia.console.view {
 			updateScaleText();
 			_dragOffset = new Point(scaler.mouseX,scaler.mouseY); // using this way instead of startDrag, so that it can control snapping.
 			_snaps = [[],[]];
-			dispatchEvent(new Event(STARTED_SCALING));
 			scaler.stage.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp, false, 0, true);
 			scaler.stage.addEventListener(MouseEvent.MOUSE_MOVE,updateScale, false, 0, true);
+			dispatchEvent(new Event(STARTED_SCALING));
 		}
 		private function updateScale(e:Event = null):void{
 			var p:Point = returnSnappedFor(x+mouseX-_dragOffset.x, y+mouseY-_dragOffset.x);
@@ -209,6 +209,9 @@ package com.atticmedia.console.view {
 		}
 		private function updateScaleText():void{
 			_resizeTxt.text = "<s>"+width+","+height+"</s>";
+		}
+		public function stopScaling():void{
+			onScalerMouseUp(null);
 		}
 		private function onScalerMouseUp(e:Event):void{
 			scaler.stage.removeEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp);

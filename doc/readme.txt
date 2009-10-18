@@ -8,7 +8,7 @@ http://code.google.com/p/flash-console/w/list
 
 ==Flash Console==
 
-  * Version: 2.0 (Oct 2009)
+  * Version: 2.1 (Oct 2009)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo
 
@@ -24,6 +24,12 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 == Change Log ==
+
+===2.1===
+  * commandLine should now execute commands in a much better way with less restrictions (such as nested functions, long strings in quotations, etc)
+  * Minior updates and fixes to increase speed in view/panels
+  * Remote AIR console added
+
 
 ===2.0===
   * MAJOR revamp to interface and code structure.

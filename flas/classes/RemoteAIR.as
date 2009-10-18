@@ -35,16 +35,20 @@ package {
 	public class RemoteAIR extends MovieClip {
 
 		public function RemoteAIR() {
-
 			
-			C.start(stage, "`", 5);
+			stage.nativeWindow.alwaysInFront = true;
+			
+			C.start(this, "", 5);
 			C.visible = true;
 			C.remote = true;
 			C.commandLine = true;
-			C.x = 5;
-			C.y = 5;
+			C.x = 10;
+			C.y = 10;
 			var console:Console = C.instance;
 			
+			var menu:DisplayObject = console.panels.mainPanel.getChildByName("menuField") as DisplayObject;
+			menu.doubleClickEnabled = true;
+			menu.addEventListener(MouseEvent.DOUBLE_CLICK, ondouble);
 			console.panels.mainPanel.addEventListener(AbstractPanel.STARTED_DRAGGING, moveHandle);
 			console.panels.mainPanel.addEventListener(AbstractPanel.STARTED_SCALING, scaleHandle);
 			console.panels.mainPanel.addEventListener(AbstractPanel.CLOSED, closeHandle);
@@ -55,18 +59,28 @@ package {
 			stage.addEventListener(Event.RESIZE, onStageResize);
 			onStageResize();
 		}
+		private function ondouble(e:Event):void {
+			if(stage.nativeWindow.displayState != NativeWindowDisplayState.MAXIMIZED){
+				stage.nativeWindow.maximize();
+			}else{
+				stage.nativeWindow.restore();
+			}
+		}
 		private function moveHandle(e:Event):void {
 			stage.nativeWindow.startMove();
 		}
 		private function scaleHandle(e:Event):void {
+			C.instance.panels.mainPanel.stopScaling();
 			stage.nativeWindow.startResize(NativeWindowResize.BOTTOM_RIGHT);
 		}
 		private function closeHandle(e:Event):void {
 			stage.nativeWindow.close();
 		}
 		private function onStageResize(e : Event = null):void {
-			C.width = stage.stageWidth-10;
-			C.height = stage.stageHeight-10;
+			C.width = stage.stageWidth-20;
+			C.height = stage.stageHeight-20;
+			
+			
 		}
 	}
 }
