@@ -1,0 +1,113 @@
+You can find a copy of this file at project wiki:
+http://code.google.com/p/flash-console/w/list
+
+
+=Command Line: help and tutorial=
+
+==This document applies to v2.1 or above only==
+
+*This example includes referenecs to sample flash swf provided in the download. You can go to an online version at: [http://www.luaye.com/flash_console/]*
+
+*Please use the sample flash console when following the steps in this example.*
+
+== Introduction ==
+
+  * Command line is not visible in console by default.
+  * To start commandliine: `C.commandline = true` in source OR in console interface you can click on *CL* in top menu.
+  * Command line appear as a text field at the bottom of the console window.
+  * It uses the same syntax as actionscript. Except that you can only do 1 simple line of code at a time.
+
+=== Example Uses ===
+  * We have developed a game that users are able to go to to different parts of an island collecting items, keys and unlocking each part of the island. Testing and fixing different parts of the island for bugs would be a pain if you have to go through all stages from start every time you re-launch the game (or recompile to change the start place). With Console, we are able to just type which section we want to go to in command line like: `$goto('red31')` We can even give our selves items without picking them up by calling a command like: `$give('bluekey1')` with these simple commands we are able to let betatesters go to different parts of the island with different item combinations without needing to start the game all over again.
+  * We are developing another game that can save game progress to server. While server side is being developed we are able to use text files to save the game data. We can call from commandline: `$load('save30.txt')` to load the text data
+  * We have a game that is purely based on physics. Sometimes we want to see what happened to object collisions slowly to see in detail. With commandline we can directly control stage frame rate by writing `stage.frameRate = 5`
+
+  * Note that `$` commands given in the above examples need to be assigned to a function of your own flash. For example: to be able to use `$goto('red31')` command mentioned above, you would have to create a function that accept a string argument and assign that function in console like: `C.store(<function>, "goto");`. Explained how in tutorial below.
+
+=== Limitations ===
+  * Console can only access and call properties, methods and static classes. You can not access private properties/methods or perform operations such as for-loop, etc
+  * It can not create `new` instances, at the moment but have plans to change this soon.
+
+
+== Tutorial==
+  * For this tutorial, we'll use the sample console provided here: http://www.luaye.com/flash_console/ You can see the source code for console start up at com.atticmedia.console.samples.Sample
+  * Command line starts with root/(document class) as the first scope (by default). So if you write:
+{{{
+this
+}}} 
+  * and hit enter,it will reply:
+{{{
+[C] Returned com.atticmedia.console.samples::Sample: [object Sample]
+}}}
+  * Where in this example, document class is `Sample`
+  * You can also tell this by seeing the text `Sample` on the left of commandLine
+  * To call a method `getChildAt(0)`from this, you can write:
+{{{
+getChildAt(0)
+ (OR)
+this.getChildAt(0)
+ (OR)
+root.getChildAt(0)
+}}}
+  * Console should return the first display object from your root. which in this example:
+{{{
+[C] + Returned flash.display::Shape: [object Shape]
+}}}
+  * As soon as there is an object return (anything thats not a String or null or undefined), your current scope becomes that last return. You will also see that the scope name on the left of commandLine have also changed to 'Shape'. ' + ' sign on the return statement means it have moved to a new scope.
+  * So now if you type again:
+{{{
+this
+}}}
+  * it should return the first display object (Shape) from the root, rather than the root it self.
+  * If you want to go back to root, you could use these commands:
+{{{
+parent
+ (OR)
+root
+ (OR)
+/base
+}}}
+  * Where `/base` is a build it command to force re-scope to the command line base scope (by default, it is root)
+  * Now you should be back in root. To see a map of displays inside root, you can type
+{{{
+/map
+}}}
+  * Again this is another built in command that tells command line to generate map of displays from your previous return. You should now see a fairly long list of display objects.
+  * From this list you can either click on the object you are interseted in to get the scope or simply try an adventurous way by typing away. For now we are going to get a scope on the yellow circle inside the nested circles. by code it would be:
+{{{
+mc.nest2.nest3.yellow
+ (OR)
+root.mc.nest2.nest3.yellow
+}}}
+  * This will return you with a reference to the yellow circle. You can already start playing the properties of this clip by typing this like:
+{{{
+alpha = 0.5
+x = 0
+y = 0
+}}}
+  * Note that changing X and Y may be inverted for you because rotation of `mc` is -90...SO you could go ahead and change the rotation back to zero... try it!
+
+
+TODO: finish writing this section
+
+== Storing objects ==
+  * If you want to make a direct reference to an object / class, you can write this in your source code (not in command line)
+{{{
+C.store("myObj", myObject);
+}}} 
+  * in CommandLine, you can access to this object by typing `$myObj`
+  * $C is a reserved store space for your Console.
+  * You can start hacking away console in run time by calling things like: `$C.width = 100`  `$C.fpsMonitor = 0`  `$C.remoting = false`
+
+Sometimes when you go into objects that are not in the display list and you need to go back to `root`, you can no longer type root to get to the top level display. You will need to force return to base scope by typing `/base`. You can change your base target in code using this example: `C.commandBase = stage`
+
+== Commands ==
+  * `/filter (text)` = filter/search logs for matching text
+  * `//` = return to previous scope
+  * `/base` = return to base scope
+  * `/save (name)` = save current scope to that name. to call back: $(name)
+  * `/inspect` = get detailed info of your current scope.
+  * `/inspectfull` = get more detailed info of your current scope.
+  * `/map` =  get the display list map starting from your current scope
+  * `/strong true` = turn on strong referencing, you need to turn this on if you want to start manipulating with instances that are newly created.
+  * `/new (classpath)` = create a new instance, can not accept parameters atm, for example `/new flash.display.Sprite`, need to have `/strong true` for object to persist.

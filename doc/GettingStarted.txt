@@ -57,7 +57,7 @@ C.errorch("myChannel", "This is an error log.", "multiple arguments are supporte
 
 ====Command line====
 
-  * Write `/help` in command line area for help.
+  * Write `/help` in command line area for short syntex help.
   * Read CommandLineHelp for detailed info on how to take advantage of Command Line.
 
 ====Garbage collection monitor====
