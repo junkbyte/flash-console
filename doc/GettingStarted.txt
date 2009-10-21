@@ -8,26 +8,20 @@ http://code.google.com/p/flash-console/w/list
 
 The main class you will need to use for console is `C`, (`com.atticmedia.console.C`). `C` is a static / singleton adapter for `Console` (`com.atticmedia.console.Console`). 
 
-In a later date when you don't need console in your flash project, you can just remove `C.start(..)` from your code and the rest of console related codes will stop executing to save memory and performance.
+In a later date when you don't need console in your flash project, you can just remove `C.startOnStage(..)` OR `C.start(..)` from your code and the rest of console related codes will stop executing to save memory and performance.
 
 
 ==Basics==
 
+Start console on stage... first parameter is any DisplayObject which is already on stage or to be added.
 If you want to set a keyword for console to start, assign at second parameter. 
 Use letters and numbers only. Console will start hidden if you set a password.
 You will need to type the keyword in correct sequence to show the console.
-Recommended keyword: ` or # or ~
+Recommended keyword: ` or ~ or debug (remember to have keyboard short cuts disabled in flash test authoring for some keys to be captured)
 
 {{{
 import com.atticmedia.console.C;
-C.start(this, "");
-}}}
-
-If you are using Flex, it may be easier to start console on stage, using C.startOnStage(), where first parameter can be any display/UIComponent which is already on stage or to be added later.
-
-{{{
-import com.atticmedia.console.C;
-C.startOnStage(this);
+C.startOnStage(this, "");
 }}}
 
 Logging...
@@ -57,7 +51,7 @@ C.errorch("myChannel", "This is an error log.", "multiple arguments are supporte
 
 ====Command line====
 
-  * Write `/help` in command line area for short syntex help.
+  * Write `/help` in command line area for help.
   * Read CommandLineHelp for detailed info on how to take advantage of Command Line.
 
 ====Garbage collection monitor====
@@ -108,4 +102,12 @@ C.enabled = false;
 // when disabled console will stop from keeping it self at the top of the display list
 // this can sometimes fix some problems if you need to manage the display list
 C.alwaysOnTop = false;
+}}}
+
+
+==Others==
+If you want to start console in a custom display container, use the following:
+{{{
+import com.atticmedia.console.C;
+C.start(this);
 }}}
