@@ -58,7 +58,7 @@ package com.atticmedia.console {
 		public static const FPS_MAX_LAG_FRAMES:uint = 25;
 		
 		public static const VERSION:Number = 2.1;
-		public static const VERSION_STAGE:String = "beta";
+		public static const VERSION_STAGE:String = "";
 		
 		// You can change this if you don't want to use default channel
 		// Other remotes with different remoting channel won't be able to connect your flash.
