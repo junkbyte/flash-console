@@ -621,10 +621,6 @@ package com.atticmedia.console.core {
 			report("(view info) => <b>/inspect</b>",5);
 			report("(view all info) => <b>/inspectfull</b>",5);
 			report("(see display map) => <b>/map</b>",5);
-			report("__Use * to access static classes",10);
-			report("com.atticmedia.console.C => <b>*com.atticmedia.console.C*</b>",5);
-			report("(save reference) => <b>/save c</b>",5);
-			report("com.atticmedia.console.C.add('test',10) => <b>$C.add('test',10)</b>",5);
 			report("__Filtering:",10);
 			report("/filter &lt;text you want to filter&gt;",5);
 			report("This will create a new channel called filtered with all matching lines",5);
