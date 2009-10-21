@@ -65,10 +65,19 @@ package com.atticmedia.console.core {
 				}
 			}
 			if(_remoteDelayed > _master.remoteDelay){
-				send("logSend", [_remoteLinesQueue, _mspfsForRemote, _master.currentMemory]);
-				_remoteLinesQueue = new Array();
-				_mspfsForRemote = [sFR?sFR:30];
 				_remoteDelayed = 0;
+				var newQueue:Array = new Array();
+				// don't send too many lines at once, so buffer it
+				if(_remoteLinesQueue.length > 50){
+					newQueue = newQueue.splice(50);
+					// to force update sooner
+					if(_master.remoteDelay>5){
+						_remoteDelayed = _master.remoteDelay-5;
+					}
+				}
+				send("logSend", [_remoteLinesQueue, _mspfsForRemote, _master.currentMemory, _master.cl.scopeString]);
+				_remoteLinesQueue = newQueue;
+				_mspfsForRemote = [sFR?sFR:30];
 			}
 		}
 		public function send(command:String, ...args):void{

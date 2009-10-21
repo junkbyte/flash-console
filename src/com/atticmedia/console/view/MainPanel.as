@@ -458,8 +458,12 @@ package com.atticmedia.console.view {
 			e.stopPropagation();
 		}
 		private function onUpdateCommandLineScope(e:Event=null):void{
+			if(!master.remote)
+			updateCLScope(master.cl.scopeString);
+		}
+		public function updateCLScope(str:String):void{
 			_commandPrefx.autoSize = TextFieldAutoSize.LEFT;
-			_commandPrefx.htmlText = "<w><p1>"+master.cl.scopeString+":</p1></w>";
+			_commandPrefx.htmlText = "<w><p1>"+str+":</p1></w>";
 			var w:Number = width-48;
 			if(_commandPrefx.width > 120 || _commandPrefx.width > w){
 				_commandPrefx.autoSize = TextFieldAutoSize.NONE;

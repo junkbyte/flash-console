@@ -139,9 +139,10 @@ package com.atticmedia.console.view {
 			preset2();
 			panelBackgroundAlpha = 1;
 		}
-		public function preset5():void{
+		public function preset951():void{
+			// USED BY AIR Remote
 			preset1();
-			panelBackgroundAlpha = 0.45;
+			panelBackgroundAlpha = 0.55;
 		}
 	}
 }

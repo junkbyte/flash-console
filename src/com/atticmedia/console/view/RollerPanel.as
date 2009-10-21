@@ -52,7 +52,6 @@ package com.atticmedia.console.view {
 			_txtField.autoSize = TextFieldAutoSize.LEFT;
 			_txtField.styleSheet = style.css;
 			_txtField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-			_txtField.selectable = false;
 			registerRollOverTextField(_txtField);
 			_txtField.addEventListener(TextFieldRollOver.ROLLOVER, onMenuRollOver, false, 0, true);
 			registerDragger(_txtField);
@@ -75,6 +74,7 @@ package com.atticmedia.console.view {
 			}
 			_txtField.htmlText = "<ro>"+getMapString()+"</ro>";
 			_txtField.autoSize = TextFieldAutoSize.LEFT;
+			_txtField.setSelection(0, 0);
 			width = _txtField.width+4;
 			height = _txtField.height;
 		}
@@ -140,6 +140,7 @@ package com.atticmedia.console.view {
 			master.panels.updateMenu(); // should be black boxed :/
 		}
 		protected function linkHandler(e:TextEvent):void{
+			TextField(e.currentTarget).setSelection(0, 0);
 			if(e.text == "close"){
 				close();
 			}

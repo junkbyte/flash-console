@@ -433,7 +433,7 @@ package com.atticmedia.console {
 			if(!_isPaused){
 				var arr:Array = mm.update();
 				if(arr.length>0){
-					report("GARBAGE COLLECTED "+arr.length+" item(s): "+arr.join(", "),10);
+					report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
 				}
 			}
 			if(visible){
@@ -475,6 +475,12 @@ package com.atticmedia.console {
 			remoter.isRemote = newV;
 			panels.updateMenu();
 		}
+		//
+		// this is sent from client for remote...
+		// obj[0] = array of log lines (text, priority, channel, repeating, safeHTML)
+		// obj[1] = array of 'milliseconds per frame' since previous logsend - for FPS display
+		// obj[2] = client's current memory usage
+		// obj[3] = client's command line scope - string
 		private function remoteLogSend(obj:Array):void{
 			if(!remoter.isRemote || !obj) return;
 			var lines:Array = obj[0];
@@ -505,6 +511,10 @@ package com.atticmedia.console {
 				}
 			}
 			remoter.remoteMem = obj[2];
+			if(obj[3]){ 
+				// older clients don't send CL scope
+				panels.mainPanel.updateCLScope(obj[3]);
+			}
 		}
 		//
 		//
@@ -670,13 +680,13 @@ package com.atticmedia.console {
 		public function log(...args):void{
 			addLine(args.join(" "),1);
 		}
-		public function message(...args):void{
+		public function info(...args):void{
 			addLine(args.join(" "),3);
 		}
 		public function debug(...args):void{
 			addLine(args.join(" "),6);
 		}
-		public function warning(...args):void{
+		public function warn(...args):void{
 			addLine(args.join(" "),8);
 		}
 		public function error(...args):void{
@@ -685,20 +695,19 @@ package com.atticmedia.console {
 		public function logch(channel:*, ...args):void{
 			ch(channel, args.join(" "),1);
 		}
-		public function messagech(channel:*, ...args):void{
+		public function infoch(channel:*, ...args):void{
 			ch(channel, args.join(" "),3);
 		}
 		public function debugch(channel:*, ...args):void{
 			ch(channel, args.join(" "),6);
 		}
-		public function warningch(channel:*, ...args):void{
+		public function warnch(channel:*, ...args):void{
 			ch(channel, args.join(" "),8);
 		}
 		public function errorch(channel:*, ...args):void{
 			ch(channel, args.join(" "),10);
 		}
-		
-		
+		//
 		public function set filterText(str:String):void{
 			_filterText = str;
 			if(str){

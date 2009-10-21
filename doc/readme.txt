@@ -29,6 +29,7 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
   * commandLine should now execute commands in a much better way with less restrictions (such as nested functions, long strings in quotations, etc)
   * Minior updates and fixes to increase speed in view/panels
   * Remote AIR console added
+  * Improvements in remote
 
 
 ===2.0===

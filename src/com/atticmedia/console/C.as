@@ -197,9 +197,9 @@ package com.atticmedia.console {
 				_console.log.apply(null, args);
 			}
 		}
-		public static function message(...args):void{
+		public static function info(...args):void{
 			if(_console){
-				_console.message.apply(null, args);
+				_console.info.apply(null, args);
 			}
 		}
 		public static function debug(...args):void{
@@ -207,9 +207,9 @@ package com.atticmedia.console {
 				_console.debug.apply(null, args);
 			}
 		}
-		public static function warning(...args):void{
+		public static function warn(...args):void{
 			if(_console){
-				_console.warning.apply(null, args);
+				_console.warn.apply(null, args);
 			}
 		}
 		public static function error(...args):void{
@@ -222,9 +222,9 @@ package com.atticmedia.console {
 				_console.logch.apply(null, [channel].concat(args));
 			}
 		}
-		public static function messagech(channel:*, ...args):void{
+		public static function infoch(channel:*, ...args):void{
 			if(_console){
-				_console.messagech.apply(null, [channel].concat(args));
+				_console.infoch.apply(null, [channel].concat(args));
 			}
 		}
 		public static function debugch(channel:*, ...args):void{
@@ -232,9 +232,9 @@ package com.atticmedia.console {
 				_console.debugch.apply(null, [channel].concat(args));
 			}
 		}
-		public static function warningch(channel:*, ...args):void{
+		public static function warnch(channel:*, ...args):void{
 			if(_console){
-				_console.warningch.apply(null, [channel].concat(args));
+				_console.warnch.apply(null, [channel].concat(args));
 			}
 		}
 		public static function errorch(channel:*, ...args):void{

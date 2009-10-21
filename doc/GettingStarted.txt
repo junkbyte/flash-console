@@ -23,7 +23,7 @@ import com.atticmedia.console.C;
 C.start(this, "");
 }}}
 
-If you are using Flex, it may be easier to start console on stage, using C.startOnStage(), where first parameter can be any display which is already on stage or to be added later.
+If you are using Flex, it may be easier to start console on stage, using C.startOnStage(), where first parameter can be any display/UIComponent which is already on stage or to be added later.
 
 {{{
 import com.atticmedia.console.C;
@@ -33,14 +33,24 @@ C.startOnStage(this);
 Logging...
 
 {{{
-C.add("Hello world");
-C.add("This is important!", 10);
-C.add("This is not really important", 7);
-C.add("This is totally a dummy", 0);
+//
+// basic logging
+//
+C.info("Hello world");
+C.log("A log message for console.", "optionally there", "can be", "multiple arguments");
+C.debug("A debug level log");
+C.warn("This is a warning log");
+C.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods");
+//
+// basic channel logging
+//
+C.infoch("myChannel", "Hello myChannel");
+C.logch("myChannel", "A log message at myChannel", "optionally there", "can be", "multiple arguments");
+C.debugch("myChannel", "A debug level log");
+C.warnch("myChannel", "This is a warning log");
+C.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods");
 //
 //
-C.ch("myChannel","Hello my Channel");
-C.ch("myChannel","Hello, important message at my channel", 10);
 }}}
 
 ==Advanced==

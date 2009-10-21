@@ -77,7 +77,6 @@ package com.atticmedia.console.view {
 			keyTxt.styleSheet = style.css;
 			keyTxt.height = 16;
 			keyTxt.y = -3;
-			keyTxt.selectable = false;
 			keyTxt.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			registerRollOverTextField(keyTxt);
 			keyTxt.addEventListener(TextFieldRollOver.ROLLOVER, onMenuRollOver, false, 0, true);
@@ -316,6 +315,7 @@ package com.atticmedia.console.view {
 			keyTxt.htmlText = str;
 		}
 		protected function linkHandler(e:TextEvent):void{
+			TextField(e.currentTarget).setSelection(0, 0);
 			if(e.text == "reset"){
 				reset();
 			}else if(e.text == "close"){

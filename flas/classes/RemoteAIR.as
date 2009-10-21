@@ -38,7 +38,7 @@ package {
 			
 			stage.nativeWindow.alwaysInFront = true;
 			
-			C.start(this, "", 5);
+			C.start(this, "", 951);
 			C.visible = true;
 			C.remote = true;
 			C.commandLine = true;
@@ -52,7 +52,7 @@ package {
 			console.panels.mainPanel.addEventListener(AbstractPanel.STARTED_DRAGGING, moveHandle);
 			console.panels.mainPanel.addEventListener(AbstractPanel.STARTED_SCALING, scaleHandle);
 			console.panels.mainPanel.addEventListener(AbstractPanel.CLOSED, closeHandle);
-			console.filters = [new GlowFilter(0, 0.8, 5, 5)];
+			console.filters = [new GlowFilter(0, 0.7, 5, 5)];
 			//
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;

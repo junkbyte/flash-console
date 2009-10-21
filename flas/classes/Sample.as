@@ -41,13 +41,29 @@ package {
 			C.visible = true; // show console, because having password hides console.
 			C.tracing = true; // trace on flash's normal trace
 			C.commandLine = true; // enable command line
-			//C.commandLinePermission = 1;
+			//C.commandLinePermission = 1; // WIP
 			C.width = 600;
 			C.height = 200;
 			
 			C.remoting = true;
 
-			// LOGGING
+			//
+			//
+			// Convenience logging... infinite arguments
+			C.log("Log", "with multiple", "arguments");
+			C.info("Message", "with multiple", "arguments");
+			C.debug("Debug", "with multiple", "arguments");
+			C.warn("Warning", "with multiple", "arguments");
+			C.error("Error", "with multiple", "arguments");
+			//
+			// Convenience logging with channel... infinite arguments
+			C.logch("myChannel", "Log", "with multiple", "arguments");
+			C.infoch("myChannel", "Message", "with multiple", "arguments");
+			C.debugch("myChannel", "Debug", "with multiple", "arguments");
+			C.warnch("myChannel", "Warning", "with multiple", "arguments");
+			C.errorch("myChannel", "Error", "with multiple", "arguments");		
+			
+			// Advanced logging with higher priortiy and repeative trace
 			C.add("This is an important error alert! (priority 10)", 10);
 			C.add("This is a less important error alert. (priority 9)", 9);
 			C.add("This is a warning! (priority 8)", 8);
@@ -57,23 +73,6 @@ package {
 			//
 			C.ch("myChannel", "Hello my Channel");
 			C.ch("myChannel", "Hello important message at my channel", 10);
-			
-			//
-			//
-			// Convenience logging... infinite arguments
-			C.log("Log", "with multiple", "arguments");
-			C.message("Message", "with multiple", "arguments");
-			C.debug("Debug", "with multiple", "arguments");
-			C.warning("Warning", "with multiple", "arguments");
-			C.error("Error", "with multiple", "arguments");
-			//
-			// Convenience logging with channel... infinite arguments
-			C.logch("myChannel", "Log", "with multiple", "arguments");
-			C.messagech("myChannel", "Message", "with multiple", "arguments");
-			C.debugch("myChannel", "Debug", "with multiple", "arguments");
-			C.warningch("myChannel", "Warning", "with multiple", "arguments");
-			C.errorch("myChannel", "Error", "with multiple", "arguments");		
-			
 			
 			
 			// if you want to use command line, please type /help 
@@ -100,6 +99,8 @@ package {
 			setUpButton(btnInterval, "Start interval");
 			setUpButton(btnAdd1, "Add");
 			setUpButton(btnAdd2, "Add");
+			
+			
 		}
 		private function setUpButton(btn:MovieClip, t:String):void{
 			btn.stop();
