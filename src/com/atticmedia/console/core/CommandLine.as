@@ -100,6 +100,8 @@ package com.atticmedia.console.core {
 			}
 			return str;
 		}
+		//
+		//
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
 			if(str.charAt(0) == "/"){
@@ -167,7 +169,7 @@ package com.atticmedia.console.core {
 		// getChildByName(String('Console')).getChildByName('message').alpha = 0.5;
 		// getChildByName(String('Console').abcd().asdf).getChildByName('message').alpha = 0.5;
 		// com.atticmedia.console.C.add('Hey how are you?');
-		// $f = this;
+		//
 		private function runLine(line:String):*{
 			try{
 				var majorParts:Array = line.split(/\s*\=\s*/);
@@ -186,22 +188,16 @@ package com.atticmedia.console.core {
 			}
 			return null;
 		}
-		private function doReturn(returned:*, isNew:Boolean = false):void{
-			var newb:Boolean = false;
-			if(returned && (returned is Function || isNew || (returned != _returned && typeof(returned) == "object") && !(returned is Array) && !(returned is Date))){
-				newb = true;
-				_returned2 = _returned;
-				_returned = returned;
-				dispatchEvent(new Event(CHANGED_SCOPE));
-			}
-			report((newb?"<b>+</b> ":"")+"Returned "+ getQualifiedClassName(returned) +": <b>"+returned+"</b>", -2);
-		}
+		//
+		// Nest. such as aaa.bbb(ccc.ddd().eee).fff().ggg
+		//
 		private function execChunk(line:String):Value{
 			// exec values inside functions (params of functions)
 			var indOpen:int = line.lastIndexOf("(");
 			while(indOpen>0){
-				var firstchar:String = line.charAt(indOpen+1);
-				if(firstchar!=")"){
+				var firstClose:int = line.indexOf(")", indOpen);
+				//if there is params...
+				if(line.substring(indOpen+1, firstClose).search(/\w/)>=0){
 					// increment closing if there r more opening inside
 					var indopen2:int = indOpen;
 					var indClose:int = indOpen+1;
@@ -216,24 +212,44 @@ package com.atticmedia.console.core {
 					var params:Array = inside.split(",");
 					_values.push(new Value(params));
 					for(var X:String in params){
-						params[X] = execNest(params[X].replace(/\s*(.+)\s*/,"$1")).value;
+						params[X] = execStrip(params[X].replace(/\s*(.+)\s*/,"$1")).value;
 					}
 					//report("^"+_values.length+" stores params ["+params+"]");
 					//report(line);
 				}
 				indOpen = line.lastIndexOf("(", indOpen-1);
 			}
-			return execNest(line);
+			return execStrip(line);
 		}
-		private function execNest(str:String):Value{
+		//
+		// Simple strip. such as aaa.bbb.ccc(1,2,3).ddd  
+		// includes class path detection and 'new' operation
+		//
+		private function execStrip(str:String):Value{
 			var v:Value = new Value();
-			
+			//
+			// if it is 'new' operation
+			if(str.indexOf("new ")==0){
+				var newstr:String = str;
+				var defclose:int = str.indexOf(")");
+				if(defclose>=0){
+					newstr = str.substring(0, defclose+1);
+				}
+				str = str.substring(newstr.length);
+				str = str.replace(/\s*(.*)\s*/,"$1");// clean white space
+				str = VALUE_CONST+_values.length+str;
+				var newobj:* = makeNew(newstr.substring(4));
+				_values.push(new Value(newobj,newobj, newstr));
+			}
+			//
+			//
 			var reg:RegExp = /\.|\(/g;
 			var result:Object = reg.exec(str);
 			if(result==null || !isNaN(Number(str))){
 				return execValue(str, null);
 			}
-			// AUTOMATICALLY detect classes in packages rather than using *...* 
+			//
+			// AUTOMATICALLY detect classes in packages
 			var firstparts:Array = str.split("(")[0].split(".");
 			if(firstparts.length>0){
 				while(firstparts.length){
@@ -258,7 +274,6 @@ package com.atticmedia.console.core {
 			}
 			//
 			// dot syntex and simple function steps
-			//
 			var previndex:int = 0;
 			while(result != null){
 				var index:int = result.index;
@@ -272,6 +287,7 @@ package com.atticmedia.console.core {
 				if(isFun){
 					var closeindex:int = str.indexOf(")", index);
 					var paramstr:String = str.substring(index+1, closeindex);
+					paramstr = paramstr.replace(/\s/g,"");
 					var params:Array = [];
 					if(paramstr){
 						params = execValue(paramstr).value;
@@ -299,6 +315,9 @@ package com.atticmedia.console.core {
 			}
 			return v;
 		}
+		//
+		// single values such as string, int, object, $a, ^1 and Classes without package.
+		//
 		private function execValue(str:String, base:* = null):Value{
 			var nobase:Boolean = base?false:true;
 			base = base?base:_returned;
@@ -336,6 +355,84 @@ package com.atticmedia.console.core {
 			}
 			//report("value: "+str+" = "+getQualifiedClassName(v.value)+" - "+v.value+" base:"+v.base);
 			return v;
+		}
+		//
+		// make new instance
+		//
+		private function makeNew(str:String):*{
+			//report("makeNew "+str);
+			var openindex:int = str.indexOf("(");
+			var defstr:String = openindex>0?str.substring(0, openindex):str;
+			var def:* = execValue(defstr).value;
+			if(openindex>0){
+				var closeindex:int = str.indexOf(")", openindex);
+				var paramstr:String = str.substring(openindex+1, closeindex);
+				paramstr = paramstr.replace(/\s/g,"");
+				var p:Array = [];
+				if(paramstr){
+					p = execValue(paramstr).value;
+				}
+				var len:int = p.length;
+				//
+				// TODO: HELP! how do you construct an object with unknown number of arguments?
+				// calling a functionw with multiple arguments can be done by fun.apply()... but can't for constructor :(
+				if(len==0){
+					return new (def)();
+				}if(len==1){
+					return new (def)(p[0]);
+				}else if(len==2){
+					return new (def)(p[0], p[1]);
+				}else if(len==3){
+					return new (def)(p[0], p[1], p[2]);
+				}else if(len==4){
+					return new (def)(p[0], p[1], p[2], p[3]);
+				}else if(len==5){
+					return new (def)(p[0], p[1], p[2], p[3], p[4]);
+				}else if(len==6){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5]);
+				}else if(len==7){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
+				}else if(len==8){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
+				}else if(len==9){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
+				}else if(len==10){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
+				}else if(len==11){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10]);
+				}else if(len==12){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11]);
+				}else if(len==13){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12]);
+				}else if(len==14){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13]);
+				}else if(len==15){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14]);
+				}else if(len==16){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15]);
+				}else if(len==17){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16]);
+				}else if(len==18){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17]);
+				}else if(len==19){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18]);
+				}else if(len==20){
+					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19]);
+				}
+				// won't work with more than 20 arguments...
+			}
+			return new (def)();
+		}
+		private function doReturn(returned:*):void{
+			var newb:Boolean = false;
+			var typ:String = typeof(returned);
+			if(returned && returned !== _returned && (typ == "object" || typ=="xml" || typ=="function")){
+				newb = true;
+				_returned2 = _returned;
+				_returned = returned;
+				dispatchEvent(new Event(CHANGED_SCOPE));
+			}
+			report((newb?"<b>+</b> ":"")+"Returned "+ getQualifiedClassName(returned) +": <b>"+returned+"</b>", -2);
 		}
 		private function doCommand(str:String):void{
 			var brk:int = str.indexOf(" ");
@@ -406,10 +503,7 @@ package com.atticmedia.console.core {
 				doReturn(_returned2?_returned2:base);
 			} else if (cmd == "base") {
 				doReturn(base);
-			} else if (cmd == "new") {
-				// TODO: accept params
-				doReturn(new (getDefinitionByName(param))(), true);
-			}else{
+			} else{
 				report("Undefined commandLine syntex <b>/help</b> for info.",10);
 			}
 		}
