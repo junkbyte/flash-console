@@ -24,24 +24,22 @@
 */
 
 package com.atticmedia.console.view {
-	import flash.events.MouseEvent;
-	import flash.text.TextFieldAutoSize;
-
-	import com.atticmedia.console.core.CommandLine;
-
-	import flash.ui.Keyboard;	
-	import flash.events.Event;	
-	
-	import com.atticmedia.console.core.LogLineVO;	
 	import com.atticmedia.console.Console;
+	import com.atticmedia.console.core.CommandLine;
+	import com.atticmedia.console.core.LogLineVO;
 	import com.atticmedia.console.events.TextFieldRollOver;
 	
 	import flash.display.Shape;
+	import flash.events.Event;
 	import flash.events.KeyboardEvent;
+	import flash.events.MouseEvent;
 	import flash.events.TextEvent;
 	import flash.geom.Rectangle;
+	import flash.system.Capabilities;
 	import flash.text.TextField;
-	import flash.text.TextFieldType;		
+	import flash.text.TextFieldAutoSize;
+	import flash.text.TextFieldType;
+	import flash.ui.Keyboard;		
 
 	public class MainPanel extends AbstractPanel {
 		
@@ -75,6 +73,7 @@ package com.atticmedia.console.view {
 		private var _isMinimised:Boolean;
 		private var _shift:Boolean;
 		private var _priority:int;
+		private var _canUseTrace:Boolean;
 		
 		private var _channels:Array;
 		private var _lines:Array;
@@ -85,6 +84,9 @@ package com.atticmedia.console.view {
 		
 		public function MainPanel(m:Console, lines:Array, channels:Array) {
 			super(m);
+			
+			_canUseTrace = (Capabilities.playerType=="External"||Capabilities.isDebugger);
+			
 			_channels = channels;
 			_lines = lines;
 			name = Console.PANEL_MAIN;
@@ -299,7 +301,9 @@ package com.atticmedia.console.view {
 				str += doActive(" <a href=\"event:ruler\">RL</a>", master.panels.rulerActive);
 			}
 			str += " ¦</b>";
-			str += doActive(" <a href=\"event:trace\">T</a>", master.tracing);
+			if(_canUseTrace){
+				str += doActive(" <a href=\"event:trace\">T</a>", master.tracing);
+			}
 			str += " <a href=\"event:priority\">P"+_priority+"</a>";
 			str += doActive(" <a href=\"event:pause\">P</a>", master.paused);
 			str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a>";

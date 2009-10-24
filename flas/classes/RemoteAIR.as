@@ -39,6 +39,7 @@ package {
 			stage.nativeWindow.alwaysInFront = true;
 			
 			C.start(this, "", 951);
+			C.maxLines = 1000;
 			C.visible = true;
 			C.remote = true;
 			C.commandLine = true;
