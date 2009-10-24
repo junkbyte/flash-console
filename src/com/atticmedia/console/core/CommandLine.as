@@ -33,7 +33,6 @@ package com.atticmedia.console.core {
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
-	import flash.utils.getQualifiedSuperclassName;		
 
 	public class CommandLine extends EventDispatcher {
 		public static const CHANGED_SCOPE:String = "changedScope";
@@ -489,7 +488,7 @@ package com.atticmedia.console.core {
 			} else if (cmd == "inspect" || cmd == "inspectfull") {
 				if (_returned) {
 					var viewAll:Boolean = (cmd == "inspectfull")? true: false;
-					report(inspect(_returned,viewAll), 5);
+					inspect(_returned,viewAll);
 				} else {
 					report("Empty", 10);
 				}
@@ -529,82 +528,187 @@ package com.atticmedia.console.core {
 			report(block, 9);
 			
 		}
-		public function inspect(obj:Object, viewAll:Boolean= true):String {
-			var typeStr:String = getQualifiedClassName(obj);
-			var str:String = "<font color=\"#FF6600\"><b>"+obj+" => "+typeStr+"</b></font><br>";
-			var suptypeStr:String = getQualifiedSuperclassName(obj);
-			str += "<font color=\"#FF6600\">"+suptypeStr+"</font><br>";
-
-			if ( typeof(obj) == "object") {
-				var V:XML = describeType(obj);
-				str += "<font color=\"#FF0000\"><b>Methods:</b></font> ";
-				var nodes:XMLList = V..method;
-				for each (var method:XML in nodes) {
-					if ( typeStr == method.@declaredBy || viewAll) {
-						str += "<b>"+method.@name+"</b>(<i>"+method.children().length()+"</i>):"+method.@returnType+"; ";
-					}
-				}
-				str += "<br><font color=\"#FF0000\"><b>Accessors:</b></font> ";
-				nodes = V..accessor;
-				var s:String;
-				for each (var accessor:XML  in nodes) {
-					if ( typeStr == accessor.@declaredBy || viewAll) {
-						s = (accessor.@access=="readonly") ? "<i>"+accessor.@name+"</i>" : accessor.@name;
-						if(viewAll){
-							try {
-								str += "<br><b>"+s+"</b>="+ obj[accessor.@name];
-							}catch (e:Error){
-								str += "<br><b>"+s+"</b>; ";
-							}
-						}else{
-							str += s+"; ";
-						}
-					}
-				}
-				str += "<br><font color=\"#FF0000\"><b>Variables:</b></font> ";
-				nodes = V..variable;
-				for each (var variable:XML in nodes) {
-					s = variable.@name+"("+variable.@type+")";
-					if(viewAll){
-						try {
-							str += "<br><b>"+s+"</b>="+ obj[variable.@name];
-						}catch (e:Error){
-							str += "<br><b>"+s+"</b>; ";
-						}
-					}else{
-						str += s+"; ";
-					}
-				}
-				var vals:String = "";
-				for (var X:String in obj) {
-					vals += X +"="+obj[X]+"; ";
-				}
-				if (vals) {
-					str += "<br><font color=\"#FF0000\"><b>Values:</b></font> ";
-					str += vals;
-				}
-				if (obj is DisplayObjectContainer) {
-					var mc:DisplayObjectContainer = obj as DisplayObjectContainer;
-					str += "<br><font color=\"#FF0000\"><b>Children:</b></font> ";
-					var clen:int = mc.numChildren;
-					for (var ci:int = 0; ci<clen; ci++) {
-						var child:DisplayObject = mc.getChildAt(ci);
-						str += "<b>"+child.name+"</b>:("+ci+")"+getQualifiedClassName(child)+"; ";
-					}
-					var theParent:DisplayObjectContainer = mc.parent;
-					if (theParent) {
-						str += "<br><font color=\"#FF0000\"><b>Parents:</b></font> ("+theParent.getChildIndex(mc)+"), ";
-						while (theParent) {
-							var pr:DisplayObjectContainer = theParent;
-							theParent = theParent.parent;
-							str += "<b>"+pr.name+"</b>:("+(theParent?theParent.getChildIndex(pr):"")+")"+getQualifiedClassName(pr)+"; ";
-						}
-					}
-				}
-			} else {
-				str += String(obj);
+		public function inspect(obj:Object, viewAll:Boolean= true):void {
+			//
+			// Class extends... extendsClass
+			// Class implements... implementsInterface
+			// constant // statics
+			// methods
+			// accessors
+			// varaibles
+			// values
+			// EVENTS .. metadata name="Event"
+			//
+			var V:XML = describeType(obj);
+			var cls:Object = obj is Class?obj:obj.constructor;
+			var clsV:XML = describeType(cls);
+			var self:String = V.@name;
+			var str:String = "<b>"+self+"</b>";
+			var props:Array = [];
+			var props2:Array = [];
+			var staticPrefix:String = "<p1><i>[static]</i></p1>";
+			var nodes:XMLList;
+			if(V.@isDynamic=="true"){
+				props.push("dynamic");
 			}
-			return str;
+			if(V.@isFinal=="true"){
+				props.push("final");
+			}
+			if(V.@isStatic=="true"){
+				props.push("static");
+			}
+			if(props.length > 0){
+				str += " <p-1>"+props.join(" | ")+"</p-1>";
+			}
+			report(str+"<br/>", -2);
+			//
+			// extends...
+			//
+			props = [];
+			nodes = V.extendsClass;
+			for each (var extendX:XML in nodes) {
+				props.push(extendX.@type.toString());
+				if(!viewAll) break;
+			}
+			if(props.length){
+				report("<p10>Extends:</p10> "+props.join("<p-1> &gt; </p-1>")+"<br/>", 5);
+			}
+			//
+			// implements...
+			//
+			props = [];
+			nodes = V.implementsInterface;
+			for each (var implementX:XML in nodes) {
+				props.push(implementX.@type.toString());
+			}
+			if(props.length){
+				report("<p10>Implements:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+			}
+			//
+			// constants...
+			//
+			props = [];
+			nodes = clsV..constant;
+			for each (var constantX:XML in nodes) {
+				props.push(constantX.@name+"<p0>("+constantX.@type+")</p0>");
+			}
+			if(props.length){
+				report("<p10>Constants:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+			}
+			//
+			// methods
+			//
+			props = [];
+			props2 = [];
+			nodes = clsV..method; // '..' to include from <factory>
+			for each (var methodX:XML in nodes) {
+				var mparamsList:XMLList = methodX.parameter;
+				str = methodX.parent().name()=="factory"?"":staticPrefix;
+				if(viewAll){
+					var params:Array = [];
+					for each(var paraX:XML in mparamsList){
+						params.push(paraX.@optional=="true"?("<i>"+paraX.@type+"</i>"):paraX.@type);
+					}
+					str += methodX.@name+"<p0>(<i>"+params.join(",")+"</i>):"+methodX.@returnType+"</p0>";
+				}else{
+					str += methodX.@name+"<p0>(<i>"+mparamsList.length()+"</i>):"+methodX.@returnType+"</p0>";
+				}
+				arr = (self==methodX.@declaredBy?props:props2);
+				arr.push(str);
+			}
+			makeInheritLine(props, props2, viewAll, "Methods", viewAll?"<br/>":"<p-1>; </p-1>");
+			//
+			// accessors
+			//
+			var arr:Array;
+			props = [];
+			props2 = [];
+			nodes = clsV..accessor; // '..' to include from <factory>
+			for each (var accessorX:XML in nodes) {
+				str = accessorX.parent().name()=="factory"?"":staticPrefix;
+				str += (accessorX.@access=="readonly"?("<i>"+accessorX.@name+"</i>"):accessorX.@name)+"<p0>("+accessorX.@type+")</p0>";
+				arr = (self==accessorX.@declaredBy?props:props2);
+				arr.push(str);
+			}
+			makeInheritLine(props, props2, viewAll, "Accessors", "<p-1>; </p-1>");
+			//
+			// variables
+			//
+			props = [];
+			nodes = clsV..variable;
+			for each (var variableX:XML in nodes) {
+				str = (variableX.parent().name()=="factory"?"":staticPrefix)+variableX.@name+"<p0>("+variableX.@type+")</p0>";
+				props.push(str);
+			}
+			if(props.length){
+				report("<p10>Variables:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+			}
+			//
+			// dynamic values
+			//
+			props = [];
+			for (var X:String in obj) {
+				props.push(X+"<p0>("+getQualifiedClassName(obj[X])+")</p0>");
+			}
+			if(props.length){
+				report("<p10>Values:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+			}
+			//
+			// events
+			// metadata name="Event"
+			props = [];
+			nodes = V.metadata;
+			for each (var metadataX:XML in nodes) {
+				if(metadataX.@name=="Event"){
+					var mn:XMLList = metadataX.arg;
+					props.push(mn.(@key=="name").@value+"<p0>("+mn.(@key=="type").@value+")</p0>");
+				}
+			}
+			if(props.length){
+				report("<p10>Events:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+			}
+			//
+			// display's parents and direct children
+			//
+			if (viewAll && obj is DisplayObjectContainer) {
+				props = [];
+				var mc:DisplayObjectContainer = obj as DisplayObjectContainer;
+				var clen:int = mc.numChildren;
+				for (var ci:int = 0; ci<clen; ci++) {
+					var child:DisplayObject = mc.getChildAt(ci);
+					props.push("<b>"+child.name+"</b>:("+ci+")"+getQualifiedClassName(child));
+				}
+				if(props.length){
+					report("<p10>Children:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+				}
+				var theParent:DisplayObjectContainer = mc.parent;
+				if (theParent) {
+					props = ["("+theParent.getChildIndex(mc)+")"];
+					while (theParent) {
+						var pr:DisplayObjectContainer = theParent;
+						theParent = theParent.parent;
+						props.push("<b>"+pr.name+"</b>:("+(theParent?theParent.getChildIndex(pr):"")+")"+getQualifiedClassName(pr));
+					}
+					if(props.length){
+						report("<p10>Parents:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+					}
+				}
+			}
+			if(!viewAll){
+				report("Tip: use /inspectfull to see full inspection with inheritance",-1);
+			}
+		}
+		private function makeInheritLine(props:Array, props2:Array, viewAll:Boolean, type:String, breaker:String):void{
+			var str:String = "";
+			if(props.length || props2.length){
+				str += "<p10>"+type+":</p10> "+props.join(breaker);
+				if(viewAll){
+					str += (props.length?breaker:"")+"<p2>"+props2.join(breaker)+"</p2>";
+				}else if(props2.length){
+					str += (props.length?breaker:"")+"<p2>+ "+props2.length+" inherited</p2>";
+				}
+				report(str+"<br/>", 5);
+			}
 		}
 		public function map(base:DisplayObjectContainer):void{
 			if(!base){
@@ -705,7 +809,7 @@ package com.atticmedia.console.core {
 		}
 		private function printHelp():void {
 			report("____Command Line Help___",10);
-			report("Gives you limited ability to read/write/execute properties and methods of anything in stage or to static classes",0);
+			report("Gives you ability to read/write/execute properties and methods",0);
 			report("__Example: ",10);
 			report("root.mc => <b>root.mc</b>",5);
 			report("(save mc's reference) => <b>/save mc</b>",5);
@@ -720,7 +824,7 @@ package com.atticmedia.console.core {
 			report("This will create a new channel called filtered with all matching lines",5);
 			report("__Other useful examples:",10);
 			report("<b>stage.width</b>",5);
-			report("<b>stage.scaleMode = noScale</b>",5);
+			report("<b>stage.scaleMode = 'noScale'</b>",5);
 			report("<b>stage.frameRate = 12</b>",5);
 			report("__________",10);
 		}

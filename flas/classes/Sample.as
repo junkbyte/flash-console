@@ -36,7 +36,7 @@ package {
 			//
 			// SET UP
 			//C.start(this, "", 2);
-			C.start(this, "`"); 
+			C.startOnStage(this, "`"); 
 			// "`" - change for password. This will start hidden
 			C.visible = true; // show console, because having password hides console.
 			C.tracing = true; // trace on flash's normal trace

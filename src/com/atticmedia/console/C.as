@@ -70,6 +70,7 @@
 		C.isRemote = true; // (default: false) set to recieve broadcasts from LocalConnection remote
 */
 package com.atticmedia.console {
+	import flash.display.DisplayObject;	
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
 	import flash.events.Event;
@@ -150,7 +151,7 @@ package com.atticmedia.console {
 		 * 			If set to 2, optoin 1 apples except it still runs if there is Console remote running.
 		 * 
 		 */
-		public static function startOnStage(mc:DisplayObjectContainer, pass:String = "", skin:int= 1, disallowBrowser:uint = 0):void{
+		public static function startOnStage(mc:DisplayObject, pass:String = "", skin:int= 1, disallowBrowser:uint = 0):void{
 			if(_console){
 				trace(ERROR_EXISTS);
 			}else if(mc.stage){

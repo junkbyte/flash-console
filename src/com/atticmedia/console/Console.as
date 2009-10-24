@@ -349,7 +349,7 @@ package com.atticmedia.console {
 			cl.useStrong = b;
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
-			report("INSPECT: "+ cl.inspect(obj,detail),5);
+			cl.inspect(obj,detail);
 		}
 		public function set enabled(newB:Boolean):void{
 			if(_enabled == newB) return;
