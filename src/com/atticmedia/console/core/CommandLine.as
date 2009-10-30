@@ -319,38 +319,42 @@ package com.atticmedia.console.core {
 		//
 		private function execValue(str:String, base:* = null):Value{
 			var nobase:Boolean = base?false:true;
-			base = base?base:_returned;
 			var v:Value = new Value(null, base, str);
-			if (str == "true") {
-				v.value = true;
-			}else if (str == "false") {
-				v.value = false;
-			}else if (str == "this") {
-				v.base = _returned;
-				v.value = _returned;
-			}else if (str == "null") {
-				v.value = null;
-			}else if (str == "NaN") {
-				v.value = NaN;
-			}else if (!isNaN(Number(str))) {
-				v.value = Number(str);
-			}else if(str.indexOf(VALUE_CONST)==0){
-				var vv:Value = _values[str.substring(VALUE_CONST.length)];
-				//report(VALUE_CONST+str.substring(VALUE_CONST.length)+" = " +vv);
-				v.base = vv.base;
-				v.value = vv.value;
-			}else if(str.charAt(0) == "$"){
-				v.base = _saved[str.substring(1)];
-				v.value = v.base;
-			}else if(nobase){
-				try{
-					v.value = getDefinitionByName(str);
-					v.base = v.value;
-				}catch(e:Error){
-					v.value = v.base[str];
+			base = base?base:_returned;
+			if(nobase && (!base || !base.hasOwnProperty(str))){
+				if (str == "true") {
+					v.value = true;
+				}else if (str == "false") {
+					v.value = false;
+				}else if (str == "this") {
+					v.base = _returned;
+					v.value = _returned;
+				}else if (str == "null") {
+					v.value = null;
+				}else if (str == "NaN") {
+					v.value = NaN;
+				}else if (!isNaN(Number(str))) {
+					v.value = Number(str);
+				}else if(str.indexOf(VALUE_CONST)==0){
+					var vv:Value = _values[str.substring(VALUE_CONST.length)];
+					//report(VALUE_CONST+str.substring(VALUE_CONST.length)+" = " +vv);
+					v.base = vv.base;
+					v.value = vv.value;
+				}else if(str.charAt(0) == "$"){
+					v.base = _saved[str.substring(1)];
+					v.value = v.base;
+				}else{
+					try{
+						v.value = getDefinitionByName(str);
+						v.base = v.value;
+					}catch(e:Error){
+						v.base = base;
+						v.value = base[str];
+					}
 				}
 			}else{
-				v.value = v.base[str];
+				v.base = base;
+				v.value = base[str];
 			}
 			//report("value: "+str+" = "+getQualifiedClassName(v.value)+" - "+v.value+" base:"+v.base);
 			return v;
@@ -425,13 +429,17 @@ package com.atticmedia.console.core {
 		private function doReturn(returned:*):void{
 			var newb:Boolean = false;
 			var typ:String = typeof(returned);
-			if(returned && returned !== _returned && (typ == "object" || typ=="xml" || typ=="function")){
+			if(returned && returned !== _returned && (typ == "object" || typ=="xml")){
 				newb = true;
 				_returned2 = _returned;
 				_returned = returned;
 				dispatchEvent(new Event(CHANGED_SCOPE));
 			}
-			report((newb?"<b>+</b> ":"")+"Returned "+ getQualifiedClassName(returned) +": <b>"+returned+"</b>", -2);
+			var rtext:String = String(returned);
+			// this is incase its something like XML, need to keep the <> tags...
+			rtext = rtext.replace(/</gim, "&lt;");
+ 			rtext = rtext.replace(/>/gim, "&gt;");
+			report((newb?"<b>+</b> ":"")+"Returned "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -2);
 		}
 		private function doCommand(str:String):void{
 			var brk:int = str.indexOf(" ");
