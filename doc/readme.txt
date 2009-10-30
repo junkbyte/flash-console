@@ -8,7 +8,7 @@ http://code.google.com/p/flash-console/w/list
 
 ==Flash Console==
 
-  * Version: 2.11 (Oct 2009)
+  * Version: 2.12 (Oct 2009)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo
 
@@ -33,14 +33,16 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 ===2.12===
-  * Major discovery with untrusted sandboxing in Remoting. Now shows a warning and how to work around the sandbox.
+  * Major discovery with untrusted local sandboxing in Remoting. Now shows a warning and how to work around the sandbox.
 
 
 ===2.11===
   * You can now create new instances in commandLine. for example `new flash.display.Sprite()`
   * Added `commandLinePermission` - security feature to disallow changing Security sensitive settings through commandLine.
+  * Improved `inspect`
   * Minor fix on commandLine bug.
   * New Icon by Nick Holiday
+
 
 ===2.1===
   * commandLine should now execute commands in a much better way with less restrictions (such as nested functions, long strings in quotations, etc)
