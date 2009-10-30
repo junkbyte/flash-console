@@ -8,7 +8,7 @@ http://code.google.com/p/flash-console/w/list
 
 ==Flash Console==
 
-  * Version: 2.1 (Oct 2009)
+  * Version: 2.11 (Oct 2009)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo
 
@@ -23,7 +23,20 @@ Console is an as3 logger, debugger which runs inside the flash app.
 Features include: priorities, channels, FPS display, memory/garbage collection monitor, graphing, remote logging, non-repeative tracing, ruler tool, display mapping, and many more!
 
 
+== Credits ==
+- Created by Lu Aye Oo
+- Logo by Nick Holiday
+
+Special thanks to Joe Nash
+
+
 == Change Log ==
+
+===2.11===
+  * You can now create new instances in commandLine. for example `new flash.display.Sprite()`
+  * Added `commandLinePermission` - security feature to disallow changing Security sensitive settings through commandLine.
+  * Minor fix on commandLine bug.
+  * New Icon by Nick Holiday
 
 ===2.1===
   * commandLine should now execute commands in a much better way with less restrictions (such as nested functions, long strings in quotations, etc)
