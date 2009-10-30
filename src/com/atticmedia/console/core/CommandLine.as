@@ -52,7 +52,7 @@ package com.atticmedia.console.core {
 		private var _master:Console;
 		
 		public var useStrong:Boolean;
-		public var permission:uint = 1;	//TODO: to implement level 1 security
+		private var _permission:uint = 1;	//TODO: to implement level 1 security
 
 		public function CommandLine(m:Console) {
 			_master = m;
@@ -79,6 +79,16 @@ package com.atticmedia.console.core {
 			_master = null;
 			_reserved = null;
 		}
+		public function get permission():int{
+			return _permission;
+		}
+		public function set permission(i:int):void{
+			if(_values && i > _permission){
+				// dont allow to change through command line...
+				throw new Error("Can not lift CommandLine permission.", 10);
+			}else
+				_permission = i;
+		}
 		public function store(n:String, obj:Object, strong:Boolean = false):String {
 			n = n.replace(/[^\w]*/g, "");
 			if(_reserved.indexOf(n)>=0){
@@ -103,6 +113,10 @@ package com.atticmedia.console.core {
 		//
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
+			if(permission==0) {
+				report("CommandLine disabled.",10);
+				return null;
+			}
 			if(str.charAt(0) == "/"){
 				try{
 					doCommand(str);
