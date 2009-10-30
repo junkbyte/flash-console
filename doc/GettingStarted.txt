@@ -47,6 +47,26 @@ C.errorch("myChannel", "This is an error log.", "multiple arguments are supporte
 //
 }}}
 
+===UI===
+
+Console interface menu is at the top of main panel. Roll over each name to find out what it is.
+
+  * F = Show/Hide Frames per second monitor
+  * M = Show/Hide memory usage monitor
+  * CL = Show/Hide commandLine
+  * Ro = Show/Hide display Roller
+  * RL = Start ruler tool (measure distance/angle between 2 points)
+
+  * T = Toggle use 'trace()' - only visible in debugger or test player
+  * P0 = Priority filter level. For example when set to P5, you will only see logs with priority 5 or above
+  * P = pause logging. (it will still silently log but will not update in display)
+  * C = clear log
+  * X = close panel. (if you have not set a password, there is no way to reopen this panel)
+
+You can move panels by dragging from top.
+You can scale panels by dragging the arrow on the bttom right.
+
+
 ==Advanced==
 
 ====Command line====

@@ -110,4 +110,3 @@ Sometimes when you go into objects that are not in the display list and you need
   * `/inspectfull` = get more detailed info of your current scope.
   * `/map` =  get the display list map starting from your current scope
   * `/strong true` = turn on strong referencing, you need to turn this on if you want to start manipulating with instances that are newly created.
-  * `/new (classpath)` = create a new instance, can not accept parameters atm, for example `/new flash.display.Sprite`, need to have `/strong true` for object to persist.

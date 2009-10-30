@@ -23,6 +23,7 @@
 * 
 */
 package com.atticmedia.console.core {
+	import flash.system.Security;
 	import flash.events.Event;
 
 	import com.atticmedia.console.Console;
@@ -52,7 +53,7 @@ package com.atticmedia.console.core {
 		private var _master:Console;
 		
 		public var useStrong:Boolean;
-		private var _permission:uint = 1;	//TODO: to implement level 1 security
+		private var _permission:uint = 1;
 
 		public function CommandLine(m:Console) {
 			_master = m;
@@ -85,7 +86,9 @@ package com.atticmedia.console.core {
 		public function set permission(i:int):void{
 			if(_values && i > _permission){
 				// dont allow to change through command line...
-				throw new Error("Can not lift CommandLine permission.", 10);
+				// TODO: This is not fool proof... 
+				// You could make a new Console instance on top.. then get the new console's commandline to call the first console's commandline permission...
+				throw new SecurityError("Can not lift CommandLine permission. You must set Console commandLinePermission in source code and recompile.", 10);
 			}else
 				_permission = i;
 		}
@@ -114,7 +117,7 @@ package com.atticmedia.console.core {
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
 			if(permission==0) {
-				report("CommandLine disabled.",10);
+				report("CommandLine is disabled.",10);
 				return null;
 			}
 			if(str.charAt(0) == "/"){
@@ -153,7 +156,7 @@ package com.atticmedia.console.core {
 				var ind2:int = result["index"]+matchstring.indexOf(substring);
 				strReg.lastIndex = ind2+1;
 				str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, ind2-1, ind2+substring.length+1);
-				report(VALUE_CONST+_values.length+" = "+substring, 2, false);
+				//report(VALUE_CONST+_values.length+" = "+substring, 2, false);
 				_values.push(new Value(substring));
 				result = strReg.exec(str);
 			}
@@ -306,6 +309,10 @@ package com.atticmedia.console.core {
 						params = execValue(paramstr).value;
 					}
 					//report("params = "+params.length+" - ["+ params+"]");
+					if(permission < 2 && (newbase == Security.allowDomain || newbase == Security.allowInsecureDomain)){
+						throw new SecurityError("Not accessible due to low commandLinePermission. You must recompile client flash with Console commandLinePermission set to a higher level.");
+						return null;
+					}
 					v.value = (newbase as Function).apply(v.base, params);
 					v.base = v.value;
 					index = closeindex+1;
@@ -477,7 +484,7 @@ package com.atticmedia.console.core {
 				}else{
 					report("Using WEAK referencing. '/strong true' to use strong", -2);
 				}
-			} else if (cmd == "save") {
+			} else if (cmd == "save" || cmd == "store") {
 				if (_returned) {
 					if(!param){
 						report("ERROR: Give a name to save.",10);
@@ -494,7 +501,7 @@ package com.atticmedia.console.core {
 				report("String with "+param.length+" chars stored. Use /save <i>(name)</i> to save.", -2);
 				_returned = param;
 				dispatchEvent(new Event(CHANGED_SCOPE));
-			} else if (cmd == "saved") {
+			} else if (cmd == "saved" || cmd == "stored") {
 				report("Saved vars: ", -1);
 				var sii:uint = 0;
 				var sii2:uint = 0;
