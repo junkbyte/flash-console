@@ -57,7 +57,7 @@ package com.atticmedia.console {
 		public static const PANEL_ROLLER:String = "rollerPanel";
 		public static const FPS_MAX_LAG_FRAMES:uint = 25;
 		
-		public static const VERSION:Number = 2.11;
+		public static const VERSION:Number = 2.12;
 		public static const VERSION_STAGE:String = "";
 		
 		// You can change this if you don't want to use default channel

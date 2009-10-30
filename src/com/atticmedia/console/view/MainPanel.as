@@ -24,6 +24,8 @@
 */
 
 package com.atticmedia.console.view {
+	import flash.system.SecurityPanel;
+	import flash.system.Security;
 	import com.atticmedia.console.Console;
 	import com.atticmedia.console.core.CommandLine;
 	import com.atticmedia.console.core.LogLineVO;
@@ -391,6 +393,9 @@ package com.atticmedia.console.view {
 				commandLine = !commandLine;
 			}else if(e.text == "clear"){
 				master.clear();
+			}else if(e.text == "settings"){
+				master.report("A new window should open in browser. If not trying searching for 'Flash Player Global Security Settings panel' online :)", -1);
+				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
 			}else if(e.text.substring(0,8) == "channel_"){
 				onChannelPressed(e.text.substring(8));
 			}else if(e.text.substring(0,5) == "clip_"){

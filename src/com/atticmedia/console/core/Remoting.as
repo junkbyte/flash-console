@@ -23,11 +23,14 @@
 * 
 */
 package com.atticmedia.console.core {
+	import flash.system.Security;
+
 	import com.atticmedia.console.Console;
-	
+
 	import flash.events.EventDispatcher;
+	import flash.events.SecurityErrorEvent;
 	import flash.events.StatusEvent;
-	import flash.net.LocalConnection;	
+	import flash.net.LocalConnection;
 
 	public class Remoting extends EventDispatcher{
 		
@@ -101,6 +104,8 @@ package com.atticmedia.console.core {
 				_mspfsForRemote = [30];
 				_remoteLinesQueue = new Array();
 				startSharedConnection();
+				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemotingStatus);
+				_sharedConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError);
 				try{
                 	_sharedConnection.connect(Console.REMOTING_CONN_NAME+CLIENT_PREFIX);
 					_master.report("<b>Remoting started.</b> "+getInfo(),-1);
@@ -113,6 +118,13 @@ package com.atticmedia.console.core {
 				close();
 			}
 		}
+		private function onRemotingStatus(e:StatusEvent):void{
+			// this will get called quite often...
+		}
+		private function onRemotingSecurityError(e:SecurityErrorEvent):void{
+			_master.report("Sandbox security error.", 10);
+			printHowToGlobalSetting();
+		}
 		public function get isRemote():Boolean{
 			return _isRemote;
 		}
@@ -121,9 +133,16 @@ package com.atticmedia.console.core {
 			if(newV){
 				_isRemoting = false;
 				startSharedConnection();
+				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemoteStatus);
+				_sharedConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError);
 				try{
                 	_sharedConnection.connect(Console.REMOTING_CONN_NAME+REMOTE_PREFIX);
 					_master.report("<b>Remote started.</b> "+getInfo(),-1);
+					var sdt:String = Security.sandboxType;
+					if(sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK){
+						_master.report("Untrusted local sandbox. You may not be able to listen for logs properly.", 10);
+						printHowToGlobalSetting();
+					}
            		}catch (error:Error){
 					_isRemoting = false;
 					_master.report("Could not create remote service. You might have a console remote already running.", 10);
@@ -132,21 +151,26 @@ package com.atticmedia.console.core {
 				close();
 			}
 		}
+		private function onRemoteStatus(e:StatusEvent):void{
+			if(_isRemote && e.level=="error"){
+				_master.report("Problem communicating to client.", 10);
+			}
+		}
 		private function getInfo():String{
-			return "</p5>channel:<p5>"+Console.REMOTING_CONN_NAME;
+			return "</p5>channel:<p5>"+Console.REMOTING_CONN_NAME+" ("+Security.sandboxType+")";
+		}
+		private function printHowToGlobalSetting():void{
+			_master.report("Make sure your flash file is 'trusted' in Global Security Settings.", -2);
+			_master.report("Go to Settings Manager [<a href='event:settings'>click here</a>] &gt; 'Global Security Settings Panel' (on left) &gt; add the location of the local flash (swf) file.", -2);
 		}
 		private function startSharedConnection():void{
 			close();
 			_sharedConnection = new LocalConnection();
 			_sharedConnection.allowDomain("*");
 			_sharedConnection.allowInsecureDomain("*");
-			_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
 			// just for sort of security
-			var client:Object = {logSend:logsend, gc:_master.gc, runCommand:_master.runCommand};
-			_sharedConnection.client = client;
-		}
-		private function onSharedStatus(e:StatusEvent):void{
-			// this will get called quite often if there is no actual remote server running...
+			//_sharedConnection.client = this;
+			_sharedConnection.client = {logSend:logsend, gc:_master.gc, runCommand:_master.runCommand};
 		}
 		public function close():void{
 			if(_sharedConnection){
