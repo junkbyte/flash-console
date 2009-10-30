@@ -31,6 +31,11 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 == Change Log ==
 
+
+===2.12===
+  * Major discovery with untrusted sandboxing in Remoting. Now shows a warning and how to work around the sandbox.
+
+
 ===2.11===
   * You can now create new instances in commandLine. for example `new flash.display.Sprite()`
   * Added `commandLinePermission` - security feature to disallow changing Security sensitive settings through commandLine.
@@ -61,8 +66,10 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
   * Included console in SWC file
   * Remote and Remoter now print their sandbox type so that you can try match local/network sandbox, they won't log if you are on different sandbox.
 
+
 ===1.11===
   * Major bug fix with not tracing /inspect and other HTML prints. - still HTML safe checking is not perfect yet.
+
 
 ===1.1===
   * *DisplayRoller (Ro)*: Shows you the display map under your mouse as you roll around - when turned on.
