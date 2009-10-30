@@ -25,7 +25,7 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 == Credits ==
   * Created by Lu Aye Oo
-  * Logo by Nick Holiday
+  * Logo by Nick Holliday
   * Special thanks to Joe Nash
 
 
