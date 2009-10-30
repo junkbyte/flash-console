@@ -124,7 +124,7 @@ package com.atticmedia.console.core {
 				try{
 					doCommand(str);
 				}catch(e:Error){
-					reportStackTrace(e.getStackTrace());
+					reportError(e);
 				}
 				return;
 			}
@@ -200,7 +200,7 @@ package com.atticmedia.console.core {
 				doReturn(v.value);
 				return v.value;
 			}catch(e:Error){
-				reportStackTrace(e.getStackTrace());
+				reportError(e);
 			}
 			return null;
 		}
@@ -535,13 +535,18 @@ package com.atticmedia.console.core {
 				report("Undefined commandLine syntex <b>/help</b> for info.",10);
 			}
 		}
-		private function reportStackTrace(str:String):void{
+		private function reportError(e:Error):void{
+			// e.getStackTrace() is not supported in non-debugger players...
+			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():String(e);
+			if(!str){
+				str = String(e);
+			}
 			var lines:Array = str.split(/\n\s*/);
 			var p:int = 10;
 			var internalerrs:int = 0;
 			var self:String = getQualifiedClassName(this);
-			var block:String = "";
 			var len:int = lines.length;
+			var parts:Array = [];
 			for (var i:int = 0; i < len; i++){
 				var line:String = lines[i];
 				if(MAX_INTERNAL_STACK_TRACE >=0 && line.search(new RegExp("\\s*at "+self)) == 0 ){
@@ -551,10 +556,10 @@ package com.atticmedia.console.core {
 					}
 					internalerrs++;
 				}
-				block += "<p"+p+">&gt;&nbsp;"+line.replace(/\s/, "&nbsp;")+"</p"+p+">\n";
+				parts.push("<p"+p+">&gt;&nbsp;"+line.replace(/\s/, "&nbsp;")+"</p"+p+">");
 				if(p>6) p--;
 			}
-			report(block, 9);
+			report(parts.join("\n"), 9);
 			
 		}
 		public function inspect(obj:Object, viewAll:Boolean= true):void {

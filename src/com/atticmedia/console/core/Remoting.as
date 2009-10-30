@@ -141,7 +141,6 @@ package com.atticmedia.console.core {
 			_sharedConnection.allowDomain("*");
 			_sharedConnection.allowInsecureDomain("*");
 			_sharedConnection.addEventListener(StatusEvent.STATUS, onSharedStatus);
-			_sharedConnection.allowInsecureDomain("*");
 			// just for sort of security
 			var client:Object = {logSend:logsend, gc:_master.gc, runCommand:_master.runCommand};
 			_sharedConnection.client = client;
