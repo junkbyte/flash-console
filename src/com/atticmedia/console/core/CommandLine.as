@@ -105,12 +105,7 @@ package com.atticmedia.console.core {
 			return n;
 		}
 		public function get scopeString():String{
-			var str:String = getQualifiedClassName(_returned);
-			var ind:int = str.lastIndexOf("::");
-			if(ind>=0){
-				str = str.substring(ind+2);
-			}
-			return str;
+			return Utils.shortClassName(_returned);
 		}
 		//
 		//

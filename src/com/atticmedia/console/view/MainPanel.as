@@ -74,7 +74,6 @@ package com.atticmedia.console.view {
 		private var _bottomLine:Shape;
 		private var _isMinimised:Boolean;
 		private var _shift:Boolean;
-		private var _priority:int;
 		private var _canUseTrace:Boolean;
 		
 		private var _channels:Array;
@@ -83,6 +82,9 @@ package com.atticmedia.console.view {
 		private var _commandsInd:int;
 		
 		private var _needUpdateMenu:Boolean;
+		private var _needUpdateTrace:Boolean;
+		private var _lockScrollUpdate:Boolean;
+		private var _atBottom:Boolean = true;
 		
 		public function MainPanel(m:Console, lines:Array, channels:Array) {
 			super(m);
@@ -197,7 +199,11 @@ package com.atticmedia.console.view {
 				if(changed){
 					_bottomLine.alpha = 1;
 					_needUpdateMenu = true;
-					refresh();
+					_needUpdateTrace = true;
+				}
+				if(_needUpdateTrace){
+					_needUpdateTrace = false;
+					updateTraces(true);
 				}
 				if(_needUpdateMenu){
 					_needUpdateMenu = false;
@@ -205,21 +211,50 @@ package com.atticmedia.console.view {
 				}
 			}
 		}
-		public function refresh():void{
+		public function updateToBottom(instant:Boolean = false):void{
+			_atBottom = true;
+			updateTraces(instant);
+		}
+		public function updateTraces(instant:Boolean = false):void{
+			if(instant){
+				if(_atBottom) {
+					updateBottom(); 
+				}else {
+					updateFull();
+				}
+			}else{
+				_needUpdateTrace = true;
+			}
+		}
+		private function updateFull():void{
 			var str:String = "";
 			for each (var line:LogLineVO in _lines ){
-				if((master.viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 || line.c!=Console.FILTERED_CHANNEL) && ((master.filterText && line.c != Console.FILTERED_CHANNEL && line.text.toLowerCase().indexOf(master.filterText.toLowerCase())>=0 ) || (master.viewingChannels.indexOf(line.c)>=0 || master.viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0) && (line.p >= _priority || _priority == 0) )){
+				if(master.lineShouldShow(line)){
 					str += makeLine(line);
 				}
 			}
-			var sd:Boolean = _traceField.scrollV >= _traceField.maxScrollV-1;
-			//
-			// TODO: try use appendText() - which should improve performace a lot!
-			//
+			_lockScrollUpdate = true;
 			_traceField.htmlText = str;
-			if(sd){
-				_traceField.scrollV = _traceField.maxScrollV;
+			_lockScrollUpdate = false;
+		}
+		private function updateBottom():void{
+			var linesLeft:int = Math.round(_traceField.height/10);
+			var numLines:int = _lines.length;
+			var lines:Array = new Array();
+			for(var i:int=numLines-1;i>=0;i--){
+				var line:LogLineVO = _lines[i];
+				if(master.lineShouldShow(line)){
+					linesLeft--;
+					lines.push(makeLine(line));
+					if(linesLeft<=0){
+						break;
+					}
+				}
 			}
+			_lockScrollUpdate = true;
+			_traceField.htmlText = lines.reverse().join("");
+			_traceField.scrollV = _traceField.maxScrollV;
+			_lockScrollUpdate = false;
 		}
 		private function makeLine(line:LogLineVO):String{
 			var str:String = "";
@@ -231,7 +266,19 @@ package com.atticmedia.console.view {
 			str += "<p><"+ptag+">" + txt + "</"+ptag+"></p>";
 			return str;
 		}
+		private function onTraceScroll(e:Event):void{
+			if(_lockScrollUpdate) return;
+			updateMenu();
+			var bottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV-1;
+			if(_atBottom !=bottom){
+				var diff:int = _traceField.maxScrollV-_traceField.scrollV;
+				_atBottom = bottom;
+				updateTraces(true);
+				_traceField.scrollV = _traceField.maxScrollV-diff;
+			}
+		}
 		override public function set width(n:Number):void{
+			_lockScrollUpdate = true;
 			super.width = n;
 			_traceField.width = n;
 			_menuField.width = n;
@@ -243,9 +290,13 @@ package com.atticmedia.console.view {
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
 			onUpdateCommandLineScope();
-			updateMenu();
+			_atBottom = true;
+			_needUpdateMenu = true;
+			_needUpdateTrace = true;
+			_lockScrollUpdate = false;
 		}
 		override public function set height(n:Number):void{
+			_lockScrollUpdate = true;
 			super.height = n;
 			var minimize:Boolean = false;
 			if(n<(_commandField.visible?42:24)){
@@ -264,15 +315,14 @@ package com.atticmedia.console.view {
 			_commandPrefx.y = cmdy;
 			_commandBackground.y = cmdy;
 			_bottomLine.y = _commandField.visible?cmdy:n;
-			_traceField.scrollV = _traceField.maxScrollV;
-			updateMenu();
+			_atBottom = true;
+			_needUpdateMenu = true;
+			_needUpdateTrace = true;
+			_lockScrollUpdate = false;
 		}
 		//
 		//
 		//
-		private function onTraceScroll(e:Event):void{
-			updateMenu();
-		}
 		public function updateMenu(instant:Boolean = false):void{
 			if(instant){
 				_updateMenu();
@@ -283,14 +333,7 @@ package com.atticmedia.console.view {
 		private function _updateMenu():void{
 			var str:String = "<r><w>";
 			if(!master.channelsPanel){
-				str += "<chs>";
-				for(var ci:int = 0; (ci<_channels.length && ci< CHANNELS_IN_MENU);  ci++){
-					var channel:String = _channels[ci];
-					var channelTxt:String = (master.viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
-					channelTxt = channel==master.defaultChannel? "<i>"+channelTxt+"</i>" : channelTxt;
-					str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
-				}
-				str += "<ch><a href=\"event:channels\"><b>"+(_channels.length>CHANNELS_IN_MENU?"...":"")+"</b>^ </a></ch></chs> ";
+				str += getChannelsLink(true);
 			}
 			str += "<menu>[ <b>";
 			str += doActive("<a href=\"event:fps\">F</a>", master.fpsMonitor>0);
@@ -306,7 +349,7 @@ package com.atticmedia.console.view {
 			if(_canUseTrace){
 				str += doActive(" <a href=\"event:trace\">T</a>", master.tracing);
 			}
-			str += " <a href=\"event:priority\">P"+_priority+"</a>";
+			str += " <a href=\"event:priority\">P"+master.priority+"</a>";
 			str += doActive(" <a href=\"event:pause\">P</a>", master.paused);
 			str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a>";
 			
@@ -324,6 +367,22 @@ package com.atticmedia.console.view {
 			str += "</w></r>";
 			_menuField.htmlText = str;
 			_menuField.scrollH = _menuField.maxScrollH;
+		}
+		public function getChannelsLink(limited:Boolean):String{
+			var str:String = "<chs>";
+			var len:int = _channels.length;
+			if(limited && len>CHANNELS_IN_MENU) len = CHANNELS_IN_MENU;
+			for(var ci:int = 0; ci<len;  ci++){
+				var channel:String = _channels[ci];
+				var channelTxt:String = (master.viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
+				channelTxt = channel==master.defaultChannel? "<i>"+channelTxt+"</i>" : channelTxt;
+				str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
+			}
+			if(limited){
+				str += "<ch><a href=\"event:channels\"><b>"+(_channels.length>len?"...":".")+"</b>^ </a></ch>";
+			}
+			str += "</chs> ";
+			return str;
 		}
 		private function doActive(str:String, b:Boolean):String{
 			if(b) return "<y>"+str+"</y>";
@@ -375,13 +434,11 @@ package com.atticmedia.console.view {
 			}else if(e.text == "fps"){
 				master.fpsMonitor = master.fpsMonitor>0?0:1;
 			}else if(e.text == "priority"){
-				if(_priority<10){
-					_priority++;
+				if(master.priority<10){
+					master.priority++;
 				}else{
-					_priority = 0;
+					master.priority = 0;
 				}
-				refresh();
-				updateMenu(true);
 			}else if(e.text == "mm"){
 				master.memoryMonitor = master.memoryMonitor>0?0:1;
 			}else if(e.text == "roller"){
@@ -446,6 +503,11 @@ package com.atticmedia.console.view {
 					_commandsHistory.splice(20);
 				}
 			}else if( e.keyCode == 38 ){
+				// if its back key for first time, store the current key
+				if(_commandField.text && _commandsInd<0){
+					_commandsHistory.unshift(_commandField.text);
+					_commandsInd++;
+				}
 				if(_commandsInd<(_commandsHistory.length-1)){
 					_commandsInd++;
 					_commandField.text = _commandsHistory[_commandsInd];
@@ -467,8 +529,7 @@ package com.atticmedia.console.view {
 			e.stopPropagation();
 		}
 		private function onUpdateCommandLineScope(e:Event=null):void{
-			if(!master.remote)
-			updateCLScope(master.cl.scopeString);
+			if(!master.remote) updateCLScope(master.cl.scopeString);
 		}
 		public function updateCLScope(str:String):void{
 			_commandPrefx.autoSize = TextFieldAutoSize.LEFT;

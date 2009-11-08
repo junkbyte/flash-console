@@ -70,20 +70,19 @@
 		C.isRemote = true; // (default: false) set to recieve broadcasts from LocalConnection remote
 */
 package com.atticmedia.console {
-	import flash.display.DisplayObject;	
+	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
 	import flash.events.Event;
-	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.system.Capabilities;	
-		
+	import flash.system.Capabilities;
+
 	/**
 	 * C is a static / singleton adapter for Console (com.atticmedia.console.Console).
 	 * In a later date when Console is no longer needed, remove C.start(..) or C.startOnStage(..) 
 	 * and the rest of console related codes will stop executing to save memory and performance.
 	 * @author  Lu Aye Oo
-	 * @version 2.0
+	 * @version 2.2
 	 * @see http://code.google.com/p/flash-console/
 	 * @see #start()
 	 * @see #startOnStage()
@@ -429,27 +428,14 @@ package com.atticmedia.console {
 		// Panel settings
 		//
 		/**
-		 * Set panel position.
-		 * <p>
-		 * See panel names in Console.PANEL_MAIN, Console.PANEL_FPS, etc...
-		 * No effect if panel of that name doesn't exist.
-		 * 
-		 * @param	Name of panel to set
-		 * @param	Point location to move
-		 */
-		public static function setPanelPosition(panelname:String, p:Point):void{
-			if(_console){
-				_console.setPanelPosition(panelname, p);
-			}
-		}
-		/**
 		 * Set panel position and size.
 		 * <p>
 		 * See panel names in Console.PANEL_MAIN, Console.PANEL_FPS, etc...
 		 * No effect if panel of that name doesn't exist.
 		 * 
 		 * @param	Name of panel to set
-		 * @param	Rectangle area for panel size and position
+		 * @param	Rectangle area for panel size and position. Leave any property value zero to keep as is.
+		 *  		For example, if you don't want to change the height of the panel, pass rect.height = 0;
 		 */
 		public static function setPanelArea(panelname:String, rect:Rectangle):void{
 			if(_console){
@@ -886,16 +872,19 @@ package com.atticmedia.console {
 			return true;
 		}
 		private static function getter(str:String):*{
-			if(_console){
-				return _console[str];
-			}else{
-				return null;
-			}
+			if(_console)return _console[str];
+			else return null;
 		}
 		private static function setter(str:String,v:*):void{
 			if(_console){
 				_console[str] = v;
 			}
+		}
+		
+		
+		public static function getAllLog(splitter:String = "\n"):String{
+			if(_console)return _console.getAllLog(splitter);
+			else return "";
 		}
 		//
 		//	This is for debugging of console.

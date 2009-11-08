@@ -79,6 +79,15 @@ package com.atticmedia.console.view {
 		public function panelExists(n:String):Boolean{
 			return (_master.getChildByName(n) as AbstractPanel)?true:false;
 		}
+		public function setPanelArea(panelname:String, rect:Rectangle):void{
+			var panel:AbstractPanel = getPanel(panelname);
+			if(panel){
+				if(rect.x) panel.x = rect.x;
+				if(rect.y) panel.y = rect.y;
+				if(rect.width) panel.width = rect.width;
+				if(rect.height) panel.height = rect.height;
+			}
+		}
 		//
 		//
 		//

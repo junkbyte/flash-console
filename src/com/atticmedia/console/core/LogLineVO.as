@@ -39,5 +39,8 @@ package com.atticmedia.console.core {
 			this.r = repeating;
 			this.s = skipSafe;
 		}
+		public function toString():String{
+			return "["+c+"] " + text;
+		}
 	}
 }

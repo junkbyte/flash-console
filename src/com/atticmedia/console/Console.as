@@ -23,42 +23,40 @@
 * 
 */
 package com.atticmedia.console {
-	import flash.display.DisplayObject;	
-	
-	import com.atticmedia.console.view.RollerPanel;	
 	import com.atticmedia.console.core.CommandLine;
 	import com.atticmedia.console.core.LogLineVO;
 	import com.atticmedia.console.core.MemoryMonitor;
 	import com.atticmedia.console.core.Remoting;
-	import com.atticmedia.console.view.AbstractPanel;
+	import com.atticmedia.console.core.Utils;
 	import com.atticmedia.console.view.ChannelsPanel;
 	import com.atticmedia.console.view.FPSPanel;
 	import com.atticmedia.console.view.MainPanel;
 	import com.atticmedia.console.view.PanelsManager;
+	import com.atticmedia.console.view.RollerPanel;
 	import com.atticmedia.console.view.Style;
-	
+
+	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
-	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.net.LocalConnection;
 	import flash.system.System;
 	import flash.utils.getQualifiedClassName;
-	import flash.utils.getTimer;		
+	import flash.utils.getTimer;
 
 	public class Console extends Sprite {
 
+		public static const VERSION:Number = 2.2;
+		public static const VERSION_STAGE:String = "beta";
+		
+		
 		public static const NAME:String = "Console";
 		public static const PANEL_MAIN:String = "mainPanel";
 		public static const PANEL_CHANNELS:String = "channelsPanel";
 		public static const PANEL_FPS:String = "fpsPanel";
 		public static const PANEL_MEMORY:String = "memoryPanel";
 		public static const PANEL_ROLLER:String = "rollerPanel";
-		public static const FPS_MAX_LAG_FRAMES:uint = 25;
-		
-		public static const VERSION:Number = 2.12;
-		public static const VERSION_STAGE:String = "";
 		
 		// You can change this if you don't want to use default channel
 		// Other remotes with different remoting channel won't be able to connect your flash.
@@ -67,19 +65,26 @@ package com.atticmedia.console {
 		public static var REMOTING_CONN_NAME:String = "_Console";
 		
 		public static const CONSOLE_CHANNEL:String = "C";
-		public static const FILTERED_CHANNEL:String = "filtered";
+		public static const FILTERED_CHANNEL:String = "%?";
 		public static const GLOBAL_CHANNEL:String = "global";
 		//
+		public static const FPS_MAX_LAG_FRAMES:uint = 25;
 		public static const MAPPING_SPLITTER:String = "|";
+		//
+		public static const LOG_LEVEL:uint = 1;
+		public static const INFO_LEVEL:uint = 3;
+		public static const DEBUG_LEVEL:uint = 6;
+		public static const WARN_LEVEL:uint = 8;
+		public static const ERROR_LEVEL:uint = 10;
 		//
 		public var style:Style;
 		public var panels:PanelsManager;
-		private var mm:MemoryMonitor;
 		public var cl:CommandLine;
+		private var mm:MemoryMonitor;
 		private var remoter:Remoting;
 		//
 		public var quiet:Boolean;
-		public var maxLines:int = 500;
+		public var maxLines:int = 1000;
 		public var prefixChannelNames:Boolean = true;
 		public var alwaysOnTop:Boolean = true;
 		public var moveTopAttempts:int = 50;
@@ -106,9 +111,10 @@ package com.atticmedia.console {
 		private var _viewingChannels:Array = [GLOBAL_CHANNEL];
 		private var _tracingChannels:Array = [];
 		private var _isRepeating:Boolean;
+		private var _priority:int;
 		private var _repeated:int;
 		private var _lines:Array = [];
-		private var _linesChanged:Boolean;
+		private var _lineAdded:Boolean;
 		
 		/**
 		 * Console is the main class. However please use C for singleton Console adapter.
@@ -131,7 +137,7 @@ package com.atticmedia.console {
 			remoter.logsend = remoteLogSend; // Don't want to expose remoteLogSend in this class
 			//
 			var t:String = VERSION_STAGE?(" "+VERSION_STAGE):"";
-			report("<b>Console v"+VERSION+t+", Happy bug fixing!</b>",-2);
+			report("<b>Console v"+VERSION+t+", Happy bug fixing!</b>", -2);
 			if(_password != ""){
 				if(stage){
 					stageAddedHandle();
@@ -243,21 +249,8 @@ package com.atticmedia.console {
 		private function getKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):String{
 			return char.toLowerCase()+(ctrl?"0":"1")+(alt?"0":"1")+(shift?"0":"1");
 		}
-		public function setPanelPosition(panelname:String, p:Point):void{
-			var panel:AbstractPanel = panels.getPanel(panelname);
-			if(panel){
-				panel.x = p.x;
-				panel.y = p.y;
-			}
-		}
 		public function setPanelArea(panelname:String, rect:Rectangle):void{
-			var panel:AbstractPanel = panels.getPanel(panelname);
-			if(panel){
-				panel.x = rect.x;
-				panel.y = rect.y;
-				panel.width = rect.width;
-				panel.height = rect.height;
-			}
+			panels.setPanelArea(panelname, rect);
 		}
 		//
 		// Panel settings
@@ -371,12 +364,13 @@ package com.atticmedia.console {
 		public function set paused(newV:Boolean):void{
 			if(_isPaused == newV) return;
 			if(newV){
-				report("Paused",10);
+				report("Paused", 10);
 			}else{
-				report("Resumed",-1);
+				report("Resumed", -1);
 			}
 			_isPaused = newV;
-			panels.mainPanel.refresh();
+			panels.mainPanel.updateTraces(true);
+			panels.mainPanel.updateMenu();
 		}
 		//
 		//
@@ -437,14 +431,14 @@ package com.atticmedia.console {
 				}
 			}
 			if(visible){
-				panels.mainPanel.update(!_isPaused && _linesChanged);
-				if(_linesChanged) {
+				panels.mainPanel.update(!_isPaused && _lineAdded);
+				if(_lineAdded) {
 					var chPanel:ChannelsPanel = panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
 					if(chPanel){
 						chPanel.update();
 					}
+					_lineAdded = false;
 				}
-				_linesChanged = false;
 			}
 			if(remoter.remoting){
 				remoter.update(_mspf, stage?stage.frameRate:0);
@@ -520,11 +514,8 @@ package com.atticmedia.console {
 		//
 		//
 		public function set viewingChannel(str:String):void{
-			if(str){
-				viewingChannels = [str];
-			}else{
-				viewingChannels = [GLOBAL_CHANNEL];
-			}
+			if(str) viewingChannels = [str];
+			else viewingChannels = [GLOBAL_CHANNEL];
 		}
 		public function get viewingChannel():String{
 			return _viewingChannels.join(",");
@@ -534,12 +525,9 @@ package com.atticmedia.console {
 		}
 		public function set viewingChannels(a:Array):void{
 			_viewingChannels.splice(0);
-			if(a && a.length){
-				_viewingChannels.push.apply(this, a);
-			}else{
-				_viewingChannels.push(GLOBAL_CHANNEL);
-			}
-			panels.mainPanel.refresh();
+			if(a && a.length) _viewingChannels.push.apply(this, a);
+			else _viewingChannels.push(GLOBAL_CHANNEL);
+			panels.mainPanel.updateToBottom();
 			panels.updateMenu();
 		}
 		public function set tracingChannels(newVar:Array):void{
@@ -569,12 +557,15 @@ package com.atticmedia.console {
 		public function report(obj:*,priority:Number = 0, skipSafe:Boolean = true):void{
 			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe);
 		}
-		private function addLine(obj:*,priority:Number = 0,channel:String = "",isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false):void{
 			if(!_enabled){
 				return;
 			}
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
 			var txt:String = String(obj);
+			if(!channel){
+				channel = defaultChannel;
+			}
 			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
 				if(tracingPriority <= priority || tracingPriority <= 0){
 					_traceCall("["+channel+"] "+txt);
@@ -584,13 +575,9 @@ package com.atticmedia.console {
 				txt = txt.replace(/</gim, "&lt;");
  				txt = txt.replace(/>/gim, "&gt;");
 			}
-			if(!channel){
-				channel = defaultChannel;
-			}
 			if(_channels.indexOf(channel) < 0){
 				_channels.push(channel);
 			}
-			_linesChanged = true;
 			var line:LogLineVO = new LogLineVO(txt,channel,priority, isRepeating, skipSafe);
 			if(isRepeat){
 				_lines.pop();
@@ -602,11 +589,29 @@ package com.atticmedia.console {
 					_lines.splice(0,1);
 				}
 			}
+			_lineAdded = true;
 			_isRepeating = isRepeating;
 			
 			if(remoter.remoting){
 				remoter.addLineQueue(line);
 			}
+		}
+		public function lineShouldShow(line:LogLineVO):Boolean{
+			return (
+				viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0
+			 		|| (viewingChannels.indexOf(line.c)>=0 
+			 		|| (filterText && line.c != Console.FILTERED_CHANNEL && line.text.toLowerCase().indexOf(filterText.toLowerCase())>=0 )
+			 	) 
+			 	&& ( _priority <= 0 || line.p >= _priority)
+			 );
+		}
+		public function set priority (i:int):void{
+			_priority = i;
+			panels.mainPanel.updateToBottom();
+			panels.updateMenu();
+		}
+		public function get priority ():int{
+			return _priority;
 		}
 		//
 		// COMMAND LINE
@@ -656,63 +661,54 @@ package com.atticmedia.console {
 		public function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			var chn:String;
 			if(channel is String){
-				chn = String(channel);
+				chn = channel as String;
 			}else if(channel){
-				chn = getQualifiedClassName(channel);
-				var ind:int = chn.lastIndexOf("::");
-				chn = chn.substring(ind>=0?(ind+2):0);
+				chn = Utils.shortClassName(channel);
 			}else{
 				chn = defaultChannel;
 			}
 			addLine(newLine,priority,chn, isRepeating);
 		}
-		/*public function pk(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			var chn:String = getQualifiedClassName(channel);
-			var ind:int = chn.lastIndexOf("::");
-			if(ind>=0){
-				chn = chn.substring(0,ind);
-			}
-			addLine(newLine,priority,chn, isRepeating);
-		}*/
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			addLine(newLine,priority, defaultChannel, isRepeating);
 		}
 		public function log(...args):void{
-			addLine(args.join(" "),1);
+			addLine(args.join(" "), LOG_LEVEL);
 		}
 		public function info(...args):void{
-			addLine(args.join(" "),3);
+			addLine(args.join(" "), INFO_LEVEL);
 		}
 		public function debug(...args):void{
-			addLine(args.join(" "),6);
+			addLine(args.join(" "), DEBUG_LEVEL);
 		}
 		public function warn(...args):void{
-			addLine(args.join(" "),8);
+			addLine(args.join(" "), WARN_LEVEL);
 		}
 		public function error(...args):void{
-			addLine(args.join(" "),10);
+			addLine(args.join(" "), ERROR_LEVEL);
 		}
 		public function logch(channel:*, ...args):void{
-			ch(channel, args.join(" "),1);
+			ch(channel, args.join(" "), LOG_LEVEL);
 		}
 		public function infoch(channel:*, ...args):void{
-			ch(channel, args.join(" "),3);
+			ch(channel, args.join(" "), INFO_LEVEL);
 		}
 		public function debugch(channel:*, ...args):void{
-			ch(channel, args.join(" "),6);
+			ch(channel, args.join(" "), DEBUG_LEVEL);
 		}
 		public function warnch(channel:*, ...args):void{
-			ch(channel, args.join(" "),8);
+			ch(channel, args.join(" "), WARN_LEVEL);
 		}
 		public function errorch(channel:*, ...args):void{
-			ch(channel, args.join(" "),10);
+			ch(channel, args.join(" "), ERROR_LEVEL);
 		}
 		//
 		public function set filterText(str:String):void{
 			_filterText = str;
 			if(str){
 				clear(FILTERED_CHANNEL);
-				addLine("Filtering ["+str+"]", 10,FILTERED_CHANNEL);
+				_channels.splice(1,0,FILTERED_CHANNEL);
+				addLine("Filtering ["+str+"]", 10,CONSOLE_CHANNEL);
 				viewingChannels = [FILTERED_CHANNEL];
 			}else if(viewingChannel == FILTERED_CHANNEL){
 				viewingChannels = [GLOBAL_CHANNEL];
@@ -733,8 +729,11 @@ package com.atticmedia.console {
 				_channels.splice(0);
 				_channels.push(GLOBAL_CHANNEL);
 			}
-			panels.mainPanel.refresh();
+			panels.mainPanel.updateToBottom();
 			panels.updateMenu();
+		}
+		public function getAllLog(splitter:String = "\n"):String{
+			return _lines.join(splitter);
 		}
 	}
 }

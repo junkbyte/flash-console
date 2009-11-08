@@ -44,10 +44,10 @@ package com.atticmedia.console.view {
 			super.close();
 			master.panels.updateMenu(); // should be black boxed :/
 		}
-		public override function reset():void {
-			//lowest = NaN;
-			super.reset();
-		}
+		//public override function reset():void {
+		//	//lowest = NaN;
+		//	super.reset();
+		//}
 		public override function stop():void {
 			super.stop();
 			reset();

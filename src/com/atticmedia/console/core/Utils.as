@@ -23,6 +23,7 @@
 * 
 */
 package com.atticmedia.console.core {
+	import flash.utils.getQualifiedClassName;
 	import flash.display.Graphics;	
 	import flash.geom.Point;	
 	
@@ -81,6 +82,12 @@ package com.atticmedia.console.core {
 		}
 		public static function replaceByIndexes(str:String, replace:String, start:int, end:int):String {
 			return str.substring(0,start)+replace+str.substring(end);
+		}
+		
+		public static function shortClassName(cls:Object):String{
+			var str:String = getQualifiedClassName(cls);
+			var ind:int = str.lastIndexOf("::");
+			return str.substring(ind>=0?(ind+2):0);
 		}
 	}
 }

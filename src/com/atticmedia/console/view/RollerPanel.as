@@ -24,8 +24,9 @@
 */
 package com.atticmedia.console.view {
 	import com.atticmedia.console.Console;
+	import com.atticmedia.console.core.Utils;
 	import com.atticmedia.console.events.TextFieldRollOver;
-	
+
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
@@ -35,7 +36,6 @@ package com.atticmedia.console.view {
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	import flash.utils.Dictionary;
-	import flash.utils.getQualifiedClassName;		
 
 	public class RollerPanel extends AbstractPanel{
 		
@@ -106,17 +106,17 @@ package com.atticmedia.console.view {
 							if(obj == stg){
 								str +=  "<p3><a href='event:sclip_'><i>Stage</i></a> ["+stg.mouseX+","+stg.mouseY+"]</p3>";
 							}else if(i == len-1){
-								str +=  "<p5><a href='event:sclip_"+mapUpward(obj)+"'>"+obj.name+"("+getQualifiedClassName(obj).split("::").pop()+")</a></p5>";
+								str +=  "<p5><a href='event:sclip_"+mapUpward(obj)+"'>"+obj.name+"("+Utils.shortClassName(obj)+")</a></p5>";
 							}else {
-								str +=  "<p2><a href='event:sclip_"+mapUpward(obj)+"'><i>"+obj.name+"("+getQualifiedClassName(obj).split("::").pop()+")</i></a></p2>";
+								str +=  "<p2><a href='event:sclip_"+mapUpward(obj)+"'><i>"+obj.name+"("+Utils.shortClassName(obj)+")</i></a></p2>";
 							}
 						}else{
 							if(obj == stg){
 								str +=  "<menu> <a href=\"event:close\"><b>X</b></a></menu> <i>Stage</i> ["+stg.mouseX+","+stg.mouseY+"]<br/>";
 							}else if(i == len-1){
-								str +=  "<roBold>"+obj.name+"("+getQualifiedClassName(obj).split("::").pop()+")</roBold>";
+								str +=  "<roBold>"+obj.name+"("+Utils.shortClassName(obj)+")</roBold>";
 							}else {
-								str +=  "<i>"+obj.name+"("+getQualifiedClassName(obj).split("::").pop()+")</i><br/>";
+								str +=  "<i>"+obj.name+"("+Utils.shortClassName(obj)+")</i><br/>";
 							}
 						}
 					}
