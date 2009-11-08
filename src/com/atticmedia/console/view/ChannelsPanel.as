@@ -70,14 +70,7 @@ package com.atticmedia.console.view {
 			height = _txtField.height;
 		}
 		private function onMenuRollOver(e:TextFieldRollOver):void{
-			var txt:String = e.url?e.url.replace("event:",""):"";
-			if(txt == "channel_"+Console.GLOBAL_CHANNEL){
-				master.panels.tooltip(MainPanel.TOOLTIPS["viewall"], this);
-			}else if(txt=="close"){
-				master.panels.tooltip("Close", this);
-			}else{
-				master.panels.tooltip(null, this);
-			}
+			master.panels.mainPanel.onMenuRollOver(e, this);
 		}
 		protected function linkHandler(e:TextEvent):void{
 			_txtField.setSelection(0, 0);

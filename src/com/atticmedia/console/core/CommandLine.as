@@ -507,7 +507,7 @@ package com.atticmedia.console.core {
 					report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
 				}
 				report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
-			} else if (cmd == "filter") {
+			} else if (cmd == "filter" || cmd == "search") {
 				_master.filterText = str.substring(8);
 			} else if (cmd == "inspect" || cmd == "inspectfull") {
 				if (_returned) {

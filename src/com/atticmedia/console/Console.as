@@ -65,8 +65,8 @@ package com.atticmedia.console {
 		public static var REMOTING_CONN_NAME:String = "_Console";
 		
 		public static const CONSOLE_CHANNEL:String = "C";
-		public static const FILTERED_CHANNEL:String = "%?";
-		public static const GLOBAL_CHANNEL:String = "global";
+		public static const FILTERED_CHANNEL:String = "~";
+		public static const GLOBAL_CHANNEL:String = " * ";
 		//
 		public static const FPS_MAX_LAG_FRAMES:uint = 25;
 		public static const MAPPING_SPLITTER:String = "|";
@@ -90,7 +90,7 @@ package com.atticmedia.console {
 		public var moveTopAttempts:int = 50;
 		public var maxRepeats:Number = 75;
 		public var remoteDelay:int = 20;
-		public var defaultChannel:String = "traces";
+		public var defaultChannel:String = "-";
 		public var tracingPriority:int = 0;
 		public var rulerHidesMouse:Boolean = true;
 		//
@@ -563,7 +563,7 @@ package com.atticmedia.console {
 			}
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
 			var txt:String = String(obj);
-			if(!channel){
+			if(!channel || channel == GLOBAL_CHANNEL){
 				channel = defaultChannel;
 			}
 			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
@@ -598,12 +598,13 @@ package com.atticmedia.console {
 		}
 		public function lineShouldShow(line:LogLineVO):Boolean{
 			return (
-				viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0
-			 		|| (viewingChannels.indexOf(line.c)>=0 
-			 		|| (filterText && line.c != Console.FILTERED_CHANNEL && line.text.toLowerCase().indexOf(filterText.toLowerCase())>=0 )
+				(
+					_viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0
+			 		|| _viewingChannels.indexOf(line.c)>=0 
+			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.toLowerCase().indexOf(_filterText.toLowerCase())>=0 )
 			 	) 
 			 	&& ( _priority <= 0 || line.p >= _priority)
-			 );
+			);
 		}
 		public function set priority (i:int):void{
 			_priority = i;
@@ -708,7 +709,7 @@ package com.atticmedia.console {
 			if(str){
 				clear(FILTERED_CHANNEL);
 				_channels.splice(1,0,FILTERED_CHANNEL);
-				addLine("Filtering ["+str+"]", 10,CONSOLE_CHANNEL);
+				addLine("Filtering ["+str+"]", 10,FILTERED_CHANNEL);
 				viewingChannels = [FILTERED_CHANNEL];
 			}else if(viewingChannel == FILTERED_CHANNEL){
 				viewingChannels = [GLOBAL_CHANNEL];
@@ -724,6 +725,8 @@ package com.atticmedia.console {
 						delete _lines[i];
 					}
 				}
+				var ind:int = _channels.indexOf(channel);
+				if(ind>=0) _channels.splice(ind,1);
 			}else{
 				_lines.splice(0);
 				_channels.splice(0);

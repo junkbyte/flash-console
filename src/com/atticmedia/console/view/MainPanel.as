@@ -60,7 +60,11 @@ package com.atticmedia.console.view {
 				priority:"Priority filter",
 				channels:"Expand channels",
 				close:"Close",
+				closemain:"Close::Type password to show again",
 				viewall:"View all channels",
+				defaultch:"Default channel::Logs with no channel",
+				consolech:"Console channel::Logs generated from Console",
+				channel:"Change channel::Hold shift to select multiple channels",
 				scrollUp:"Scroll up",
 				scrollDown:"Scroll down",
 				scope:"Current scope::(CommandLine)"
@@ -203,7 +207,7 @@ package com.atticmedia.console.view {
 				}
 				if(_needUpdateTrace){
 					_needUpdateTrace = false;
-					updateTraces(true);
+					_updateTraces(true);
 				}
 				if(_needUpdateMenu){
 					_needUpdateMenu = false;
@@ -211,19 +215,27 @@ package com.atticmedia.console.view {
 				}
 			}
 		}
-		public function updateToBottom(instant:Boolean = false):void{
+		public function updateToBottom():void{
 			_atBottom = true;
-			updateTraces(instant);
+			_needUpdateTrace = true;
 		}
 		public function updateTraces(instant:Boolean = false):void{
 			if(instant){
-				if(_atBottom) {
-					updateBottom(); 
-				}else {
-					updateFull();
-				}
+				_updateTraces();
 			}else{
 				_needUpdateTrace = true;
+			}
+		}
+		private function _updateTraces(onlyBottom:Boolean = false):void{
+			// TODO: onlyBottom: when you are scrolled up, it doesnt update for new lines, because
+			// you won't see them while scrolled up anyway... (it increase performace a lot on long logs)
+			// BUT scroll up, add lots of new lines, scroll back down,
+			// you'll see it jumps to the bottom of log which can be annoying in rare cases
+			// 
+			if(_atBottom) {
+				updateBottom(); 
+			}else if(!onlyBottom){
+				updateFull();
 			}
 		}
 		private function updateFull():void{
@@ -388,20 +400,28 @@ package com.atticmedia.console.view {
 			if(b) return "<y>"+str+"</y>";
 			return str;
 		}
-		private function onMenuRollOver(e:TextFieldRollOver):void{
+		public function onMenuRollOver(e:TextFieldRollOver, src:AbstractPanel = null):void{
+			if(src==null) src = this;
 			var txt:String = e.url?e.url.replace("event:",""):"";
 			if(txt == "channel_"+Console.GLOBAL_CHANNEL){
 				txt = TOOLTIPS["viewall"];
-				// TODO: also have tip on current channel and default channel
+			}else if(txt == "channel_"+ master.defaultChannel) {
+				txt = TOOLTIPS["defaultch"];
+			}else if(txt == "channel_"+ Console.CONSOLE_CHANNEL) {
+				txt = TOOLTIPS["consolech"];
+			}else if(txt.indexOf("channel_")==0) {
+				txt = TOOLTIPS["channel"];
 			}else if(txt == "pause"){
 				if(master.paused)
 					txt = TOOLTIPS["resume"];
 				else
 					txt = TOOLTIPS["pause"];
+			}else if(txt == "close" && src == this){
+				txt = TOOLTIPS["closemain"];
 			}else{
 				txt = TOOLTIPS[txt];
 			}
-			master.panels.tooltip(txt, this);
+			master.panels.tooltip(txt, src);
 		}
 		private function linkHandler(e:TextEvent):void{
 			_menuField.setSelection(0, 0);
