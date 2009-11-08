@@ -24,6 +24,7 @@
 */
 
 package com.atticmedia.console.view {
+	import flash.display.Sprite;
 	import flash.geom.ColorTransform;
 	import flash.system.SecurityPanel;
 	import flash.system.Security;
@@ -80,6 +81,7 @@ package com.atticmedia.console.view {
 		private var _isMinimised:Boolean;
 		private var _shift:Boolean;
 		private var _canUseTrace:Boolean;
+		private var _scroller:Sprite;
 		
 		private var _channels:Array;
 		private var _lines:Array;
@@ -156,7 +158,17 @@ package com.atticmedia.console.view {
 			_bottomLine.name = "blinkLine";
 			_bottomLine.alpha = 0.2;
 			addChild(_bottomLine);
-			
+			//
+			_scroller = new Sprite();
+			_scroller.graphics.beginFill(style.panelScalerColor, 1);
+			_scroller.graphics.drawRect(-5, 0, 5, 30);
+			_scroller.graphics.beginFill(0, 0);
+			_scroller.graphics.drawRect(-10, 0, 10, 30);
+			_scroller.graphics.endFill();
+			_scroller.buttonMode = true;
+			_scroller.addEventListener(MouseEvent.MOUSE_DOWN, onScrollerDown, false, 0, true);
+			addChild(_scroller);
+			//
 			_commandField.visible = false;
 			_commandPrefx.visible = false;
 			_commandBackground.visible = false;
@@ -268,6 +280,7 @@ package com.atticmedia.console.view {
 			_lockScrollUpdate = true;
 			_traceField.htmlText = str;
 			_lockScrollUpdate = false;
+			updateScroller();
 		}
 		private function updateBottom():void{
 			var linesLeft:int = Math.round(_traceField.height/10);
@@ -287,6 +300,7 @@ package com.atticmedia.console.view {
 			_traceField.htmlText = lines.reverse().join("");
 			_traceField.scrollV = _traceField.maxScrollV;
 			_lockScrollUpdate = false;
+			updateScroller();
 		}
 		private function makeLine(line:LogLineVO):String{
 			var str:String = "";
@@ -298,21 +312,62 @@ package com.atticmedia.console.view {
 			str += "<p><"+ptag+">" + txt + "</"+ptag+"></p>";
 			return str;
 		}
-		private function onTraceScroll(e:Event):void{
+		private function onTraceScroll(e:Event = null):void{
 			if(_lockScrollUpdate) return;
 			updateMenu();
-			var bottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV-1;
-			if(_atBottom !=bottom){
+			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
+			if(_atBottom !=atbottom){
 				var diff:int = _traceField.maxScrollV-_traceField.scrollV;
-				_atBottom = bottom;
-				updateTraces(true);
+				_atBottom = atbottom;
+				_updateTraces();
 				_traceField.scrollV = _traceField.maxScrollV-diff;
 			}
+			updateScroller();
+		}
+		private function updateScroller():void{
+			if(_traceField.maxScrollV<=1 || scrollerMaxY<18){
+				_scroller.visible = false;
+				
+			}else{
+				_scroller.visible = true;
+				if(_atBottom) {
+					_scroller.y = scrollerMaxY;
+				}else{
+					var per:Number = (_traceField.scrollV-1)/(_traceField.maxScrollV-1);
+					_scroller.y = 18+((scrollerMaxY-18)*per);
+				}
+			}
+		}
+		private function onScrollerDown(e:MouseEvent):void{
+			if(_atBottom){
+				_atBottom = false;
+				_updateTraces();
+				_scroller.y = scrollerMaxY;
+			}
+			_scroller.startDrag(false, new Rectangle(_scroller.x,18, 0, (scrollerMaxY-18)));
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove, false, 0, true);
+			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollerUp, false, 0, true);
+		}
+		private function onScrollerMove(e:MouseEvent):void{
+			var minY:Number = 18;
+			var per:Number = (_scroller.y-minY)/(scrollerMaxY-minY);
+			_lockScrollUpdate = true;
+			_traceField.scrollV = Math.round((per*(_traceField.maxScrollV-1))+1);
+			_lockScrollUpdate = false;
+		}
+		private function get scrollerMaxY():Number{
+			return _bottomLine.y-_scroller.height-(_commandField.visible?0:10);
+		}
+		private function onScrollerUp(e:MouseEvent):void{
+			_scroller.stopDrag();
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, onScrollerUp);
+			onTraceScroll();
 		}
 		override public function set width(n:Number):void{
 			_lockScrollUpdate = true;
 			super.width = n;
-			_traceField.width = n;
+			_traceField.width = n-4;
 			_menuField.width = n;
 			_commandField.width = width-15-_commandField.x;
 			_commandBackground.width = n;
@@ -321,6 +376,7 @@ package com.atticmedia.console.view {
 			_bottomLine.graphics.lineStyle(1, style.bottomLineColor);
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
+			_scroller.x = n;
 			onUpdateCommandLineScope();
 			_atBottom = true;
 			_needUpdateMenu = true;

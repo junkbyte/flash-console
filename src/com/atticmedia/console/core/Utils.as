@@ -29,7 +29,6 @@ package com.atticmedia.console.core {
 	
 	public class Utils {
 		
-		
 		public static function round(n:Number, d:uint):Number{
 			return Math.round(n*d)/d;
 		}
