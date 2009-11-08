@@ -67,16 +67,15 @@ package com.atticmedia.console.core {
 					frames--;
 				}
 			}
-			if(_remoteDelayed > _master.remoteDelay){
+			if(_remoteDelayed >= _master.remoteDelay){
 				_remoteDelayed = 0;
 				var newQueue:Array = new Array();
-				// don't send too many lines at once, so buffer it
-				if(_remoteLinesQueue.length > 50){
-					newQueue = newQueue.splice(50);
-					// to force update sooner
-					if(_master.remoteDelay>5){
-						_remoteDelayed = _master.remoteDelay-5;
-					}
+				// don't send too many lines at once cause there is 50kb limit with LocalConnection.send
+				// Buffer it...
+				if(_remoteLinesQueue.length > 20){
+					newQueue = _remoteLinesQueue.splice(20);
+					// to force update next farme
+					_remoteDelayed = _master.remoteDelay;
 				}
 				send("logSend", [_remoteLinesQueue, _mspfsForRemote, _master.currentMemory, _master.cl.scopeString]);
 				_remoteLinesQueue = newQueue;
@@ -169,7 +168,6 @@ package com.atticmedia.console.core {
 			_sharedConnection.allowDomain("*");
 			_sharedConnection.allowInsecureDomain("*");
 			// just for sort of security
-			//_sharedConnection.client = this;
 			_sharedConnection.client = {logSend:logsend, gc:_master.gc, runCommand:_master.runCommand};
 		}
 		public function close():void{
