@@ -844,12 +844,6 @@ package com.atticmedia.console {
 			var e:Boolean = _console? true: false;
 			return e;
 		}
-		public static function get version():Number{
-			return Console.VERSION;
-		}
-		public static function get versionStage():String{
-			return Console.VERSION_STAGE;
-		}
 		//
 		private static function stageAddedHandle(e:Event):void{
 			var mc:DisplayObjectContainer = e.currentTarget as DisplayObjectContainer;
