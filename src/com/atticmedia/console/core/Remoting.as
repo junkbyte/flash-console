@@ -45,6 +45,9 @@ package com.atticmedia.console.core {
 		private var _mspfsForRemote:Array;
 		private var _remoteDelayed:int;
 		
+		private var _lastLogin:String = "";
+		private var _loggedIn:Boolean;
+		
 		public var logsend:Function;
 		
 		public var remoteMem:int;
@@ -53,10 +56,16 @@ package com.atticmedia.console.core {
 			_master = m;
 		}
 		public function addLineQueue(line:LogLineVO):void{
+			if(!_loggedIn) return;
 			_remoteLinesQueue.push(line);
+			var maxlines:int = _master.maxLines;
+			if(_remoteLinesQueue.length > maxlines && maxlines > 0 ){
+				_remoteLinesQueue.splice(0,1);
+			}
 		}
 		public function update(mspf:Number, sFR:Number = NaN):void{
 			_remoteDelayed++;
+			if(!_loggedIn) return;
 			_mspfsForRemote.push(mspf);
 			if(sFR){
 				// this is to try add the frames that have been lagged
@@ -106,12 +115,16 @@ package com.atticmedia.console.core {
 				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemotingStatus);
 				_sharedConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError);
 				try{
-                	_sharedConnection.connect(Console.REMOTING_CONN_NAME+CLIENT_PREFIX);
+					_sharedConnection.connect(Console.REMOTING_CONN_NAME+CLIENT_PREFIX);
 					_master.report("<b>Remoting started.</b> "+getInfo(),-1);
 					_isRemoting = true;
-           		}catch (error:Error){
+					_loggedIn = _master.checkLogin("");
+					if(!_loggedIn){
+						send("requestLogin");
+					}
+				}catch (error:Error){
 					_master.report("Could not create client service. You will not be able to control this console with remote.", 10);
-           		}
+				}
 			}else{
 				_isRemoting = false;
 				close();
@@ -135,17 +148,18 @@ package com.atticmedia.console.core {
 				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemoteStatus);
 				_sharedConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError);
 				try{
-                	_sharedConnection.connect(Console.REMOTING_CONN_NAME+REMOTE_PREFIX);
+					_sharedConnection.connect(Console.REMOTING_CONN_NAME+REMOTE_PREFIX);
 					_master.report("<b>Remote started.</b> "+getInfo(),-1);
 					var sdt:String = Security.sandboxType;
 					if(sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK){
 						_master.report("Untrusted local sandbox. You may not be able to listen for logs properly.", 10);
 						printHowToGlobalSetting();
 					}
-           		}catch (error:Error){
+					login(_lastLogin);
+				}catch (error:Error){
 					_isRemoting = false;
 					_master.report("Could not create remote service. You might have a console remote already running.", 10);
-           		}
+				}
 			}else{
 				close();
 			}
@@ -168,7 +182,39 @@ package com.atticmedia.console.core {
 			_sharedConnection.allowDomain("*");
 			_sharedConnection.allowInsecureDomain("*");
 			// just for sort of security
-			_sharedConnection.client = {logSend:logsend, gc:_master.gc, runCommand:_master.runCommand};
+			_sharedConnection.client = {
+				login:login, requestLogin:requestLogin, loginFail:loginFail, loginSuccess:loginSuccess,
+				logSend:logsend, gc:_master.gc, runCommand:_master.runCommand};
+		}
+		public function loginFail():void{
+			_master.report("Login Failed", 10);
+			_master.panels.mainPanel.requestLogin();
+		}
+		public function loginSuccess():void{
+			_master.report("Login Successful", -1);
+		}
+		public function requestLogin():void{
+			if(_lastLogin){
+				login(_lastLogin);
+			}else{
+				_master.panels.mainPanel.requestLogin();
+			}
+		}
+		public function login(pass:String = null):void{
+			if(_isRemote){
+				_lastLogin = pass;
+				_master.report("Attempting to login...", -1);
+				send("login", pass);
+			}else{
+				// once logged in, next login attempts will always be success
+				if(_loggedIn || _master.checkLogin(pass)){
+					_loggedIn = true;
+					_remoteLinesQueue = _master.getAllLines();
+					send("loginSuccess");
+				}else{
+					send("loginFail");
+				}
+			}
 		}
 		public function close():void{
 			if(_sharedConnection){

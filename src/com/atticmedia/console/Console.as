@@ -67,6 +67,7 @@ package com.atticmedia.console {
 		public static const CONSOLE_CHANNEL:String = "C";
 		public static const FILTERED_CHANNEL:String = "~";
 		public static const GLOBAL_CHANNEL:String = " * ";
+		public static const DEFAULT_CHANNEL:String = "-";
 		//
 		public static const FPS_MAX_LAG_FRAMES:uint = 25;
 		public static const MAPPING_SPLITTER:String = "|";
@@ -90,7 +91,6 @@ package com.atticmedia.console {
 		public var moveTopAttempts:int = 50;
 		public var maxRepeats:Number = 75;
 		public var remoteDelay:int = 20;
-		public var defaultChannel:String = "-";
 		public var tracingPriority:int = 0;
 		public var rulerHidesMouse:Boolean = true;
 		//
@@ -98,6 +98,7 @@ package com.atticmedia.console {
 		private var _enabled:Boolean = true;
 		private var _password:String;
 		private var _passwordIndex:int;
+		private var _remotingPassword:String = "";
 		private var _tracing:Boolean = false;
 		private var _filterText:String;
 		private var _keyBinds:Object = {};
@@ -107,7 +108,7 @@ package com.atticmedia.console {
 		private var _rollerCaptureKey:String;
 		private var _needToMoveTop:Boolean;
 		
-		private var _channels:Array = [GLOBAL_CHANNEL];
+		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
 		private var _viewingChannels:Array = [GLOBAL_CHANNEL];
 		private var _tracingChannels:Array = [];
 		private var _isRepeating:Boolean;
@@ -127,6 +128,7 @@ package com.atticmedia.console {
 		public function Console(pass:String = "", uiset:int = 1) {
 			name = NAME;
 			_password = pass;
+			_remotingPassword = pass;
 			tabChildren = false; // Tabbing is not supported
 			//
 			cl = new CommandLine(this);
@@ -469,6 +471,16 @@ package com.atticmedia.console {
 			remoter.isRemote = newV;
 			panels.updateMenu();
 		}
+		public function sendLogin(pass:String):void{
+			remoter.login(pass);
+		}
+		public function checkLogin(pass:String):Boolean{
+			return (!_remotingPassword || _remotingPassword == pass);
+		}
+		public function set remotingPassword(str:String):void{
+			_remotingPassword = str;
+			remoter.login(str);
+		}
 		//
 		// this is sent from client for remote...
 		// obj[0] = array of log lines (text, priority, channel, repeating, safeHTML)
@@ -564,7 +576,7 @@ package com.atticmedia.console {
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
 			var txt:String = String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL){
-				channel = defaultChannel;
+				channel = DEFAULT_CHANNEL;
 			}
 			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
 				if(tracingPriority <= priority || tracingPriority <= 0){
@@ -666,12 +678,12 @@ package com.atticmedia.console {
 			}else if(channel){
 				chn = Utils.shortClassName(channel);
 			}else{
-				chn = defaultChannel;
+				chn = DEFAULT_CHANNEL;
 			}
 			addLine(newLine,priority,chn, isRepeating);
 		}
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(newLine,priority, defaultChannel, isRepeating);
+			addLine(newLine,priority, DEFAULT_CHANNEL, isRepeating);
 		}
 		public function log(...args):void{
 			addLine(args.join(" "), LOG_LEVEL);
@@ -730,10 +742,13 @@ package com.atticmedia.console {
 			}else{
 				_lines.splice(0);
 				_channels.splice(0);
-				_channels.push(GLOBAL_CHANNEL);
+				_channels.push(GLOBAL_CHANNEL, DEFAULT_CHANNEL);
 			}
 			panels.mainPanel.updateToBottom();
 			panels.updateMenu();
+		}
+		public function getAllLines():Array{
+			return _lines.concat();
 		}
 		public function getAllLog(splitter:String = "\n"):String{
 			return _lines.join(splitter);

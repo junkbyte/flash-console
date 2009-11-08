@@ -24,6 +24,7 @@
 */
 
 package com.atticmedia.console.view {
+	import flash.geom.ColorTransform;
 	import flash.system.SecurityPanel;
 	import flash.system.Security;
 	import com.atticmedia.console.Console;
@@ -63,7 +64,7 @@ package com.atticmedia.console.view {
 				closemain:"Close::Type password to show again",
 				viewall:"View all channels",
 				defaultch:"Default channel::Logs with no channel",
-				consolech:"Console channel::Logs generated from Console",
+				consolech:"Console's channel::Logs generated from Console",
 				channel:"Change channel::Hold shift to select multiple channels",
 				scrollUp:"Scroll up",
 				scrollDown:"Scroll down",
@@ -89,6 +90,7 @@ package com.atticmedia.console.view {
 		private var _needUpdateTrace:Boolean;
 		private var _lockScrollUpdate:Boolean;
 		private var _atBottom:Boolean = true;
+		private var _enteringLogin:Boolean;
 		
 		public function MainPanel(m:Console, lines:Array, channels:Array) {
 			super(m);
@@ -195,6 +197,24 @@ package com.atticmedia.console.view {
 				_shift = false;
 			}
 		}
+		public function requestLogin(on:Boolean = true):void{
+			var ct:ColorTransform = new ColorTransform();
+			if(on){
+				master.commandLine = true;
+				master.report("//", -2);
+				master.report("// <b>Enter remoting password</b> in CommandLine below...", -2);
+				updateCLScope("Password");
+				ct.color = style.bottomLineColor;
+				_commandBackground.transform.colorTransform = ct;
+				_traceField.transform.colorTransform = new ColorTransform(0.7,0.7,0.7);
+			}else{
+				updateCLScope("?");
+				_commandBackground.transform.colorTransform = ct;
+				_traceField.transform.colorTransform = ct;
+			}
+			_commandField.displayAsPassword = on;
+			_enteringLogin = on;
+		}
 		public function update(changed:Boolean):void{
 			if(visible){
 				if(_bottomLine.alpha>0){
@@ -271,7 +291,7 @@ package com.atticmedia.console.view {
 		private function makeLine(line:LogLineVO):String{
 			var str:String = "";
 			var txt:String = line.text;
-			if(master.prefixChannelNames && (master.viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0 || master.viewingChannels.length>1) && line.c != master.defaultChannel){
+			if(master.prefixChannelNames && (master.viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0 || master.viewingChannels.length>1) && line.c != Console.DEFAULT_CHANNEL){
 				txt = "[<a href=\"event:channel_"+line.c+"\">"+line.c+"</a>] "+txt;
 			}
 			var ptag:String = "p"+line.p;
@@ -387,11 +407,10 @@ package com.atticmedia.console.view {
 			for(var ci:int = 0; ci<len;  ci++){
 				var channel:String = _channels[ci];
 				var channelTxt:String = (master.viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
-				channelTxt = channel==master.defaultChannel? "<i>"+channelTxt+"</i>" : channelTxt;
 				str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
 			}
 			if(limited){
-				str += "<ch><a href=\"event:channels\"><b>"+(_channels.length>len?"...":".")+"</b>^ </a></ch>";
+				str += "<ch><a href=\"event:channels\"><b>"+(_channels.length>len?"...":"")+"</b>^^ </a></ch>";
 			}
 			str += "</chs> ";
 			return str;
@@ -405,7 +424,7 @@ package com.atticmedia.console.view {
 			var txt:String = e.url?e.url.replace("event:",""):"";
 			if(txt == "channel_"+Console.GLOBAL_CHANNEL){
 				txt = TOOLTIPS["viewall"];
-			}else if(txt == "channel_"+ master.defaultChannel) {
+			}else if(txt == "channel_"+Console.DEFAULT_CHANNEL) {
 				txt = TOOLTIPS["defaultch"];
 			}else if(txt == "channel_"+ Console.CONSOLE_CHANNEL) {
 				txt = TOOLTIPS["consolech"];
@@ -514,13 +533,19 @@ package com.atticmedia.console.view {
 				return;
 			}
 			if( e.keyCode == 13){
-				master.runCommand(_commandField.text);
-				_commandsHistory.unshift(_commandField.text);
-				_commandsInd = -1;
-				_commandField.text = "";
-				// maximum 20 commands history
-				if(_commandsHistory.length>20){
-					_commandsHistory.splice(20);
+				if(_enteringLogin){
+					master.sendLogin(_commandField.text);
+					_commandField.text = "";
+					requestLogin(false);
+				}else{
+					master.runCommand(_commandField.text);
+					_commandsHistory.unshift(_commandField.text);
+					_commandsInd = -1;
+					_commandField.text = "";
+					// maximum 20 commands history
+					if(_commandsHistory.length>20){
+						_commandsHistory.splice(20);
+					}
 				}
 			}else if( e.keyCode == 38 ){
 				// if its back key for first time, store the current key
@@ -552,6 +577,10 @@ package com.atticmedia.console.view {
 			if(!master.remote) updateCLScope(master.cl.scopeString);
 		}
 		public function updateCLScope(str:String):void{
+			if(_enteringLogin) {
+				_enteringLogin = false;
+				requestLogin(false);
+			}
 			_commandPrefx.autoSize = TextFieldAutoSize.LEFT;
 			_commandPrefx.htmlText = "<w><p1>"+str+":</p1></w>";
 			var w:Number = width-48;
