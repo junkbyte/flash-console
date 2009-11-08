@@ -119,7 +119,10 @@ package com.atticmedia.console.core {
 					_master.report("<b>Remoting started.</b> "+getInfo(),-1);
 					_isRemoting = true;
 					_loggedIn = _master.checkLogin("");
-					if(!_loggedIn){
+					if(_loggedIn){
+						_remoteLinesQueue = _master.getAllLines();
+						send("loginSuccess");
+					}else{
 						send("requestLogin");
 					}
 				}catch (error:Error){
