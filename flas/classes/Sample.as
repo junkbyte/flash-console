@@ -31,38 +31,51 @@ package {
 	import com.atticmedia.console.*;
 
 	public dynamic class Sample extends MovieClip{
-
+		
+		private var _spamcount:int;
+		
 		public function Sample() {
 			//
 			// SET UP
 			//C.start(this, "", 2);
 			C.startOnStage(this, "`"); 
+			C.remotingPassword = null;
 			// "`" - change for password. This will start hidden
 			C.visible = true; // show console, because having password hides console.
-			C.tracing = true; // trace on flash's normal trace
+			//C.tracing = true; // trace on flash's normal trace
 			C.commandLine = true; // enable command line
 			//C.commandLinePermission = 1; // WIP
 			C.width = 600;
 			C.height = 200;
-			
+			//C.maxLines = 0;
+			C.fpsMonitor = 1;
 			C.remoting = true;
-
+			
+			TextField(txtPriority).restrict = "0-9";
+			TextField(txtPriority2).restrict = "0-9";
+			setUpButton(btnInterval, "Start interval");
+			setUpButton(btnAdd1, "Add");
+			setUpButton(btnAdd2, "Add");
+			setUpButton(btnSpam, "Spam");
+			
+			
 			//
 			//
 			// Convenience logging... infinite arguments
-			C.log("Log", "with multiple", "arguments");
-			C.info("Message", "with multiple", "arguments");
-			C.debug("Debug", "with multiple", "arguments");
-			C.warn("Warning", "with multiple", "arguments");
-			C.error("Error", "with multiple", "arguments");
+			C.log("Log", "with infinite", "arguments");
+			C.info("Message", "with infinite", "arguments");
+			C.debug("Debug", "with infinite", "arguments");
+			C.warn("Warning", "with infinite", "arguments");
+			C.error("Error", "with infinite", "arguments");
 			//
 			// Convenience logging with channel... infinite arguments
-			C.logch("myChannel", "Log", "with multiple", "arguments");
-			C.infoch("myChannel", "Message", "with multiple", "arguments");
-			C.debugch("myChannel", "Debug", "with multiple", "arguments");
-			C.warnch("myChannel", "Warning", "with multiple", "arguments");
-			C.errorch("myChannel", "Error", "with multiple", "arguments");		
+			C.logch("myChannel", "Log", "at myChannel");
+			C.infoch("myChannel", "Info", "at myChannel");
+			C.debugch("myChannel", "Debug", "at myChannel");
+			C.warnch("myChannel", "Warning", "at myChannel");
+			C.errorch("myChannel", "Error", "at myChannel");		
 			
+			/*
 			// Advanced logging with higher priortiy and repeative trace
 			C.add("This is an important error alert! (priority 10)", 10);
 			C.add("This is a less important error alert. (priority 9)", 9);
@@ -73,7 +86,7 @@ package {
 			//
 			C.ch("myChannel", "Hello my Channel");
 			C.ch("myChannel", "Hello important message at my channel", 10);
-			
+			*/
 			
 			// if you want to use command line, please type /help 
 			// in command line at the bottom for examples
@@ -93,13 +106,6 @@ package {
 			C.addGraph("mouse", this,"mouseX", 0xff3333,"mouseX");
 			C.addGraph("mouse", this,"mouseY", 0x3333ff,"Y", new Rectangle(340,210,80,80), true);
 			//C.fixGraphRange("mouse", 100,300);
-			
-			TextField(txtPriority).restrict = "0-9";
-			TextField(txtPriority2).restrict = "0-9";
-			setUpButton(btnInterval, "Start interval");
-			setUpButton(btnAdd1, "Add");
-			setUpButton(btnAdd2, "Add");
-			
 			
 		}
 		private function setUpButton(btn:MovieClip, t:String):void{
@@ -132,12 +138,33 @@ package {
 						btnInterval.txt.text = "Stop Interval";
 					}
 				break;
+				case btnSpam:
+					spam();
+				break;
 			}
 		}
 		private function onIntervalEvent():void{
 			C.add("Repeative log _ " + getTimer(), 5,true);
 		}
-		
+		private function spam():void{
+			for(var i:int = 0;i<200;i++){
+				var str:String = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.";
+				var rand:int = Math.random()*5;
+				if(rand == 1){
+					str = "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam,";
+				}else if(rand == 2){
+					str = "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi";
+				}else if(rand == 3){
+					str = "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.";
+				}else if(rand == 4){
+					str = "Itaque earum rerum hic tenetur a sapiente delectus.";
+				}else if(rand == 5){
+					str = "voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis";
+				}
+				_spamcount++;
+				C.ch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*10));
+			}
+		}
 		
 		private var _interval:uint;
 	}

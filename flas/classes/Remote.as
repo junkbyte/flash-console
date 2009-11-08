@@ -36,6 +36,7 @@ package {
 			C.start(this, "");
 			C.remote = true;
 			C.commandLine = true;
+			C.maxLines = 2000;
 			
 			//
 			// This is special case for remote to disable scaling and moving
