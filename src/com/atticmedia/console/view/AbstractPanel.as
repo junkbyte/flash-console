@@ -228,7 +228,7 @@ package com.atticmedia.console.view {
 		//
 		private function formatText(txt:TextField):void{
             txt.background = true;
-            txt.backgroundColor = style.tooltipBackgroundColor;
+            txt.backgroundColor = style.panelBackgroundColor;
 			txt.styleSheet = style.css;
 			txt.mouseEnabled = false;
 		}

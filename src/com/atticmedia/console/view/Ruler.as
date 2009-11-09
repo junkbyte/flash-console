@@ -72,7 +72,7 @@ package com.atticmedia.console.view {
 			_posTxt.name = "positionText";
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
             _posTxt.background = true;
-            _posTxt.backgroundColor = _master.style.tooltipBackgroundColor;
+            _posTxt.backgroundColor = _master.style.panelBackgroundColor;
 			_posTxt.styleSheet = console.style.css;
 			_posTxt.mouseEnabled = false;
 			addChild(_posTxt);

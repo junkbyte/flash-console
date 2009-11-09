@@ -132,11 +132,10 @@ package com.atticmedia.console {
 			tabChildren = false; // Tabbing is not supported
 			//
 			cl = new CommandLine(this);
-			remoter = new Remoting(this);
+			remoter = new Remoting(this, remoteLogSend);
 			style = new Style(uiset);
 			panels = new PanelsManager(this, new MainPanel(this, _lines, _channels));
 			mm = new MemoryMonitor();
-			remoter.logsend = remoteLogSend; // Don't want to expose remoteLogSend in this class
 			//
 			var t:String = VERSION_STAGE?(" "+VERSION_STAGE):"";
 			report("<b>Console v"+VERSION+t+", Happy bug fixing!</b>", -2);

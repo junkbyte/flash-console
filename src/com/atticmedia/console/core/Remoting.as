@@ -38,6 +38,7 @@ package com.atticmedia.console.core {
 		public static const CLIENT_PREFIX:String = "C";
 		
 		private var _master:Console;
+		private var _logsend:Function;
 		private var _isRemoting:Boolean;
 		private var _isRemote:Boolean;
 		private var _sharedConnection:LocalConnection;
@@ -48,12 +49,11 @@ package com.atticmedia.console.core {
 		private var _lastLogin:String = "";
 		private var _loggedIn:Boolean;
 		
-		public var logsend:Function;
-		
 		public var remoteMem:int;
 		
-		public function Remoting(m:Console) {
+		public function Remoting(m:Console, logsend:Function) {
 			_master = m;
+			_logsend = logsend;
 		}
 		public function addLineQueue(line:LogLineVO):void{
 			if(!_loggedIn) return;
@@ -187,7 +187,8 @@ package com.atticmedia.console.core {
 			// just for sort of security
 			_sharedConnection.client = {
 				login:login, requestLogin:requestLogin, loginFail:loginFail, loginSuccess:loginSuccess,
-				logSend:logsend, gc:_master.gc, runCommand:_master.runCommand};
+				logSend:_logsend, gc:_master.gc, runCommand:_master.runCommand
+				};
 		}
 		public function loginFail():void{
 			_master.report("Login Failed", 10);

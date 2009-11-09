@@ -48,7 +48,7 @@ package com.atticmedia.console.view {
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
 			_tooltipField.multiline = true;
 			_tooltipField.background = true;
-			_tooltipField.backgroundColor = _master.style.tooltipBackgroundColor;
+			_tooltipField.backgroundColor = _master.style.panelBackgroundColor;
 			_tooltipField.styleSheet = _master.style.css;
 			_tooltipField.mouseEnabled = false;
 			_mainPanel = mp;

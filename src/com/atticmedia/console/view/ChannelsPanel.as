@@ -60,7 +60,7 @@ package com.atticmedia.console.view {
 		public function update():void{
 			_txtField.wordWrap = false;
 			_txtField.width = 80;
-			var str:String = "<w><menu> <b><a href=\"event:close\">X</a></b></menu> "+ master.panels.mainPanel.getChannelsLink(false);
+			var str:String = "<w><menu> <b><a href=\"event:close\">X</a></b></menu> "+ master.panels.mainPanel.getChannelsLink();
 			_txtField.htmlText = str+"</w>";
 			if(_txtField.width>160){
 				_txtField.wordWrap = true;

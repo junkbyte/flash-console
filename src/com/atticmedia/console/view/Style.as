@@ -37,7 +37,6 @@ package com.atticmedia.console.view {
 		public var commandLineColor:Number;
 		public var bottomLineColor:Number;
 		public var textFormat:TextFormat;
-		public var tooltipBackgroundColor:Number;
 				
 		public function Style(uiset:int = 1) {
 			css = new StyleSheet();
@@ -61,8 +60,7 @@ package com.atticmedia.console.view {
 			panelScalerColor = 0x880000;
 			commandLineColor = 0x10AA00;
 			bottomLineColor = 0xFF0000;
-			tooltipBackgroundColor = 0;
-			panelBackgroundAlpha = 0.75;
+			panelBackgroundAlpha = 0.8;
 			textFormat = new TextFormat('Arial', 12, 0xFFFFFF);
 			//
 			css.setStyle("r",{textAlign:'right', display:'inline'});
@@ -99,7 +97,6 @@ package com.atticmedia.console.view {
 			panelScalerColor = 0xFF0000;
 			commandLineColor = 0x66CC00;
 			bottomLineColor = 0xFF0000;
-			tooltipBackgroundColor = 0xFFFFFF;
 			panelBackgroundAlpha = 0.8;
 			textFormat = new TextFormat('Arial', 12, 0);
 			//

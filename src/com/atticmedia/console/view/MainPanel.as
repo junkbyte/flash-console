@@ -47,7 +47,7 @@ package com.atticmedia.console.view {
 
 	public class MainPanel extends AbstractPanel {
 		
-		private static const CHANNELS_IN_MENU:int = 5;
+		private static const CHANNELS_IN_MENU:int = 7;
 		
 		public static const TOOLTIPS:Object = {
 				fps:"Frames Per Second",
@@ -66,6 +66,7 @@ package com.atticmedia.console.view {
 				viewall:"View all channels",
 				defaultch:"Default channel::Logs with no channel",
 				consolech:"Console's channel::Logs generated from Console",
+				filterch:"Filtering channel",
 				channel:"Change channel::Hold shift to select multiple channels",
 				scrollUp:"Scroll up",
 				scrollDown:"Scroll down",
@@ -81,7 +82,10 @@ package com.atticmedia.console.view {
 		private var _isMinimised:Boolean;
 		private var _shift:Boolean;
 		private var _canUseTrace:Boolean;
+		private var _scrollbar:Sprite;
 		private var _scroller:Sprite;
+		private var _scrolldelay:uint;
+		private var _scrolldir:int;
 		
 		private var _channels:Array;
 		private var _lines:Array;
@@ -159,7 +163,15 @@ package com.atticmedia.console.view {
 			_bottomLine.alpha = 0.2;
 			addChild(_bottomLine);
 			//
+			_scrollbar = new Sprite();
+			_scrollbar.name = "scrollbar";
+			_scrollbar.buttonMode = true;
+			_scrollbar.addEventListener(MouseEvent.MOUSE_DOWN, onScrollbarDown, false, 0, true);
+			_scrollbar.y = 16;
+			addChild(_scrollbar);
+			//
 			_scroller = new Sprite();
+			_scroller.name = "scroller";
 			_scroller.graphics.beginFill(style.panelScalerColor, 1);
 			_scroller.graphics.drawRect(-5, 0, 5, 30);
 			_scroller.graphics.beginFill(0, 0);
@@ -314,7 +326,6 @@ package com.atticmedia.console.view {
 		}
 		private function onTraceScroll(e:Event = null):void{
 			if(_lockScrollUpdate) return;
-			updateMenu();
 			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
 			if(_atBottom !=atbottom){
 				var diff:int = _traceField.maxScrollV-_traceField.scrollV;
@@ -325,16 +336,17 @@ package com.atticmedia.console.view {
 			updateScroller();
 		}
 		private function updateScroller():void{
-			if(_traceField.maxScrollV<=1 || scrollerMaxY<18){
+			if(_traceField.maxScrollV<=1 || scrollerMaxY<22){
 				_scroller.visible = false;
-				
+				_scrollbar.visible = false;
 			}else{
+				_scrollbar.visible = true;
 				_scroller.visible = true;
 				if(_atBottom) {
 					_scroller.y = scrollerMaxY;
 				}else{
 					var per:Number = (_traceField.scrollV-1)/(_traceField.maxScrollV-1);
-					_scroller.y = 18+((scrollerMaxY-18)*per);
+					_scroller.y = 21+((scrollerMaxY-21)*per);
 				}
 			}
 		}
@@ -344,25 +356,49 @@ package com.atticmedia.console.view {
 				_updateTraces();
 				_scroller.y = scrollerMaxY;
 			}
-			_scroller.startDrag(false, new Rectangle(_scroller.x,18, 0, (scrollerMaxY-18)));
+			_scroller.startDrag(false, new Rectangle(_scroller.x,21, 0, (scrollerMaxY-21)));
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollerUp, false, 0, true);
 		}
 		private function onScrollerMove(e:MouseEvent):void{
-			var minY:Number = 18;
+			var minY:Number = 21;
 			var per:Number = (_scroller.y-minY)/(scrollerMaxY-minY);
 			_lockScrollUpdate = true;
 			_traceField.scrollV = Math.round((per*(_traceField.maxScrollV-1))+1);
 			_lockScrollUpdate = false;
 		}
 		private function get scrollerMaxY():Number{
-			return _bottomLine.y-_scroller.height-(_commandField.visible?0:10);
+			return _bottomLine.y-_scroller.height-(_commandField.visible?5:15);
 		}
 		private function onScrollerUp(e:MouseEvent):void{
 			_scroller.stopDrag();
 			stage.removeEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove);
 			stage.removeEventListener(MouseEvent.MOUSE_UP, onScrollerUp);
 			onTraceScroll();
+		}
+		private function onScrollbarDown(e:MouseEvent):void{
+			if(_scroller.mouseY>0) {
+				_traceField.scrollV += 3;
+				_scrolldir = 3;
+			}
+			else {
+				_traceField.scrollV -= 3;
+				_scrolldir = -3;
+			}
+			_scrolldelay = 0;
+			_scrollbar.addEventListener(Event.ENTER_FRAME, onScrollBarFrame, false, 0, true);
+			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollBarUp, false, 0, true);
+		}
+		private function onScrollBarFrame(e:Event):void{
+			_scrolldelay++;
+			if(_scrolldelay>10){
+				_scrolldelay = 9;
+				_traceField.scrollV += _scrolldir;
+			}
+		}
+		private function onScrollBarUp(e:Event):void{
+			_scrollbar.removeEventListener(Event.ENTER_FRAME, onScrollBarFrame);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, onScrollBarUp);
 		}
 		override public function set width(n:Number):void{
 			_lockScrollUpdate = true;
@@ -377,6 +413,7 @@ package com.atticmedia.console.view {
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
 			_scroller.x = n;
+			_scrollbar.x = n;
 			onUpdateCommandLineScope();
 			_atBottom = true;
 			_needUpdateMenu = true;
@@ -403,8 +440,18 @@ package com.atticmedia.console.view {
 			_commandPrefx.y = cmdy;
 			_commandBackground.y = cmdy;
 			_bottomLine.y = _commandField.visible?cmdy:n;
+			//
+			var sbh:Number = (_bottomLine.y-(_commandField.visible?0:10))-_scrollbar.y;
+			_scrollbar.graphics.clear();
+			_scrollbar.graphics.beginFill(style.panelScalerColor, 0.7);
+			_scrollbar.graphics.drawRect(-5, 0, 5, 5);
+			_scrollbar.graphics.drawRect(-5, sbh-5, 5, 5);
+			_scrollbar.graphics.beginFill(style.panelScalerColor, 0.25);
+			_scrollbar.graphics.drawRect(-5, 5, 5, sbh-10);
+			_scrollbar.graphics.endFill();
+			//
 			_atBottom = true;
-			_needUpdateMenu = true;
+			//_needUpdateMenu = true;
 			_needUpdateTrace = true;
 			_lockScrollUpdate = false;
 		}
@@ -441,22 +488,11 @@ package com.atticmedia.console.view {
 			str += doActive(" <a href=\"event:pause\">P</a>", master.paused);
 			str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a>";
 			
-			str += " ]</menu> ";
-			if(_traceField.scrollV > 1){
-				str += " <a href=\"event:scrollUp\">^</a>";
-			}else{
-				str += " -";
-			}
-			if(_traceField.scrollV< _traceField.maxScrollV){
-				str += " <a href=\"event:scrollDown\">v</a>";
-			}else{
-				str += " -";
-			}
-			str += "</w></r>";
+			str += " ]</menu> </w></r>";
 			_menuField.htmlText = str;
 			_menuField.scrollH = _menuField.maxScrollH;
 		}
-		public function getChannelsLink(limited:Boolean):String{
+		public function getChannelsLink(limited:Boolean = false):String{
 			var str:String = "<chs>";
 			var len:int = _channels.length;
 			if(limited && len>CHANNELS_IN_MENU) len = CHANNELS_IN_MENU;
@@ -484,6 +520,8 @@ package com.atticmedia.console.view {
 				txt = TOOLTIPS["defaultch"];
 			}else if(txt == "channel_"+ Console.CONSOLE_CHANNEL) {
 				txt = TOOLTIPS["consolech"];
+			}else if(txt == "channel_"+ Console.FILTERED_CHANNEL) {
+				txt = TOOLTIPS["filterch"]+"::*"+master.filterText+"*";
 			}else if(txt.indexOf("channel_")==0) {
 				txt = TOOLTIPS["channel"];
 			}else if(txt == "pause"){
@@ -501,11 +539,7 @@ package com.atticmedia.console.view {
 		private function linkHandler(e:TextEvent):void{
 			_menuField.setSelection(0, 0);
 			stopDrag();
-			if(e.text == "scrollUp"){
-				_traceField.scrollV -= 3;
-			}else if(e.text == "scrollDown"){
-				_traceField.scrollV += 3;
-			}else if(e.text == "pause"){
+			if(e.text == "pause"){
 				if(master.paused){
 					master.paused = false;
 					master.panels.tooltip(TOOLTIPS["pause"], this);
