@@ -342,6 +342,12 @@ package com.atticmedia.console.view {
 			}else{
 				_scrollbar.visible = true;
 				_scroller.visible = true;
+				/* // scroller resize... works but waste of resouse I think
+				var h:Number = (height*20)/_lines.length;
+				var mh:Number = _bottomLine.y-40;
+				_scroller.height = h<16?16:(h>mh?mh:h);
+				*/
+				
 				if(_atBottom) {
 					_scroller.y = scrollerMaxY;
 				}else{
@@ -351,11 +357,11 @@ package com.atticmedia.console.view {
 			}
 		}
 		private function onScrollerDown(e:MouseEvent):void{
-			if(_atBottom){
-				_atBottom = false;
-				_updateTraces();
-				_scroller.y = scrollerMaxY;
-			}
+			_atBottom = false;
+			var Y:int = _scroller.y;
+			_updateTraces();
+			_scroller.y = Y;
+			
 			_scroller.startDrag(false, new Rectangle(_scroller.x,21, 0, (scrollerMaxY-21)));
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollerUp, false, 0, true);
@@ -393,7 +399,9 @@ package com.atticmedia.console.view {
 			_scrolldelay++;
 			if(_scrolldelay>10){
 				_scrolldelay = 9;
-				_traceField.scrollV += _scrolldir;
+				if((_scrolldir<0 && _scroller.y>mouseY)||(_scrolldir>0 && _scroller.y+_scroller.height<mouseY)){
+					_traceField.scrollV += _scrolldir;
+				}
 			}
 		}
 		private function onScrollBarUp(e:Event):void{

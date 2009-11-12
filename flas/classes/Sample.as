@@ -47,7 +47,7 @@ package {
 			//C.commandLinePermission = 1; // WIP
 			C.width = 600;
 			C.height = 200;
-			//C.maxLines = 0;
+			C.maxLines = 2000;
 			C.fpsMonitor = 1;
 			C.remoting = true;
 			

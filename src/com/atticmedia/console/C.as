@@ -138,10 +138,9 @@ package com.atticmedia.console {
 		 * Starting in stage makes sure console is added at the very top level.
 		 * <p>
 		 * It will look for stage of mc (first param), if mc isn't a Stage or on Stage, console will be added to stage when mc get added to stage.
-		 * </p>
-		 * <p>
 		 * Calling any other C calls before this will fail silently.
 		 * When Console is no longer needed, removing this line alone will stop console from working without having any other errors.
+		 * </p>
 		 * 
 		 * @param  Display which is Stage or will be added to Stage.
 		 * @param  Password sequence to toggle console's visibility. If password is set, console will start hidden. Set C.visible = ture to unhide at start.
@@ -149,7 +148,7 @@ package com.atticmedia.console {
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 * @param  If set to 1, console will not start if run on browser, except if there is flashVar allowConsole=true passed in.
 		 * 			If set to 2, optoin 1 apples except it still runs if there is Console remote running.
-		 * </p>
+		 * 			
 		 */
 		public static function startOnStage(mc:DisplayObject, pass:String = "", skin:int= 1, disallowBrowser:uint = 0):void{
 			if(_console){
