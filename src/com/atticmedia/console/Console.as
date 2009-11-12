@@ -371,8 +371,7 @@ package com.atticmedia.console {
 				report("Resumed", -1);
 			}
 			_isPaused = newV;
-			panels.mainPanel.updateTraces(true);
-			panels.mainPanel.updateMenu();
+			panels.mainPanel.setPaused(newV);
 		}
 		//
 		//

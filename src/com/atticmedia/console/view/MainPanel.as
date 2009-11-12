@@ -294,6 +294,14 @@ package com.atticmedia.console.view {
 			_lockScrollUpdate = false;
 			updateScroller();
 		}
+		public function setPaused(b:Boolean):void{
+			if(b){
+				_atBottom = false;
+			}
+			updateTraces(true);
+			updateMenu();
+			_traceField.scrollV = _traceField.maxScrollV;
+		}
 		private function updateBottom():void{
 			var linesLeft:int = Math.round(_traceField.height/10);
 			var numLines:int = _lines.length;
@@ -326,8 +334,8 @@ package com.atticmedia.console.view {
 		}
 		private function onTraceScroll(e:Event = null):void{
 			if(_lockScrollUpdate) return;
-			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
-			if(_atBottom !=atbottom){
+			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV-1;
+			if(!master.paused && _atBottom !=atbottom){
 				var diff:int = _traceField.maxScrollV-_traceField.scrollV;
 				_atBottom = atbottom;
 				_updateTraces();
@@ -357,11 +365,12 @@ package com.atticmedia.console.view {
 			}
 		}
 		private function onScrollerDown(e:MouseEvent):void{
-			_atBottom = false;
-			var Y:int = _scroller.y;
-			_updateTraces();
-			_scroller.y = Y;
-			
+			if(!master.paused){
+				_atBottom = false;
+				var Y:int = _scroller.y;
+				_updateTraces();
+				_scroller.y = Y;
+			}
 			_scroller.startDrag(false, new Rectangle(_scroller.x,21, 0, (scrollerMaxY-21)));
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollerUp, false, 0, true);
