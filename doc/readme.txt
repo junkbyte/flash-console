@@ -8,7 +8,7 @@ http://code.google.com/p/flash-console/w/list
 
 ==Flash Console==
 
-  * Version: 2.12 (Oct 2009)
+  * Version: 2.2 (Nov 2009)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo
 
@@ -30,6 +30,13 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 == Change Log ==
+
+
+===2.2===
+  * Remote console now ask for password (older remotes will fail to work with new console clients)
+  * commandline no longer have permission levels - just enable or disable.
+  * Much faster logs update
+  * Scroll bar for logs
 
 
 ===2.12===

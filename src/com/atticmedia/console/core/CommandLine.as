@@ -23,13 +23,11 @@
 * 
 */
 package com.atticmedia.console.core {
-	import flash.system.Security;
-	import flash.events.Event;
-
 	import com.atticmedia.console.Console;
-	
+
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
@@ -53,7 +51,6 @@ package com.atticmedia.console.core {
 		private var _master:Console;
 		
 		public var useStrong:Boolean;
-		private var _permission:uint = 1;
 
 		public function CommandLine(m:Console) {
 			_master = m;
@@ -80,18 +77,6 @@ package com.atticmedia.console.core {
 			_master = null;
 			_reserved = null;
 		}
-		public function get permission():int{
-			return _permission;
-		}
-		public function set permission(i:int):void{
-			if(_values && i > _permission){
-				// dont allow to change through command line...
-				// TODO: This is not fool proof... 
-				// You could make a new Console instance on top.. then get the new console's commandline to call the first console's commandline permission...
-				throw new SecurityError("Can not lift CommandLine permission. You must set Console commandLinePermission in source code and recompile.", 10);
-			}else
-				_permission = i;
-		}
 		public function store(n:String, obj:Object, strong:Boolean = false):String {
 			n = n.replace(/[^\w]*/g, "");
 			if(_reserved.indexOf(n)>=0){
@@ -111,7 +96,7 @@ package com.atticmedia.console.core {
 		//
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
-			if(permission==0) {
+			if(!_master.commandLineAllowed) {
 				report("CommandLine is disabled.",10);
 				return null;
 			}
@@ -304,10 +289,6 @@ package com.atticmedia.console.core {
 						params = execValue(paramstr).value;
 					}
 					//report("params = "+params.length+" - ["+ params+"]");
-					if(permission < 2 && (newbase == Security.allowDomain || newbase == Security.allowInsecureDomain)){
-						throw new SecurityError("Not accessible due to low commandLinePermission. You must recompile client flash with Console commandLinePermission set to a higher level.");
-						return null;
-					}
 					v.value = (newbase as Function).apply(v.base, params);
 					v.base = v.value;
 					index = closeindex+1;

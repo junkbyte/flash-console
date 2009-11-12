@@ -473,7 +473,7 @@ package com.atticmedia.console.view {
 			str += "<menu>[ <b>";
 			str += doActive("<a href=\"event:fps\">F</a>", master.fpsMonitor>0);
 			str += doActive(" <a href=\"event:mm\">M</a>", master.memoryMonitor>0);
-			if(master.commandLinePermission>0){
+			if(master.commandLineAllowed){
 				str += doActive(" <a href=\"event:command\">CL</a>", commandLine);
 			}
 			if(!master.remote){
@@ -683,7 +683,7 @@ package com.atticmedia.console.view {
 			_commandField.width = width-15-_commandField.x;
 		}
 		public function set commandLine (b:Boolean):void{
-			if(b && master.commandLinePermission>0){
+			if(b && master.commandLineAllowed>0){
 				_commandField.visible = true;
 				_commandPrefx.visible = true;
 				_commandBackground.visible = true;

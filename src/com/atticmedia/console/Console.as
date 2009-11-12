@@ -107,6 +107,7 @@ package com.atticmedia.console {
 		private var _traceCall:Function = trace;
 		private var _rollerCaptureKey:String;
 		private var _needToMoveTop:Boolean;
+		private var _commandLineAllowed:Boolean = true;
 		
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
 		private var _viewingChannels:Array = [GLOBAL_CHANNEL];
@@ -573,7 +574,7 @@ package com.atticmedia.console {
 				return;
 			}
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
-			var txt:String = String(obj);
+			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL){
 				channel = DEFAULT_CHANNEL;
 			}
@@ -629,24 +630,24 @@ package com.atticmedia.console {
 		// COMMAND LINE
 		//
 		public function set commandLine (newB:Boolean):void{
-			if(!newB || cl.permission>0){
-				panels.mainPanel.commandLine = newB;
-			}else{
+			if(newB && !_commandLineAllowed){
 				panels.updateMenu();
-				report("CommandLine is disabled. Set commandLinePermission from source code to allow.");
+				report("CommandLine is disabled. Set commandLineAllowed from source code to allow.");
+			}else{
+				panels.mainPanel.commandLine = newB;
 			}
 		}
 		public function get commandLine ():Boolean{
 			return panels.mainPanel.commandLine;
 		}
-		public function set commandLinePermission (v:uint):void{
-			cl.permission = v;
+		public function set commandLineAllowed (v:Boolean):void{
+			_commandLineAllowed = v;
 			if(v==0 && commandLine){
 				commandLine = false;
 			}
 		}
-		public function get commandLinePermission ():uint{
-			return cl.permission;
+		public function get commandLineAllowed ():Boolean{
+			return _commandLineAllowed;
 		}
 		public function set commandBase (v:Object):void{
 			if(v) cl.base = v;
@@ -685,34 +686,42 @@ package com.atticmedia.console {
 			addLine(newLine,priority, DEFAULT_CHANNEL, isRepeating);
 		}
 		public function log(...args):void{
-			addLine(args.join(" "), LOG_LEVEL);
+			addLine(joinArgs(args), LOG_LEVEL);
 		}
 		public function info(...args):void{
-			addLine(args.join(" "), INFO_LEVEL);
+			addLine(joinArgs(args), INFO_LEVEL);
 		}
 		public function debug(...args):void{
-			addLine(args.join(" "), DEBUG_LEVEL);
+			addLine(joinArgs(args), DEBUG_LEVEL);
 		}
 		public function warn(...args):void{
-			addLine(args.join(" "), WARN_LEVEL);
+			addLine(joinArgs(args), WARN_LEVEL);
 		}
 		public function error(...args):void{
-			addLine(args.join(" "), ERROR_LEVEL);
+			addLine(joinArgs(args), ERROR_LEVEL);
 		}
 		public function logch(channel:*, ...args):void{
-			ch(channel, args.join(" "), LOG_LEVEL);
+			ch(channel, joinArgs(args), LOG_LEVEL);
 		}
 		public function infoch(channel:*, ...args):void{
-			ch(channel, args.join(" "), INFO_LEVEL);
+			ch(channel, joinArgs(args), INFO_LEVEL);
 		}
 		public function debugch(channel:*, ...args):void{
-			ch(channel, args.join(" "), DEBUG_LEVEL);
+			ch(channel, joinArgs(args), DEBUG_LEVEL);
 		}
 		public function warnch(channel:*, ...args):void{
-			ch(channel, args.join(" "), WARN_LEVEL);
+			ch(channel, joinArgs(args), WARN_LEVEL);
 		}
 		public function errorch(channel:*, ...args):void{
-			ch(channel, args.join(" "), ERROR_LEVEL);
+			ch(channel, joinArgs(args), ERROR_LEVEL);
+		}
+		private function joinArgs(args:Array):String{
+			for(var X in args){
+				if(args[X] is XML || args[X] is XMLList){
+					args[X] = args[X].toXMLString();
+				}
+			}
+			return args.join(" ");
 		}
 		//
 		public function set filterText(str:String):void{

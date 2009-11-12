@@ -650,11 +650,11 @@ package com.atticmedia.console {
 		 * level 2: full access.
 		 * </p>
 		 */
-		public static function set commandLinePermission (v:uint):void{
-			setter("commandLinePermission",v);
+		public static function set commandLineAllowed (b:Boolean):void{
+			setter("commandLineAllowed",b);
 		}
-		public static function get commandLinePermission ():uint{
-			return getter("commandLinePermission") as uint;
+		public static function get commandLinePermission ():Boolean{
+			return getter("commandLineAllowed") as Boolean;
 		}
 		/**
 		 * Command line base.
