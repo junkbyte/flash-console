@@ -505,6 +505,7 @@ package com.atticmedia.console {
 					// the first value is stage.FrameRate
 					var highest:Number = remoteMSPFs[0];
 					fpsp.highest = highest;
+					fpsp.averaging = highest;
 					var len:int = remoteMSPFs.length;
 					for(var i:int = 1; i<len;i++){
 						var fps:Number = 1000/remoteMSPFs[i];
