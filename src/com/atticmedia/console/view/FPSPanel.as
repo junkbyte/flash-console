@@ -36,7 +36,6 @@ package com.atticmedia.console.view {
 			super(m, 80,40);
 			name = Console.PANEL_FPS;
 			lowest = 0;
-			averaging = 10;
 			minimumWidth = 32;
 			add(this, "current", 0xFF3333, "FPS");
 		}
@@ -74,7 +73,8 @@ package com.atticmedia.console.view {
 					updateKeyText();
 					if(stage){
 						fixed = true;
-						highest = stage.frameRate;
+						averaging = stage.frameRate;
+						highest = averaging;
 						var frames:int = Math.floor(mspf/(1000/highest));
 						// this is to try add the frames that have been lagged
 						if(frames>Console.FPS_MAX_LAG_FRAMES) frames = Console.FPS_MAX_LAG_FRAMES; // Don't add too many
