@@ -295,12 +295,15 @@ package com.atticmedia.console.view {
 			updateScroller();
 		}
 		public function setPaused(b:Boolean):void{
-			if(b){
+			if(b && _atBottom){
 				_atBottom = false;
+				updateTraces(true);
+				_traceField.scrollV = _traceField.maxScrollV;
+			}else if(!b){
+				_atBottom = true;
+				updateBottom();
 			}
-			updateTraces(true);
 			updateMenu();
-			_traceField.scrollV = _traceField.maxScrollV;
 		}
 		private function updateBottom():void{
 			var linesLeft:int = Math.round(_traceField.height/10);
@@ -468,7 +471,6 @@ package com.atticmedia.console.view {
 			_scrollbar.graphics.endFill();
 			//
 			_atBottom = true;
-			//_needUpdateMenu = true;
 			_needUpdateTrace = true;
 			_lockScrollUpdate = false;
 		}
