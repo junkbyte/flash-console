@@ -48,35 +48,34 @@ package com.atticmedia.console {
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.2;
-		public static const VERSION_STAGE:String = "beta";
-		
-		
+		public static const VERSION_STAGE:String = "";
+		//
 		public static const NAME:String = "Console";
 		public static const PANEL_MAIN:String = "mainPanel";
 		public static const PANEL_CHANNELS:String = "channelsPanel";
 		public static const PANEL_FPS:String = "fpsPanel";
 		public static const PANEL_MEMORY:String = "memoryPanel";
 		public static const PANEL_ROLLER:String = "rollerPanel";
-		
+		//
 		// You can change this if you don't want to use default channel
 		// Other remotes with different remoting channel won't be able to connect your flash.
 		// Start with _ to work in any domain + platform (air/swf - local / network)
 		// Change BEFORE starting remote / remoting
 		public static var REMOTING_CONN_NAME:String = "_Console";
-		
+		//
 		public static const CONSOLE_CHANNEL:String = "C";
 		public static const FILTERED_CHANNEL:String = "~";
 		public static const GLOBAL_CHANNEL:String = " * ";
 		public static const DEFAULT_CHANNEL:String = "-";
-		//
-		public static const FPS_MAX_LAG_FRAMES:uint = 25;
-		public static const MAPPING_SPLITTER:String = "|";
 		//
 		public static const LOG_LEVEL:uint = 1;
 		public static const INFO_LEVEL:uint = 3;
 		public static const DEBUG_LEVEL:uint = 6;
 		public static const WARN_LEVEL:uint = 8;
 		public static const ERROR_LEVEL:uint = 10;
+		//
+		public static const FPS_MAX_LAG_FRAMES:uint = 25;
+		public static const MAPPING_SPLITTER:String = "|";
 		//
 		public var style:Style;
 		public var panels:PanelsManager;
@@ -134,12 +133,11 @@ package com.atticmedia.console {
 			//
 			cl = new CommandLine(this);
 			remoter = new Remoting(this, remoteLogSend);
+			mm = new MemoryMonitor();
 			style = new Style(uiset);
 			panels = new PanelsManager(this, new MainPanel(this, _lines, _channels));
-			mm = new MemoryMonitor();
 			//
-			var t:String = VERSION_STAGE?(" "+VERSION_STAGE):"";
-			report("<b>Console v"+VERSION+t+", Happy bug fixing!</b>", -2);
+			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy bug fixing!</b>", -2);
 			if(_password != ""){
 				if(stage){
 					stageAddedHandle();
@@ -716,7 +714,7 @@ package com.atticmedia.console {
 			ch(channel, joinArgs(args), ERROR_LEVEL);
 		}
 		private function joinArgs(args:Array):String{
-			for(var X in args){
+			for(var X:String in args){
 				if(args[X] is XML || args[X] is XMLList){
 					args[X] = args[X].toXMLString();
 				}

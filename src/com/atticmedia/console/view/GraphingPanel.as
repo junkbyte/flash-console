@@ -252,7 +252,6 @@ package com.atticmedia.console.view {
 				_history.splice(0, (len-maxLen));
 			}
 		}
-		// TODO: MAYBE USE BITMAPDATA INSTEAD OF DRAW
 		public function drawGraph():void{
 			_drawnFrame++;
 			if(!_needRedraw && _drawnFrame < drawEvery) return;

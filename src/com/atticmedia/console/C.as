@@ -110,9 +110,8 @@ package com.atticmedia.console {
 		 * <p>
 		 * Calling any other C calls before this (or startOnStage(...)) will fail silently.
 		 * When Console is no longer needed, removing this line alone will stop console from working without having any other errors.
-		 * </p>
-		 * <p>
 		 * In flex, it is more convenient to use C.startOnStage() as it will avoid UIComponent typing issue.
+		 * </p>
 		 * @see #startOnStage()
 		 *
 		 * @param  Display in which console should be added to. Preferably stage or root of your flash document.
@@ -121,7 +120,6 @@ package com.atticmedia.console {
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 * @param  If set to 1, console will not start if run on browser, except if there is flashVar allowConsole=true passed in.
 		 * 			If set to 2, optoin 1 apples except it still runs if there is Console remote running.
-		 * </p>
 		 */
 		public static function start(mc:DisplayObjectContainer, pass:String = "", skin:int= 1, disallowBrowser:uint = 0):void{
 			if(_console){
@@ -167,7 +165,7 @@ package com.atticmedia.console {
 		/**
 		 * Add log line to default channel
 		 *
-		 * @param  String to add
+		 * @param  String to add, any type can be passed and will be converted to string
 		 * @param  Priority of line. 0-10, the higher the number the more visibilty it is in the log, and can be filtered through UI
 		 * @param  When set to true, log line will replace the previous line rather than making a new line (unless it has repeated more than C.maxRepeats)
 		 * 
@@ -182,7 +180,7 @@ package com.atticmedia.console {
 		 * If channel name doesn't exists it creates one.
 		 *
 		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
-		 * @param  String to add
+		 * @param  String to add, any type can be passed and will be converted to string
 		 * @param  Priority of line. 0-10, the higher the number the more visibilty it is in the log, and can be filtered through UI
 		 * @param  When set to true, log line will replace the previous line rather than making a new line (unless it has repeated more than C.maxRepeats)
 		 * 
@@ -192,51 +190,116 @@ package com.atticmedia.console {
 				_console.ch(channel,newLine,priority, isRepeating);
 			}
 		}
+		/**
+		 * Add log line with priority 1
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function log(...args):void{
 			if(_console){
 				_console.log.apply(null, args);
 			}
 		}
+		/**
+		 * Add log line with priority 3
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function info(...args):void{
 			if(_console){
 				_console.info.apply(null, args);
 			}
 		}
+		/**
+		 * Add log line with priority 6
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function debug(...args):void{
 			if(_console){
 				_console.debug.apply(null, args);
 			}
 		}
+		/**
+		 * Add log line with priority 8
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function warn(...args):void{
 			if(_console){
 				_console.warn.apply(null, args);
 			}
 		}
+		/**
+		 * Add log line with priority 10
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function error(...args):void{
 			if(_console){
 				_console.error.apply(null, args);
 			}
 		}
+		/**
+		 * Add log line with priority 1 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function logch(channel:*, ...args):void{
 			if(_console){
 				_console.logch.apply(null, [channel].concat(args));
 			}
 		}
+		/**
+		 * Add log line with priority 3 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function infoch(channel:*, ...args):void{
 			if(_console){
 				_console.infoch.apply(null, [channel].concat(args));
 			}
 		}
+		/**
+		 * Add log line with priority 6 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function debugch(channel:*, ...args):void{
 			if(_console){
 				_console.debugch.apply(null, [channel].concat(args));
 			}
 		}
+		/**
+		 * Add log line with priority 8 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function warnch(channel:*, ...args):void{
 			if(_console){
 				_console.warnch.apply(null, [channel].concat(args));
 			}
 		}
+		/**
+		 * Add log line with priority 10 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public static function errorch(channel:*, ...args):void{
 			if(_console){
 				_console.errorch.apply(null, [channel].concat(args));
@@ -847,9 +910,11 @@ package com.atticmedia.console {
 				_console.setRollerCaptureKey(char, ctrl, alt, shift);
 			}
 		}
-		//
-		//
-		//
+		/**
+		 * Console already exists
+		 * @return true if console is already running
+		 * 
+		 */
 		public static function get exists():Boolean{
 			var e:Boolean = _console? true: false;
 			return e;
@@ -886,13 +951,25 @@ package com.atticmedia.console {
 		}
 		
 		
+		/**
+		 * Get all logs
+		 * This is incase you want all logs for use somewhere.
+		 * For example, send logs to server or email to someone.
+		 * 
+		 * @param (optional) line splitter, default is '\n'
+		 * @return All log lines in console
+		 */
 		public static function getAllLog(splitter:String = "\n"):String{
 			if(_console)return _console.getAllLog(splitter);
 			else return "";
 		}
-		//
-		//	This is for debugging of console.
-		//	PLEASE avoid using it!
+		/**
+		 * Get instance to Console
+		 * This is for debugging of console.
+		 * PLEASE avoid using it!
+		 * 
+		 * @return Console class instance
+		 */
 		public static function get instance():Console{
 			return _console;
 		}

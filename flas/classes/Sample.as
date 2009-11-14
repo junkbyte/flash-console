@@ -147,7 +147,7 @@ package {
 			C.add("Repeative log _ " + getTimer(), 5,true);
 		}
 		private function spam():void{
-			for(var i:int = 0;i<200;i++){
+			for(var i:int = 0;i<100;i++){
 				var str:String = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.";
 				var rand:int = Math.random()*5;
 				if(rand == 1){
