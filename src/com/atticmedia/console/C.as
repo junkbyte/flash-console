@@ -758,6 +758,18 @@ package com.atticmedia.console {
 			}
 		}
 		/**
+		 * Print the display list map
+		 * (same as /map in commandLine)
+		 * 
+		 * @param  Display object to start maping from
+		 * @param  (optional) maximum child depth. 0 = unlimited
+		 */
+		public static function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
+			if(_console ){
+				_console.map(base, maxstep);
+			}
+		}
+		/**
 		 * Run a commandLine string
 		 *
 		 * @param  String to run

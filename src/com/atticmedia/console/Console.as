@@ -23,6 +23,8 @@
 * 
 */
 package com.atticmedia.console {
+	import flash.display.DisplayObjectContainer;
+
 	import com.atticmedia.console.core.CommandLine;
 	import com.atticmedia.console.core.LogLineVO;
 	import com.atticmedia.console.core.MemoryMonitor;
@@ -107,6 +109,7 @@ package com.atticmedia.console {
 		private var _rollerCaptureKey:String;
 		private var _needToMoveTop:Boolean;
 		private var _commandLineAllowed:Boolean = true;
+		private var _strongRef:Boolean;
 		
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
 		private var _viewingChannels:Array = [GLOBAL_CHANNEL];
@@ -329,18 +332,21 @@ package com.atticmedia.console {
 			}
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void{
-			strong = (strong || obj is Function || cl.useStrong) ?true:false;
+			strong = (strong || _strongRef || obj is Function) ?true:false;
 			var nn:String = cl.store(n, obj, strong);
 			if(!quiet && nn){
 				var str:String = strong?"STRONG":"WEAK";
 				report("Stored <p5>$"+nn+"</p5> for <b>"+getQualifiedClassName(obj)+"</b> using <b>"+ str +"</b> reference.",-1);
 			}
 		}
+		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
+			cl.map(base, maxstep);
+		}
 		public function get strongRef():Boolean{
-			return cl.useStrong;
+			return _strongRef;
 		}
 		public function set strongRef(b:Boolean):void{
-			cl.useStrong = b;
+			_strongRef= b;
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			cl.inspect(obj,detail);

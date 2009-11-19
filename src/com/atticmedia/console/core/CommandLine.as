@@ -49,8 +49,6 @@ package com.atticmedia.console.core {
 		private var _values:Array;
 		
 		private var _master:Console;
-		
-		public var useStrong:Boolean;
 
 		public function CommandLine(m:Console) {
 			_master = m;
@@ -67,7 +65,7 @@ package com.atticmedia.console.core {
 				_returned = obj;
 				dispatchEvent(new Event(CHANGED_SCOPE));
 			}
-			_saved.set("base", obj, useStrong);
+			_saved.set("base", obj, _master.strongRef);
 		}
 		public function get base():Object {
 			return _saved.get("base");
@@ -450,12 +448,12 @@ package com.atticmedia.console.core {
 				reMap(param);
 			} else if (cmd == "strong") {
 				if(param == "true"){
-					useStrong = true;
+					_master.strongRef = true;
 					report("Now using STRONG referencing.", 10);
 				}else if (param == "false"){
-					useStrong = false;
+					_master.strongRef = false;
 					report("Now using WEAK referencing.", 10);
-				}else if(useStrong){
+				}else if(_master.strongRef){
 					report("Using STRONG referencing. '/strong false' to use weak", -2);
 				}else{
 					report("Using WEAK referencing. '/strong true' to use strong", -2);
@@ -468,7 +466,7 @@ package com.atticmedia.console.core {
 					}else if(_reserved.indexOf(param)>=0){
 						report("ERROR: The name ["+param+ "] is reserved",10);
 					}else{
-						_saved.set(param, _returned,useStrong);
+						_saved.set(param, _returned, _master.strongRef);
 						report("SAVED <p5>$"+param+"</p5> for "+getQualifiedClassName(_returned)+".");
 					}
 				} else {
@@ -500,7 +498,7 @@ package com.atticmedia.console.core {
 				}
 			} else if (cmd == "map") {
 				if (_returned) {
-					map(_returned as DisplayObjectContainer);
+					map(_returned as DisplayObjectContainer, int(param));
 				} else {
 					report("Empty", 10);
 				}
@@ -721,7 +719,7 @@ package com.atticmedia.console.core {
 				report(str+"<br/>", 5);
 			}
 		}
-		public function map(base:DisplayObjectContainer):void{
+		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
 			if(!base){
 				report("It is not a DisplayObjectContainer", 10);
 				return;
@@ -748,6 +746,7 @@ package com.atticmedia.console.core {
 			var steps:int = 0;
 			var lastmcDO:DisplayObject = null;
 			var indexes:Array = new Array();
+			var wasHiding:Boolean;
 			for (var X:String in list){
 				mcDO = list[X];
 				if(lastmcDO){
@@ -776,14 +775,20 @@ package com.atticmedia.console.core {
 				for(i=0;i<steps;i++){
 					str += (i==steps-1)?" ∟ ":" - ";
 				}
-				var n:String = "<a href='event:clip_"+basestr+indexes.join(Console.MAPPING_SPLITTER)+"'>"+mcDO.name+"</a>";
-				if(mcDO is DisplayObjectContainer){
-					n = "<b>"+n+"</b>";
-				}else{
-					n = "<i>"+n+"</i>";
+				if(maxstep<=0 || steps<=maxstep){
+					wasHiding = false;
+					var n:String = "<a href='event:clip_"+basestr+indexes.join(Console.MAPPING_SPLITTER)+"'>"+mcDO.name+"</a>";
+					if(mcDO is DisplayObjectContainer){
+						n = "<b>"+n+"</b>";
+					}else{
+						n = "<i>"+n+"</i>";
+					}
+					str += n+" ("+getQualifiedClassName(mcDO)+")";
+					report(str,mcDO is DisplayObjectContainer?5:2);
+				}else if(!wasHiding){
+					wasHiding = true;
+					report(str+"...",5);
 				}
-				str += n+" ("+getQualifiedClassName(mcDO)+")";
-				report(str,mcDO is DisplayObjectContainer?5:2);
 				lastmcDO = mcDO;
 			}
 			_mapBaseIndex++;
