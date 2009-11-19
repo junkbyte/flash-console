@@ -85,7 +85,7 @@ package com.atticmedia.console.core {
 			}else{
 				// if it is a function it needs to be strong reference atm, 
 				// otherwise it fails if the function passed is from a dynamic class/instance
-				_saved.set(n, obj, strong?true:(obj is Function?true:useStrong));
+				_saved.set(n, obj, strong);
 			}
 			return n;
 		}
@@ -462,13 +462,14 @@ package com.atticmedia.console.core {
 				}
 			} else if (cmd == "save" || cmd == "store") {
 				if (_returned) {
+					param = param.replace(/[^\w]*/g, "");
 					if(!param){
 						report("ERROR: Give a name to save.",10);
 					}else if(_reserved.indexOf(param)>=0){
 						report("ERROR: The name ["+param+ "] is reserved",10);
 					}else{
 						_saved.set(param, _returned,useStrong);
-						report("SAVED "+getQualifiedClassName(_returned) + " at "+ param);
+						report("SAVED <p5>$"+param+"</p5> for "+getQualifiedClassName(_returned)+".");
 					}
 				} else {
 					report("Nothing to save", 10);

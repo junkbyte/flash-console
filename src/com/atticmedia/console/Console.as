@@ -329,10 +329,11 @@ package com.atticmedia.console {
 			}
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void{
+			strong = (strong || obj is Function || cl.useStrong) ?true:false;
 			var nn:String = cl.store(n, obj, strong);
 			if(!quiet && nn){
-				var str:String = obj is Function?"using <b>STRONG</b> reference":("for <b>"+getQualifiedClassName(obj)+"</b> using WEAK reference");
-				report("Stored <p5>$"+nn+"</p5> in commandLine for "+ str +".",-1);
+				var str:String = strong?"STRONG":"WEAK";
+				report("Stored <p5>$"+nn+"</p5> for <b>"+getQualifiedClassName(obj)+"</b> using <b>"+ str +"</b> reference.",-1);
 			}
 		}
 		public function get strongRef():Boolean{
