@@ -40,7 +40,10 @@ package com.atticmedia.console{
 	import flash.geom.Rectangle;
 
 	public class C {
-
+		
+		private static var _tracing:Boolean = false;
+		private static var _traceCall:Function = trace;
+		
 		public function C() {
 			throw new Error("[CONSOLE] Do not construct class. Please use C.start(mc:DisplayObjectContainer, password:String='')");
 		}
@@ -49,28 +52,40 @@ package com.atticmedia.console{
 		public static function startOnStage(mc:DisplayObject, pass:String = "", skin:int= 1, disallowBrowser:uint = 0):void {
 		}
 		public static function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void {
+			_log(str);
 		}
 		public static function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void {
+			_log(newLine);
 		}
 		public static function log(...args):void {
+			_log(args);
 		}
 		public static function info(...args):void {
+			_log(args);
 		}
 		public static function debug(...args):void {
+			_log(args);
 		}
 		public static function warn(...args):void {
+			_log(args);
 		}
 		public static function error(...args):void {
+			_log(args);
 		}
 		public static function logch(channel:*, ...args):void {
+			_log(args);
 		}
 		public static function infoch(channel:*, ...args):void {
+			_log(args);
 		}
 		public static function debugch(channel:*, ...args):void {
+			_log(args);
 		}
 		public static function warnch(channel:*, ...args):void {
+			_log(args);
 		}
 		public static function errorch(channel:*, ...args):void {
+			_log(args);
 		}
 		public static function remove():void {
 		}
@@ -117,9 +132,10 @@ package com.atticmedia.console{
 		public static function set maxRepeats(v:Number):void {
 		}
 		public static function set tracing(v:Boolean):void {
+			_tracing = v;
 		}
 		public static function get tracing():Boolean {
-			return false;
+			return _tracing;
 		}
 		public static function set tracingChannels(v:Array):void {
 		}
@@ -132,9 +148,10 @@ package com.atticmedia.console{
 			return 0;
 		}
 		public static function set traceCall(f:Function):void {
+			_traceCall = f;
 		}
 		public static function get traceCall():Function {
-			return null;
+			return _traceCall;
 		}
 		public static function setPanelArea(panelname:String, rect:Rectangle):void {
 		}
@@ -259,6 +276,11 @@ package com.atticmedia.console{
 		public static function get exists():Boolean {
 			return false;
 		}
+		
+		private static function _log(args:*):void{
+			if(_tracing && _traceCall != null) _traceCall(args);
+		}
+		
 		public static function getAllLog(splitter:String = "\n"):String {
 			return "";
 		}
