@@ -1,17 +1,14 @@
-You can find a copy of this file at project wiki:
-http://code.google.com/p/flash-console/w/list
-
 #summary Read me and Changes log.
+#labels Featured,Phase-Requirements
 
 
 = READ ME =
 
 ==Flash Console==
 
-  * Version: 2.2 (Nov 2009)
+  * Version: 2.3 (Dec 2009)
   * Project home page: http://code.google.com/p/flash-console/
-  * Author: Lu Aye Oo
-
+  * Author: Lu Aye Oo, http://www.luaye.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
   * Authoring: Flash, Flex or AIR
 
@@ -30,6 +27,16 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 == Change Log ==
+
+
+===2.3===
+  * console source package renamed to com.luaye.console.*
+  * memoryMonitor and fpsMonitor setters are now Boolean (used to be int)
+  * Added Ch functionality where you can create instances of console channel.
+  * Performace increase in terms of log lines management.
+  * Added 'copy to clipboard' button on top menu.
+  * Added 'save to file' button on top menu of AIR remote.
+  * Removed 'disallowBrowser' setting from C.start and C.startOnStage.
 
 
 ===2.2===

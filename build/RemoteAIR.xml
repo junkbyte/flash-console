@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<application xmlns="http://ns.adobe.com/air/application/1.5"> 
+    <id>com.luaye.console.RemoteAIR</id> 
+    <version>2.3</version> 
+    <filename>ConsoleRemote</filename> 
+    <name>Console Remote</name> 
+    <description> 
+        <text xml:lang="en">flash-console Remote</text> 
+    </description> 
+    <copyright>Lu Aye Oo (c) 2009</copyright> 
+    <initialWindow> 
+        <title>Hello World</title> 
+        <content>RemoteAIR.swf</content> 
+        <systemChrome>none</systemChrome> 
+        <transparent>true</transparent> 
+        <visible>true</visible> 
+    	<minSize>150 100</minSize>
+    	<maximizable>true</maximizable>
+    	<minimizable>true</minimizable>
+    	<resizable>true</resizable>
+    </initialWindow>
+    <installFolder>Flash-Console/ConsoleRemote</installFolder> 
+    <programMenuFolder>Flash-Console</programMenuFolder> 
+    <icon> 
+        <image16x16>icons/icon16.png</image16x16> 
+        <image32x32>icons/icon32.png</image32x32> 
+        <image48x48>icons/icon48.png</image48x48> 
+        <image128x128>icons/icon128.png</image128x128>  
+    </icon> 
+    <customUpdateUI>false</customUpdateUI> 
+    <allowBrowserInvocation>false</allowBrowserInvocation>
+</application>

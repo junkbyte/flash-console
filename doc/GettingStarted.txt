@@ -1,12 +1,9 @@
-You can find a copy of this file at project wiki:
-http://code.google.com/p/flash-console/w/list
-
-
+#labels Phase-Deploy,Featured,Phase-Implementation
 =Getting started=
 
 ==Introduction==
 
-The main class you will need to use for console is `C`, (`com.atticmedia.console.C`). `C` is a static / singleton adapter for `Console` (`com.atticmedia.console.Console`). 
+The main class need to use for console is `C`, (`com.luaye.console.C`). `C` is a static / singleton adapter for `Console` (`com.luaye.console.Console`). 
 
 In a later date when you don't need console in your flash project, you can just remove `C.startOnStage(..)` OR `C.start(..)` from your code and the rest of console related codes will stop executing to save memory and performance.
 
@@ -15,12 +12,12 @@ In a later date when you don't need console in your flash project, you can just 
 
 Start console on stage... first parameter is any DisplayObject which is already on stage or to be added.
 If you want to set a keyword for console to start, assign at second parameter. 
-Use letters and numbers only. Console will start hidden if you set a password.
+Use letters and numbers only. Console will start hidden if you set a password (you can set `C.visible = true;` to force display console)
 You will need to type the keyword in correct sequence to show the console.
 Recommended keyword: ` or ~ or debug (remember to have keyboard short cuts disabled in flash test authoring for some keys to be captured)
 
 {{{
-import com.atticmedia.console.C;
+import com.luaye.console.C;
 C.startOnStage(this, "");
 }}}
 
@@ -30,21 +27,33 @@ Logging...
 //
 // basic logging
 //
-C.info("Hello world");
-C.log("A log message for console.", "optionally there", "can be", "multiple arguments");
-C.debug("A debug level log");
-C.warn("This is a warning log");
-C.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods");
+C.info("Hello world.");
+C.log("A log message for console.", "optionally there", "can be", "multiple arguments.");
+C.debug("A debug level log.");
+C.warn("This is a warning log.");
+C.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
 //
 // basic channel logging
 //
-C.infoch("myChannel", "Hello myChannel");
-C.logch("myChannel", "A log message at myChannel", "optionally there", "can be", "multiple arguments");
-C.debugch("myChannel", "A debug level log");
-C.warnch("myChannel", "This is a warning log");
-C.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods");
+C.infoch("myChannel", "Hello myChannel.");
+C.logch("myChannel", "A log message at myChannel.", "optionally there", "can be", "multiple arguments.");
+C.debugch("myChannel", "A debug level log.");
+C.warnch("myChannel", "This is a warning log.");
+C.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
 //
+// advanced logging
 //
+C.add("My advanced log in priority 7.", 7);
+C.add("My advanced log in priority 2, 1 (no repeats)", 2, true);
+C.add("My advanced log in priority 2, 2 (no repeats)", 2, true);
+C.add("My advanced log in priority 2, 3 (no repeats)", 2, true);
+//
+// Advanced channel logging
+//
+C.ch("chn", "Advanced log in priority 7.", 7);
+C.ch("chn", "Advanced log in priority 2, 1 (no repeats)", 2, true);
+C.ch("chn", "Advanced log in priority 2, 2 (no repeats)", 2, true);
+C.ch("chn", "Advanced log in priority 2, 3 (no repeats)", 2, true);
 }}}
 
 ===UI===
@@ -53,11 +62,12 @@ Console interface menu is at the top of main panel. Roll over each name to find 
 
   * F = Show/Hide Frames per second monitor
   * M = Show/Hide memory usage monitor
-  * CL = Show/Hide commandLine
+  * CL = Show/Hide commandLine. Command line appears at the bottom of main panel.
   * Ro = Show/Hide display Roller
   * RL = Start ruler tool (measure distance/angle between 2 points)
 
-  * T = Toggle use 'trace()' - only visible in debugger or test player
+  * T = Toggle use 'trace()' - only visible in debugger or test player, can call a different function in place of trace(), see: C.traceCall.
+  * Cc = Copy all log to clipboard as plain text.
   * P0 = Priority filter level. For example when set to P5, you will only see logs with priority 5 or above
   * P = pause logging. (it will still silently log but will not update in display)
   * C = clear log
@@ -71,6 +81,7 @@ You can scale panels by dragging the arrow on the bttom right.
 
 ====Command line====
 
+  * Command line appears at the bottom of main panel (press CL).
   * Write `/help` in command line area for help.
   * Read CommandLineHelp for detailed info on how to take advantage of Command Line.
 
@@ -81,7 +92,7 @@ var aSprite = new Sprite();
 C.watch(aSprite, "aSprite");
 aSprite = null;
 }}}
-Above example creates a Sprite and then remove its reference. This marks the Sprite to be garbage collected, but it will probably never get collected straight away.
+Above example creates a Sprite and then remove its reference. This marks the Sprite to be garbage collected, but it might not get collected straight away.
 If you have a debugger version of flash player installed, you can press G in console menu (press @ at top) to force garbage collect. 
 If you start using this in fairly big flash project, you will see that objects that have lost reference to will properly get collected and notified in console.
 
@@ -94,23 +105,13 @@ If you start using this in fairly big flash project, you will see that objects t
 // it can not be a remote while it is remoting...
 C.remoting = true;
 
-// recieve remoting broadcasts
-// start logging broadcasted logs from another swf.
-// it can not be remoting while it is a remote...
-C.remote = true;
+// Show/hide commandLine (hidden by default)
+C.commandLine= true;
 
+// Show/hide fpxMonitor  (hidden by default)
+C.fpsMonitor= true;
 
-
-// Change viewing channel
-// This is the same as pressing the channel on channels tab at the top.
-C.viewingChannel = "myChannel";
-
-// pause console
-// This is the same as pressing P button from console menu
-// It will keep logging but will stop all update processes
-C.paused = true;
-
-// hide console
+// show/hide console
 // It will keep logging but will stop all update processes
 C.visible = false;
 
@@ -123,11 +124,26 @@ C.enabled = false;
 // this can sometimes fix some problems if you need to manage the display list
 C.alwaysOnTop = false;
 }}}
-
+Please see JavaDoc for more usage document.
 
 ==Others==
 If you want to start console in a custom display container, use the following:
 {{{
-import com.atticmedia.console.C;
+import com.luaye.console.C;
 C.start(this);
 }}}
+
+
+You can manage your own instance of Console by directly managing it (`C` is designed to manage it for you ). 
+{{{
+import com.luaye.console.Console;
+
+private var _c:Console;
+
+_c = new Console();
+addChild(_c);
+_c.log("Hello my custom Console instance.");
+}}}
+
+
+
