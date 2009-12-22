@@ -30,7 +30,7 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 ===2.3===
-  * console source package renamed to com.luaye.console.*
+  * console source package renamed to com.luaye.console.
   * memoryMonitor and fpsMonitor setters are now Boolean (used to be int)
   * Added Ch functionality where you can create instances of console channel.
   * Performace increase in terms of log lines management.
