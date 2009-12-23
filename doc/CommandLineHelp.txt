@@ -137,13 +137,14 @@ $bunny.stopDrag()
   * It is not just those functions and properties, you can call ANY public properties and method of $bunny.
   * You can even do addEventListener... But ofc you'll need a function that accept events... 
 
-Optional example: you could generate event logs into console on Event.ENTER_FRAME:
+*Optional Example*: you could generate event logs on MOUSE_MOVE events of the bunny.
 {{{
-$bunny.addEventListener('enterFrame', $C.log)
+$bunny.addEventListener('mouseMove', $C.log)
 }}}
+Now if you roll your mouse on the bunny movieClip, you will see lots of mouse event logs. _I am only using the string 'mouseMove' instead of MouseEvent.MOUSE_MOVE because I will be explaining about static classes later in this tutorial._
 To stop:
 {{{
-$bunny.removeEventListener('enterFrame', $C.log)
+$bunny.removeEventListener('mouseMove', $C.log)
 }}}
 Potentially, this means you can re-assign your event listeners on the fly.
 
@@ -151,7 +152,7 @@ IMPORTANT: This example only show you how to manipulate properties of a display 
 It is not limited to displays, it can access and execute ANY object/class. 
 (You only see me changing displays here because its more visual) 
 
-==== Static classes/singletons ====
+=== Static classes/singletons ===
   * To access class singletons, you need to write the full path, as there is no room for 'import' syntax in a single line.
   * For example, to jump to the scope of com.luaye.console.C - class (not instance), simply type:
 {{{
@@ -160,7 +161,7 @@ com.luaye.console.C
   * Command line should resolve it as a class definition reference and return.
   * If you do `/inspect` on this return, you will see that all of the properties and methods have a prefix [static] in them, because they are...
 
-As another static class example, you could hide the mouse by typing:
+*Optional*: As another static class example, you could hide the mouse by typing:
 {{{
 flash.ui.Mouse.hide()
 }}}
@@ -171,7 +172,7 @@ flash.ui.Mouse.show()
 }}}
 
 
-==== New instance ====
+=== New instance ===
   * If you have read the GettingStarted document, you would know that com.luaye.console.C is mearly an adaptor/manager for a com.luaye.console.Console instance.
   * What about make your own Console instance from inside commandLine and manage it? - for demonstration purposes ofc...
   * Now to do this, you would need to make a new instance of Console. The thing about Console is it avoids strong referencing (including saved variables) to make sure it has minimal impact on the client's environment. The problem is if you make new instances from within commandLine they are weak references too, so they can become null at any time. You need to declare to commandLine that it needs to hold on to instances... In source code you can write `C.strongRef = true`, OR in commandLine:
@@ -225,7 +226,7 @@ OK... I think that's enough of play around. In the tutorial I have demonstrated 
   * create new instances
 
 
-=== Notes ===
+== Notes ==
   * You can do nested calls. such as, $base.getChildByName('root1').mcBunny.getChildByName($bunny.getChildAt(0).name); - etc, etc... 
   * You can execute multiple lines of code in one go by separating with ; - however the scope can change after each line execution so you will need to write accordingly.
 
