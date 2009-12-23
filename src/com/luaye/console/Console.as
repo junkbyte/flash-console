@@ -131,6 +131,7 @@ package com.luaye.console {
 		 */
 		public function Console(pass:String = "", uiset:int = 1) {
 			name = NAME;
+			if(pass == null) pass = "";
 			_password = pass;
 			_remotingPassword = pass;
 			tabChildren = false; // Tabbing is not supported
@@ -143,18 +144,13 @@ package com.luaye.console {
 			panels = new PanelsManager(this, new MainPanel(this, _lines, _channels));
 			//
 			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy bug fixing!</b>", -2);
-			if(_password != ""){
-				if(stage){
-					stageAddedHandle();
-				}
-				visible = false;
-			}
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
+			if(_password) visible = false;
 		}
 		private function stageAddedHandle(e:Event=null):void{
-			if(cl.base == null && root){
-				cl.base = root;
+			if(cl.base == null){
+				cl.base = parent;
 			}
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame, false, 0, true);
 			parent.addEventListener(Event.ADDED, onParentDisplayAdded, false, 0, true);
