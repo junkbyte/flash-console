@@ -1,4 +1,3 @@
-#labels Phase-Deploy,Featured,Phase-Implementation
 =Getting started=
 
 ==Introduction==
@@ -144,6 +143,3 @@ _c = new Console();
 addChild(_c);
 _c.log("Hello my custom Console instance.");
 }}}
-
-
-

@@ -1,4 +1,3 @@
-#labels Featured,Phase-Implementation
 =Command Line: help and tutorial=
 
 ==This document applies to v2.3 or above only==
@@ -66,7 +65,7 @@ OR
 getChildByName('root1')
 }}} 
   * You should see that the scope name on the left of commandLine is now changed to 'Sample'.
-  * You can also tell from the '+' sign on the line '[C] + Returned Sample ...' - this means the scope have changed.
+  * You can also tell from the '+' sign on the line `[C] + Returned Sample ...` - this means the scope have changed.
   * Note that you can not write 'this.root1' in this case because Stage is not a dynamic class... (but the document class Sample is)
   * If you do /inspect again you should get slightly different results this time.
 {{{
@@ -89,7 +88,7 @@ getChildByName('mcBunny')
 }}} 
   * You should get a tree like structure list mapping the display list of 'mcBunny'
   * You can click on any of the names in the log to change to the scope of that displayObject.
-  * Lets go to the head, *click on 'head (flash.display::MovieClip)'* - near the bottom.
+  * Lets go to the head, *click on 'head (sample_fla::bunnyHead_6)'* - near the bottom.
 {{{
  + Returned sample_fla::bunnyHead_6: [object bunnyHead_6]
 }}}
@@ -159,7 +158,7 @@ It is not limited to displays, it can access and execute ANY object/class.
 com.luaye.console.C
 }}}
   * Command line should resolve it as a class definition reference and return.
-  * If you do /inspect on this return, you will see that all of the properties and methods have a prefix [static] in them, because they are...
+  * If you do `/inspect` on this return, you will see that all of the properties and methods have a prefix [static] in them, because they are...
 
 As another static class example, you could hide the mouse by typing:
 {{{
@@ -175,7 +174,7 @@ flash.ui.Mouse.show()
 ==== New instance ====
   * If you have read the GettingStarted document, you would know that com.luaye.console.C is mearly an adaptor/manager for a com.luaye.console.Console instance.
   * What about make your own Console instance from inside commandLine and manage it? - for demonstration purposes ofc...
-  * Now to do this, you would need to make a new instance of Console. The thing about Console is it avoids strong referencing (including saved variables) to make sure it has minimal impact on the client's environment. The problem is if you make new instances from within commandLine they are weak references too, so they can become null at any time. You need to declare to commandLine that it needs to hold on to instances... In source code you can write C.strongRef = true, OR in commandLine:
+  * Now to do this, you would need to make a new instance of Console. The thing about Console is it avoids strong referencing (including saved variables) to make sure it has minimal impact on the client's environment. The problem is if you make new instances from within commandLine they are weak references too, so they can become null at any time. You need to declare to commandLine that it needs to hold on to instances... In source code you can write `C.strongRef = true`, OR in commandLine:
 {{{
 /strong true
 }}}
@@ -200,7 +199,7 @@ $base.addChild($myC)
 $myC.y = 310;
 }}}
   * Now that's a nightmare you got not 1 but 2 bloody annoying consoles!
-  * Ok so now this is your own console managed by you through another console's command line... so why not try the normal console methods:
+  * Ok so now this is your own console, managed by you, through another console's command line... Why not try the normal console methods:
 {{{
 $myC.log('Testing one two three');
 $myC.fpsMonitor = true;

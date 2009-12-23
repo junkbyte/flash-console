@@ -1,5 +1,4 @@
 #summary Read me and Changes log.
-#labels Featured,Phase-Requirements
 
 
 = READ ME =
