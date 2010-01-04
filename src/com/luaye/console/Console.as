@@ -330,12 +330,7 @@ package com.luaye.console {
 			}
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void{
-			strong = (strong || _strongRef || obj is Function) ?true:false;
-			var nn:String = cl.store(n, obj, strong);
-			if(!quiet && nn){
-				var str:String = strong?"STRONG":"WEAK";
-				report("Stored <p5>$"+nn+"</p5> for <b>"+getQualifiedClassName(obj)+"</b> using <b>"+ str +"</b> reference.",-1);
-			}
+			cl.store(n, obj, strong);
 		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
 			cl.map(base, maxstep);
