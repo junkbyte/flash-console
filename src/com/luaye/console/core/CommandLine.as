@@ -23,6 +23,8 @@
 * 
 */
 package com.luaye.console.core {
+	import flash.utils.flash_proxy;
+
 	import com.luaye.console.Console;
 	import com.luaye.console.utils.Utils;
 	import com.luaye.console.utils.WeakObject;
@@ -78,7 +80,7 @@ package com.luaye.console.core {
 		public function store(n:String, obj:Object, strong:Boolean = false):void {
 			// if it is a function it needs to be strong reference atm, 
 			// otherwise it fails if the function passed is from a dynamic class/instance
-			strong = (strong || _master.strongRef || obj is Function) ?true:false;
+			strong = (strong || _master.strongRef || obj is Function);
 			n = n.replace(/[^\w]*/g, "");
 			if(_reserved.indexOf(n)>=0){
 				report("ERROR: The name ["+n+"] is reserved",10);
@@ -428,6 +430,24 @@ package com.luaye.console.core {
 						params = execValue(paramstr).value;
 					}
 					//debug("params = "+params.length+" - ["+ params+"]");
+					// this is because methods in stuff like XML/XMLList got AS3 namespace.
+					if(!(newbase is Function)){
+						try{
+							var nss:Array = [AS3, flash_proxy];
+							for each(var ns:Namespace in nss){
+								var nsv:* = v.base.ns::[basestr];
+								if(nsv is Function){
+									newbase = nsv;
+									break;
+								}
+							}
+						}catch(e:Error){
+							// Will thorow below...
+						}
+						if(!(newbase is Function)){
+							throw new Error(basestr+" is not a function.");
+						}
+					}
 					v.value = (newbase as Function).apply(v.base, params);
 					v.base = v.value;
 					index = closeindex+1;
@@ -480,10 +500,13 @@ package com.luaye.console.core {
 					v.value = vv.value;
 				}else if(str.charAt(0) == "$"){
 					var key:String = str.substring(1);
-					v.value = _saved[str.substring(1)];
-					if(v.value && _reserved.indexOf(key)<0){
+					v.value = _saved[key];
+					if(_reserved.indexOf(key)<0){
+						if(v.value == null){
+							store(key, v.value);
+						}
 						v.base = _saved;
-						v.prop = str.substring(1);
+						v.prop = key;
 					}
 				}else{
 					try{

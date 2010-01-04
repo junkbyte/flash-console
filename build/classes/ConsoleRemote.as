@@ -34,9 +34,9 @@ package {
 	// To compile in flash, point this class as document class.
 	// comment out the metadata tag above if you are getting an error.
 	
-	public class Remote extends MovieClip {
+	public class ConsoleRemote extends MovieClip {
 
-		public function Remote() {
+		public function ConsoleRemote() {
 			C.start(this, "");
 			C.remote = true;
 			C.commandLine = true;

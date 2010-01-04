@@ -39,11 +39,11 @@ package {
 	import flash.filters.GlowFilter;
 	import flash.text.TextField;		
 
-	public class RemoteAIR extends MovieClip {
+	public class ConsoleRemoteAIR extends MovieClip {
 		
 		private var _c:Console;
 		
-		public function RemoteAIR() {
+		public function ConsoleRemoteAIR() {
 			
 			stage.nativeWindow.alwaysInFront = true;
 			
