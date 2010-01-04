@@ -27,11 +27,9 @@ package com.luaye.console.core {
 	import com.luaye.console.utils.Utils;
 	import com.luaye.console.utils.WeakObject;
 
-	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 
@@ -43,30 +41,26 @@ package com.luaye.console.core {
 		
 		private var _saved:WeakObject;
 		
-		private var _returned:*;
 		private var _scope:*;
 		private var _prevScope:*;
-		private var _mapBases:WeakObject;
-		private var _mapBaseIndex:uint = 1;
 		private var _reserved:Array;
 		private var _values:Array;
 		
 		private var _master:Console;
-
+		private var _tools:CommandTools;
+		
 		public function CommandLine(m:Console) {
 			_master = m;
+			_tools = new CommandTools(report);
 			_saved = new WeakObject();
-			_mapBases = new WeakObject();
 			_scope = m;
-			_returned = m;
 			_saved.set("C", m);
-			_reserved = new Array("base", "C");
+			_reserved = new Array("returned", "base", "C");
 		}
 		public function set base(obj:Object):void {
 			if (base) {
 				report("Set new commandLine base from "+base+ " to "+ obj, 10);
 			}else{
-				_returned = obj;
 				_scope = obj;
 				dispatchEvent(new Event(CHANGED_SCOPE));
 			}
@@ -76,10 +70,10 @@ package com.luaye.console.core {
 			return _saved.get("base");
 		}
 		public function destory():void {
-			_returned = null;
 			_saved = null;
 			_master = null;
 			_reserved = null;
+			_tools = null;
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void {
 			// if it is a function it needs to be strong reference atm, 
@@ -117,27 +111,96 @@ package com.luaye.console.core {
 				return null;
 			}
 			var v:* = null;
-			// incase you are calling a new command from commandLine... paradox?
-			// EXAMPLE: $C.runCommand('/help') - but why would you?
+			// incase you are calling the run from commandLine... paradox?
+			// EXAMPLE: $C.runCommand("$C.warn('PARADOX!')") - but why would you?
 			var isclean:Boolean = _values==null;
-			if(isclean){
-				_values = [];
-			}
+			if(isclean) _values = [];
 			try{
-				v = exec(str);
+				if(str.charAt(0) == "/"){
+					execCommand(str);
+				}else{
+					v = exec(str);
+				}
 			}catch(e:Error){
 				reportError(e);
 			}
-			if(isclean){
-				_values = null;
-			}
+			if(isclean) _values = null;
 			return v;
 		}
-		private function exec(str:String):* {
-			if(str.charAt(0) == "/"){
-				doCommand(str);
-				return;
+		private function execCommand(str:String):void{
+			var brk:int = str.indexOf(" ");
+			var cmd:String = str.substring(1, brk>0?brk:str.length);
+			var param:String = brk>0?str.substring(brk+1):"";
+			//debug("execSlashCommand: "+ cmd+(param?(": "+param):""));
+			if (cmd == "help") {
+				_tools.printHelp();
+			} else if (cmd == "remap") {
+				// this is a special case... no user will be able to do this command
+				doReturn(_tools.reMap(param, _master.stage));
+			} else if (cmd == "strong") {
+				if(param == "true"){
+					_master.strongRef = true;
+					report("Now using STRONG referencing.", 10);
+				}else if (param == "false"){
+					_master.strongRef = false;
+					report("Now using WEAK referencing.", 10);
+				}else if(_master.strongRef){
+					report("Using STRONG referencing. '/strong false' to use weak", -2);
+				}else{
+					report("Using WEAK referencing. '/strong true' to use strong", -2);
+				}
+			} else if (cmd == "save" || cmd == "store" || cmd == "savestrong" || cmd == "storestrong") {
+				if (_scope) {
+					param = param.replace(/[^\w]/g, "");
+					if(!param){
+						report("ERROR: Give a name to save.",10);
+					}else{
+						store(param, _scope, (cmd == "savestrong" || cmd == "storestrong"));
+					}
+				} else {
+					report("Nothing to save", 10);
+				}
+			} else if (cmd == "string") {
+				report("String with "+param.length+" chars stored. Use /save <i>(name)</i> to save.", -2);
+				_scope = param;
+				dispatchEvent(new Event(CHANGED_SCOPE));
+			} else if (cmd == "saved" || cmd == "stored") {
+				report("Saved vars: ", -1);
+				var sii:uint = 0;
+				var sii2:uint = 0;
+				for(var X:String in _saved){
+					var sao:* = _saved[X];
+					sii++;
+					if(sao==null) sii2++;
+					report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
+				}
+				report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
+			} else if (cmd == "filter" || cmd == "search") {
+				_master.filterText = str.substring(8);
+			} else if (cmd == "inspect" || cmd == "inspectfull") {
+				if (_scope) {
+					var viewAll:Boolean = (cmd == "inspectfull")? true: false;
+					inspect(_scope, viewAll);
+				} else {
+					report("Empty", 10);
+				}
+			} else if (cmd == "map") {
+				if (_scope) {
+					map(_scope as DisplayObjectContainer, int(param));
+				} else {
+					report("Empty", 10);
+				}
+			} else if (cmd == "/") {
+				doReturn(_prevScope?_prevScope:base);
+			} else if (cmd == "scope") {
+				doReturn(_saved["returned"], true);
+			} else if (cmd == "base") {
+				doReturn(base);
+			} else{
+				report("Undefined command <b>/help</b> for info.",10);
 			}
+		}
+		private function exec(str:String):* {
 			//
 			// STRIP strings - '...', "...", '', "", while ignoring \' \" etc inside.
 			var strReg:RegExp = /('(.*?)[^\\]')|("(.*?)[^\\]")|''|""/;
@@ -148,10 +211,9 @@ package com.luaye.console.core {
 				var start:int = match.indexOf(quote);
 				var end:int = match.lastIndexOf(quote);
 				var string:String = match.substring(start+1,end).replace(/\\(.)/g, "$1");
-				str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, result.index+start, result.index+end+1);
 				//debug(VALUE_CONST+_values.length+" = "+string, 2, false);
 				//debug(str);
-				_values.push(new Value(string));
+				str = tempValue(str,new Value(string), result.index+start, result.index+end+1);
 				result = strReg.exec(str);
 			}
 			//
@@ -176,6 +238,7 @@ package com.luaye.console.core {
 		//
 		private function execNest(line:String):*{
 			// exec values inside () - including functions and groups.
+			line = ignoreWhite(line);
 			var indOpen:int = line.lastIndexOf("(");
 			while(indOpen>=0){
 				var firstClose:int = line.indexOf(")", indOpen);
@@ -203,18 +266,16 @@ package com.luaye.console.core {
 						fi--;
 					}
 					if(isfun){
-						line = Utils.replaceByIndexes(line, VALUE_CONST+_values.length, indOpen+1, indClose);
 						var params:Array = inside.split(",");
+						line = tempValue(line,new Value(params), indOpen+1, indClose);
 						//debug("^"+_values.length+" stores function params ["+params+"]");
-						_values.push(new Value(params));
 						for(var X:String in params){
 							params[X] = execOperations(ignoreWhite(params[X])).value;
 						}
 					}else{
-						line = Utils.replaceByIndexes(line, VALUE_CONST+_values.length, indOpen, indClose+1);
-						//debug("^"+_values.length+" stores group value for "+inside);
 						var groupv:* = new Value(groupv);
-						_values.push(groupv);
+						line = tempValue(line,groupv, indOpen, indClose+1);
+						//debug("^"+_values.length+" stores group value for "+inside);
 						groupv.value = execOperations(ignoreWhite(inside)).value;
 					}
 					
@@ -225,6 +286,11 @@ package com.luaye.console.core {
 			var v:* = execOperations(line).value;
 			doReturn(v);
 			return v;
+		}
+		private function tempValue(str:String,v:*, indOpen:int, indClose:int):String{
+			str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, indOpen, indClose);
+			_values.push(v);
+			return str;
 		}
 		//
 		// Simple strip with operations.
@@ -308,11 +374,8 @@ package com.luaye.console.core {
 				if(defclose>=0){
 					newstr = str.substring(0, defclose+1);
 				}
-				str = str.substring(newstr.length);
-				str = ignoreWhite(str);
-				str = VALUE_CONST+_values.length+str;
 				var newobj:* = makeNew(newstr.substring(4));
-				_values.push(new Value(newobj,newobj, newstr));
+				str = tempValue(str, new Value(newobj,newobj, newstr), 0, newstr.length);
 			}
 			//
 			//
@@ -331,8 +394,7 @@ package com.luaye.console.core {
 						var def:* = getDefinitionByName(ignoreWhite(classstr));
 						var havemore:Boolean = str.length>classstr.length;
 						//debug(classstr+" is a class.");
-						str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, 0, classstr.length);
-						_values.push(new Value(def, def, classstr));
+						str = tempValue(str, new Value(def, def, classstr), 0, classstr.length);
 						if(havemore){
 							reg.lastIndex = 0;
 							result = reg.exec(str);
@@ -439,6 +501,7 @@ package com.luaye.console.core {
 			//debug("value: "+str+" = "+getQualifiedClassName(v.value)+" - "+v.value+" base:"+v.base);
 			return v;
 		}
+		// * typed cause it could be String +  OR comparison such as || or &&
 		private function operate(v1:*, op:String, v2:*):*{
 			switch (op){
 				case "=":
@@ -498,6 +561,7 @@ package com.luaye.console.core {
 			//debug("makeNew "+str);
 			var openindex:int = str.indexOf("(");
 			var defstr:String = openindex>0?str.substring(0, openindex):str;
+			defstr = ignoreWhite(defstr);
 			var def:* = execValue(defstr).value;
 			if(openindex>0){
 				var closeindex:int = str.indexOf(")", openindex);
@@ -543,20 +607,12 @@ package com.luaye.console.core {
 					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13]);
 				}else if(len==15){
 					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14]);
-				}else if(len==16){
+				}else if(len>=16){
 					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15]);
-				}else if(len==17){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16]);
-				}else if(len==18){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17]);
-				}else if(len==19){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18]);
-				}else if(len>=20){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19]);
 				}
-				// won't work with more than 20 arguments...
+				// won't work with more than 16 arguments...
 			}
-			return new (def)();
+			return null;
 		}
 		private function ignoreWhite(str:String):String{
 			// can't just do /\s*(.*?)\s*/  :(  any better way?
@@ -573,7 +629,7 @@ package com.luaye.console.core {
 			var newb:Boolean = false;
 			var typ:String = typeof(returned);
 			if(returned){
-				_returned = returned;
+				_saved.set("returned", returned, true);
 				if(returned !== _scope && (force || typ == "object" || typ=="xml")){
 					newb = true;
 					_prevScope = _scope;
@@ -586,79 +642,6 @@ package com.luaye.console.core {
 			rtext = rtext.replace(/</gim, "&lt;");
  			rtext = rtext.replace(/>/gim, "&gt;");
 			report((newb?"<b>+</b> ":"")+"Returned "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -2);
-		}
-		private function doCommand(str:String):void{
-			var brk:int = str.indexOf(" ");
-			var cmd:String = str.substring(1, brk>0?brk:str.length);
-			var param:String = brk>0?str.substring(brk+1):"";
-			//debug("doCommand: "+ cmd+(param?(": "+param):""));
-			if (cmd == "help") {
-				printHelp();
-			} else if (cmd == "remap") {
-				// this is a special case... no user will be able to do this command
-				reMap(param);
-			} else if (cmd == "strong") {
-				if(param == "true"){
-					_master.strongRef = true;
-					report("Now using STRONG referencing.", 10);
-				}else if (param == "false"){
-					_master.strongRef = false;
-					report("Now using WEAK referencing.", 10);
-				}else if(_master.strongRef){
-					report("Using STRONG referencing. '/strong false' to use weak", -2);
-				}else{
-					report("Using WEAK referencing. '/strong true' to use strong", -2);
-				}
-			} else if (cmd == "save" || cmd == "store" || cmd == "savestrong" || cmd == "storestrong") {
-				if (_scope) {
-					param = param.replace(/[^\w]/g, "");
-					if(!param){
-						report("ERROR: Give a name to save.",10);
-					}else{
-						store(param, _scope, (cmd == "savestrong" || cmd == "storestrong"));
-					}
-				} else {
-					report("Nothing to save", 10);
-				}
-			} else if (cmd == "string") {
-				report("String with "+param.length+" chars stored. Use /save <i>(name)</i> to save.", -2);
-				_scope = param;
-				dispatchEvent(new Event(CHANGED_SCOPE));
-			} else if (cmd == "saved" || cmd == "stored") {
-				report("Saved vars: ", -1);
-				var sii:uint = 0;
-				var sii2:uint = 0;
-				for(var X:String in _saved){
-					var sao:* = _saved[X];
-					sii++;
-					if(sao==null) sii2++;
-					report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
-				}
-				report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
-			} else if (cmd == "filter" || cmd == "search") {
-				_master.filterText = str.substring(8);
-			} else if (cmd == "inspect" || cmd == "inspectfull") {
-				if (_scope) {
-					var viewAll:Boolean = (cmd == "inspectfull")? true: false;
-					inspect(_scope, viewAll);
-				} else {
-					report("Empty", 10);
-				}
-			} else if (cmd == "map") {
-				if (_scope) {
-					map(_scope as DisplayObjectContainer, int(param));
-				} else {
-					report("Empty", 10);
-				}
-			} else if (cmd == "/") {
-				doReturn(_prevScope?_prevScope:base);
-			} else if (cmd == "scope") {
-				doReturn(_returned, true);
-			} else if (cmd == "base") {
-				doReturn(base);
-			} else{
-				report("Undefined commandLine syntex <b>/help</b> for info.",10);
-			}
 		}
 		private function reportError(e:Error):void{
 			// e.getStackTrace() is not supported in non-debugger players...
@@ -686,311 +669,11 @@ package com.luaye.console.core {
 			}
 			report(parts.join("\n"), 9);
 		}
-		public function inspect(obj:Object, viewAll:Boolean= true):void {
-			//
-			// Class extends... extendsClass
-			// Class implements... implementsInterface
-			// constant // statics
-			// methods
-			// accessors
-			// varaibles
-			// values
-			// EVENTS .. metadata name="Event"
-			//
-			var V:XML = describeType(obj);
-			var cls:Object = obj is Class?obj:obj.constructor;
-			var clsV:XML = describeType(cls);
-			var self:String = V.@name;
-			var str:String = "<b>"+self+"</b>";
-			var props:Array = [];
-			var props2:Array = [];
-			var staticPrefix:String = "<p1><i>[static]</i></p1>";
-			var nodes:XMLList;
-			if(V.@isDynamic=="true"){
-				props.push("dynamic");
-			}
-			if(V.@isFinal=="true"){
-				props.push("final");
-			}
-			if(V.@isStatic=="true"){
-				props.push("static");
-			}
-			if(props.length > 0){
-				str += " <p-1>"+props.join(" | ")+"</p-1>";
-			}
-			report(str+"<br/>", -2);
-			//
-			// extends...
-			//
-			props = [];
-			nodes = V.extendsClass;
-			for each (var extendX:XML in nodes) {
-				props.push(extendX.@type.toString());
-				if(!viewAll) break;
-			}
-			if(props.length){
-				report("<p10>Extends:</p10> "+props.join("<p-1> &gt; </p-1>")+"<br/>", 5);
-			}
-			//
-			// implements...
-			//
-			props = [];
-			nodes = V.implementsInterface;
-			for each (var implementX:XML in nodes) {
-				props.push(implementX.@type.toString());
-			}
-			if(props.length){
-				report("<p10>Implements:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
-			}
-			//
-			// constants...
-			//
-			props = [];
-			nodes = clsV..constant;
-			for each (var constantX:XML in nodes) {
-				props.push(constantX.@name+"<p0>("+constantX.@type+")</p0>");
-			}
-			if(props.length){
-				report("<p10>Constants:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
-			}
-			//
-			// methods
-			//
-			props = [];
-			props2 = [];
-			nodes = clsV..method; // '..' to include from <factory>
-			for each (var methodX:XML in nodes) {
-				var mparamsList:XMLList = methodX.parameter;
-				str = methodX.parent().name()=="factory"?"":staticPrefix;
-				if(viewAll){
-					var params:Array = [];
-					for each(var paraX:XML in mparamsList){
-						params.push(paraX.@optional=="true"?("<i>"+paraX.@type+"</i>"):paraX.@type);
-					}
-					str += methodX.@name+"<p0>(<i>"+params.join(",")+"</i>):"+methodX.@returnType+"</p0>";
-				}else{
-					str += methodX.@name+"<p0>(<i>"+mparamsList.length()+"</i>):"+methodX.@returnType+"</p0>";
-				}
-				arr = (self==methodX.@declaredBy?props:props2);
-				arr.push(str);
-			}
-			makeInheritLine(props, props2, viewAll, "Methods", viewAll?"<br/>":"<p-1>; </p-1>");
-			//
-			// accessors
-			//
-			var arr:Array;
-			props = [];
-			props2 = [];
-			nodes = clsV..accessor; // '..' to include from <factory>
-			for each (var accessorX:XML in nodes) {
-				str = accessorX.parent().name()=="factory"?"":staticPrefix;
-				str += (accessorX.@access=="readonly"?("<i>"+accessorX.@name+"</i>"):accessorX.@name)+"<p0>("+accessorX.@type+")</p0>";
-				arr = (self==accessorX.@declaredBy?props:props2);
-				arr.push(str);
-			}
-			makeInheritLine(props, props2, viewAll, "Accessors", "<p-1>; </p-1>");
-			//
-			// variables
-			//
-			props = [];
-			nodes = clsV..variable;
-			for each (var variableX:XML in nodes) {
-				str = (variableX.parent().name()=="factory"?"":staticPrefix)+variableX.@name+"<p0>("+variableX.@type+")</p0>";
-				props.push(str);
-			}
-			if(props.length){
-				report("<p10>Variables:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
-			}
-			//
-			// dynamic values
-			//
-			props = [];
-			for (var X:String in obj) {
-				props.push(X+"<p0>("+getQualifiedClassName(obj[X])+")</p0>");
-			}
-			if(props.length){
-				report("<p10>Values:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
-			}
-			//
-			// events
-			// metadata name="Event"
-			props = [];
-			nodes = V.metadata;
-			for each (var metadataX:XML in nodes) {
-				if(metadataX.@name=="Event"){
-					var mn:XMLList = metadataX.arg;
-					props.push(mn.(@key=="name").@value+"<p0>("+mn.(@key=="type").@value+")</p0>");
-				}
-			}
-			if(props.length){
-				report("<p10>Events:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
-			}
-			//
-			// display's parents and direct children
-			//
-			if (viewAll && obj is DisplayObjectContainer) {
-				props = [];
-				var mc:DisplayObjectContainer = obj as DisplayObjectContainer;
-				var clen:int = mc.numChildren;
-				for (var ci:int = 0; ci<clen; ci++) {
-					var child:DisplayObject = mc.getChildAt(ci);
-					props.push("<b>"+child.name+"</b>:("+ci+")"+getQualifiedClassName(child));
-				}
-				if(props.length){
-					report("<p10>Children:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
-				}
-				var theParent:DisplayObjectContainer = mc.parent;
-				if (theParent) {
-					props = ["("+theParent.getChildIndex(mc)+")"];
-					while (theParent) {
-						var pr:DisplayObjectContainer = theParent;
-						theParent = theParent.parent;
-						props.push("<b>"+pr.name+"</b>:("+(theParent?theParent.getChildIndex(pr):"")+")"+getQualifiedClassName(pr));
-					}
-					if(props.length){
-						report("<p10>Parents:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
-					}
-				}
-			}
-			if(!viewAll){
-				report("Tip: use /inspectfull to see full inspection with inheritance",-1);
-			}
-		}
-		private function makeInheritLine(props:Array, props2:Array, viewAll:Boolean, type:String, breaker:String):void{
-			var str:String = "";
-			if(props.length || props2.length){
-				str += "<p10>"+type+":</p10> "+props.join(breaker);
-				if(viewAll){
-					str += (props.length?breaker:"")+"<p2>"+props2.join(breaker)+"</p2>";
-				}else if(props2.length){
-					str += (props.length?breaker:"")+"<p2>+ "+props2.length+" inherited</p2>";
-				}
-				report(str+"<br/>", 5);
-			}
-		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
-			if(!base){
-				report("It is not a DisplayObjectContainer", 10);
-				return;
-			}
-			_mapBases[_mapBaseIndex] = base;
-			var basestr:String = _mapBaseIndex+Console.MAPPING_SPLITTER;
-			
-			var list:Array = new Array();
-			var index:int = 0;
-			list.push(base);
-			while(index<list.length){
-				var mcDO:DisplayObject = list[index];
-				if(mcDO is DisplayObjectContainer){
-					var mc:DisplayObjectContainer = mcDO as DisplayObjectContainer;
-					var numC:int = mc.numChildren;
-					for(var i:int = 0;i<numC;i++){
-						var child:DisplayObject = mc.getChildAt(i);
-						list.splice((index+i+1),0,child);
-					}
-				}
-				index++;
-			}
-			
-			var steps:int = 0;
-			var lastmcDO:DisplayObject = null;
-			var indexes:Array = new Array();
-			var wasHiding:Boolean;
-			for (var X:String in list){
-				mcDO = list[X];
-				if(lastmcDO){
-					if(lastmcDO is DisplayObjectContainer && (lastmcDO as DisplayObjectContainer).contains(mcDO)){
-						steps++;
-						//indexes.push((lastmcDO as DisplayObjectContainer).getChildIndex(mcDO));
-						indexes.push(mcDO.name);
-					}else{
-						while(lastmcDO){
-							lastmcDO = lastmcDO.parent;
-							if(lastmcDO is DisplayObjectContainer){
-								if(steps>0){
-									indexes.pop();
-									steps--;
-								}
-								if((lastmcDO as DisplayObjectContainer).contains(mcDO)){
-									steps++;
-									indexes.push(mcDO.name);
-									break;
-								}
-							}
-						}
-					}
-				}
-				var str:String = "";
-				for(i=0;i<steps;i++){
-					str += (i==steps-1)?" ∟ ":" - ";
-				}
-				if(maxstep<=0 || steps<=maxstep){
-					wasHiding = false;
-					var n:String = "<a href='event:clip_"+basestr+indexes.join(Console.MAPPING_SPLITTER)+"'>"+mcDO.name+"</a>";
-					if(mcDO is DisplayObjectContainer){
-						n = "<b>"+n+"</b>";
-					}else{
-						n = "<i>"+n+"</i>";
-					}
-					str += n+" ("+getQualifiedClassName(mcDO)+")";
-					report(str,mcDO is DisplayObjectContainer?5:2);
-				}else if(!wasHiding){
-					wasHiding = true;
-					report(str+"...",5);
-				}
-				lastmcDO = mcDO;
-			}
-			_mapBaseIndex++;
-			report(base.name+":"+getQualifiedClassName(base)+" has "+list.length+" children/sub-children.", 10);
-			report("Click on the name to return a reference to the child clip. <br/>Note that clip references will be broken when display list is changed",-2);
+			_tools.map(base, maxstep);
 		}
-		public function reMap(path:String, mc:DisplayObjectContainer = null):void{
-			var pathArr:Array = path.split(Console.MAPPING_SPLITTER);
-			if(!mc){
-				var first:String = pathArr.shift();
-				if(first == "0"){
-					mc = _master.stage;
-				}else{
-					mc = _mapBases[first];
-				}
-			}
-			var child:DisplayObject = mc as DisplayObject;
-			try{
-				for each(var nn:String in pathArr){
-					if(!nn) break;
-					child = mc.getChildByName(nn);
-					if(child is DisplayObjectContainer){
-						mc = child as DisplayObjectContainer;;
-					}else{
-						// assume it reached to end since there can no longer be a child
-						break;
-					}
-				}
-				doReturn(child);
-			} catch (e:Error) {
-				report("Problem getting the clip reference. Display list must have changed since last map request",10);
-				//debug(e.getStackTrace());
-			}
-		}
-		private function printHelp():void {
-			report("____Command Line Help___",10);
-			report("/filter (text) = filter/search logs for matching text",5);
-			report("// = return to previous scope",5);
-			report("/base = return to base scope (same as typing $base)",5);
-			report("/store (name) = store current scope to that name (default is weak reference). to call back: $(name)",5);
-			report("/savestrong (name) = store current scope as strong reference",5);
-			report("/stored = list all stored variables",5);
-			report("/inspect = get info of your current scope.",5);
-			report("/inspectfull = get more detailed info of your current scope.",5);
-			report("/map = get the display list map starting from your current scope",5);
-			report("/strong true = turn on strong referencing, you need to turn this on if you want to start manipulating with instances that are newly created.",5);
-			report("/string = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.",5);
-			report("Press up/down arrow keys to recall previous commands",2);
-			report("__Examples:",10);
-			report("<b>stage.width</b>",5);
-			report("<b>stage.scaleMode = flash.display.StageScaleMode.NO_SCALE</b>",5);
-			report("<b>stage.frameRate = 12</b>",5);
-			report("__________",10);
+		public function inspect(obj:Object, viewAll:Boolean= true):void {
+			_tools.inspect(obj, viewAll);
 		}
 		public function report(obj:*,priority:Number = 1, skipSafe:Boolean = true):void{
 			_master.report(obj, priority, skipSafe);
