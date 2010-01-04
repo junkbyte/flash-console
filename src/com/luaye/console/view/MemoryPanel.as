@@ -25,7 +25,6 @@
 
 package com.luaye.console.view {
 	import com.luaye.console.Console;
-	import com.luaye.console.events.TextFieldRollOver;
 
 	import flash.events.Event;
 	import flash.events.TextEvent;
@@ -74,8 +73,8 @@ package com.luaye.console.view {
 		}
 		//
 		
-		protected override function onMenuRollOver(e:TextFieldRollOver):void{
-			var txt:String = e.url?e.url.replace("event:",""):null;
+		protected override function onMenuRollOver(e:TextEvent):void{
+			var txt:String = e.text?e.text.replace("event:",""):null;
 			if(txt == "gc"){
 				txt = "Garbage collect::Requires debugger version of flash player";
 			}

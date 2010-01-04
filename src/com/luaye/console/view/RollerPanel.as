@@ -24,7 +24,6 @@
 */
 package com.luaye.console.view {
 	import com.luaye.console.Console;
-	import com.luaye.console.events.TextFieldRollOver;
 	import com.luaye.console.utils.Utils;
 
 	import flash.display.DisplayObject;
@@ -53,7 +52,7 @@ package com.luaye.console.view {
 			_txtField.styleSheet = style.css;
 			_txtField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			registerRollOverTextField(_txtField);
-			_txtField.addEventListener(TextFieldRollOver.ROLLOVER, onMenuRollOver, false, 0, true);
+			_txtField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
 			registerDragger(_txtField);
 			addChild(_txtField);
 		}
@@ -64,8 +63,8 @@ package com.luaye.console.view {
 		public function capture():String{
 			return getMapString(true);
 		}
-		private function onMenuRollOver(e:TextFieldRollOver):void{
-			master.panels.tooltip(e.url?"Close":null, this);
+		private function onMenuRollOver(e:TextEvent):void{
+			master.panels.tooltip(e.text?"Close":null, this);
 		}
 		private function _onFrame(e:Event):void{
 			if(!_base.stage){

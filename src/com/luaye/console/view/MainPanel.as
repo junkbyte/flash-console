@@ -30,7 +30,6 @@ package com.luaye.console.view {
 	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.core.Log;
 	import com.luaye.console.core.Logs;
-	import com.luaye.console.events.TextFieldRollOver;
 
 	import flash.display.Shape;
 	import flash.display.Sprite;
@@ -134,7 +133,7 @@ package com.luaye.console.view {
 			_menuField.height = 18;
 			_menuField.y = -2;
 			registerRollOverTextField(_menuField);
-			_menuField.addEventListener(TextFieldRollOver.ROLLOVER, onMenuRollOver, false, 0, true);
+			_menuField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
 			addChild(_menuField);
 			//
 			_commandBackground = new Shape();
@@ -548,9 +547,9 @@ package com.luaye.console.view {
 			if(b) return "<y>"+str+"</y>";
 			return str;
 		}
-		public function onMenuRollOver(e:TextFieldRollOver, src:AbstractPanel = null):void{
+		public function onMenuRollOver(e:TextEvent, src:AbstractPanel = null):void{
 			if(src==null) src = this;
-			var txt:String = e.url?e.url.replace("event:",""):"";
+			var txt:String = e.text?e.text.replace("event:",""):"";
 			if(topMenuRollOver!=null) {
 				var t:String = topMenuRollOver(txt);
 				if(t) {

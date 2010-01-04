@@ -38,10 +38,8 @@ package com.luaye.console.core {
 	public class CommandLine extends EventDispatcher {
 		public static const CHANGED_SCOPE:String = "changedScope";
 		
-		private static const VALUE_CONST:String = "^";
-		private static const MAX_INTERNAL_STACK_TRACE:int = 3;
-		
-		public var debugging:Boolean = true;
+		private static const VALUE_CONST:String = "#";
+		private static const MAX_INTERNAL_STACK_TRACE:int = 1;
 		
 		private var _saved:WeakObject;
 		
@@ -102,8 +100,16 @@ package com.luaye.console.core {
 		public function get scopeString():String{
 			return Utils.shortClassName(_scope);
 		}
-		//
-		//
+		// com.luaye.console.C.instance.visible
+		// com.luaye.console.C.instance.addGraph('test',stage,'mouseX')
+		// test('simple stuff. what ya think?');
+		// test('He\'s cool! (not really)','',"yet 'another string', what ya think?");
+		// this.getChildAt(0); 
+		// stage.addChild(root.addChild(this.getChildAt(0)));
+		// third(second(first('console'))).final(0).alpha;
+		// getChildByName(String('Console')).getChildByName('message').alpha = 0.5;
+		// getChildByName(String('Console').abcd().asdf).getChildByName('message').alpha = 0.5;
+		// com.luaye.console.C.add('Hey how are you?');
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
 			if(!_master.commandLineAllowed) {
@@ -118,7 +124,7 @@ package com.luaye.console.core {
 				_values = [];
 			}
 			try{
-				v = _run(str);
+				v = exec(str);
 			}catch(e:Error){
 				reportError(e);
 			}
@@ -127,7 +133,7 @@ package com.luaye.console.core {
 			}
 			return v;
 		}
-		private function _run(str:String):* {
+		private function exec(str:String):* {
 			if(str.charAt(0) == "/"){
 				doCommand(str);
 				return;
@@ -143,8 +149,8 @@ package com.luaye.console.core {
 				var end:int = match.lastIndexOf(quote);
 				var string:String = match.substring(start+1,end).replace(/\\(.)/g, "$1");
 				str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, result.index+start, result.index+end+1);
-				debug(VALUE_CONST+_values.length+" = "+string, 2, false);
-				debug(str);
+				//debug(VALUE_CONST+_values.length+" = "+string, 2, false);
+				//debug(str);
 				_values.push(new Value(string));
 				result = strReg.exec(str);
 			}
@@ -153,35 +159,22 @@ package com.luaye.console.core {
 			if(str.search(new RegExp('\'|\"'))>=0){
 				throw new Error('Bad syntax extra quotation marks');
 			}
-			//TODO:
-			//if(...){
-			//	throw new Error('Bad syntax extra group/function brackets');
-			//}
 			//
 			// Run each line
 			var v:* = null;
 			var lineBreaks:Array = str.split(/\s*;\s*/);
 			for each(var line:String in lineBreaks){
 				if(line.length){
-					v = runLine(line);
+					v = execNest(line);
 				}
 			}
 			return v;
 		}
-		// com.luaye.console.C.instance.visible
-		// com.luaye.console.C.instance.addGraph('test',stage,'mouseX')
-		// test('simple stuff. what ya think?');
-		// test('He\'s cool! (not really)','',"yet 'another string', what ya think?");
-		// this.getChildAt(0); 
-		// stage.addChild(root.addChild(this.getChildAt(0)));
-		// third(second(first('console'))).final(0).alpha;
-		// getChildByName(String('Console')).getChildByName('message').alpha = 0.5;
-		// getChildByName(String('Console').abcd().asdf).getChildByName('message').alpha = 0.5;
-		// com.luaye.console.C.add('Hey how are you?');
 		//
+		// Nested strip
+		// aaa.bbb(1/2,ccc(dd().ee)).ddd = fff+$g.hhh();
 		//
-		//
-		private function runLine(line:String):*{
+		private function execNest(line:String):*{
 			// exec values inside () - including functions and groups.
 			var indOpen:int = line.lastIndexOf("(");
 			while(indOpen>=0){
@@ -198,24 +191,34 @@ package com.luaye.console.core {
 					}
 					//
 					var inside:String = line.substring(indOpen+1, indClose);
-					var isfun:Boolean = line.charAt(indOpen-1).search(/\w/)>=0;
+					// must be a better way to see if its letter/digit or not :/
+					var isfun:Boolean = false;
+					var fi:int = indOpen-1;
+					while(true){
+						var char:String = line.charAt(fi);
+						if(char.match(/[^\s]/) || fi<=0) {
+							if(char.match(/\w/)) isfun = true;
+							break;
+						}
+						fi--;
+					}
 					if(isfun){
 						line = Utils.replaceByIndexes(line, VALUE_CONST+_values.length, indOpen+1, indClose);
 						var params:Array = inside.split(",");
-						debug("^"+_values.length+" stores function params ["+params+"]");
+						//debug("^"+_values.length+" stores function params ["+params+"]");
 						_values.push(new Value(params));
 						for(var X:String in params){
-							params[X] = execOperations(params[X].replace(/\s*(.+)\s*/,"$1")).value;
+							params[X] = execOperations(ignoreWhite(params[X])).value;
 						}
 					}else{
 						line = Utils.replaceByIndexes(line, VALUE_CONST+_values.length, indOpen, indClose+1);
-						debug("^"+_values.length+" stores group value for "+inside);
+						//debug("^"+_values.length+" stores group value for "+inside);
 						var groupv:* = new Value(groupv);
 						_values.push(groupv);
-						groupv.value = execOperations(inside.replace(/\s*(.+)\s*/,"$1")).value;
+						groupv.value = execOperations(ignoreWhite(inside)).value;
 					}
 					
-					debug(line);
+					//debug(line);
 				}
 				indOpen = line.lastIndexOf("(", indOpen-1);
 			}
@@ -223,8 +226,12 @@ package com.luaye.console.core {
 			doReturn(v);
 			return v;
 		}
+		//
+		// Simple strip with operations.
+		// aaa.bbb.ccc(1/2,3).ddd = fff+$g.hhh();
+		//
 		private function execOperations(str:String):Value{
-			var reg:RegExp = /\s*(([+|\-|*|\/]\=?)|=)\s*/g;
+			var reg:RegExp = /\s*(((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^|\!]|\=\=?|\>\>?\>?|\<\<?)\=?)|=|\sis\s|typeof\s)\s*/g;
 			var result:Object = reg.exec(str);
 			var seq:Array = [];
 			if(result == null){
@@ -246,19 +253,22 @@ package com.luaye.console.core {
 					}
 				}
 			}
-			debug("execOperations: "+seq);
+			//debug("execOperations: "+seq);
 			// EXEC values in sequence fisrt
 			var len:int = seq.length;
 			for(var i:int = 0;i<len;i+=2){
-				seq[i] = execStrip(seq[i]);
+				seq[i] = execSimple(seq[i]);
 			}
 			var op:String;
+			var res:*;
+			var setter:RegExp = /((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^]|\=\=?|\>\>\>?|\<\<)\=)|=/;
 			// EXEC math operations
 			for(i = 1;i<len;i+=2){
 				op = seq[i];
-				if(op.indexOf("=")<0){
-					debug("math: "+seq[i-1].value, op, seq[i+1].value);
-					seq[i-1].value = math(seq[i-1].value, op, seq[i+1].value);
+				if(op.replace(setter,"")!=""){
+					res = operate(seq[i-1].value, op, seq[i+1].value);
+					//debug("operate: "+seq[i-1].value, op, seq[i+1].value, "=", res);
+					seq[i-1].value = res;
 					seq.splice(i,2);
 					i-=2;
 					len-=2;
@@ -269,39 +279,79 @@ package com.luaye.console.core {
 			var v:Value = seq[0];
 			for(i = 1;i<len;i+=2){
 				op = seq[i];
-				if(op.indexOf("=")>=0){
+				if(op.replace(setter,"")==""){
 					v = seq[i+1];
-					debug("math: "+v.prop, v.value, op, seq[i-1].value);
-					v.value = math(v.value, op, seq[i-1].value);
-					if(v.base==null) {
-						throw new Error("Cannot assign to a non-reference value: "+v.value);
-					}else {
+					if(op.length>1) op = op.substring(0,op.length-1);
+					res = operate(v.value, op, seq[i-1].value);
+					//debug("operate setter: "+v.prop, v.value, op, seq[i-1].value, "=", res);
+					v.value = res;
+					if(v.base!=null) {
 						v.base[v.prop] = v.value;
 					}
 				}
 			}
 			return v;
 		}
-		private function math(v1:*, op:String, v2:*):*{
-			if(op == "="){
-				return v2;
-			}else if(op == "+"){
-				return v1+v2;
-			}else if(op == "-"){
-				return v1-v2;
-			}else if(op == "*"){
-				return v1*v2;
-			}else if(op == "/"){
-				return v1/v2;
+		private function operate(v1:*, op:String, v2:*):*{
+			switch (op){
+				case "=":
+					return v2;
+				case "+":
+					return v1+v2;
+				case "-":
+					return v1-v2;
+				case "*":
+					return v1*v2;
+				case "/":
+					return v1/v2;
+				case "%":
+					return v1%v2;
+				case "^":
+					return v1^v2;
+				case "&":
+					return v1&v2;
+				case ">>":
+					return v1>>v2;
+				case ">>>":
+					return v1>>>v2;
+				case "<<":
+					return v1<<v2;
+				case "~":
+					return ~v2;
+				case "|":
+					return v1|v2;
+				case "!":
+					return !v2;
+				case ">":
+					return v1>v2;
+				case ">=":
+					return v1>=v2;
+				case "<":
+					return v1<v2;
+				case "<=":
+					return v1<=v2;
+				case "||":
+					return v1||v2;
+				case "&&":
+					return v1&&v2;
+				case "is":
+					return v1 is v2;
+				case "typeof":
+					return typeof v2;
+				case "==":
+					return v1==v2;
+				case "===":
+					return v1===v2;
 			}
 		}
 		//
-		// Simple strip. such as aaa.bbb.ccc(1,2,3).ddd  
+		// Simple strip
+		// aaa.bbb.ccc(0.5,3).ddd
 		// includes class path detection and 'new' operation
 		//
-		private function execStrip(str:String):Value{
+		private function execSimple(str:String):Value{
 			var v:Value = new Value();
-			debug('execStrip: '+str);
+			//debug('execStrip: '+str);
 			//
 			// if it is 'new' operation
 			if(str.indexOf("new ")==0){
@@ -330,9 +380,9 @@ package com.luaye.console.core {
 				while(firstparts.length){
 					var classstr:String = firstparts.join(".");
 					try{
-						var def:* = getDefinitionByName(classstr);
+						var def:* = getDefinitionByName(ignoreWhite(classstr));
 						var havemore:Boolean = str.length>classstr.length;
-						debug(classstr+" is a class "+def);
+						//debug(classstr+" is a class.");
 						str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, 0, classstr.length);
 						_values.push(new Value(def, def, classstr));
 						if(havemore){
@@ -353,12 +403,12 @@ package com.luaye.console.core {
 			while(result != null){
 				var index:int = result.index;
 				var isFun:Boolean = str.charAt(index)=="(";
-				var basestr:String = str.substring(previndex, index);
-				debug("scopestr = "+basestr+ " v.base = "+v.base);
+				var basestr:String = ignoreWhite(str.substring(previndex, index));
+				//debug("scopestr = "+basestr+ " v.base = "+v.base);
 				var newv:Value = execValue(basestr, v.base);
 				var newbase:* = newv.value;
 				v.base = newv.base;
-				debug("scope = "+newbase+"  isFun:"+isFun);
+				//debug("scope = "+newbase+"  isFun:"+isFun);
 				if(isFun){
 					var closeindex:int = str.indexOf(")", index);
 					var paramstr:String = str.substring(index+1, closeindex);
@@ -367,7 +417,7 @@ package com.luaye.console.core {
 					if(paramstr){
 						params = execValue(paramstr).value;
 					}
-					debug("params = "+params.length+" - ["+ params+"]");
+					//debug("params = "+params.length+" - ["+ params+"]");
 					v.value = (newbase as Function).apply(v.base, params);
 					v.base = v.value;
 					index = closeindex+1;
@@ -381,8 +431,6 @@ package com.luaye.console.core {
 				if(result != null){
 					v.base = v.value;
 				}else if(index+1 < str.length){
-					//report("no more result: index="+index+" str.length="+str.length);
-					//report("LEFT: "+str.substring(index+1, str.length));
 					v.base = v.value;
 					reg.lastIndex = str.length;
 					result = {index:str.length};
@@ -417,12 +465,13 @@ package com.luaye.console.core {
 					v.value = Number(str);
 				}else if(str.indexOf(VALUE_CONST)==0){
 					var vv:Value = _values[str.substring(VALUE_CONST.length)];
-					debug(VALUE_CONST+str.substring(VALUE_CONST.length)+" = " +vv);
+					//debug(VALUE_CONST+str.substring(VALUE_CONST.length)+" = " +vv);
 					v.base = vv.base;
 					v.value = vv.value;
 				}else if(str.charAt(0) == "$"){
-					v.base = _saved[str.substring(1)];
-					v.value = v.base;
+					v.base = _saved;
+					v.prop = str.substring(1);
+					v.value = _saved[str.substring(1)];
 				}else{
 					try{
 						v.value = getDefinitionByName(str);
@@ -436,14 +485,14 @@ package com.luaye.console.core {
 				v.base = base;
 				v.value = base[str];
 			}
-			debug("value: "+str+" = "+getQualifiedClassName(v.value)+" - "+v.value+" base:"+v.base);
+			//debug("value: "+str+" = "+getQualifiedClassName(v.value)+" - "+v.value+" base:"+v.base);
 			return v;
 		}
 		//
 		// make new instance
 		//
 		private function makeNew(str:String):*{
-			//report("makeNew "+str);
+			//debug("makeNew "+str);
 			var openindex:int = str.indexOf("(");
 			var defstr:String = openindex>0?str.substring(0, openindex):str;
 			var def:* = execValue(defstr).value;
@@ -507,7 +556,15 @@ package com.luaye.console.core {
 			return new (def)();
 		}
 		private function ignoreWhite(str:String):String{
-			return str.replace(/\s*(.*?)\s*/,"$1");
+			// can't just do /\s*(.*?)\s*/  :(  any better way?
+			str = str.replace(/\s*(.*)/,"$1");
+			var i:int = str.length-1;
+			while(i>0){
+				if(str.charAt(i).match(/\s/)) str = str.substring(0,i);
+				else break;
+				i--;
+			}
+			return str;
 		}
 		private function doReturn(returned:*, force:Boolean = false):void{
 			var newb:Boolean = false;
@@ -531,7 +588,7 @@ package com.luaye.console.core {
 			var brk:int = str.indexOf(" ");
 			var cmd:String = str.substring(1, brk>0?brk:str.length);
 			var param:String = brk>0?str.substring(brk+1):"";
-			//report("doCommand: "+ cmd+(param?(": "+param):""));
+			//debug("doCommand: "+ cmd+(param?(": "+param):""));
 			if (cmd == "help") {
 				printHelp();
 			} else if (cmd == "remap") {
@@ -549,14 +606,13 @@ package com.luaye.console.core {
 				}else{
 					report("Using WEAK referencing. '/strong true' to use strong", -2);
 				}
-			} else if (cmd == "save" || cmd == "store") {
+			} else if (cmd == "save" || cmd == "store" || cmd == "savestrong" || cmd == "storestrong") {
 				if (_scope) {
-					var params:Array = param.split(/\s+/g);
-					param = params[0].replace(/[^\w]*/g, "");
+					param = param.replace(/[^\w]/g, "");
 					if(!param){
 						report("ERROR: Give a name to save.",10);
 					}else{
-						store(param, _scope, params[1] == '-s');
+						store(param, _scope, (cmd == "savestrong" || cmd == "storestrong"));
 					}
 				} else {
 					report("Nothing to save", 10);
@@ -911,36 +967,35 @@ package com.luaye.console.core {
 				doReturn(child);
 			} catch (e:Error) {
 				report("Problem getting the clip reference. Display list must have changed since last map request",10);
-				//reportStackTrace(e.getStackTrace());
+				//debug(e.getStackTrace());
 			}
 		}
 		private function printHelp():void {
 			report("____Command Line Help___",10);
-			report("Gives you ability to read/write/execute properties and methods",0);
-			report("__Example: ",10);
-			report("root.mc => <b>root.mc</b>",5);
-			report("(save mc's reference) => <b>/save mc</b>",5);
-			report("(load mc's reference) => <b>$mc</b>",5);
-			report("root.mc.myProperty => <b>$mc.myProperty</b>",5);
-			report("root.mc.myProperty = \"newProperty\" => <b>$mc.myProperty = 'newProperty'</b>",5);
-			report("(view info) => <b>/inspect</b>",5);
-			report("(view all info) => <b>/inspectfull</b>",5);
-			report("(see display map) => <b>/map</b>",5);
-			report("__Filtering:",10);
-			report("/filter &lt;text you want to filter&gt;",5);
-			report("This will create a new channel called filtered with all matching lines",5);
-			report("__Other useful examples:",10);
+			report("/filter (text) = filter/search logs for matching text",5);
+			report("// = return to previous scope",5);
+			report("/base = return to base scope (same as typing $base)",5);
+			report("/store (name) = store current scope to that name (default is weak reference). to call back: $(name)",5);
+			report("/savestrong (name) = store current scope as strong reference",5);
+			report("/stored = list all stored variables",5);
+			report("/inspect = get info of your current scope.",5);
+			report("/inspectfull = get more detailed info of your current scope.",5);
+			report("/map = get the display list map starting from your current scope",5);
+			report("/strong true = turn on strong referencing, you need to turn this on if you want to start manipulating with instances that are newly created.",5);
+			report("/string = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.",5);
+			report("Press up/down arrow keys to recall previous commands",2);
+			report("__Examples:",10);
 			report("<b>stage.width</b>",5);
-			report("<b>stage.scaleMode = 'noScale'</b>",5);
+			report("<b>stage.scaleMode = flash.display.StageScaleMode.NO_SCALE</b>",5);
 			report("<b>stage.frameRate = 12</b>",5);
 			report("__________",10);
 		}
 		public function report(obj:*,priority:Number = 1, skipSafe:Boolean = true):void{
 			_master.report(obj, priority, skipSafe);
 		}
-		private function debug(...args):void{
-			if(debugging) _master.report(_master.joinArgs(args), 2, false);
-		}
+		//private function debug(...args):void{
+		//	_master.report(_master.joinArgs(args), 2, false);
+		//}
 	}
 }
 class Value{

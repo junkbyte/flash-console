@@ -28,7 +28,7 @@ package {
 	import com.luaye.console.Ch;
 	
 	// This class is for exporting to swc from flash - with icons etc...
-	public class ConsoleSWCPackage extends MovieClip{
+	public class ConsoleSWC extends MovieClip{
 		public var _C:C;
 		public var _Ch:Ch;
 	}

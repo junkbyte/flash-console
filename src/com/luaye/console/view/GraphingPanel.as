@@ -24,7 +24,6 @@
 */
 package com.luaye.console.view {
 	import com.luaye.console.Console;
-	import com.luaye.console.events.TextFieldRollOver;
 	import com.luaye.console.utils.Utils;
 
 	import flash.display.Shape;
@@ -79,7 +78,7 @@ package com.luaye.console.view {
 			keyTxt.y = -3;
 			keyTxt.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			registerRollOverTextField(keyTxt);
-			keyTxt.addEventListener(TextFieldRollOver.ROLLOVER, onMenuRollOver, false, 0, true);
+			keyTxt.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
 			registerDragger(keyTxt); // so that we can still drag from textfield
 			addChild(keyTxt);
 			//
@@ -308,8 +307,8 @@ package com.luaye.console.view {
 			}
 			e.stopPropagation();
 		}
-		protected function onMenuRollOver(e:TextFieldRollOver):void{
-			master.panels.tooltip(e.url?e.url.replace("event:",""):null, this);
+		protected function onMenuRollOver(e:TextEvent):void{
+			master.panels.tooltip(e.text?e.text.replace("event:",""):null, this);
 		}
 	}
 }

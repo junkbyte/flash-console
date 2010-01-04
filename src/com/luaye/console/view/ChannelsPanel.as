@@ -24,7 +24,6 @@
 */
 package com.luaye.console.view {
 	import com.luaye.console.Console;
-	import com.luaye.console.events.TextFieldRollOver;
 
 	import flash.events.TextEvent;
 	import flash.text.TextField;
@@ -49,7 +48,7 @@ package com.luaye.console.view {
 			_txtField.styleSheet = style.css;
 			_txtField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			registerRollOverTextField(_txtField);
-			_txtField.addEventListener(TextFieldRollOver.ROLLOVER, onMenuRollOver, false, 0, true);
+			_txtField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
 			registerDragger(_txtField);
 			addChild(_txtField);
 		}
@@ -69,7 +68,7 @@ package com.luaye.console.view {
 			width = _txtField.width+4;
 			height = _txtField.height;
 		}
-		private function onMenuRollOver(e:TextFieldRollOver):void{
+		private function onMenuRollOver(e:TextEvent):void{
 			master.panels.mainPanel.onMenuRollOver(e, this);
 		}
 		protected function linkHandler(e:TextEvent):void{

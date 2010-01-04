@@ -23,8 +23,9 @@
 * 
 */
 package com.luaye.console.view {
+	import flash.events.TextEvent;
+
 	import com.luaye.console.Console;
-	import com.luaye.console.events.TextFieldRollOver;
 
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
@@ -39,7 +40,10 @@ package com.luaye.console.view {
 		
 		public static const STARTED_DRAGGING:String = "startedDragging";
 		public static const STARTED_SCALING:String = "startedScaling";
-		//public static const CLOSED:String = "closed";
+		
+		//event might be clearer to have it independent...
+		//[Event(name="textLinkEvent", type="flash.events.TextEvent")]
+		public static const TEXT_LINK:String = "textLinkEvent";
 		
 		private var _snaps:Array;
 		private var _dragOffset:Point;
@@ -267,7 +271,7 @@ package com.luaye.console.view {
 			var field:TextField = e.currentTarget as TextField;
 			if(!field.stage || !field.visible || (field.parent && !field.parent.visible)) {
 				// this can happen if you removed it while rolled over and roll out calls on next move	
-				field.dispatchEvent(new TextFieldRollOver());
+				field.dispatchEvent(new TextEvent(TEXT_LINK));
 				return;
 			}
 			var index:int;
@@ -295,7 +299,7 @@ package com.luaye.console.view {
 					}
 				}
 			}
-			field.dispatchEvent(new TextFieldRollOver(url, txt));
+			field.dispatchEvent(new TextEvent(TEXT_LINK,false,false,url));
 		}
 	}
 }
