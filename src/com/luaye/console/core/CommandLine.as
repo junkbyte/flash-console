@@ -228,7 +228,7 @@ package com.luaye.console.core {
 		}
 		//
 		// Simple strip with operations.
-		// aaa.bbb.ccc(1/2,3).ddd = fff+$g.hhh();
+		// aaa.bbb.ccc(1/2,3).ddd += fff+$g.hhh();
 		//
 		private function execOperations(str:String):Value{
 			var reg:RegExp = /\s*(((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^|\!]|\=\=?|\>\>?\>?|\<\<?)\=?)|=|\sis\s|typeof\s)\s*/g;
@@ -291,58 +291,6 @@ package com.luaye.console.core {
 				}
 			}
 			return v;
-		}
-		private function operate(v1:*, op:String, v2:*):*{
-			switch (op){
-				case "=":
-					return v2;
-				case "+":
-					return v1+v2;
-				case "-":
-					return v1-v2;
-				case "*":
-					return v1*v2;
-				case "/":
-					return v1/v2;
-				case "%":
-					return v1%v2;
-				case "^":
-					return v1^v2;
-				case "&":
-					return v1&v2;
-				case ">>":
-					return v1>>v2;
-				case ">>>":
-					return v1>>>v2;
-				case "<<":
-					return v1<<v2;
-				case "~":
-					return ~v2;
-				case "|":
-					return v1|v2;
-				case "!":
-					return !v2;
-				case ">":
-					return v1>v2;
-				case ">=":
-					return v1>=v2;
-				case "<":
-					return v1<v2;
-				case "<=":
-					return v1<=v2;
-				case "||":
-					return v1||v2;
-				case "&&":
-					return v1&&v2;
-				case "is":
-					return v1 is v2;
-				case "typeof":
-					return typeof v2;
-				case "==":
-					return v1==v2;
-				case "===":
-					return v1===v2;
-			}
 		}
 		//
 		// Simple strip
@@ -469,9 +417,12 @@ package com.luaye.console.core {
 					v.base = vv.base;
 					v.value = vv.value;
 				}else if(str.charAt(0) == "$"){
-					v.base = _saved;
-					v.prop = str.substring(1);
+					var key:String = str.substring(1);
 					v.value = _saved[str.substring(1)];
+					if(v.value && _reserved.indexOf(key)<0){
+						v.base = _saved;
+						v.prop = str.substring(1);
+					}
 				}else{
 					try{
 						v.value = getDefinitionByName(str);
@@ -487,6 +438,58 @@ package com.luaye.console.core {
 			}
 			//debug("value: "+str+" = "+getQualifiedClassName(v.value)+" - "+v.value+" base:"+v.base);
 			return v;
+		}
+		private function operate(v1:*, op:String, v2:*):*{
+			switch (op){
+				case "=":
+					return v2;
+				case "+":
+					return v1+v2;
+				case "-":
+					return v1-v2;
+				case "*":
+					return v1*v2;
+				case "/":
+					return v1/v2;
+				case "%":
+					return v1%v2;
+				case "^":
+					return v1^v2;
+				case "&":
+					return v1&v2;
+				case ">>":
+					return v1>>v2;
+				case ">>>":
+					return v1>>>v2;
+				case "<<":
+					return v1<<v2;
+				case "~":
+					return ~v2;
+				case "|":
+					return v1|v2;
+				case "!":
+					return !v2;
+				case ">":
+					return v1>v2;
+				case ">=":
+					return v1>=v2;
+				case "<":
+					return v1<v2;
+				case "<=":
+					return v1<=v2;
+				case "||":
+					return v1||v2;
+				case "&&":
+					return v1&&v2;
+				case "is":
+					return v1 is v2;
+				case "typeof":
+					return typeof v2;
+				case "==":
+					return v1==v2;
+				case "===":
+					return v1===v2;
+			}
 		}
 		//
 		// make new instance
@@ -682,7 +685,6 @@ package com.luaye.console.core {
 				if(p>6) p--;
 			}
 			report(parts.join("\n"), 9);
-			
 		}
 		public function inspect(obj:Object, viewAll:Boolean= true):void {
 			//
