@@ -11,12 +11,17 @@
   * Required: `ActionScript 3.0`, Flash player 9 or above
   * Authoring: Flash, Flex or AIR
 
-
 ---- 
+
 
 ==Short description==
 Console is an as3 logger, debugger which runs inside the flash app.
 Features include: priorities, channels, FPS display, memory/garbage collection monitor, graphing, remote logging, non-repeative tracing, ruler tool, display mapping, and many more!
+
+
+==Known issues/bugs==
+Please see project issues page for latest bugs and features requests.
+http://code.google.com/p/flash-console/issues/
 
 
 == Credits ==
@@ -26,6 +31,10 @@ Features include: priorities, channels, FPS display, memory/garbage collection m
 
 
 == Change Log ==
+
+===2.31===
+  * Added support for additional commandline operations, such as + - && ^ += etc etc,
+  * Added commandLine syntax such as /savestrong /scope. type /help in commandline for info.
 
 
 ===2.3===
