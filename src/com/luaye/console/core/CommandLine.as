@@ -329,7 +329,7 @@ package com.luaye.console.core {
 			}
 			var op:String;
 			var res:*;
-			var setter:RegExp = /((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^]|\=\=?|\>\>\>?|\<\<)\=)|=/;
+			var setter:RegExp = /((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^]|\>\>\>?|\<\<)\=)|=/;
 			// EXEC math operations
 			for(i = 1;i<len;i+=2){
 				op = seq[i];
@@ -671,7 +671,7 @@ package com.luaye.console.core {
 			report((newb?"<b>+</b> ":"")+"Returned "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -2);
 		}
 		private function reportError(e:Error):void{
-			// e.getStackTrace() is not supported in non-debugger players...
+			// e.getStackTrace() is not supported in non-//debugger players...
 			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():String(e);
 			if(!str){
 				str = String(e);
