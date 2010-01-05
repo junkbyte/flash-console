@@ -299,7 +299,7 @@ package com.luaye.console.core {
 		// aaa.bbb.ccc(1/2,3).ddd += fff+$g.hhh();
 		//
 		private function execOperations(str:String):Value{
-			var reg:RegExp = /\s*(((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^|\!]|\=\=?|\>\>?\>?|\<\<?)\=?)|=|\sis\s|typeof\s)\s*/g;
+			var reg:RegExp = /\s*(((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^]|\=\=?|\!\=|\>\>?\>?|\<\<?)\=?)|=|\~|\sis\s|typeof\s)\s*/g;
 			var result:Object = reg.exec(str);
 			var seq:Array = [];
 			if(result == null){
@@ -575,6 +575,10 @@ package com.luaye.console.core {
 					return v1==v2;
 				case "===":
 					return v1===v2;
+				case "!=":
+					return v1!=v2;
+				case "!==":
+					return v1!==v2;
 			}
 		}
 		//
