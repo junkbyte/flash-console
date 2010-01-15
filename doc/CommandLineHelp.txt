@@ -6,7 +6,7 @@
   * Command line lets you execute ActionScript3 code during run-time (on the fly)...
   * It uses the same syntax as actionscript
   * As there is only one line at a time, CommandLine have to rely on 'scoping'. i.e, the scope changes every time there is new object returned. - your next line of code will be applied to that new scope object.
-  * Most AS3 syntax is supported. Currently do NOT support: E4X, for (loops), if (statements), namespaces,...
+  * Most AS3 syntax is supported. Currently do NOT support: for (loops), if (statements), namespaces,...
 
 === Example Uses ===
   * We have developed a game that users are able to go to different parts of an island collecting items, keys and unlocking each part of the island. Testing and fixing different parts of the island for bugs would be a pain if you have to go through all stages from start every time you re-launch the game (or recompile to change the start place). With Console, we are able to just type which section we want to go to in command line like: `$goto('red31')` We can even give our selves items without picking them up by calling a command like: `$give('bluekey1')` with these simple commands we are able to let betatesters go to different parts of the island with different item combinations without needing to start the game all over again.
@@ -243,14 +243,19 @@ It is not limited to displays, it can access and execute ANY object/class.
   * `/filter (text)` = filter/search logs for matching text
   * `//` = return to previous scope
   * `/base` = return to base scope (same as typing $base)
-  * `/store (name)` = store current scope to that name. to call back: $(name)
+  * `/store (name)` = store current scope to that name (weak reference). To call back: `$(name)`
+  * `/storestrong (name)` = store current scope to that name using strong referencing (to make sure it doesn't get garbage collected). To call back: `$(name)`
   * `/stored` = list all stored variables
   * `/inspect` = get detailed info of your current scope.
   * `/inspectfull` = get more detailed info of your current scope.
   * `/map` =  get the display list map starting from your current scope
-  * `/strong true` = turn on strong referencing, you need to turn this on if you want to start manipulating with instances that are newly created.
+  * `/strong true` = turn on strong referencing.
+  * `/scope` = Force change scope, If previous return was a primitive value (String / Number) scope is not changed automatically to it. Use this command if you need to force change to that scope. For example when you want to do `/save` to that return.
   * `/string` = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.
 
+  * `$C` = Reference to Console `com.luaye.console.Console`
+  * `$base` = Reference to base (original) scope
+  * `$returned` = Previously returned value (this is not always the same as `this` as previous return could be a primitive value (Number / String) which does not get scoped automatically)
   * Press up/down arrow keys to recall previous commands.
 
 
