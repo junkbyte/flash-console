@@ -5,7 +5,7 @@
 
 ==Flash Console==
 
-  * Version: 2.3 (Dec 2009)
+  * Version: 2.31 (Jan 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.luaye.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -33,7 +33,8 @@ http://code.google.com/p/flash-console/issues/
 == Change Log ==
 
 ===2.31===
-  * Added support for additional commandline operations, such as + - && ^ += etc etc,
+  * Added support for additional commandline operations, such as + - & | ^ += ,etc
+  * CommandLine should now try to execute `AS3` namespaced methods such as ones in XML (E4X) 
   * Added commandLine syntax such as /savestrong /scope. type /help in commandline for info.
 
 

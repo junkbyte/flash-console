@@ -3,15 +3,10 @@
 ==This document applies to v2.3 or above only==
 
 == Introduction ==
-
-  * Command line is not visible in console by default.
-  * To start commandliine: `C.commandline = true` in source OR in console interface you can click on *CL* in top menu.
-  * Command line appear as a text field at the bottom of the console window.
-  * It uses the same syntax as actionscript - Except that you can only do 1 simple line of code at a time.
+  * Command line lets you execute ActionScript3 code during run-time (on the fly)...
+  * It uses the same syntax as actionscript
   * As there is only one line at a time, CommandLine have to rely on 'scoping'. i.e, the scope changes every time there is new object returned. - your next line of code will be applied to that new scope object.
-  * The class name of current scope is displayed on the left of command line. 
-  * Special commands start with / - to signify that it is commandLine specific.
-  * Stored variables in commandline can be accessed by prefixing with $ sign. For example $C will always return Console instance.
+  * Most AS3 syntax is supported. Currently do NOT support: E4X, for (loops), if (statements), namespaces,...
 
 === Example Uses ===
   * We have developed a game that users are able to go to different parts of an island collecting items, keys and unlocking each part of the island. Testing and fixing different parts of the island for bugs would be a pain if you have to go through all stages from start every time you re-launch the game (or recompile to change the start place). With Console, we are able to just type which section we want to go to in command line like: `$goto('red31')` We can even give our selves items without picking them up by calling a command like: `$give('bluekey1')` with these simple commands we are able to let betatesters go to different parts of the island with different item combinations without needing to start the game all over again.
@@ -21,8 +16,17 @@
   * Note that `$` commands given in the above examples need to be assigned to a function of your own flash. For example: to be able to use `$goto('red31')` command mentioned above, you would have to create a function that accept a string argument and assign that function in console like: `C.store(<function>, "goto");`. Explained how in tutorial below.
 
 === Limitations ===
-  * Console can only access/execute public/dynamic properties, methods and static classes/objects. You can not access private/protected properties/methods or perform operations such as for-loop, `+ / - * +=`, etc, - Command line is designed to debug, not to do logical operations :)
+  * Console can only access/execute public/dynamic properties, methods and static classes/objects. You can not access private/protected properties/methods or perform operations such as for-loop, defining a brand new class, etc, - Command line is designed to debug and help develop, not to create another app within it :)
 
+
+== Getting started ==
+  * Command line is not visible in console by default.
+  * To start commandliine: `C.commandline = true` in source OR in console interface you can click on *CL* in top menu.
+  * Command line appear as a text field at the bottom of the console window.
+  * It uses the same syntax as actionscript - Except that you can only do 1 simple line of code at a time.
+  * The class name of current scope is displayed on the left of command line. 
+  * Special commands start with `/` - to signify that it is commandLine specific.
+  * Stored variables in commandline can be accessed by prefixing with $ sign. For example $C will always return Console instance.
 
 == Tutorial==
 
@@ -88,7 +92,11 @@ getChildByName('mcBunny')
 }}} 
   * You should get a tree like structure list mapping the display list of 'mcBunny'
   * You can click on any of the names in the log to change to the scope of that displayObject.
-  * Lets go to the head, *click on 'head (sample_fla::bunnyHead_6)'* - near the bottom.
+  * Lets go to the head, *click on 'head (sample_fla::bunnyHead_6)'* - near the bottom. OR just type: 
+{{{
+head
+}}} 
+  * it should return
 {{{
  + Returned sample_fla::bunnyHead_6: [object bunnyHead_6]
 }}}
@@ -147,10 +155,6 @@ To stop:
 $bunny.removeEventListener('mouseMove', $C.log)
 }}}
 Potentially, this means you can re-assign your event listeners on the fly.
-
-IMPORTANT: This example only show you how to manipulate properties of a display object. 
-It is not limited to displays, it can access and execute ANY object/class. 
-(You only see me changing displays here because its more visual) 
 
 === Static classes/singletons ===
   * To access class singletons, you need to write the full path, as there is no room for 'import' syntax in a single line.
@@ -226,6 +230,11 @@ OK... I think that's enough of play around. In the tutorial I have demonstrated 
   * create new instances
 
 
+IMPORTANT: This example only show you how to manipulate properties of a display object. 
+It is not limited to displays, it can access and execute ANY object/class. 
+(You only see me changing displays here because its more visual) 
+
+
 == Notes ==
   * You can do nested calls. such as, $base.getChildByName('root1').mcBunny.getChildByName($bunny.getChildAt(0).name); - etc, etc... 
   * You can execute multiple lines of code in one go by separating with ; - however the scope can change after each line execution so you will need to write accordingly.
@@ -247,10 +256,11 @@ OK... I think that's enough of play around. In the tutorial I have demonstrated 
 
 == Security ==
 
-As command line can let user do almost any execution, this is a very bad security risk for deployment. Examples of security risk:
-  * commandLine user can study your code interface and potentially find security weak points or hack the workings of the application (such as cheating in a game).
-  * You can directly allow domains by calling `flash.system.Security.allowDomain('*')` - Although this can be a very useful way to test security sandbox issues, this also defeats the point of flash security.
-  * You can load external swf files in with application domain set to current flash domain - which again defeats the point of flash security sandbox.
+As command line can let user do almost any execution, it is a very big security risk for deployment. It is as if you are letting any user of your commandLine to code in your flash. 
+Examples of security risk:
+  * commandLine user can study your code interface - by using `/inspectfull` on your saved commandLine variables OR through stage display list - and potentially find security weak points or hack the workings of the application (examples: cheat scores in a game, pretend to be different user in an account based application)
+  * You can directly allow domains by calling `flash.system.Security.allowDomain('*')` - Although this can be a very continent way to test security sandbox issues, it also defeat the point of flash security.
+  * You can load external swf files in with application domain set to current flash domain - which again defeat the point of flash security sandbox.
 
 How to increase security.
   * It is likely very useful to have Console running during beta or even final deployment. However it is highly recommended that you either have a long password to Console OR disable commandLine.
