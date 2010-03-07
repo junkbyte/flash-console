@@ -197,6 +197,8 @@ package com.luaye.console.core {
 				if(props.length){
 					report("<p10>Children:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
 				}
+			}
+			if (viewAll && obj is DisplayObject) {
 				var theParent:DisplayObjectContainer = mc.parent;
 				if (theParent) {
 					props = ["("+theParent.getChildIndex(mc)+")"];
@@ -328,6 +330,7 @@ package com.luaye.console.core {
 		public function printHelp():void {
 			report("____Command Line Help___",10);
 			report("/filter (text) = filter/search logs for matching text",5);
+			report("/filterexp (expression) = filter/search logs using RegExp search",5);
 			report("// = return to previous scope",5);
 			report("/base = return to base scope (same as typing $base)",5);
 			report("/store (name) = store current scope to that name (default is weak reference). to call back: $(name)",5);
@@ -336,7 +339,6 @@ package com.luaye.console.core {
 			report("/inspect = get info of your current scope.",5);
 			report("/inspectfull = get more detailed info of your current scope.",5);
 			report("/map = get the display list map starting from your current scope",5);
-			report("/strong true = turn on strong referencing, you need to turn this on if you want to start manipulating with instances that are newly created.",5);
 			report("/string = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.",5);
 			report("Press up/down arrow keys to recall previous commands",2);
 			report("__Examples:",10);

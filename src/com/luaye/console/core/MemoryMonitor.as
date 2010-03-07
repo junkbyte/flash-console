@@ -81,6 +81,10 @@ package com.luaye.console.core {
 			}
 			return arr;
 		}
+		public function get haveItemsWatching():Boolean{
+			for (var X:Object in _namesList) return true;
+			return false;
+		}
 		/*private function seedGCDummy():void{
 			if(!_namesList[DUMMY_GARBAGE]){
 				// using MovieClip as dummy garbate as it doenst get collected straight away like others
@@ -103,11 +107,14 @@ package com.luaye.console.core {
 		//
 		// only works in debugger player version
 		//
-		public function gc():Boolean {
-			if(System["gc"] != null){
-				System["gc"]();
-				return true;
-			}
+		public static function Gc():Boolean {
+			try{
+				// have to put in brackes cause some compilers will complain.
+				if(System["gc"] != null){
+					System["gc"]();
+					return true;
+				}
+			}catch(e:Error){ }
 			return false;
 		}
 	}

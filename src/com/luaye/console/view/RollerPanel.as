@@ -23,6 +23,8 @@
 * 
 */
 package com.luaye.console.view {
+	import flash.events.KeyboardEvent;
+
 	import com.luaye.console.Console;
 	import com.luaye.console.utils.Utils;
 
@@ -41,6 +43,8 @@ package com.luaye.console.view {
 		private var _txtField:TextField;
 		private var _base:DisplayObjectContainer;
 		
+		private var _settingKey:Boolean;
+		
 		public function RollerPanel(m:Console) {
 			super(m);
 			name = Console.PANEL_ROLLER;
@@ -49,7 +53,7 @@ package com.luaye.console.view {
 			_txtField.name = "rollerprints";
 			_txtField.multiline = true;
 			_txtField.autoSize = TextFieldAutoSize.LEFT;
-			_txtField.styleSheet = style.css;
+			_txtField.styleSheet = m.css;
 			_txtField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			registerRollOverTextField(_txtField);
 			_txtField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
@@ -58,28 +62,39 @@ package com.luaye.console.view {
 		}
 		public function start(base:DisplayObjectContainer):void{
 			_base = base;
-			addEventListener(Event.ENTER_FRAME, _onFrame, false, 0, true);
+			addEventListener(Event.ENTER_FRAME, _onFrame);
+			addEventListener(Event.REMOVED_FROM_STAGE, removeListeners);
+		}
+		private function removeListeners(e:Event=null):void{
+			removeEventListener(Event.ENTER_FRAME, _onFrame);
+			removeEventListener(Event.REMOVED_FROM_STAGE, removeListeners);
+			if(stage) stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
 		public function capture():String{
 			return getMapString(true);
-		}
-		private function onMenuRollOver(e:TextEvent):void{
-			master.panels.tooltip(e.text?"Close":null, this);
 		}
 		private function _onFrame(e:Event):void{
 			if(!_base.stage){
 				close();
 				return;
 			}
-			_txtField.htmlText = "<ro>"+getMapString()+"</ro>";
-			_txtField.autoSize = TextFieldAutoSize.LEFT;
-			_txtField.setSelection(0, 0);
+			if(_settingKey){
+				_txtField.htmlText = "<w><menu>Press a key to set [ <a href=\"event:cancel\"><b>cancel</b></a> ]</menu></w>";
+			}else{
+				_txtField.htmlText = "<s>"+getMapString()+"</s>";
+				_txtField.autoSize = TextFieldAutoSize.LEFT;
+				_txtField.setSelection(0, 0);
+			}
 			width = _txtField.width+4;
 			height = _txtField.height;
 		}
 		private function getMapString(dolink:Boolean = false):String{
 			var stg:Stage = _base.stage;
 			var str:String = "";
+			if(!dolink){
+				var key:String = master.rollerCaptureKey?master.rollerCaptureKey.charAt(0).toUpperCase():"unassigned";
+				str = "<menu> <a href=\"event:close\"><b>X</b></a></menu> Capture key: <menu><a href=\"event:capture\">"+key+"</a></menu><br/>";
+			}
 			var objs:Array = stg.getObjectsUnderPoint(new Point(stg.mouseX, stg.mouseY));
 			var stepMap:Dictionary = new Dictionary(true);
 			if(objs.length == 0){
@@ -97,25 +112,24 @@ package com.luaye.console.view {
 					var obj:DisplayObject = chain[i];
 					if(stepMap[obj] == undefined){
 						stepMap[obj] = i;
-						if(dolink) str+="<br/>";
 						for(var j:uint = i;j>0;j--){
 							str += j==1?" ∟":" -";
 						}
 						if(dolink){
 							if(obj == stg){
-								str +=  "<p3><a href='event:sclip_'><i>Stage</i></a> ["+stg.mouseX+","+stg.mouseY+"]</p3>";
+								str +=  "<p3><a href='event:sclip_'><i>Stage</i></a> ["+stg.mouseX+","+stg.mouseY+"]</p3><br/>";
 							}else if(i == len-1){
-								str +=  "<p5><a href='event:sclip_"+mapUpward(obj)+"'>"+obj.name+"("+Utils.shortClassName(obj)+")</a></p5>";
+								str +=  "<p5><a href='event:sclip_"+mapUpward(obj)+"'>"+obj.name+" ("+Utils.shortClassName(obj)+")</a></p5><br/>";
 							}else {
-								str +=  "<p2><a href='event:sclip_"+mapUpward(obj)+"'><i>"+obj.name+"("+Utils.shortClassName(obj)+")</i></a></p2>";
+								str +=  "<p2><a href='event:sclip_"+mapUpward(obj)+"'><i>"+obj.name+" ("+Utils.shortClassName(obj)+")</i></a></p2><br/>";
 							}
 						}else{
 							if(obj == stg){
-								str +=  "<menu> <a href=\"event:close\"><b>X</b></a></menu> <i>Stage</i> ["+stg.mouseX+","+stg.mouseY+"]<br/>";
+								str +=  "<p1><i>Stage</i> ["+stg.mouseX+","+stg.mouseY+"]</p1><br/>";
 							}else if(i == len-1){
-								str +=  "<roBold>"+obj.name+"("+Utils.shortClassName(obj)+")</roBold>";
+								str +=  "<p5>"+obj.name+" ("+Utils.shortClassName(obj)+")</p5><br/>";
 							}else {
-								str +=  "<i>"+obj.name+"("+Utils.shortClassName(obj)+")</i><br/>";
+								str +=  "<p2>"+obj.name+" ("+Utils.shortClassName(obj)+")</p2><br/>";
 							}
 						}
 					}
@@ -133,17 +147,61 @@ package com.luaye.console.view {
 			return arr.reverse().join(Console.MAPPING_SPLITTER);
 		}
 		public override function close():void {
-			removeEventListener(Event.ENTER_FRAME, _onFrame);
+			cancelCaptureKeySet();
+			removeListeners();
 			_base = null;
 			super.close();
 			master.panels.updateMenu(); // should be black boxed :/
+		}
+		private function onMenuRollOver(e:TextEvent):void{
+			var txt:String = e.text?e.text.replace("event:",""):"";
+			if(txt == "close"){
+				txt = "Close";
+			}else if(txt == "capture"){
+				var key:String = master.rollerCaptureKey;
+				if(key){
+					txt = "Unassign key ::"+key.charAt(0).toUpperCase();
+					if(key.charAt(1) == "1") txt+="+ctrl";
+					if(key.charAt(2) == "1") txt+="+alt";
+					if(key.charAt(3) == "1") txt+="+shift";
+				}else{
+					txt = "Assign key";
+				}
+			}else if(txt == "cancel"){
+				txt = "Cancel assign key";
+			}else{
+				txt = null;
+			}
+			master.panels.tooltip(txt, this);
 		}
 		protected function linkHandler(e:TextEvent):void{
 			TextField(e.currentTarget).setSelection(0, 0);
 			if(e.text == "close"){
 				close();
+			}else if(e.text == "capture"){
+				if(master.rollerCaptureKey){
+					master.setRollerCaptureKey(null);
+				}else{
+					_settingKey = true;
+					stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+				}
+				master.panels.tooltip(null);
+			}else if(e.text == "cancel"){
+				cancelCaptureKeySet();
+				master.panels.tooltip(null);
 			}
 			e.stopPropagation();
+		}
+		private function cancelCaptureKeySet():void{
+			_settingKey = false;
+			if(stage) stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+		}
+		private function keyDownHandler(e:KeyboardEvent):void{
+			if(!e.charCode) return;
+			var char:String = String.fromCharCode(e.charCode);
+			cancelCaptureKeySet();
+			master.setRollerCaptureKey(char, e.ctrlKey, e.altKey, e.shiftKey);
+			master.panels.tooltip(null);
 		}
 	}
 }

@@ -55,8 +55,9 @@ package com.luaye.console.view {
 			if(_history.length>0){
 				keyTxt.htmlText = "<r><s>"+master.fps.toFixed(1)+" | "+getAverageOf(0).toFixed(1)+" <menu><a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
 			}else{
-				keyTxt.htmlText = "<r><s><y>no fps input</y> <menu><a href=\"event:close\">X</a></menu></s></r>";
+				keyTxt.htmlText = "<r><s>no fps input <menu><a href=\"event:close\">X</a></menu></s></r>";
 			}
+			keyTxt.scrollH = keyTxt.maxScrollH;
 		}
 		public function get current():Number{
 			if(isNaN(_cachedCurrent))

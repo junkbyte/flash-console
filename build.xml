@@ -1,0 +1,104 @@
+<project name="Console" basedir=".">
+
+	<property file="local.properties"/>
+	
+	<property name="src.version" value="2.4"/>
+	<property name="src.path" value="${basedir}/src"/>
+	<property name="asdoc.target.dir" value="${basedir}/asdoc"/>
+	<property name="doc.dir" value="${basedir}/doc"/>
+	<property name="asdoc.exe" value="${FLEX_HOME}/bin/asdoc.exe"/>
+	<property name="flex.ant" value="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+	<property name="wiki.dir" value="../wiki"/>
+	<property name="temp.dir" value="${basedir}/temp"/>
+
+	
+	<path id="svnant.classpath" >
+		<fileset dir="${svnant.path}" >
+	         <include name= "*.jar" />
+		</fileset>
+	</path>
+	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant.classpath" />
+	<taskdef name="compc" classpath="${flex.ant}" classname="flex.ant.CompcTask"/>
+	
+	<!--
+		- svn export trunk to temp/
+		- delete temp/build.xml
+		- delete temp/local.properties
+		- zip temp/
+		- delete temp/ and temp2/
+	-->
+	<target name="zip">
+		<delete dir="${temp.dir}"/>
+		<svn>
+			<export srcPath="${basedir}" destPath="${temp.dir}"/>
+		</svn>
+		<delete file="${temp.dir}/build.xml"/>
+		<delete file="${temp.dir}/local.properties"/>
+		<zip destfile="console${src.version}.zip">
+			<fileset dir="${basedir}/${temp.dir}"/>
+		</zip>
+		<delete dir="${temp.dir}"/>
+	</target>
+	
+	<target name="updateWikiFromTxt">
+		<copy todir="${wiki.dir}" includeemptydirs="false">
+    		<fileset dir="${doc.dir}"/>
+			<mapper type="glob" from="*.txt" to="*.wiki"/>
+		</copy>
+	</target>
+	
+	<target name="compileSrc">
+		<fdt.flashCompile>
+			<fileset dir="${basedir}/samples/flash">
+				<include name="sample.fla"/>
+			</fileset>
+		</fdt.flashCompile>
+		<echo>TODO: compile ConsoleRemote.as</echo>
+		<echo>TODO: compile AIR ConsoleRemoteAIR-app.xml</echo>
+		<echo>TODO: Export ConsoleComponent to SWC from Sample.fla...</echo>
+	</target>
+	
+	
+	<target name="compileASDoc">
+        <delete dir="${asdoc.target.dir}" failOnError="false" includeEmptyDirs="true" />
+        <mkdir dir="${asdoc.target.dir}" />
+		<exec executable="${asdoc.exe}" failonerror="true">
+            <arg line="-output '${asdoc.target.dir}'" />
+			<arg line="-source-path '${src.path}'" />
+			<arg line="-doc-classes com.luaye.console.C com.luaye.console.Console com.luaye.console.ConsoleStyle com.luaye.console.Ch" />
+			<arg line="-exclude-dependencies" />
+			<arg line="-main-title 'Flash-Console v${src.version}'" />
+            <arg line="-window-title 'Flash-Console v${src.version}'" />
+            <arg line="-footer 'Flash-Console v${src.version}'" />
+		</exec>
+	</target>
+	
+
+	
+	<!--
+	
+	This does not export the icons, which makes it unusable in CS3...
+	<target name="buildSWC">
+	        <compc output="${basedir}/bin/swc.swc"  include-classes="com.luaye.console.C">
+	            <source-path path-element="${src.path}"/>
+	        </compc>
+	</target>
+	
+		- svn export wiki to ./temp
+		- move files from temp2 to ./doc and rename *.wiki to *.txt
+		- delete ./temp
+		
+	<target name="updateTxtFromWiki">
+		<delete dir="${temp.dir}"/>
+		<svn>
+			<export srcPath="${wiki.dir}" destPath="${temp.dir}"/>
+		</svn>
+		<move todir="${doc.dir}" includeemptydirs="false">
+    		<fileset dir="${temp.dir}"/>
+			<mapper type="glob" from="*.wiki" to="*.txt"/>
+		</move>
+		<delete dir="${temp.dir}"/>
+	</target>
+	
+	-->
+</project>

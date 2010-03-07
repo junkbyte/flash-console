@@ -24,6 +24,7 @@
 */
 
 package com.luaye.console.view {
+	import flash.text.TextFormat;
 	import flash.system.System;	
 	
 	import com.luaye.console.Console;
@@ -96,9 +97,10 @@ package com.luaye.console.view {
 		private var _scrolldir:int;
 		
 		private var _channels:Array;
+		private var _viewingChannels:Array;
 		private var _lines:Logs;
 		private var _commandsHistory:Array = [];
-		private var _commandsInd:int;
+		private var _commandsInd:int = -1;
 		
 		private var _needUpdateMenu:Boolean;
 		private var _needUpdateTrace:Boolean;
@@ -106,13 +108,16 @@ package com.luaye.console.view {
 		private var _atBottom:Boolean = true;
 		private var _enteringLogin:Boolean;
 		
-		public function MainPanel(m:Console, lines:Logs, channels:Array) {
+		public function MainPanel(m:Console, lines:Logs, channels:Array, chanviews:Array) {
 			super(m);
-			
 			_canUseTrace = (Capabilities.playerType=="External"||Capabilities.isDebugger);
-			
+			var fsize:int = m.style.menuFontSize;
 			_channels = channels;
+			_viewingChannels = chanviews;
 			_lines = lines;
+			_commandsHistory = m.ud.commandLineHistory;
+			
+			
 			name = Console.PANEL_MAIN;
 			minimumWidth = 50;
 			minimumHeight = 18;
@@ -122,15 +127,15 @@ package com.luaye.console.view {
 			_traceField.wordWrap = true;
 			_traceField.background  = false;
 			_traceField.multiline = true;
-			_traceField.styleSheet = style.css;
-			_traceField.y = 12;
+			_traceField.styleSheet = m.css;
+			_traceField.y = fsize;
 			_traceField.addEventListener(Event.SCROLL, onTraceScroll, false, 0, true);
 			addChild(_traceField);
 			//
 			_menuField = new TextField();
 			_menuField.name = "menuField";
-			_menuField.styleSheet = style.css;
-			_menuField.height = 18;
+			_menuField.styleSheet = m.css;
+			_menuField.height = fsize+6;
 			_menuField.y = -2;
 			registerRollOverTextField(_menuField);
 			_menuField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
@@ -139,27 +144,29 @@ package com.luaye.console.view {
 			_commandBackground = new Shape();
 			_commandBackground.name = "commandBackground";
 			_commandBackground.graphics.beginFill(style.commandLineColor, 0.1);
-			_commandBackground.graphics.drawRoundRect(0, 0, 100, 18,12,12);
+			_commandBackground.graphics.drawRoundRect(0, 0, 100, 18,fsize,fsize);
 			_commandBackground.scale9Grid = new Rectangle(9, 9, 80, 1);
 			addChild(_commandBackground);
 			//
+			var tf:TextFormat = new TextFormat(style.menuFont, style.menuFontSize, style.highColor);
 			_commandField = new TextField();
 			_commandField.name = "commandField";
 			_commandField.type  = TextFieldType.INPUT;
 			_commandField.x = 40;
-			_commandField.height = 18;
+			_commandField.height = fsize+6;
 			_commandField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown, false, 0, true);
 			_commandField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp, false, 0, true);
-			_commandField.defaultTextFormat = style.textFormat;
+			_commandField.defaultTextFormat = tf;
 			addChild(_commandField);
 			
+			tf.color = style.commandLineColor;
 			_commandPrefx = new TextField();
 			_commandPrefx.name = "commandPrefx";
 			_commandPrefx.type  = TextFieldType.DYNAMIC;
 			_commandPrefx.x = 2;
-			_commandPrefx.height = 18;
+			_commandPrefx.height = fsize+6;
 			_commandPrefx.selectable = false;
-			_commandPrefx.styleSheet = style.css;
+			_commandPrefx.defaultTextFormat = tf;
 			_commandPrefx.text = " ";
 			_commandPrefx.addEventListener(MouseEvent.MOUSE_DOWN, onCmdPrefMouseDown, false, 0, true);
 			_commandPrefx.addEventListener(MouseEvent.MOUSE_MOVE, onCmdPrefRollOverOut, false, 0, true);
@@ -175,12 +182,12 @@ package com.luaye.console.view {
 			_scrollbar.name = "scrollbar";
 			_scrollbar.buttonMode = true;
 			_scrollbar.addEventListener(MouseEvent.MOUSE_DOWN, onScrollbarDown, false, 0, true);
-			_scrollbar.y = 16;
+			_scrollbar.y = fsize+4;
 			addChild(_scrollbar);
 			//
 			_scroller = new Sprite();
 			_scroller.name = "scroller";
-			_scroller.graphics.beginFill(style.panelScalerColor, 1);
+			_scroller.graphics.beginFill(style.controlColor, 1);
 			_scroller.graphics.drawRect(-5, 0, 5, 30);
 			_scroller.graphics.beginFill(0, 0);
 			_scroller.graphics.drawRect(-10, 0, 10, 30);
@@ -239,7 +246,7 @@ package com.luaye.console.view {
 				master.report("//", -2);
 				master.report("// <b>Enter remoting password</b> in CommandLine below...", -2);
 				updateCLScope("Password");
-				ct.color = style.bottomLineColor;
+				ct.color = style.controlColor;
 				_commandBackground.transform.colorTransform = ct;
 				_traceField.transform.colorTransform = new ColorTransform(0.7,0.7,0.7);
 			}else{
@@ -251,24 +258,22 @@ package com.luaye.console.view {
 			_enteringLogin = on;
 		}
 		public function update(changed:Boolean):void{
-			//if(visible){
-				if(_bottomLine.alpha>0){
-					_bottomLine.alpha -= 0.25;
-				}
-				if(changed){
-					_bottomLine.alpha = 1;
-					_needUpdateMenu = true;
-					_needUpdateTrace = true;
-				}
-				if(_needUpdateTrace){
-					_needUpdateTrace = false;
-					_updateTraces(true);
-				}
-				if(_needUpdateMenu){
-					_needUpdateMenu = false;
-					_updateMenu();
-				}
-			//}
+			if(_bottomLine.alpha>0){
+				_bottomLine.alpha -= 0.25;
+			}
+			if(changed){
+				_bottomLine.alpha = 1;
+				_needUpdateMenu = true;
+				_needUpdateTrace = true;
+			}
+			if(_needUpdateTrace){
+				_needUpdateTrace = false;
+				_updateTraces(true);
+			}
+			if(_needUpdateMenu){
+				_needUpdateMenu = false;
+				_updateMenu();
+			}
 		}
 		public function updateToBottom():void{
 			_atBottom = true;
@@ -320,7 +325,7 @@ package com.luaye.console.view {
 		}
 		private function updateBottom():void{
 			var lines:Array = new Array();
-			var linesLeft:int = Math.round(_traceField.height/10);
+			var linesLeft:int = Math.round(_traceField.height/master.style.traceFontSize);
 			var line:Log = _lines.last;
 			while(line){
 				if(master.lineShouldShow(line)){
@@ -341,7 +346,7 @@ package com.luaye.console.view {
 		private function makeLine(line:Log):String{
 			var str:String = "";
 			var txt:String = line.text;
-			if(master.prefixChannelNames && (master.viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0 || master.viewingChannels.length>1) && line.c != Console.DEFAULT_CHANNEL){
+			if(master.prefixChannelNames && (_viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0 || _viewingChannels.length>1) && line.c != Console.DEFAULT_CHANNEL){
 				txt = "[<a href=\"event:channel_"+line.c+"\">"+line.c+"</a>] "+txt;
 			}
 			var ptag:String = "p"+line.p;
@@ -387,19 +392,20 @@ package com.luaye.console.view {
 				_updateTraces();
 				_scroller.y = Y;
 			}
-			_scroller.startDrag(false, new Rectangle(_scroller.x,21, 0, (scrollerMaxY-21)));
+			var bound:Number = master.style.menuFontSize+8;
+			_scroller.startDrag(false, new Rectangle(_scroller.x,bound, 0, (scrollerMaxY-bound)));
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollerUp, false, 0, true);
 		}
 		private function onScrollerMove(e:MouseEvent):void{
-			var minY:Number = 21;
+			var minY:Number = master.style.menuFontSize+8;
 			var per:Number = (_scroller.y-minY)/(scrollerMaxY-minY);
 			_lockScrollUpdate = true;
 			_traceField.scrollV = Math.round((per*(_traceField.maxScrollV-1))+1);
 			_lockScrollUpdate = false;
 		}
 		private function get scrollerMaxY():Number{
-			return _bottomLine.y-_scroller.height-(_commandField.visible?5:15);
+			return _bottomLine.y-_scroller.height-(_commandField.visible?5:(master.style.menuFontSize+5));
 		}
 		private function onScrollerUp(e:MouseEvent):void{
 			_scroller.stopDrag();
@@ -442,7 +448,7 @@ package com.luaye.console.view {
 			_commandBackground.width = n;
 			
 			_bottomLine.graphics.clear();
-			_bottomLine.graphics.lineStyle(1, style.bottomLineColor);
+			_bottomLine.graphics.lineStyle(1, style.controlColor);
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
 			_scroller.x = n;
@@ -465,10 +471,11 @@ package com.luaye.console.view {
 				registerDragger(_traceField, !minimize);
 				_isMinimised = minimize;
 			}
+			var fsize:int = master.style.menuFontSize;
 			_menuField.visible = !minimize;
-			_traceField.y = minimize?0:12;
-			_traceField.height = n-(_commandField.visible?16:0)-(minimize?0:12);
-			var cmdy:Number = n-18;
+			_traceField.y = minimize?0:fsize;
+			_traceField.height = n-(_commandField.visible?(fsize+4):0)-(minimize?0:fsize);
+			var cmdy:Number = n-(fsize+6);
 			_commandField.y = cmdy;
 			_commandPrefx.y = cmdy;
 			_commandBackground.y = cmdy;
@@ -476,10 +483,10 @@ package com.luaye.console.view {
 			//
 			var sbh:Number = (_bottomLine.y-(_commandField.visible?0:10))-_scrollbar.y;
 			_scrollbar.graphics.clear();
-			_scrollbar.graphics.beginFill(style.panelScalerColor, 0.7);
+			_scrollbar.graphics.beginFill(style.controlColor, 0.7);
 			_scrollbar.graphics.drawRect(-5, 0, 5, 5);
 			_scrollbar.graphics.drawRect(-5, sbh-5, 5, 5);
-			_scrollbar.graphics.beginFill(style.panelScalerColor, 0.25);
+			_scrollbar.graphics.beginFill(style.controlColor, 0.25);
 			_scrollbar.graphics.drawRect(-5, 5, 5, sbh-10);
 			_scrollbar.graphics.endFill();
 			//
@@ -499,7 +506,7 @@ package com.luaye.console.view {
 		}
 		private function _updateMenu():void{
 			var str:String = "<r><w>";
-			if(!master.channelsPanel){
+			if(!master.panels.channelsPanel){
 				str += getChannelsLink(true);
 			}
 			str += "<menu>[ <b>";
@@ -534,7 +541,7 @@ package com.luaye.console.view {
 			if(limited && len>CHANNELS_IN_MENU) len = CHANNELS_IN_MENU;
 			for(var ci:int = 0; ci<len;  ci++){
 				var channel:String = _channels[ci];
-				var channelTxt:String = (master.viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
+				var channelTxt:String = (_viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
 				str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
 			}
 			if(limited){
@@ -544,7 +551,7 @@ package com.luaye.console.view {
 			return str;
 		}
 		private function doActive(str:String, b:Boolean):String{
-			if(b) return "<y>"+str+"</y>";
+			if(b) return "<hi>"+str+"</hi>";
 			return str;
 		}
 		public function onMenuRollOver(e:TextEvent, src:AbstractPanel = null):void{
@@ -605,7 +612,7 @@ package com.luaye.console.view {
 				visible = false;
 				//dispatchEvent(new Event(AbstractPanel.CLOSED));
 			}else if(e.text == "channels"){
-				master.channelsPanel = !master.channelsPanel;
+				master.panels.channelsPanel = !master.panels.channelsPanel;
 			}else if(e.text == "fps"){
 				master.fpsMonitor = !master.fpsMonitor;
 			}else if(e.text == "priority"){
@@ -645,8 +652,8 @@ package com.luaye.console.view {
 			e.stopPropagation();
 		}
 		public function onChannelPressed(chn:String):void{
-			var current:Array = master.viewingChannels.concat();
-			if(_shift && master.viewingChannel != Console.GLOBAL_CHANNEL && chn != Console.GLOBAL_CHANNEL){
+			var current:Array = _viewingChannels.concat();
+			if(_shift && _viewingChannels[0] != Console.GLOBAL_CHANNEL && chn != Console.GLOBAL_CHANNEL){
 				var ind:int = current.indexOf(chn);
 				if(ind>=0){
 					current.splice(ind,1);
@@ -658,7 +665,7 @@ package com.luaye.console.view {
 				}
 				master.viewingChannels = current;
 			}else{
-				master.viewingChannel = chn;
+				master.viewingChannels = [chn];
 			}
 		}
 		//
@@ -668,25 +675,31 @@ package com.luaye.console.view {
 			e.stopPropagation();
 		}
 		private function commandKeyUp(e:KeyboardEvent):void{
-			if(!master.enabled){
-				return;
-			}
-			if( e.keyCode == 13){
+			if( e.keyCode == Keyboard.ENTER){
 				if(_enteringLogin){
-					master.sendLogin(_commandField.text);
+					dispatchEvent(new Event(Event.CONNECT));
 					_commandField.text = "";
 					requestLogin(false);
 				}else{
-					master.runCommand(_commandField.text);
-					_commandsHistory.unshift(_commandField.text);
+					var txt:String = _commandField.text;
+					master.runCommand(txt);
+					var i:int = _commandsHistory.indexOf(txt);
+					while(i>=0){
+						_commandsHistory.splice(i,1);
+						i = _commandsHistory.indexOf(txt);
+					}
+					_commandsHistory.unshift(txt);
 					_commandsInd = -1;
 					_commandField.text = "";
 					// maximum 20 commands history
 					if(_commandsHistory.length>20){
 						_commandsHistory.splice(20);
 					}
+					master.ud.commandLineHistoryChanged();
 				}
-			}else if( e.keyCode == 38 ){
+			}if( e.keyCode == Keyboard.ESCAPE){
+				if(stage) stage.focus = null;
+			}else if( e.keyCode == Keyboard.UP){
 				// if its back key for first time, store the current key
 				if(_commandField.text && _commandsInd<0){
 					_commandsHistory.unshift(_commandField.text);
@@ -700,7 +713,7 @@ package com.luaye.console.view {
 					_commandsInd = _commandsHistory.length;
 					_commandField.text = "";
 				}
-			}else if( e.keyCode == 40){
+			}else if( e.keyCode == Keyboard.DOWN){
 				if(_commandsInd>0){
 					_commandsInd--;
 					_commandField.text = _commandsHistory[_commandsInd];
@@ -715,13 +728,16 @@ package com.luaye.console.view {
 		private function onUpdateCommandLineScope(e:Event=null):void{
 			if(!master.remote) updateCLScope(master.cl.scopeString);
 		}
+		public function get commandLineText():String{
+			return _commandField.text;
+		}
 		public function updateCLScope(str:String):void{
 			if(_enteringLogin) {
 				_enteringLogin = false;
 				requestLogin(false);
 			}
 			_commandPrefx.autoSize = TextFieldAutoSize.LEFT;
-			_commandPrefx.htmlText = "<w><p1>"+str+":</p1></w>";
+			_commandPrefx.text = str;
 			var w:Number = width-48;
 			if(_commandPrefx.width > 120 || _commandPrefx.width > w){
 				_commandPrefx.autoSize = TextFieldAutoSize.NONE;

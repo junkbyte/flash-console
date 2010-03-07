@@ -63,7 +63,7 @@ package com.luaye.console.view {
 			var p:Point = new Point();
 			p = globalToLocal(p);
 			_area = new Rectangle(-stage.stageWidth*1.5+p.x, -stage.stageHeight*1.5+p.y, stage.stageWidth*3, stage.stageHeight*3);
-			graphics.beginFill(0x000000, 0.1);
+			graphics.beginFill(console.style.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
@@ -71,8 +71,8 @@ package com.luaye.console.view {
 			_posTxt.name = "positionText";
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
             _posTxt.background = true;
-            _posTxt.backgroundColor = _master.style.panelBackgroundColor;
-			_posTxt.styleSheet = console.style.css;
+            _posTxt.backgroundColor = _master.style.backgroundColor;
+			_posTxt.styleSheet = console.css;
 			_posTxt.mouseEnabled = false;
 			addChild(_posTxt);
 			//
@@ -118,7 +118,7 @@ package com.luaye.console.view {
 				var p2:Point =  new Point(e.localX, e.localY);
 				_points.push(p2);
 				graphics.clear();
-				graphics.beginFill(0x000000, 0.4);
+				graphics.beginFill(_master.style.backgroundColor, 0.4);
 				graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 				graphics.endFill();
 				graphics.lineStyle(1.5, 0xFF0000);
@@ -146,20 +146,20 @@ package com.luaye.console.view {
 				var h:Number = ymax.y-ymin.y;
 				var d:Number = Point.distance(p, p2);
 				//
-				var txt:TextField = makeTxtField();
+				var txt:TextField = makeTxtField(_master.style.highColor);
 				txt.text = Utils.round(p.x,10)+","+ Utils.round(p.y,10);
 				txt.x = p.x;
 				txt.y = p.y-(ymin==p?14:0);
 				addChild(txt);
 				//
-				txt = makeTxtField();
+				txt = makeTxtField(_master.style.highColor);
 				txt.text = Utils.round(p2.x,10)+","+ Utils.round(p2.y,10);
 				txt.x = p2.x;
 				txt.y = p2.y-(ymin==p2?14:0);;
 				addChild(txt);
 				//
 				if(w>40 || h>25){
-					txt = makeTxtField(0x00AA00);
+					txt = makeTxtField(_master.style.lowColor);
 					txt.text = Utils.round(mp.x,10)+","+ Utils.round(mp.y,10);
 					txt.x = mp.x;
 					txt.y = mp.y;
@@ -215,8 +215,8 @@ package com.luaye.console.view {
 			_master = null;
 			dispatchEvent(new Event(EXIT));
 		}
-		private function makeTxtField(col:Number = 0x00FF00, b:Boolean = true):TextField{
-			var format:TextFormat = new TextFormat("Arial", 11, col, b, true, null, null, TextFormatAlign.RIGHT);
+		private function makeTxtField(col:Number, b:Boolean = true):TextField{
+			var format:TextFormat = new TextFormat(_master.style.menuFont, _master.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
 			var txt:TextField = new TextField();
 			txt.autoSize = TextFieldAutoSize.RIGHT;
 			txt.selectable = false;

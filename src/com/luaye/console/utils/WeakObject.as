@@ -38,13 +38,14 @@ package com.luaye.console.utils {
 		
 		public function set(n:String,obj:Object, strong:Boolean = false):void{
 			if(obj == null){
-				return;
+				delete _dir[n];
+			}else{
+				_dir[n] = new WeakRef(obj, strong);
 			}
-			_dir[n] = new WeakRef(obj, strong);
 		}
 		public function get(n:String):Object{
 			if(_dir[n]){
-				return _dir[n].reference;
+				return WeakRef(_dir[n]).reference;
 			}
 			return null;
 		}

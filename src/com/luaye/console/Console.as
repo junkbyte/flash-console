@@ -23,20 +23,19 @@
 * 
 */
 package com.luaye.console {
+	import com.luaye.console.view.MainPanel;
 	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.core.Log;
 	import com.luaye.console.core.Logs;
 	import com.luaye.console.core.MemoryMonitor;
 	import com.luaye.console.core.Remoting;
+	import com.luaye.console.core.UserData;
 	import com.luaye.console.utils.Utils;
 	import com.luaye.console.view.ChannelsPanel;
 	import com.luaye.console.view.FPSPanel;
-	import com.luaye.console.view.MainPanel;
 	import com.luaye.console.view.PanelsManager;
 	import com.luaye.console.view.RollerPanel;
-	import com.luaye.console.view.Style;
 
-	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -44,13 +43,20 @@ package com.luaye.console {
 	import flash.geom.Rectangle;
 	import flash.net.LocalConnection;
 	import flash.system.System;
+	import flash.text.StyleSheet;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
 
+	/**
+	 * Console is the main class. 
+	 * Please see com.luaye.console.C for documentation as it shares the same properties and methods structure.
+	 * @see http://code.google.com/p/flash-console/
+	 * @see com.luaye.console.C
+	 */
 	public class Console extends Sprite {
 
-		public static const VERSION:Number = 2.31;
-		public static const VERSION_STAGE:String = "";
+		public static const VERSION:Number = 2.4;
+		public static const VERSION_STAGE:String = "beta";
 		//
 		public static const NAME:String = "Console";
 		public static const PANEL_MAIN:String = "mainPanel";
@@ -59,32 +65,37 @@ package com.luaye.console {
 		public static const PANEL_MEMORY:String = "memoryPanel";
 		public static const PANEL_ROLLER:String = "rollerPanel";
 		//
-		// You can change this if you don't want to use default channel
-		// Other remotes with different remoting channel won't be able to connect your flash.
-		// Start with _ to work in any domain + platform (air/swf - local / network)
-		// Change BEFORE starting remote / remoting
-		public static var REMOTING_CONN_NAME:String = "_Console";
-		//
+		public static const GLOBAL_CHANNEL:String = " * ";
 		public static const CONSOLE_CHANNEL:String = "C";
 		public static const FILTERED_CHANNEL:String = "~";
-		public static const GLOBAL_CHANNEL:String = " * ";
 		public static const DEFAULT_CHANNEL:String = "-";
 		//
-		public static const LOG_LEVEL:uint = 2;
-		public static const INFO_LEVEL:uint = 4;
-		public static const DEBUG_LEVEL:uint = 6;
-		public static const WARN_LEVEL:uint = 8;
-		public static const ERROR_LEVEL:uint = 10;
-		public static const FATAL_LEVEL:uint = 100;
+		public static const LOG_LEVEL:uint = 1;
+		public static const INFO_LEVEL:uint = 3;
+		public static const DEBUG_LEVEL:uint = 5;
+		public static const WARN_LEVEL:uint = 7;
+		public static const ERROR_LEVEL:uint = 9;
+		public static const FATAL_LEVEL:uint = 10;
 		//
 		public static const FPS_MAX_LAG_FRAMES:uint = 25;
 		public static const MAPPING_SPLITTER:String = "|";
 		//
-		public var style:Style;
+		// You can change this if you don't want to use default channel
+		// Other remotes with different remoting channel won't be able to connect your flash.
+		// Start with _ to work in any domain + platform (air/swf - local / network)
+		// Change BEFORE starting remote / remoting
+		public static var RemotingConnectionName:String = "_Console";
+		// You can change this if you want to use different Shared data. set to null to avoid using.
+		// Change BEFORE starting console.
+		public static var SharedObjectName:String = "com/luaye/Console/UserData";
+		//
+		public var style:ConsoleStyle;
+		public var css:StyleSheet;
 		public var panels:PanelsManager;
 		public var cl:CommandLine;
-		private var mm:MemoryMonitor;
-		private var remoter:Remoting;
+		public var ud:UserData;
+		private var _mm:MemoryMonitor;
+		private var _remoter:Remoting;
 		//
 		public var quiet:Boolean;
 		public var maxLines:int = 1000;
@@ -97,20 +108,17 @@ package com.luaye.console {
 		public var rulerHidesMouse:Boolean = true;
 		//
 		private var _isPaused:Boolean;
-		private var _enabled:Boolean = true;
 		private var _password:String;
 		private var _passwordIndex:int;
-		private var _remotingPassword:String = "";
 		private var _tracing:Boolean = false;
 		private var _filterText:String;
+		private var _filterRegExp:RegExp;
 		private var _keyBinds:Object = {};
 		private var _mspf:Number;
 		private var _previousTime:Number;
 		private var _traceCall:Function = trace;
 		private var _rollerCaptureKey:String;
-		private var _needToMoveTop:Boolean;
 		private var _commandLineAllowed:Boolean = true;
-		private var _strongRef:Boolean;
 		
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
 		private var _viewingChannels:Array = [GLOBAL_CHANNEL];
@@ -126,93 +134,110 @@ package com.luaye.console {
 		 * Using Console through C will also make sure you can remove console in a later date
 		 * by simply removing C.start() or C.startOnStage()
 		 * 
+		 * 
 		 * @see com.luaye.console.C
 		 * @see http://code.google.com/p/flash-console/
 		 */
-		public function Console(pass:String = "", uiset:int = 1) {
+		public function Console(pass:String = "", skin:ConsoleStyle = null) {
 			name = NAME;
 			if(pass == null) pass = "";
-			_password = pass;
-			_remotingPassword = pass;
 			tabChildren = false; // Tabbing is not supported
+			_password = pass;
 			//
 			_lines = new Logs();
+			ud = new UserData(SharedObjectName,"/");
 			cl = new CommandLine(this);
-			remoter = new Remoting(this, remoteLogSend);
-			mm = new MemoryMonitor();
-			style = new Style(uiset);
-			panels = new PanelsManager(this, new MainPanel(this, _lines, _channels));
+			_remoter = new Remoting(this, remoteLogSend, pass);
+			//
+			// VIEW setup
+			style = skin?skin:new ConsoleStyle();
+			generateCSS();
+			var mainPanel:MainPanel = new MainPanel(this, _lines, _channels, _viewingChannels);
+			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
+			panels = new PanelsManager(this, mainPanel, _channels);
 			//
 			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy bug fixing!</b>", -2);
-			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
-			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
+			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			if(_password) visible = false;
 		}
+
 		private function stageAddedHandle(e:Event=null):void{
-			if(cl.base == null){
-				cl.base = parent;
-			}
-			addEventListener(Event.ENTER_FRAME, _onEnterFrame, false, 0, true);
-			parent.addEventListener(Event.ADDED, onParentDisplayAdded, false, 0, true);
+			if(cl.base == null) cl.base = parent;
+			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			//
+			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyUpHandler, false, 0, true);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
 		}
 		private function stageRemovedHandle(e:Event=null):void{
+			if(cl.base == parent) cl.base = null;
+			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			//
 			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
-			parent.removeEventListener(Event.ADDED, onParentDisplayAdded);
 			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
-			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyUpHandler);
-		}
-		private function onParentDisplayAdded(e:Event):void{
-			if((e.target as DisplayObject).parent == parent) _needToMoveTop = true;
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
 		private function onStageMouseLeave(e:Event):void{
 			panels.tooltip(null);
 		}
-		private function keyUpHandler(e:KeyboardEvent):void{
-			if(!_enabled) return;
-			if(e.keyLocation == 0){
-				var char:String = String.fromCharCode(e.charCode);
-				if(char == _password.substring(_passwordIndex,_passwordIndex+1)){
-					_passwordIndex++;
-					if(_passwordIndex >= _password.length){
-						_passwordIndex = 0;
-						if(visible && !panels.mainPanel.visible){
-							panels.mainPanel.visible = true;
-						}else{
-							visible = !visible;
-						}
-					}
-				}else{
+		private function keyDownHandler(e:KeyboardEvent):void{
+			var char:String = String.fromCharCode(e.charCode);
+			if(!char) return;
+			if(char == _password.substring(_passwordIndex,_passwordIndex+1)){
+				_passwordIndex++;
+				if(_passwordIndex >= _password.length){
 					_passwordIndex = 0;
-					var key:String = char.toLowerCase()+(e.ctrlKey?"0":"1")+(e.altKey?"0":"1")+(e.shiftKey?"0":"1");
-					if(_keyBinds[key]){
-						var bind:Array = _keyBinds[key];
-						bind[0].apply(this, bind[1]);
-					}
+					if(visible && !panels.mainPanel.visible){
+						panels.mainPanel.visible = true;
+					}else visible = !visible;
+				}
+			}else{
+				_passwordIndex = 0;
+				var key:String = char.toLowerCase()+(e.ctrlKey?"1":"0")+(e.altKey?"1":"0")+(e.shiftKey?"1":"0");
+				if(_keyBinds[key]){
+					var bind:Array = _keyBinds[key];
+					(bind[0] as Function).apply(this, bind[1]);
 				}
 			}
 		}
 		public function destroy():void{
-			enabled = false;
-			remoter.close();
+			_remoter.close();
 			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			cl.destory();
-			if(stage){
-				stageRemovedHandle();
+		}
+		private function generateCSS():void{
+			css = new StyleSheet();
+			with(style){
+				css.setStyle("r",{textAlign:'right', display:'inline'});
+				css.setStyle("w",{color:hesh(highColor), fontFamily:menuFont, fontSize:menuFontSize, display:'inline'});
+				css.setStyle("s",{color:hesh(lowColor), fontFamily:menuFont, fontSize:menuFontSize-2, display:'inline'});
+				css.setStyle("hi",{color:hesh(menuHighlightColor), display:'inline'});
+				css.setStyle("menu",{color:hesh(menuColor), display:'inline'});
+				css.setStyle("chs",{color:hesh(channelsColor), fontSize:menuFontSize, leading:'2', display:'inline'});
+				css.setStyle("ch",{color:hesh(channelColor), display:'inline'});
+				css.setStyle("tooltip",{color:hesh(tooltipColor),fontFamily:menuFont,fontSize:menuFontSize, textAlign:'center'});
+				css.setStyle("p",{fontFamily:traceFont, fontSize:traceFontSize});
+				css.setStyle("p0",{color:hesh(priority0), display:'inline'});
+				css.setStyle("p1",{color:hesh(priority1), display:'inline'});
+				css.setStyle("p2",{color:hesh(priority2), display:'inline'});
+				css.setStyle("p3",{color:hesh(priority3), display:'inline'});
+				css.setStyle("p4",{color:hesh(priority4), display:'inline'});
+				css.setStyle("p5",{color:hesh(priority5), display:'inline'});
+				css.setStyle("p6",{color:hesh(priority6), display:'inline'});
+				css.setStyle("p7",{color:hesh(priority7), display:'inline'});
+				css.setStyle("p8",{color:hesh(priority8), display:'inline'});
+				css.setStyle("p9",{color:hesh(priority9), display:'inline'});
+				css.setStyle("p10",{color:hesh(priority10), fontWeight:'bold', display:'inline'});
+				css.setStyle("p-1",{color:hesh(priorityC1), display:'inline'});
+				css.setStyle("p-2",{color:hesh(priorityC2), display:'inline'});
 			}
 		}
-		public static function get remoteIsRunning():Boolean{
-			var sCon:LocalConnection = new LocalConnection();
-			try{
-				sCon.allowInsecureDomain("*");
-				sCon.connect(REMOTING_CONN_NAME+Remoting.REMOTE_PREFIX);
-			}catch(error:Error){
-				return true;
-			}
-			sCon.close();
-			return false;
-		}
+		private function hesh(n:Number):String{return "#"+n.toString(16);}
+		
 		public function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
 			if(obj == null) {
 				report("ERROR: Graph ["+n+"] received a null object to graph property ["+prop+"].", 10);
@@ -248,25 +273,20 @@ package com.luaye.console {
 			}
 		}
 		private function getKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):String{
-			return char.toLowerCase()+(ctrl?"0":"1")+(alt?"0":"1")+(shift?"0":"1");
-		}
-		public function setPanelArea(panelname:String, rect:Rectangle):void{
-			panels.setPanelArea(panelname, rect);
+			return char.toLowerCase()+(ctrl?"1":"0")+(alt?"1":"0")+(shift?"1":"0");
 		}
 		//
 		// Panel settings
 		// basically passing through to panels manager to save lines
 		//
+		public function setPanelArea(panelname:String, rect:Rectangle):void{
+			panels.setPanelArea(panelname, rect);
+		}
 		public function get channelsPanel():Boolean{
 			return panels.channelsPanel;
 		}
 		public function set channelsPanel(b:Boolean):void{
 			panels.channelsPanel = b;
-			if(b){
-				var chPanel:ChannelsPanel = panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
-				chPanel.start(_channels);
-			}
-			panels.updateMenu();
 		}
 		//
 		public function get displayRoller():Boolean{
@@ -278,15 +298,19 @@ package com.luaye.console {
 		public function setRollerCaptureKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):void{
 			if(_rollerCaptureKey){
 				bindByKey(_rollerCaptureKey, null);
+				_rollerCaptureKey = null;
 			}
 			if(char && char.length==1){
-				_rollerCaptureKey = getKey(char, ctrl, alt, shift);
+				_rollerCaptureKey = getKey(char.toLowerCase(), ctrl, alt, shift);
 				bindByKey(_rollerCaptureKey, onRollerCaptureKey);
 			}
 		}
+		public function get rollerCaptureKey():String{
+			return _rollerCaptureKey;
+		}
 		private function onRollerCaptureKey():void{
 			if(displayRoller){
-				report("Display Roller Capture:"+RollerPanel(panels.getPanel(PANEL_ROLLER)).capture(), -1);
+				report("Display Roller Capture:<br/>"+RollerPanel(panels.getPanel(PANEL_ROLLER)).capture(), -1);
 			}
 		}
 		//
@@ -307,24 +331,24 @@ package com.luaye.console {
 		public function watch(o:Object,n:String = null):String{
 			var className:String = getQualifiedClassName(o);
 			if(!n) n = className+"@"+getTimer();
-			var nn:String = mm.watch(o,n);
-			if(!quiet)
-				report("Watching <b>"+className+"</b> as <p5>"+ nn +"</p5>.",-1);
+			if(!_mm) _mm = new MemoryMonitor();
+			var nn:String = _mm.watch(o,n);
+			if(!quiet) report("Watching <b>"+className+"</b> as <p5>"+ nn +"</p5>.",-1);
 			return nn;
 		}
 		public function unwatch(n:String):void{
-			mm.unwatch(n);
+			if(_mm) _mm.unwatch(n);
 		}
 		public function gc():void{
 			if(remote){
 				try{
 					report("Sending garbage collection request to client",-1);
-					remoter.send("gc");
+					_remoter.send("gc");
 				}catch(e:Error){
 					report(e,10);
 				}
 			}else{
-				var ok:Boolean = mm.gc();
+				var ok:Boolean = MemoryMonitor.Gc();
 				var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
 				report(str,(ok?-1:10));
 			}
@@ -335,39 +359,16 @@ package com.luaye.console {
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
 			cl.map(base, maxstep);
 		}
-		public function get strongRef():Boolean{
-			return _strongRef;
-		}
-		public function set strongRef(b:Boolean):void{
-			_strongRef= b;
-		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			cl.inspect(obj,detail);
-		}
-		public function set enabled(newB:Boolean):void{
-			if(_enabled == newB) return;
-			if(_enabled && !newB){
-				report("Disabled",10);
-			}
-			var pre:Boolean = _enabled;
-			_enabled = newB;
-			if(!pre && newB){
-				report("Enabled",-1);
-			}
-		}
-		public function get enabled():Boolean{
-			return _enabled;
 		}
 		public function get paused():Boolean{
 			return _isPaused;
 		}
 		public function set paused(newV:Boolean):void{
 			if(_isPaused == newV) return;
-			if(newV){
-				report("Paused", 10);
-			}else{
-				report("Resumed", -1);
-			}
+			if(newV) report("Paused", 10);
+			else report("Resumed", -1);
 			_isPaused = newV;
 			panels.mainPanel.setPaused(newV);
 		}
@@ -402,17 +403,13 @@ package com.luaye.console {
 		//
 		//
 		private function _onEnterFrame(e:Event):void{
-			if(!_enabled){
-				return;
-			}
 			var time:int = getTimer();
 			_mspf = time-_previousTime;
 			_previousTime = time;
 			
-			if(_needToMoveTop && alwaysOnTop && moveTopAttempts>0  && parent){
-				_needToMoveTop = false;
+			if(alwaysOnTop && parent && parent.getChildAt(parent.numChildren-1) != this && moveTopAttempts>0){
 				moveTopAttempts--;
-				parent.setChildIndex(this,(parent.numChildren-1));
+				parent.addChild(this);
 				if(!quiet){
 					report("Moved console on top (alwaysOnTop enabled), "+moveTopAttempts+" attempts left.",-1);
 				}
@@ -423,24 +420,23 @@ package com.luaye.console {
 					_isRepeating = false;
 				}
 			}
-			if(!_isPaused){
-				var arr:Array = mm.update();
+			if(!_isPaused && _mm!=null){
+				var arr:Array = _mm.update();
 				if(arr.length>0){
 					report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
+					if(!_mm.haveItemsWatching) _mm = null;
 				}
 			}
 			if(visible){
 				panels.mainPanel.update(!_isPaused && _lineAdded);
 				if(_lineAdded) {
 					var chPanel:ChannelsPanel = panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
-					if(chPanel){
-						chPanel.update();
-					}
+					if(chPanel) chPanel.update();
 					_lineAdded = false;
 				}
 			}
-			if(remoter.remoting){
-				remoter.update(_mspf, stage?stage.frameRate:0);
+			if(_remoter.remoting){
+				_remoter.update(_mspf, stage?stage.frameRate:0);
 			}
 		}
 		public function get fps():Number{
@@ -450,33 +446,29 @@ package com.luaye.console {
 			return _mspf;
 		}
 		public function get currentMemory():uint {
-			return remoter.isRemote?remoter.remoteMem:System.totalMemory;
+			return _remoter.isRemote?_remoter.remoteMem:System.totalMemory;
 		}
 		//
 		// REMOTING
 		//
 		public function get remoting():Boolean{
-			return remoter.remoting;
+			return _remoter.remoting;
 		}
 		public function set remoting(newV:Boolean):void{
-			remoter.remoting = newV;
+			_remoter.remoting = newV;
 		}
 		public function get remote():Boolean{
-			return remoter.isRemote;
+			return _remoter.isRemote;
 		}
 		public function set remote(newV:Boolean):void{
-			remoter.isRemote = newV;
+			_remoter.isRemote = newV;
 			panels.updateMenu();
 		}
-		public function sendLogin(pass:String):void{
-			remoter.login(pass);
-		}
-		public function checkLogin(pass:String):Boolean{
-			return (!_remotingPassword || _remotingPassword == pass);
-		}
 		public function set remotingPassword(str:String):void{
-			_remotingPassword = str;
-			remoter.login(str);
+			_remoter.remotingPassword = str;
+		}
+		private function onMainPanelConnectRequest(e:Event) : void {
+			_remoter.login(MainPanel(e.currentTarget).commandLineText);
 		}
 		//
 		// this is sent from client for remote...
@@ -485,7 +477,7 @@ package com.luaye.console {
 		// obj[2] = client's current memory usage
 		// obj[3] = client's command line scope - string
 		private function remoteLogSend(obj:Array):void{
-			if(!remoter.isRemote || !obj) return;
+			if(!_remoter.isRemote || !obj) return;
 			var lines:Array = obj[0];
 			for each( var line:Object in lines){
 				if(line){
@@ -510,7 +502,7 @@ package com.luaye.console {
 					fpsp.drawGraph();
 				}
 			}
-			remoter.remoteMem = obj[2];
+			_remoter.remoteMem = obj[2];
 			if(obj[3]){ 
 				// older clients don't send CL scope
 				panels.mainPanel.updateCLScope(obj[3]);
@@ -519,28 +511,26 @@ package com.luaye.console {
 		//
 		//
 		//
-		public function set viewingChannel(str:String):void{
-			if(str) viewingChannels = [str];
-			else viewingChannels = [GLOBAL_CHANNEL];
-		}
-		public function get viewingChannel():String{
-			return _viewingChannels.join(",");
-		}
 		public function get viewingChannels():Array{
 			return _viewingChannels.concat();
 		}
 		public function set viewingChannels(a:Array):void{
 			_viewingChannels.splice(0);
-			if(a && a.length) _viewingChannels.push.apply(this, a);
-			else _viewingChannels.push(GLOBAL_CHANNEL);
+			if(a && a.length) {
+				if(a.indexOf(GLOBAL_CHANNEL)>=0) a = [GLOBAL_CHANNEL];
+				for each(var item:Object in a) _viewingChannels.push(item is Ch?(Ch(item).name):String(item));
+			} else _viewingChannels.push(GLOBAL_CHANNEL);
 			panels.mainPanel.updateToBottom();
 			panels.updateMenu();
 		}
-		public function set tracingChannels(newVar:Array):void{
-			_tracingChannels = newVar?newVar.concat():[];
+		public function set tracingChannels(a:Array):void{
+			_tracingChannels.splice(0);
+			if(a){
+				for each(var item:Object in a) _tracingChannels.push(item is Ch?(Ch(item).name):String(item));
+			}
 		}
 		public function get tracingChannels():Array{
-			return _tracingChannels;
+			return _tracingChannels.concat();
 		}
 		//
 		public function get tracing():Boolean{
@@ -564,9 +554,6 @@ package com.luaye.console {
 			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe);
 		}
 		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false):void{
-			if(!_enabled){
-				return;
-			}
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
 			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL){
@@ -601,16 +588,17 @@ package com.luaye.console {
 			_lineAdded = true;
 			_isRepeating = isRepeating;
 			
-			if(remoter.remoting){
-				remoter.addLineQueue(line);
+			if(_remoter.remoting){
+				_remoter.addLineQueue(line);
 			}
 		}
 		public function lineShouldShow(line:Log):Boolean{
 			return (
 				(
-					_viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0
+					_viewingChannels[0] == Console.GLOBAL_CHANNEL
 			 		|| _viewingChannels.indexOf(line.c)>=0 
 			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.toLowerCase().indexOf(_filterText.toLowerCase())>=0 )
+			 		|| (_filterRegExp && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )
 			 	) 
 			 	&& ( _priority <= 0 || line.p >= _priority)
 			);
@@ -639,7 +627,7 @@ package com.luaye.console {
 		}
 		public function set commandLineAllowed (v:Boolean):void{
 			_commandLineAllowed = v;
-			if(v==0 && commandLine){
+			if(!v && commandLine){
 				commandLine = false;
 			}
 		}
@@ -653,10 +641,10 @@ package com.luaye.console {
 			return cl.base;
 		}
 		public function runCommand(line:String):*{
-			if(remoter.isRemote){
+			if(_remoter.isRemote){
 				report("Run command at remote: "+line,-2);
 				try{
-					remoter.send("runCommand", line);
+					_remoter.send("runCommand", line);
 				}catch(err:Error){
 					report("Command could not be sent to client: " + err, 10);
 				}
@@ -720,9 +708,8 @@ package com.luaye.console {
 		}
 		public function joinArgs(args:Array):String{
 			for(var X:String in args){
-				if(args[X] is XML || args[X] is XMLList){
-					args[X] = args[X].toXMLString();
-				}
+				// XML.toString() doesn't print all if its single node. Therefore need to convert them with toXMLString().
+				if(args[X] is XML || args[X] is XMLList) args[X] = args[X].toXMLString();
 			}
 			return args.join(" ");
 		}
@@ -730,17 +717,32 @@ package com.luaye.console {
 		public function set filterText(str:String):void{
 			_filterText = str;
 			if(str){
+				_filterRegExp = null;
 				clear(FILTERED_CHANNEL);
 				_channels.splice(1,0,FILTERED_CHANNEL);
 				addLine("Filtering ["+str+"]", 10,FILTERED_CHANNEL);
 				viewingChannels = [FILTERED_CHANNEL];
-			}else if(viewingChannel == FILTERED_CHANNEL){
+			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == FILTERED_CHANNEL){
 				viewingChannels = [GLOBAL_CHANNEL];
 			}
 		}
 		public function get filterText():String{
-			return _filterText;
+			return _filterText?_filterText:(_filterRegExp?String(_filterRegExp):null);
 		}
+		//
+		public function set filterRegExp(exp:RegExp):void{
+			_filterRegExp = exp;
+			if(exp){
+				_filterText = null;
+				clear(FILTERED_CHANNEL);
+				_channels.splice(1,0,FILTERED_CHANNEL);
+				addLine("Filtering RegExp ["+exp+"]", 10,FILTERED_CHANNEL);
+				viewingChannels = [FILTERED_CHANNEL];
+			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == FILTERED_CHANNEL){
+				viewingChannels = [GLOBAL_CHANNEL];
+			}
+		}
+		//
 		public function clear(channel:String = null):void{
 			if(channel){
 				var line:Log = _lines.first;
@@ -757,7 +759,7 @@ package com.luaye.console {
 				_channels.splice(0);
 				_channels.push(GLOBAL_CHANNEL, DEFAULT_CHANNEL);
 			}
-			panels.mainPanel.updateToBottom();
+			if(!_isPaused) panels.mainPanel.updateToBottom();
 			panels.updateMenu();
 		}
 		public function getLogsAsObjects():Array{
@@ -770,7 +772,6 @@ package com.luaye.console {
 			return a;
 		}
 		public function getAllLog(splitter:String = "\n"):String{
-			//return _lines.join(splitter);
 			var str:String = "";
 			var line:Log = _lines.first;
 			while(line){
@@ -778,6 +779,17 @@ package com.luaye.console {
 				line = line.next;
 			}
 			return str;
+		}
+		public static function get remoteIsRunning():Boolean{
+			var sCon:LocalConnection = new LocalConnection();
+			try{
+				sCon.allowInsecureDomain("*");
+				sCon.connect(RemotingConnectionName+Remoting.REMOTE_PREFIX);
+			}catch(error:Error){
+				return true;
+			}
+			sCon.close();
+			return false;
 		}
 	}
 }

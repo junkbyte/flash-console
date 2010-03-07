@@ -1,3 +1,4 @@
+#labels Phase-Deploy,Featured,Phase-Implementation
 =Getting started=
 
 ==Introduction==
@@ -9,28 +10,30 @@ In a later date when you don't need console in your flash project, you can just 
 
 ==Basics==
 
-Start console on stage... first parameter is any DisplayObject which is already on stage or to be added.
-If you want to set a keyword for console to start, assign at second parameter. 
-Use letters and numbers only. Console will start hidden if you set a password (you can set `C.visible = true;` to force display console)
-You will need to type the keyword in correct sequence to show the console.
-Recommended keyword: ` or ~ or debug (remember to have keyboard short cuts disabled in flash test authoring for some keys to be captured)
-
+Start console on stage... 
 {{{
 import com.luaye.console.C;
 C.startOnStage(this, "");
 }}}
+First parameter is any DisplayObject which is already on stage or to be added.
+If you want to set a keyword for console to start, assign at second parameter. 
+Use letters and numbers only. Console will start hidden if you set a password (you can set `C.visible = true;` to force display console)
+You will need to type the keyword in correct sequence to show the console.
+Recommended keyword: ` or ~ or debug (remember to have keyboard short cuts disabled in flash test authoring for some keys to be captured)
+If you want to assign custom style with ConsoleStyle, pass the style object as third param.
 
 Logging...
 
 {{{
 //
-// basic logging
+// BASICS
 //
 C.info("Hello world.");
 C.log("A log message for console.", "optionally there", "can be", "multiple arguments.");
 C.debug("A debug level log.");
 C.warn("This is a warning log.");
 C.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
+C.fatal("This is a fatal error log", "with high visibility");
 //
 // basic channel logging
 //
@@ -40,19 +43,28 @@ C.debugch("myChannel", "A debug level log.");
 C.warnch("myChannel", "This is a warning log.");
 C.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
 //
+// instanced channel
+//
+var _ch:Ch = new Ch('myCh'); // already declared above.
+_ch.log("Hello instanced channel.");
+_ch.info("Works just like other logging methods","but this way you keep the channel name as a class instance");
+//
 // advanced logging
 //
 C.add("My advanced log in priority 7.", 7);
 C.add("My advanced log in priority 2, 1 (no repeats)", 2, true);
 C.add("My advanced log in priority 2, 2 (no repeats)", 2, true);
 C.add("My advanced log in priority 2, 3 (no repeats)", 2, true);
+// When 'no repeat' (3rd param) is set to true, it will not generate new lines for each log.
+// It will keep replacing the previous line untill a certain count is passed.
+// For example, if you are tracing download progress and you don't want to flood console with it.
 //
 // Advanced channel logging
 //
 C.ch("chn", "Advanced log in priority 7.", 7);
-C.ch("chn", "Advanced log in priority 2, 1 (no repeats)", 2, true);
-C.ch("chn", "Advanced log in priority 2, 2 (no repeats)", 2, true);
-C.ch("chn", "Advanced log in priority 2, 3 (no repeats)", 2, true);
+C.ch("chn", "Advanced log in priority 3, 1 (no repeats)", 3, true);
+C.ch("chn", "Advanced log in priority 3, 2 (no repeats)", 3, true);
+C.ch("chn", "Advanced log in priority 3, 3 (no repeats)", 3, true);
 }}}
 
 ===UI===

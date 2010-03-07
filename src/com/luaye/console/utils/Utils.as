@@ -33,18 +33,13 @@ package com.luaye.console.utils {
 			return Math.round(n*d)/d;
 		}
 		public static function angle(srcP:Point, point:Point):Number {
-			var X: Number = point.x - srcP.x;
-			var Y: Number = point.y - srcP.y;
-			var a:Number = Math.atan2(Y , X)/Math.PI * 180;
+			var a:Number = Math.atan2(point.y - srcP.y , point.x - srcP.x)/Math.PI * 180;
 			a +=90;
-			if(a>180){
-				a -= 360;
-			}
+			if(a>180) a -= 360;
 			return a;
 		}
-		public static function drawCircleSegment(g:Graphics, radius:Number,pos:Point = null, deg:Number = 180, startDeg:Number = 0):Point
+		public static function drawCircleSegment(g:Graphics,radius:Number,pos:Point, deg:Number = 180, startDeg:Number = 0):Point
 		{
-			if(!pos) pos = new Point();
 			var reversed:Boolean = false;
 			if(deg<0){
 				reversed = true;
@@ -73,7 +68,6 @@ package com.luaye.console.utils {
 			return new Point(radius * Math.cos(rad),radius * Math.sin(rad));
 		}
 		//
-		
 		public static function averageOut(current:Number, addition:Number, over:Number):Number {
 			// this does not output an absolute average - you would need a history of values for this
 			// This way is more light weight but not as accurate.
@@ -82,7 +76,6 @@ package com.luaye.console.utils {
 		public static function replaceByIndexes(str:String, replace:String, start:int, end:int):String {
 			return str.substring(0,start)+replace+str.substring(end);
 		}
-		
 		public static function shortClassName(cls:Object):String{
 			var str:String = getQualifiedClassName(cls);
 			var ind:int = str.lastIndexOf("::");

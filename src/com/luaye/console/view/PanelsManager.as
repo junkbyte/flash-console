@@ -38,19 +38,21 @@ package com.luaye.console.view {
 		private var _master:Console;
 		private var _mainPanel:MainPanel;
 		private var _ruler:Ruler;
+		private var _channels:Array;
 		
 		private var _tooltipField:TextField;
 		
-		public function PanelsManager(master:Console, mp:MainPanel) {
+		public function PanelsManager(master:Console, mp:MainPanel, channels:Array) {
 			_master = master;
+			_mainPanel = mp;
+			_channels = channels;
 			_tooltipField = new TextField();
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
 			_tooltipField.multiline = true;
 			_tooltipField.background = true;
-			_tooltipField.backgroundColor = _master.style.panelBackgroundColor;
-			_tooltipField.styleSheet = _master.style.css;
+			_tooltipField.backgroundColor = _master.style.backgroundColor;
+			_tooltipField.styleSheet = _master.css;
 			_tooltipField.mouseEnabled = false;
-			_mainPanel = mp;
 			addPanel(_mainPanel);
 		}
 		public function addPanel(panel:AbstractPanel):void{
@@ -100,18 +102,18 @@ package com.luaye.console.view {
 					chpanel.x = _mainPanel.x+_mainPanel.width-332;
 					chpanel.y = _mainPanel.y-2;
 					addPanel(chpanel);
+					chpanel.start(_channels);
+					updateMenu();
 				}else {
 					removePanel(Console.PANEL_CHANNELS);
-					updateMenu();
 				}
+				updateMenu();
 			}
 		}
 		public function updateMenu():void{
 			_mainPanel.updateMenu();
 			var chpanel:ChannelsPanel = getPanel(Console.PANEL_CHANNELS) as ChannelsPanel;
-			if(chpanel){
-				chpanel.update();
-			}
+			if(chpanel) chpanel.update();
 		}
 		//
 		//
@@ -123,7 +125,7 @@ package com.luaye.console.view {
 			if(displayRoller != n){
 				if(n){
 					var roller:RollerPanel = new RollerPanel(_master);
-					roller.x = _mainPanel.x+_mainPanel.width-160;
+					roller.x = _mainPanel.x+_mainPanel.width-180;
 					roller.y = _mainPanel.y+55;
 					addPanel(roller);
 					roller.start(_master);
@@ -191,7 +193,7 @@ package com.luaye.console.view {
 				if(rect.height>0)
 					graph.height = rect.height;
 			}
-			graph.inverse = inverse;
+			if(inverse) graph.inverse = true; // one way setting
 			graph.add(obj,prop,col, key);
 			addPanel(graph);
 		}

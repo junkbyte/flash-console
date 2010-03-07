@@ -80,7 +80,7 @@ package com.luaye.console {
 	 * In a later date when Console is no longer needed, remove C.start(..) or C.startOnStage(..) 
 	 * and the rest of console related codes will stop executing to save memory and performance.
 	 * @author  Lu Aye Oo
-	 * @version 2.2
+	 * @version 2.4
 	 * @see http://code.google.com/p/flash-console/
 	 * @see #start()
 	 * @see #startOnStage()
@@ -116,11 +116,11 @@ package com.luaye.console {
 		 * 			Must be ASCII chars. Example passwords: ` OR debug. Make sure Controls > Disable Keyboard Shortcuts in Flash.
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 */
-		public static function start(mc:DisplayObjectContainer, pass:String = "", skin:int= 1):void{
+		public static function start(mc:DisplayObjectContainer, pass:String = "", style:ConsoleStyle = null):void{
 			if(_console){
 				trace(ERROR_EXISTS);
 			}else{
-				_console = new Console(pass, skin);
+				_console = new Console(pass, style);
 				// if no parent display, console will always be hidden, but using C.remoting is still possible so its not the end.
 				if(mc!=null) mc.addChild(_console);
 			}
@@ -140,13 +140,13 @@ package com.luaye.console {
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 * 			
 		 */
-		public static function startOnStage(mc:DisplayObject, pass:String = "", skin:int= 1):void{
+		public static function startOnStage(mc:DisplayObject, pass:String = "", style:ConsoleStyle = null):void{
 			if(_console){
 				trace(ERROR_EXISTS);
 			}else if(mc !=null && mc.stage !=null ){
-				start(mc.stage, pass, skin);
+				start(mc.stage, pass, style);
 			}else{
-			 	_console = new Console(pass, skin);
+			 	_console = new Console(pass, style);
 			 	// if no parent display, console will always be hidden, but using C.remoting is still possible so its not the end.
 				if(mc!=null) mc.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
 			}
@@ -205,7 +205,7 @@ package com.luaye.console {
 			}
 		}
 		/**
-		 * Add log line with priority 6
+		 * Add log line with priority 5
 		 * Allows multiple arguments for convenience use.
 		 *
 		 * @param String to be logged, any type can be passed and will be converted to string
@@ -216,7 +216,7 @@ package com.luaye.console {
 			}
 		}
 		/**
-		 * Add log line with priority 8
+		 * Add log line with priority 7
 		 * Allows multiple arguments for convenience use.
 		 *
 		 * @param String to be logged, any type can be passed and will be converted to string
@@ -227,7 +227,7 @@ package com.luaye.console {
 			}
 		}
 		/**
-		 * Add log line with priority 10
+		 * Add log line with priority 9
 		 * Allows multiple arguments for convenience use.
 		 *
 		 * @param String to be logged, any type can be passed and will be converted to string
@@ -238,7 +238,7 @@ package com.luaye.console {
 			}
 		}
 		/**
-		 * Add log line as fatal level
+		 * Add log line with priority 10
 		 * Allows multiple arguments for convenience use.
 		 *
 		 * @param String to be logged, any type can be passed and will be converted to string
@@ -257,7 +257,7 @@ package com.luaye.console {
 		 */
 		public static function logch(channel:*, ...args):void{
 			if(_console){
-				_console.logch.apply(null, [channel].concat(args));
+				_console.logch.apply(null, concat(channel, args));
 			}
 		}
 		/**
@@ -269,11 +269,11 @@ package com.luaye.console {
 		 */
 		public static function infoch(channel:*, ...args):void{
 			if(_console){
-				_console.infoch.apply(null, [channel].concat(args));
+				_console.infoch.apply(null, concat(channel, args));
 			}
 		}
 		/**
-		 * Add log line with priority 6 to channel
+		 * Add log line with priority 5 to channel
 		 * Allows multiple arguments for convenience use.
 		 *
 		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
@@ -281,11 +281,11 @@ package com.luaye.console {
 		 */
 		public static function debugch(channel:*, ...args):void{
 			if(_console){
-				_console.debugch.apply(null, [channel].concat(args));
+				_console.debugch.apply(null, concat(channel, args));
 			}
 		}
 		/**
-		 * Add log line with priority 8 to channel
+		 * Add log line with priority 7 to channel
 		 * Allows multiple arguments for convenience use.
 		 *
 		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
@@ -293,7 +293,19 @@ package com.luaye.console {
 		 */
 		public static function warnch(channel:*, ...args):void{
 			if(_console){
-				_console.warnch.apply(null, [channel].concat(args));
+				_console.warnch.apply(null, concat(channel, args));
+			}
+		}
+		/**
+		 * Add log line with priority 9 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
+		public static function errorch(channel:*, ...args):void{
+			if(_console){
+				_console.errorch.apply(null, concat(channel, args));
 			}
 		}
 		/**
@@ -303,22 +315,13 @@ package com.luaye.console {
 		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
-		public static function errorch(channel:*, ...args):void{
-			if(_console){
-				_console.errorch.apply(null, [channel].concat(args));
-			}
-		}
-		/**
-		 * Add line as fatal level to channel
-		 * Allows multiple arguments for convenience use.
-		 *
-		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
-		 * @param String to be logged, any type can be passed and will be converted to string
-		 */
 		public static function fatalch(channel:*, ...args):void{
 			if(_console){
-				_console.fatalch.apply(null, [channel].concat(args));
+				_console.fatalch.apply(null, concat(channel, args));
 			}
+		}
+		private static function concat(o:*, args:Array):Array{
+			return [o].concat(args);
 		}
 		/**
 		 * Remove console from it's parent display and clean up
@@ -342,16 +345,6 @@ package com.luaye.console {
 		public static function set paused(v:Boolean):void{
 			setter("paused",v);
 		}
-		/**
-		 * Enable/Disable logging and graphs in Console.
-		 * Does not record logs or graphs while disabled.
-		 */
-		public static function get enabled():Boolean{
-			return getter("enabled") as Boolean;
-		}
-		public static function set enabled(v:Boolean):void{
-			setter("enabled",v);
-		}
 		//
 		// Logging settings
 		//
@@ -363,18 +356,6 @@ package com.luaye.console {
 			if(_console){
 				_console.clear(channel);
 			}
-		}
-		/**
-		 * Accessor for currently viewing channel.
-		 * <p>
-		 * Set to null or empty string to view all channels (global channel).
-		 * </p>
-		 */
-		public static function get viewingChannel():String{
-			return getter("viewingChannel") as String;
-		}
-		public static function set viewingChannel(v:String):void{
-			setter("viewingChannel",v);
 		}
 		/**
 		 * Accessor for currently viewing channels.
@@ -478,7 +459,7 @@ package com.luaye.console {
 		 * @see #tracing
 		 */
 		public static function get tracingPriority():int{
-			return getter("tracingChannels") as int;
+			return getter("tracingPriority") as int;
 		}
 		public static function set tracingPriority(v:int):void{
 			setter("tracingPriority",v);
@@ -740,21 +721,6 @@ package com.luaye.console {
 		}
 		public static function set commandBase(v:Object):void{
 			setter("commandBase",v);
-		}
-		/**
-		 * Accessor for using strong referencing in CommandLine.
-		 * Default is false; Which means all outside references Console store are weak referenced,
-		 * allowing them to be garbage collected when required.
-		 * 
-		 * @param  new value
-		 * @return Current strong referencing setting
-		 * 
-		 */
-		public static function get strongRef():Boolean{
-			return getter("strongRef") as Boolean;
-		}
-		public static function set strongRef(v:Boolean):void{
-			setter("strongRef",v);
 		}
 		/**
 		 * Store a reference in Console for use in CommandLine.

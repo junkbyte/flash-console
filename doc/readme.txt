@@ -1,4 +1,5 @@
 #summary Read me and Changes log.
+#labels Featured,Phase-Requirements
 
 
 = READ ME =
@@ -31,6 +32,13 @@ http://code.google.com/p/flash-console/issues/
 
 
 == Change Log ==
+
+===2.4===
+  * Removed /strong AND C.strongRef. Must now use /savestrong individually.
+  * Added ConsoleStyle which you can pass in at start to define console styles
+  * /filterexp regular expression text filtering
+  * viewingChannel no longer used. now only using viewingChannels
+  * Graphing param can now be a command line string
 
 ===2.31===
   * Added support for additional commandline operations, such as + - & | ^ += ,etc

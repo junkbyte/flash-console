@@ -23,13 +23,23 @@
 * 
 */
 package {
-	import flash.display.MovieClip;
 	import com.luaye.console.C;
-	import com.luaye.console.Ch;
-	
-	// This class is for exporting to swc from flash - with icons etc...
-	public class ConsoleSWC extends MovieClip{
-		public var _C:C;
-		public var _Ch:Ch;
+
+	import flash.display.MovieClip;
+
+	//
+	// This class is for exporting to SWC for flash CS3 (and above) with a component icon.
+	// To import SWC to CS3:
+	// Copy the swc into C:\Program Files\Adobe\Adobe Flash CS3\en\Configuration\Components\ 
+	// Restart flash. Look in components panel.
+	//
+	// To import SWC to CS4 (and above):
+	// Go to publish settings > Link library > point to SWC
+	//
+	public class ConsoleComponent extends MovieClip{
+		// just to have a reference to C, so that flash with include the source when compiling
+		public static function get CONSOLE():Class{
+			return C;
+		}
 	}
 }

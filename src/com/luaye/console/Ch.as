@@ -29,37 +29,94 @@ package com.luaye.console {
 	 */
 	public class Ch {
 		
-		private var _c:*; // because it could be Console or C
-		public var name:String;
+		private var _c:*; // because it could be Console or C. This is the cheapest way I think...
+		private var _name:String;
 		
+		/**
+		 * Construct channel instance
+		 *
+		 * @param String Name of channel
+		 * @param String (optional) instance of Console, leave blank to use C.
+		 */
 		public function Ch(n:String = null, c:Console = null){
-			name = n;
+			_name = n;
 			// allowed to pass in Console here incase you want to use a different console instance from whats used in C
 			_c = c?c:C;
 		}
 		public function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			_c.ch(name, str, priority, isRepeating);
+			_c.ch(_name, str, priority, isRepeating);
 		}
+		/**
+		 * Add log line with priority 1 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public function log(...args):void{
-			_c.logch.apply(null, [name].concat(args));
+			_c.logch.apply(null, [_name].concat(args));
 		}
+		/**
+		 * Add log line with priority 3 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public function info(...args):void{
-			_c.infoch.apply(null, [name].concat(args));
+			_c.infoch.apply(null, [_name].concat(args));
 		}
+		/**
+		 * Add log line with priority 5 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public function debug(...args):void{
-			_c.debugch.apply(null, [name].concat(args));
+			_c.debugch.apply(null, [_name].concat(args));
 		}
+		/**
+		 * Add log line with priority 7 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public function warn(...args):void{
-			_c.warnch.apply(null, [name].concat(args));
+			_c.warnch.apply(null, [_name].concat(args));
 		}
+		/**
+		 * Add log line with priority 9 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public function error(...args):void{
-			_c.errorch.apply(null, [name].concat(args));
+			_c.errorch.apply(null, [_name].concat(args));
 		}
+		/**
+		 * Add log line with priority 10 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
 		public function fatal(...args):void{
-			_c.fatalch.apply(null, [name].concat(args));
+			_c.fatalch.apply(null, [_name].concat(args));
 		}
-		/*
-		not worth using...
+		
+		/**
+		 * Get channel name
+		 * Read only
+		 */
+		public function get name():String{
+			return _name;
+		}
+		/**
+		 * Clear channel
+		 */
+		public function clear():void{
+			_c.clear(_name);
+		}
+		/* Not worth using...
 		public function set tracing(v:Boolean):void{
 			var chs:Array = _c.tracingChannels;
 			var i:int = chs.indexOf(name);
@@ -75,18 +132,12 @@ package com.luaye.console {
 		public function get tracing():Boolean{
 			if(!_c.tracing) return false;
 			var chs:Array = _c.tracingChannels;
-			if(chs.length==0) return true;
-			//
 			var i:int = chs.indexOf(name);
-			if(i<0) return false;
-			return true;
+			return i>=0;
 		}*/
 		
-		/**
-		 * Clear channel
-		 */
-		public function clear():void{
-			_c.clear(name);
+		public function toString():String{
+			return "[Ch "+name+"]";
 		}
 	}
 }

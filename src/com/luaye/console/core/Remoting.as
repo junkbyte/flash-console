@@ -46,13 +46,18 @@ package com.luaye.console.core {
 		private var _remoteDelayed:int;
 		
 		private var _lastLogin:String = "";
+		private var _remotingPassword:String = "";
 		private var _loggedIn:Boolean;
 		
 		public var remoteMem:int;
 		
-		public function Remoting(m:Console, logsend:Function) {
+		public function Remoting(m:Console, logsend:Function, pass:String) {
 			_master = m;
 			_logsend = logsend;
+			_remotingPassword = pass;
+		}
+		public function set remotingPassword(str:String):void{
+			_remotingPassword = str;
 		}
 		public function addLineQueue(line:Log):void{
 			if(!_loggedIn) return;
@@ -91,7 +96,7 @@ package com.luaye.console.core {
 			}
 		}
 		public function send(command:String, ...args):void{
-			var target:String = Console.REMOTING_CONN_NAME+(_isRemote?CLIENT_PREFIX:REMOTE_PREFIX);
+			var target:String = Console.RemotingConnectionName+(_isRemote?CLIENT_PREFIX:REMOTE_PREFIX);
 			args = [target, command].concat(args);
 			try{
 				_sharedConnection.send.apply(this, args);
@@ -114,10 +119,10 @@ package com.luaye.console.core {
 				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemotingStatus);
 				_sharedConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError);
 				try{
-					_sharedConnection.connect(Console.REMOTING_CONN_NAME+CLIENT_PREFIX);
+					_sharedConnection.connect(Console.RemotingConnectionName+CLIENT_PREFIX);
 					_master.report("<b>Remoting started.</b> "+getInfo(),-1);
 					_isRemoting = true;
-					_loggedIn = _master.checkLogin("");
+					_loggedIn = checkLogin("");
 					if(_loggedIn){
 						_remoteLinesQueue = _master.getLogsAsObjects();
 						send("loginSuccess");
@@ -150,7 +155,7 @@ package com.luaye.console.core {
 				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemoteStatus);
 				_sharedConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError);
 				try{
-					_sharedConnection.connect(Console.REMOTING_CONN_NAME+REMOTE_PREFIX);
+					_sharedConnection.connect(Console.RemotingConnectionName+REMOTE_PREFIX);
 					_master.report("<b>Remote started.</b> "+getInfo(),-1);
 					var sdt:String = Security.sandboxType;
 					if(sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK){
@@ -172,7 +177,7 @@ package com.luaye.console.core {
 			}
 		}
 		private function getInfo():String{
-			return "</p5>channel:<p5>"+Console.REMOTING_CONN_NAME+" ("+Security.sandboxType+")";
+			return "</p5>channel:<p5>"+Console.RemotingConnectionName+" ("+Security.sandboxType+")";
 		}
 		private function printHowToGlobalSetting():void{
 			_master.report("Make sure your flash file is 'trusted' in Global Security Settings.", -2);
@@ -210,7 +215,7 @@ package com.luaye.console.core {
 				send("login", pass);
 			}else{
 				// once logged in, next login attempts will always be success
-				if(_loggedIn || _master.checkLogin(pass)){
+				if(_loggedIn || checkLogin(pass)){
 					_loggedIn = true;
 					_remoteLinesQueue = _master.getLogsAsObjects();
 					send("loginSuccess");
@@ -218,6 +223,9 @@ package com.luaye.console.core {
 					send("loginFail");
 				}
 			}
+		}
+		public function checkLogin(pass:String):Boolean{
+			return (!_remotingPassword || _remotingPassword == pass);
 		}
 		public function close():void{
 			if(_sharedConnection){

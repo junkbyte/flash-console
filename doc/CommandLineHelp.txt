@@ -1,6 +1,7 @@
+#labels Featured,Phase-Implementation
 =Command Line: help and tutorial=
 
-==This document applies to v2.3 or above only==
+==This document applies to v2.31 or above only==
 
 == Introduction ==
   * Command line lets you execute ActionScript3 code during run-time (on the fly)...
@@ -12,6 +13,7 @@
   * We have developed a game that users are able to go to different parts of an island collecting items, keys and unlocking each part of the island. Testing and fixing different parts of the island for bugs would be a pain if you have to go through all stages from start every time you re-launch the game (or recompile to change the start place). With Console, we are able to just type which section we want to go to in command line like: `$goto('red31')` We can even give our selves items without picking them up by calling a command like: `$give('bluekey1')` with these simple commands we are able to let betatesters go to different parts of the island with different item combinations without needing to start the game all over again.
   * We are developing another game that can save game progress to server. While server side is being developed we are able to use text files to save the game data. We can call from commandline: `$load('save30.txt')` to load the text data
   * We have a game that is purely based on physics. Sometimes we want to see what happened to object collisions slowly to see in detail. With commandline we can directly control stage frame rate by writing `stage.frameRate = 5`
+  * If you use [http://puremvc.org/ PureMVC], you can save the reference of facade OR call directly to its singleton, and have access to all its model/view and even send commands on the fly through command line. As commandLine isn't made to specialise in using PureMVC, you will need to go through a few steps just like you would need when coding. e.g.(multiton) `AppFacade.getInstance('main').retrieveProxy('myModel')`.
 
   * Note that `$` commands given in the above examples need to be assigned to a function of your own flash. For example: to be able to use `$goto('red31')` command mentioned above, you would have to create a function that accept a string argument and assign that function in console like: `C.store(<function>, "goto");`. Explained how in tutorial below.
 
@@ -179,32 +181,29 @@ flash.ui.Mouse.show()
 === New instance ===
   * If you have read the GettingStarted document, you would know that com.luaye.console.C is mearly an adaptor/manager for a com.luaye.console.Console instance.
   * What about make your own Console instance from inside commandLine and manage it? - for demonstration purposes ofc...
-  * Now to do this, you would need to make a new instance of Console. The thing about Console is it avoids strong referencing (including saved variables) to make sure it has minimal impact on the client's environment. The problem is if you make new instances from within commandLine they are weak references too, so they can become null at any time. You need to declare to commandLine that it needs to hold on to instances... In source code you can write `C.strongRef = true`, OR in commandLine:
-{{{
-/strong true
-}}}
-  * Now you may safely create a new Console instance without losing reference.
   * Note that you need to use the full class path (because there is no room for 'import' in a single line).
 {{{
 new com.luaye.console.Console()
 }}}
   * No password param passed here to make sure its visible to start with :)
-  * Now save it as a variable, NOTE that you can't save it as C, because C is reserved value for your current Console.
+  * Now save it as a variable using strong referencing... NOTE: you can't save it as C, because C is reserved value for your current Console.
 {{{
-/save myC
+/storestrong myC
 }}}
-  * Its not visible yet because it needs a parent display, so why not put it on stage...
+  * The reason to use `savestrong` here is because Console (by default) only store outside references as a weak reference to make sure it has minimal impact on the client's environment (unless `C.strongRef` is set).
+  * Exceptional to this, CommandLine caches your last 2 console returns as strong references to make sure it doesn't get garbage collected before you can do anything with it.
+
+  * Console is not visible yet because it needs a parent display, so why not put it on stage...
 {{{
 $base.addChild($myC)
 }}}
-  * OH NO, can't you see??? If you can't maybe you need to drag you console down a bit, (hold and drag at top of console).
-  * The new console will be below the main console, because the main console have set 'alwaysOnTop' set to true, it will fight for it to be at the top.
+  * You might not be able to see the new console properly as it will be below the main console. - the main console have 'alwaysOnTop' set to true, it will fight for it to be at the top.
   * Move the new console down so that you can see both:
 {{{
 $myC.y = 310;
 }}}
   * Now that's a nightmare you got not 1 but 2 bloody annoying consoles!
-  * Ok so now this is your own console, managed by you, through another console's command line... Why not try the normal console methods:
+  * Ok, so now this is your own console, managed by you, through another console's command line... Why not try the normal console methods:
 {{{
 $myC.log('Testing one two three');
 $myC.fpsMonitor = true;
@@ -226,7 +225,7 @@ OK... I think that's enough of play around. In the tutorial I have demonstrated 
   * use display mapper command
   * get / set properties of an object
   * access static classes
-  * change to strong referencing
+  * save as weak/strong references
   * create new instances
 
 
@@ -240,11 +239,11 @@ It is not limited to displays, it can access and execute ANY object/class.
   * You can execute multiple lines of code in one go by separating with ; - however the scope can change after each line execution so you will need to write accordingly.
 
 
-  * `/filter (text)` = filter/search logs for matching text
+  * `/filter <text>` = filter/search logs for matching text
   * `//` = return to previous scope
   * `/base` = return to base scope (same as typing $base)
-  * `/store (name)` = store current scope to that name (weak reference). To call back: `$(name)`
-  * `/storestrong (name)` = store current scope to that name using strong referencing (to make sure it doesn't get garbage collected). To call back: `$(name)`
+  * `/store <name>` = store current scope to that name (weak reference). To call back: `$<name>`
+  * `/storestrong <name>` = store current scope to that name using strong referencing (to make sure it doesn't get garbage collected). To call back: `$<name>`
   * `/stored` = list all stored variables
   * `/inspect` = get detailed info of your current scope.
   * `/inspectfull` = get more detailed info of your current scope.
