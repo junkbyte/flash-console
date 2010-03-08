@@ -28,26 +28,19 @@ package com.luaye.console.utils {
 	
 	public class WeakObject extends Proxy{
 		
-		private var _item:Array; // array of object's properties
+		private var _item:Array;
 		private var _dir:Object;
 		
 		public function WeakObject() {
 			_dir = new Object();
 		}
-		
-		
 		public function set(n:String,obj:Object, strong:Boolean = false):void{
-			if(obj == null){
-				delete _dir[n];
-			}else{
-				_dir[n] = new WeakRef(obj, strong);
-			}
+			if(obj == undefined) delete _dir[n]; 
+			else _dir[n] = new WeakRef(obj, strong);
 		}
-		public function get(n:String):Object{
-			if(_dir[n]){
-				return WeakRef(_dir[n]).reference;
-			}
-			return null;
+		public function get(n:String):*{
+			if(_dir[n]) return WeakRef(_dir[n]).reference;
+			return undefined;
 		}
 		//
 		// PROXY
@@ -57,33 +50,29 @@ package com.luaye.console.utils {
 		}
 		override flash_proxy function callProperty(n:*, ... rest):* {
 			var o:Object = get(n);
-			if(o is Function){
-				return (o as Function).apply(this, rest);
-			}
-			return null;
+			return o.apply(this, rest);
 		}
 		override flash_proxy function setProperty(n:*, v:*):void {
 			set(n,v);
 		}
 		override flash_proxy function nextNameIndex (index:int):int {
-         // initial call
-         if (index == 0) {
-             _item = new Array();
-             for (var x:* in _dir) {
-                _item.push(x);
-             }
-         }
-         if (index < _item.length) {
-             return index + 1;
-         } else {
-             return 0;
-         }
-     }
-     override flash_proxy function nextName(index:int):String {
-         return _item[index - 1];
-     }
-     public function toString():String{
-     	return "[WeakObject]";
-     }
+	         if (index == 0) {
+	             _item = new Array();
+	             for (var x:* in _dir) {
+	                _item.push(x);
+	             }
+	         }
+	         if (index < _item.length) {
+	             return index + 1;
+	         } else {
+	             return 0;
+	         }
+	     }
+	     override flash_proxy function deleteProperty(name:*):Boolean {
+	        return delete _dir[name];
+	     }
+	     public function toString():String{
+	     	return "[WeakObject]";
+	     }
 	}
 }

@@ -6,7 +6,7 @@
 
 ==Flash Console==
 
-  * Version: 2.31 (Jan 2010)
+  * Version: 2.35 (March 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.luaye.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -33,12 +33,14 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.4===
+===2.35===
   * Removed /strong AND C.strongRef. Must now use /savestrong individually.
-  * Added ConsoleStyle which you can pass in at start to define console styles
+  * Added ConsoleStyle which can be passed in at start to define console styles
   * /filterexp regular expression text filtering
-  * viewingChannel no longer used. now only using viewingChannels
+  * C.viewingChannel no longer used. now only using C.viewingChannels
   * Graphing param can now be a command line string
+  * Minor bug fixes with command line
+
 
 ===2.31===
   * Added support for additional commandline operations, such as + - & | ^ += ,etc
