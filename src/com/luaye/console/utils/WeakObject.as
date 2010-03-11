@@ -34,12 +34,12 @@ package com.luaye.console.utils {
 		public function WeakObject() {
 			_dir = new Object();
 		}
-		public function set(n:String,obj:Object, strong:Boolean = false):void{
-			if(obj == undefined) delete _dir[n]; 
+		public function set(n:String, obj:Object, strong:Boolean = false):void{
+			if(obj == null) delete _dir[n]; 
 			else _dir[n] = new WeakRef(obj, strong);
 		}
 		public function get(n:String):*{
-			if(_dir[n]) return WeakRef(_dir[n]).reference;
+			if(_dir[n] is WeakRef) return WeakRef(_dir[n]).reference;
 			return undefined;
 		}
 		//
@@ -55,6 +55,9 @@ package com.luaye.console.utils {
 		override flash_proxy function setProperty(n:*, v:*):void {
 			set(n,v);
 		}
+	    override flash_proxy function nextName(index:int):String {
+	        return _item[index - 1];
+	    }
 		override flash_proxy function nextNameIndex (index:int):int {
 	         if (index == 0) {
 	             _item = new Array();

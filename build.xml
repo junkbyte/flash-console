@@ -2,13 +2,13 @@
 
 	<property file="local.properties"/>
 	
-	<property name="src.version" value="2.4"/>
+	<property name="src.version" value="2.35"/>
 	<property name="src.path" value="${basedir}/src"/>
 	<property name="asdoc.target.dir" value="${basedir}/asdoc"/>
 	<property name="doc.dir" value="${basedir}/doc"/>
 	<property name="asdoc.exe" value="${FLEX_HOME}/bin/asdoc.exe"/>
 	<property name="flex.ant" value="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
-	<property name="wiki.dir" value="../wiki"/>
+	<property name="wiki.dir" value="./../wiki"/>
 	<property name="temp.dir" value="${basedir}/temp"/>
 
 	
@@ -35,7 +35,7 @@
 		<delete file="${temp.dir}/build.xml"/>
 		<delete file="${temp.dir}/local.properties"/>
 		<zip destfile="console${src.version}.zip">
-			<fileset dir="${basedir}/${temp.dir}"/>
+			<fileset dir="${temp.dir}"/>
 		</zip>
 		<delete dir="${temp.dir}"/>
 	</target>

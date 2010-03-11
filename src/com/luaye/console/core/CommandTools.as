@@ -161,13 +161,17 @@ package com.luaye.console.core {
 			}
 			//
 			// dynamic values
-			//
-			props = [];
-			for (var X:String in obj) {
-				props.push(X+"<p0>("+getQualifiedClassName(obj[X])+")</p0>");
-			}
-			if(props.length){
-				report("<p10>Values:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+			// - It can sometimes fail if we are looking at proxy object which havnt extended nextNameIndex, nextName, etc.
+			try{
+				props = [];
+				for (var X:String in obj) {
+					props.push(X+"<p0>("+getQualifiedClassName(obj[X])+")</p0>");
+				}
+				if(props.length){
+					report("<p10>Values:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 5);
+				}
+			}catch(e:Error){
+				report("Could not get values due to: "+e, 9);
 			}
 			//
 			// events

@@ -55,8 +55,8 @@ package com.luaye.console {
 	 */
 	public class Console extends Sprite {
 
-		public static const VERSION:Number = 2.4;
-		public static const VERSION_STAGE:String = "beta";
+		public static const VERSION:Number = 2.35;
+		public static const VERSION_STAGE:String = "";
 		//
 		public static const NAME:String = "Console";
 		public static const PANEL_MAIN:String = "mainPanel";
@@ -156,7 +156,7 @@ package com.luaye.console {
 			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
 			panels = new PanelsManager(this, mainPanel, _channels);
 			//
-			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy bug fixing!</b>", -2);
+			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy coding!</b>", -2);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			if(_password) visible = false;
 		}

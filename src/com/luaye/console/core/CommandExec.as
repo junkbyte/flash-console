@@ -1,4 +1,4 @@
-/*
+﻿/*
 * 
 * Copyright (c) 2008-2009 Lu Aye Oo
 * 
@@ -59,10 +59,9 @@ package com.luaye.console.core {
 		// trace('He\'s cool! (not really)','',"yet 'another string', what ya think?");
 		// this.getChildAt(0); 
 		// stage.addChild(root.addChild(this.getChildAt(0)));
-		// third(second(first('console'))).final(0).alpha;
-		// getChildByName(String('Console')).getChildByName('message').alpha = 0.5;
-		// getChildByName(String('Console').abcd().asdf).getChildByName('message').alpha = 0.5;
+		// getChildByName(new String('Console')).getChildByName('mainPanel').alpha = 0.5
 		// com.luaye.console.C.add('Hey how are you?');
+		// third(second(first('console'))).final(0).alpha;
 		public function exec(s:*, str:String, saved:Object = null, reserved:Array = null):Array{
 			if(_running) throw new Error("CommandExec.exec() is already runnnig. Does not support loop backs.");
 			_running = true;
@@ -279,7 +278,7 @@ package com.luaye.console.core {
 			var reg:RegExp = /\.|\(/g;
 			var result:Object = reg.exec(str);
 			if(result==null || !isNaN(Number(str))){
-				return execValue(str, _scope);
+				return execValue(str, _scope, true);
 			}
 			//
 			// AUTOMATICALLY detect classes in packages
@@ -338,7 +337,7 @@ package com.luaye.console.core {
 								}
 							}
 						}catch(e:Error){
-							// Will thorow below...
+							// Will throw below...
 						}
 						if(!(newbase is Function)){
 							throw new Error(basestr+" is not a function.");
@@ -368,48 +367,54 @@ package com.luaye.console.core {
 		//
 		// single values such as string, int, null, $a, ^1 and Classes without package.
 		//
-		private function execValue(str:String, base:* = null):Value{
+		private function execValue(str:String, base:* = null, basePrior:Boolean = false):Value{
 			var v:Value = new Value();
-			if(!base || !base.hasOwnProperty(str)){
-				if (str == "true") {
-					v.base = true;
-				}else if (str == "false") {
-					v.base = false;
-				}else if (str == "this") {
-					v.base = _scope;
-				}else if (str == "null") {
-					v.base = null;
-				}else if (str == "NaN") {
-					v.base = NaN;
-				}else if (str == "Infinity") {
-					v.base = Infinity;
-				}else if (str == "undefined") {
-					v.base = undefined;
-				}else if (!isNaN(Number(str))) {
-					v.base = Number(str);
-				}else if(str.indexOf(VALUE_CONST)==0){
-					var vv:Value = _values[str.substring(VALUE_CONST.length)];
-					//trace(VALUE_CONST+str.substring(VALUE_CONST.length)+" = " +vv);
-					v.base = vv.value;
-				}else if(str.charAt(0) == "$"){
-					var key:String = str.substring(1);
-					if(_reserved.indexOf(key)<0){
-						v.base = _saved;
-						v.prop = key;
-					}else{
-						v.base = _saved[key];
-					}
-				}else{
-					try{
-						v.base = getDefinitionByName(str);
-					}catch(e:Error){
+			if(basePrior && base){
+				try{
+					var testValue:* = base[str];
+					if(testValue != undefined){
 						v.base = base;
 						v.prop = str;
+						return v;
 					}
+				}catch(e:Error){
+					// will carry on trying other methods...
+				}
+			}
+			if (str == "true") {
+				v.base = true;
+			}else if (str == "false") {
+				v.base = false;
+			}else if (str == "this") {
+				v.base = _scope;
+			}else if (str == "null") {
+				v.base = null;
+			}else if (str == "NaN") {
+				v.base = NaN;
+			}else if (str == "Infinity") {
+				v.base = Infinity;
+			}else if (str == "undefined") {
+				v.base = undefined;
+			}else if (!isNaN(Number(str))) {
+				v.base = Number(str);
+			}else if(str.indexOf(VALUE_CONST)==0){
+				var vv:Value = _values[str.substring(VALUE_CONST.length)];
+				v.base = vv.value;
+			}else if(str.charAt(0) == "$"){
+				var key:String = str.substring(1);
+				if(_reserved.indexOf(key)<0){
+					v.base = _saved;
+					v.prop = key;
+				}else{
+					v.base = _saved[key];
 				}
 			}else{
-				v.base = base;
-				v.prop = str;
+				try{
+					v.base = getDefinitionByName(str);
+				}catch(e:Error){
+					v.base = base;
+					v.prop = str;
+				}
 			}
 			//debug("value: "+str+" = "+getQualifiedClassName(v.value)+" - "+v.value+" base:"+v.base);
 			return v;
