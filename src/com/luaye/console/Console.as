@@ -56,8 +56,8 @@ package com.luaye.console {
 	 */
 	public class Console extends Sprite {
 
-		public static const VERSION:Number = 2.35;
-		public static const VERSION_STAGE:String = "";
+		public static const VERSION:Number = 2.4;
+		public static const VERSION_STAGE:String = "WIP";
 		//
 		public static const NAME:String = "Console";
 		public static const PANEL_MAIN:String = "mainPanel";

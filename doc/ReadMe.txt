@@ -33,6 +33,10 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
+===2.4===
+  * Added C.explode
+  * Added C.stack
+
 ===2.35===
   * Removed /strong AND C.strongRef. Must now use /savestrong individually.
   * Added ConsoleStyle which can be passed in at start to define console styles

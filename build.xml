@@ -2,7 +2,7 @@
 
 	<property file="local.properties"/>
 	
-	<property name="src.version" value="2.35"/>
+	<property name="src.version" value="2.4"/>
 	<property name="src.path" value="${basedir}/src"/>
 	<property name="asdoc.target.dir" value="${basedir}/asdoc"/>
 	<property name="doc.dir" value="${basedir}/doc"/>
