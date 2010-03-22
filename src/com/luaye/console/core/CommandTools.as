@@ -242,8 +242,10 @@ package com.luaye.console.core {
 			//
 			nodes = V.accessor;
 			for each (var accessorX:XML in nodes) {
-				n = accessorX.@name;
-				list.push(n+":"+explode(obj[n], depth-1, p-1));
+				if(accessorX.@access!="readonly"){
+					n = accessorX.@name;
+					list.push(n+":"+explode(obj[n], depth-1, p-1));
+				}
 			}
 			//
 			nodes = V.variable;
@@ -383,6 +385,7 @@ package com.luaye.console.core {
 			report("/stored = list all stored variables",5);
 			report("/inspect = get info of your current scope.",5);
 			report("/inspectfull = get more detailed info of your current scope.",5);
+			report("/explode = get properties and values of current scope.",5);
 			report("/map = get the display list map starting from your current scope",5);
 			report("/string = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.",5);
 			report("Press up/down arrow keys to recall previous commands",2);

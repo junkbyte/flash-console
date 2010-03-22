@@ -687,6 +687,14 @@ package com.luaye.console {
 				_console.inspect(obj,detail);
 			}
 		}
+		/**
+		 * Output an object's values.
+		 * commandLine: /inspect  OR  /inspectfull
+		 * 
+		 * @param Object to explode
+		 * @param Depth of explosion, -1 = unlimited (default)
+		 * 
+		 */
 		public static function explode(obj:Object, depth:int = -1):void {
 			if(_console){
 				_console.explode(obj,depth);

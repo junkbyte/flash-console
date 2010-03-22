@@ -161,6 +161,13 @@ package com.luaye.console.core {
 				} else {
 					report("Empty", 10);
 				}
+			} else if (cmd == "explode") {
+				if (_scope) {
+					var depth:int = Number(param)
+					_master.explode(_scope, depth<=0?-1:depth);
+				} else {
+					report("Empty", 10);
+				}
 			} else if (cmd == "map") {
 				if (_scope) {
 					map(_scope as DisplayObjectContainer, int(param));
