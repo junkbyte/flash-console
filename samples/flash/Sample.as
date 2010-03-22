@@ -132,6 +132,23 @@ package {
 			o.prev = new Log("Previous log", "ch0", 1);
 			
 			C.explode(["a","b","c",{o1:{o2:{o3:{}}}}, o]);
+			
+			a();
+		}
+		private function a():void{
+			b();
+		}
+		private function b():void{
+			c();
+		}
+		private function c():void{
+			d();
+		}
+		private function d():void{
+			e();
+		}
+		private function e():void{
+			C.stack("HELLO");
 		}
 		private function setupUI():void{
 			TextField(txtPriority).restrict = "0-9";

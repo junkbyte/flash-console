@@ -168,6 +168,20 @@ package com.luaye.console {
 			}
 		}
 		/**
+		 * Stack log
+		 *
+		 * @param  String to add
+		 * @param  The depth of stack trace
+		 * @param  Priority of line. 0-10 (optional, default: 5)
+		 * @param  Name of channel (optional)
+		 * 
+		 */
+		public static function stack(str:*, depth:int = 64, priority:Number = 5, ch:String = null):void{
+			if(_console){
+				_console.stack(str,depth,priority, ch);
+			}
+		}
+		/**
 		 * Add log line to channel.
 		 * If channel name doesn't exists it creates one.
 		 *

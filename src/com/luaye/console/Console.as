@@ -557,7 +557,7 @@ package com.luaye.console {
 		public function report(obj:*,priority:Number = 0, skipSafe:Boolean = true):void{
 			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe);
 		}
-		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false):void{
+		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:uint = 0):void{
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
 			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL){
@@ -571,6 +571,9 @@ package com.luaye.console {
 			if(!skipSafe){
 				txt = txt.replace(/</gim, "&lt;");
  				txt = txt.replace(/>/gim, "&gt;");
+			}
+			if(stacks>0){
+				txt += getStack(new Error(), stacks, priority);
 			}
 			if(_channels.indexOf(channel) < 0){
 				_channels.push(channel);
@@ -595,6 +598,34 @@ package com.luaye.console {
 			if(_remoter.remoting){
 				_remoter.addLineQueue(line);
 			}
+		}
+		private function getStack(e:Error, depth:int, p:int):String{
+			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
+			if(!str){
+				return "";
+			}
+			var lines:Array = str.split(/\n\s*/);
+			var len:int = lines.length;
+			var selfreg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(this));
+			var Creg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(C));
+			var parts:Array = [];
+			var found:Boolean = false;
+			for (var i:int = 1; i < len; i++){
+				var line:String = lines[i];
+				if((line.search(selfreg) != 0 && line.search(Creg) != 0)){
+					found = true;
+				}
+				if(found){
+					parts.push("<p"+p+"> "+line.replace(/\s/, "&nbsp;")+"</p"+p+">");
+					if(p>0) p--;
+					depth--;
+					if(depth<=0) break;
+				}
+			}
+			if(parts.length>0){
+				return "\n"+parts.join("\n");
+			}
+			return "";
 		}
 		public function lineShouldShow(line:Log):Boolean{
 			return (
@@ -673,6 +704,9 @@ package com.luaye.console {
 		}
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			addLine(newLine,priority, DEFAULT_CHANNEL, isRepeating);
+		}
+		public function stack(newLine:*, depth:int = 64, priority:Number = 5, ch:String = null):void{
+			addLine(newLine,priority, ch, false, false, depth);
 		}
 		public function log(...args):void{
 			addLine(joinArgs(args), LOG_LEVEL);

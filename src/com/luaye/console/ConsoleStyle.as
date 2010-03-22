@@ -84,7 +84,7 @@ package com.luaye.console {
 		/** Color of log priority level 4. */
 		public var priority4:uint = 0xD6FFD6;
 		/** Color of debug log priority level 5. C.debug(...) */
-		public var priority5:uint = 0xE6E6E6;
+		public var priority5:uint = 0xE9E9E9;
 		/** Color of log priority level 6. */
 		public var priority6:uint = 0xFFD6D6;
 		/** Color of warn log priority level 7. C.warn(...) */
