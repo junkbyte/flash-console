@@ -23,6 +23,7 @@
 * 
 */
 package com.luaye.console.core {
+	import com.luaye.console.utils.Utils;
 	import com.luaye.console.utils.WeakObject;
 	import com.luaye.console.Console;
 
@@ -219,6 +220,46 @@ package com.luaye.console.core {
 			if(!viewAll){
 				report("Tip: use /inspectfull to see full inspection with inheritance",-1);
 			}
+		}
+		public static function explode(obj:Object, depth:int = -1, p:int = 9):String{
+			var t:String = typeof obj;
+			if(t != "object" || depth == 0){
+				if(t == "string"){
+					return "<p-2>\""+String(obj)+"\"</p-2>";
+				}else if(t == "xml"){
+					return "<p-2>"+obj.toXMLString()+"</p-2>";
+				}else{
+					return "<p-2>"+obj+"</p-2>";
+				}
+			}else if(obj == null){ 
+				// could be null, undefined, NaN, etc. all should be printed as is
+				return "<p-2>"+obj+"</p-2>";
+			}
+			if(p<0) p = 0;
+			var V:XML = describeType(obj);
+			var nodes:XMLList, n:String;
+			var list:Array = [];
+			//
+			nodes = V.accessor;
+			for each (var accessorX:XML in nodes) {
+				n = accessorX.@name;
+				list.push(n+":"+explode(obj[n], depth-1, p-1));
+			}
+			//
+			nodes = V.variable;
+			for each (var variableX:XML in nodes) {
+				n = variableX.@name;
+				list.push(n+":"+explode(obj[n], depth-1, p-1));
+			}
+			//
+			try{
+				for (var X:String in obj) {
+					list.push(X+":"+explode(obj[X], depth-1, p-1));
+				}
+			}catch(e:Error){
+				//
+			}
+			return "<p"+p+">{"+Utils.shortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
 		}
 		private function makeInheritLine(props:Array, props2:Array, viewAll:Boolean, type:String, breaker:String):void{
 			var str:String = "";

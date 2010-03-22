@@ -23,6 +23,7 @@
 * 
 */
 package com.luaye.console {
+	import com.luaye.console.core.CommandTools;
 	import com.luaye.console.view.MainPanel;
 	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.core.Log;
@@ -361,6 +362,9 @@ package com.luaye.console {
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			cl.inspect(obj,detail);
+		}
+		public function explode(obj:Object, depth:int = -1):void{
+			report(CommandTools.explode(obj, depth), 1);
 		}
 		public function get paused():Boolean{
 			return _isPaused;

@@ -23,6 +23,7 @@
 * 
 */
 package {
+	import com.luaye.console.core.Log;
 	import com.luaye.console.ConsoleStyle;
 	import com.luaye.console.C;
 	import flash.geom.Rectangle;	
@@ -125,6 +126,12 @@ package {
 			// End of console related sample
 			//
 			setupUI();
+			
+			var o:Log = new Log("test", "ch1", 5);
+			o.dynamicProp = "some dynamic property";
+			o.prev = new Log("Previous log", "ch0", 1);
+			
+			C.explode(["a","b","c",{o1:{o2:{o3:{}}}}, o]);
 		}
 		private function setupUI():void{
 			TextField(txtPriority).restrict = "0-9";

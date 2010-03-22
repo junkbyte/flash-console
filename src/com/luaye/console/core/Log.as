@@ -24,7 +24,7 @@
 */
 package com.luaye.console.core {
 	
-	public class Log{
+	public dynamic class Log{
 		public var text:String;
 		public var c:String;
 		public var p:int;

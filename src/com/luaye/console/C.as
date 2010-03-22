@@ -687,6 +687,11 @@ package com.luaye.console {
 				_console.inspect(obj,detail);
 			}
 		}
+		public static function explode(obj:Object, depth:int = -1):void {
+			if(_console){
+				_console.explode(obj,depth);
+			}
+		}
 		/**
 		 * CommandLine UI's visibility.
 		 * CommandLine will still be avaviable to use through code.
