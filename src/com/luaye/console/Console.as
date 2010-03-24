@@ -107,6 +107,8 @@ package com.luaye.console {
 		public var remoteDelay:int = 20;
 		public var tracingPriority:int = 0;
 		public var rulerHidesMouse:Boolean = true;
+		public var autoStackPriority:int = ERROR_LEVEL;
+		public var defaultStackDepth:int = 3;
 		//
 		private var _isPaused:Boolean;
 		private var _password:String;
@@ -563,6 +565,7 @@ package com.luaye.console {
 			if(!channel || channel == GLOBAL_CHANNEL){
 				channel = DEFAULT_CHANNEL;
 			}
+			if(priority >= autoStackPriority && stacks<=0) stacks = defaultStackDepth;
 			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
 				if(tracingPriority <= priority || tracingPriority <= 0){
 					_traceCall("["+channel+"] "+txt);
@@ -572,9 +575,7 @@ package com.luaye.console {
 				txt = txt.replace(/</gim, "&lt;");
  				txt = txt.replace(/>/gim, "&gt;");
 			}
-			if(stacks>0){
-				txt += getStack(new Error(), stacks, priority);
-			}
+			if(stacks>0) txt += getStack(stacks, priority);
 			if(_channels.indexOf(channel) < 0){
 				_channels.push(channel);
 			}
@@ -599,24 +600,25 @@ package com.luaye.console {
 				_remoter.addLineQueue(line);
 			}
 		}
-		private function getStack(e:Error, depth:int, p:int):String{
+		private function getStack(depth:int, p:int):String{
+			var e:Error = new Error();
 			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
 			if(!str){
 				return "";
 			}
 			var lines:Array = str.split(/\n\s*/);
 			var len:int = lines.length;
-			var selfreg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(this));
-			var Creg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(C));
+			// TODO: cache it.
+			var reg:RegExp = new RegExp("(\\s*)at(\\s+)(Function|"+getQualifiedClassName(this)+"|"+getQualifiedClassName(C)+")");
 			var parts:Array = [];
 			var found:Boolean = false;
 			for (var i:int = 1; i < len; i++){
 				var line:String = lines[i];
-				if((line.search(selfreg) != 0 && line.search(Creg) != 0)){
+				if((line.search(reg) != 0)){
 					found = true;
 				}
 				if(found){
-					parts.push("<p"+p+"> "+line.replace(/\s/, "&nbsp;")+"</p"+p+">");
+					parts.push("<p"+p+"> "+line.replace(/\s*at/, " @")+"</p"+p+">");
 					if(p>0) p--;
 					depth--;
 					if(depth<=0) break;
@@ -705,8 +707,8 @@ package com.luaye.console {
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			addLine(newLine,priority, DEFAULT_CHANNEL, isRepeating);
 		}
-		public function stack(newLine:*, depth:int = 64, priority:Number = 5, ch:String = null):void{
-			addLine(newLine,priority, ch, false, false, depth);
+		public function stack(newLine:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
+			addLine(newLine,priority, ch, false, false, depth>=0?depth:defaultStackDepth);
 		}
 		public function log(...args):void{
 			addLine(joinArgs(args), LOG_LEVEL);

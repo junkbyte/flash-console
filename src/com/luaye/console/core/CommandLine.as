@@ -104,7 +104,7 @@ package com.luaye.console.core {
 				if(str.charAt(0) == "/"){
 					execCommand(str);
 				}else{
-					var a:Array = CommandExec.Execs(_scope, str, _saved, RESERVED_SAVES);
+					var a:Array = Executer.Execs(_scope, str, _saved, RESERVED_SAVES);
 					for each(v in a) {
 						doReturn(v);
 					}
@@ -163,7 +163,7 @@ package com.luaye.console.core {
 				}
 			} else if (cmd == "explode") {
 				if (_scope) {
-					var depth:int = Number(param)
+					var depth:int = Number(param);
 					_master.explode(_scope, depth<=0?-1:depth);
 				} else {
 					report("Empty", 10);
@@ -218,7 +218,7 @@ package com.luaye.console.core {
 			var len:int = lines.length;
 			var parts:Array = [];
 			var selfreg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(this));
-			var exereg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(CommandExec));
+			var exereg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(Executer));
 			for (var i:int = 0; i < len; i++){
 				var line:String = lines[i];
 				if(MAX_INTERNAL_STACK_TRACE >=0 && (line.search(selfreg) == 0 || line.search(exereg) == 0)){

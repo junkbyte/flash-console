@@ -23,27 +23,21 @@
 * 
 */
 package com.luaye.console.core {
-
-	import com.luaye.console.utils.Utils;
-
-	import flash.utils.getDefinitionByName;
-
-	public class CommandExec {
-		
-		
-		
+	public class Executer {
 		
 		public static function Exec(scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
-			var e:CommandExec = new CommandExec();
+			var e:Exe = new Exe();
 			return e.exec(scope, str, saved, reserved).pop();
 		}
-		
-		
 		public static function Execs(scope:Object, str:String, saved:Object = null, reserved:Array = null):Array{
-			var e:CommandExec = new CommandExec();
+			var e:Exe = new Exe();
 			return e.exec(scope, str, saved, reserved);
 		}
-		
+	}
+}
+class Exe{
+	import flash.utils.getDefinitionByName;
+	
 		private static const VALUE_CONST:String = "#";
 		private var _saved:Object;
 		private var _reserved:Array;
@@ -186,7 +180,7 @@ package com.luaye.console.core {
 		}
 		private function tempValue(str:String,v:*, indOpen:int, indClose:int):String{
 			//trace("tempValue", VALUE_CONST+_values.length, " = "+str);
-			str = Utils.replaceByIndexes(str, VALUE_CONST+_values.length, indOpen, indClose);
+			str = str.substring(0,indOpen)+(VALUE_CONST+_values.length)+str.substring(indClose);
 			_values.push(v);
 			return str;
 		}
@@ -551,7 +545,6 @@ package com.luaye.console.core {
 		//	master.report(_master.joinArgs(args), 2, false);
 		//}
 	}
-}
 class Value{
 	// TODO: potentially, we can have value only for 'non-reference', and have a boolen to tell if its a reference or value
 	

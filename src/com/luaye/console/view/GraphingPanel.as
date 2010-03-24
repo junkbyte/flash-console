@@ -342,7 +342,7 @@ package com.luaye.console.view {
 	}
 }
 
-import com.luaye.console.core.CommandExec;
+import com.luaye.console.core.Executer;
 import com.luaye.console.utils.WeakRef;
 
 class Interest{
@@ -360,7 +360,7 @@ class Interest{
 		useExec = prop.search(/[^\w\d]/) >= 0;
 	}
 	public function getValue():Number{
-		return useExec?CommandExec.Exec(obj, prop):obj[prop];
+		return useExec?Executer.Exec(obj, prop):obj[prop];
 	}
 	public function get obj():Object{
 		return _ref.reference;

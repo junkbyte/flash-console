@@ -176,7 +176,7 @@ package com.luaye.console {
 		 * @param  Name of channel (optional)
 		 * 
 		 */
-		public static function stack(str:*, depth:int = 64, priority:Number = 5, ch:String = null):void{
+		public static function stack(str:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
 			if(_console){
 				_console.stack(str,depth,priority, ch);
 			}
@@ -434,6 +434,26 @@ package com.luaye.console {
 		public static function set maxRepeats(v:Number):void{
 			setter("maxRepeats",v);
 		}
+		/**
+		 * Auto stack trace logs for this priority and above
+		 * default priortiy = 9; error or fatal.
+		 */
+		public static function get autoStackPriority():int{
+			return getter("autoStackPriority") as int;
+		}
+		public static function set autoStackPriority(v:int):void{
+			setter("autoStackPriority",v);
+		}
+		/**
+		 * Default stack trace depth.
+		 */
+		public static function get defaultStackDepth():int{
+			return getter("defaultStackDepth") as int;
+		}
+		public static function set defaultStackDepth(v:int):void{
+			setter("defaultStackDepth",v);
+		}
+		
 		/**
 		 * Accessor for using flash's build in (or external) trace().
 		 * <p>
