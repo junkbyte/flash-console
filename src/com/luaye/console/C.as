@@ -485,20 +485,6 @@ package com.luaye.console {
 			setter("tracingChannels",v);
 		}
 		/**
-		 * Accessor for minimum priority required to call trace.
-		 * <p>
-		 * set to zero (default) to call on all priorities.
-		 * C.tracing must be set to true for this to effect
-		 * </p>
-		 * @see #tracing
-		 */
-		public static function get tracingPriority():int{
-			return getter("tracingPriority") as int;
-		}
-		public static function set tracingPriority(v:int):void{
-			setter("tracingPriority",v);
-		}
-		/**
 		 * Assign custom trace function.
 		 * <p>
 		 * Strong reference to function. Console will only call this when C.tracing is true.

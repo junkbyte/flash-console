@@ -29,20 +29,18 @@ package com.luaye.console.core {
 		public var c:String;
 		public var p:int;
 		public var r:Boolean;
-		public var s:Boolean;
 		//
 		public var next:Log;
 		public var prev:Log;
 		//
-		public function Log(t:String, ch:String, pr:int, repeating:Boolean = false, skipSafe:Boolean = false){
+		public function Log(t:String, ch:String, pr:int, repeating:Boolean = false){
 			text = t;
 			c = ch;
 			p = pr;
 			r = repeating;
-			s = skipSafe;
 		}
 		public function toObject():Object{
-			return {text:text, c:c, p:p, r:r, s:s};
+			return {text:text, c:c, p:p, r:r};
 		}
 		public function toString():String{
 			return "["+c+"] " + text;

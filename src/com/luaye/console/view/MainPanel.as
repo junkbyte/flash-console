@@ -346,7 +346,7 @@ package com.luaye.console.view {
 		private function makeLine(line:Log):String{
 			var str:String = "";
 			var txt:String = line.text;
-			if(master.prefixChannelNames && (_viewingChannels.indexOf(Console.GLOBAL_CHANNEL)>=0 || _viewingChannels.length>1) && line.c != Console.DEFAULT_CHANNEL){
+			if(master.prefixChannelNames && (_viewingChannels.length == 0 || _viewingChannels.length>1) && line.c != Console.DEFAULT_CHANNEL){
 				txt = "[<a href=\"event:channel_"+line.c+"\">"+line.c+"</a>] "+txt;
 			}
 			var ptag:String = "p"+line.p;
@@ -541,7 +541,7 @@ package com.luaye.console.view {
 			if(limited && len>CHANNELS_IN_MENU) len = CHANNELS_IN_MENU;
 			for(var ci:int = 0; ci<len;  ci++){
 				var channel:String = _channels[ci];
-				var channelTxt:String = (_viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
+				var channelTxt:String = ((ci == 0 && _viewingChannels.length == 0) || _viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
 				str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
 			}
 			if(limited){
@@ -653,7 +653,7 @@ package com.luaye.console.view {
 		}
 		public function onChannelPressed(chn:String):void{
 			var current:Array = _viewingChannels.concat();
-			if(_shift && _viewingChannels[0] != Console.GLOBAL_CHANNEL && chn != Console.GLOBAL_CHANNEL){
+			if(_shift && _viewingChannels.length > 0 && chn != Console.GLOBAL_CHANNEL){
 				var ind:int = current.indexOf(chn);
 				if(ind>=0){
 					current.splice(ind,1);

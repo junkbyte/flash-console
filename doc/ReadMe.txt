@@ -6,7 +6,7 @@
 
 ==Flash Console==
 
-  * Version: 2.35 (March 2010)
+  * Version: 2.4 (WIP) (March 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.luaye.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -34,8 +34,12 @@ http://code.google.com/p/flash-console/issues/
 == Change Log ==
 
 ===2.4===
+
   * Added C.explode
   * Added C.stack
+  * C.error and C.fatal will get auto stack trace by default.
+  * Added C.autoStackPriority
+  * Added C.defaultStackDepth
 
 ===2.35===
   * Removed /strong AND C.strongRef. Must now use /savestrong individually.

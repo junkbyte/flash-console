@@ -105,7 +105,6 @@ package com.luaye.console {
 		public var moveTopAttempts:int = 50;
 		public var maxRepeats:Number = 75;
 		public var remoteDelay:int = 20;
-		public var tracingPriority:int = 0;
 		public var rulerHidesMouse:Boolean = true;
 		public var autoStackPriority:int = ERROR_LEVEL;
 		public var defaultStackDepth:int = 3;
@@ -124,7 +123,7 @@ package com.luaye.console {
 		private var _commandLineAllowed:Boolean = true;
 		
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
-		private var _viewingChannels:Array = [GLOBAL_CHANNEL];
+		private var _viewingChannels:Array = [];
 		private var _tracingChannels:Array = [];
 		private var _isRepeating:Boolean;
 		private var _priority:int;
@@ -162,6 +161,8 @@ package com.luaye.console {
 			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy coding!</b>", -2);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			if(_password) visible = false;
+			// must have enterFrame here because user can start without a parent display and use remoting.
+			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 		}
 
 		private function stageAddedHandle(e:Event=null):void{
@@ -169,7 +170,6 @@ package com.luaye.console {
 			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			//
-			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
 		}
@@ -178,7 +178,6 @@ package com.luaye.console {
 			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			//
-			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
@@ -413,13 +412,6 @@ package com.luaye.console {
 			_mspf = time-_previousTime;
 			_previousTime = time;
 			
-			if(alwaysOnTop && parent && parent.getChildAt(parent.numChildren-1) != this && moveTopAttempts>0){
-				moveTopAttempts--;
-				parent.addChild(this);
-				if(!quiet){
-					report("Moved console on top (alwaysOnTop enabled), "+moveTopAttempts+" attempts left.",-1);
-				}
-			}
 			if( _isRepeating ){
 				_repeated++;
 				if(_repeated > maxRepeats && maxRepeats >= 0){
@@ -433,7 +425,15 @@ package com.luaye.console {
 					if(!_mm.haveItemsWatching) _mm = null;
 				}
 			}
-			if(visible){
+			// VIEW UPDATES ONLY
+			if(visible && parent!=null){
+				if(alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && moveTopAttempts>0){
+					moveTopAttempts--;
+					parent.addChild(this);
+					if(!quiet){
+						report("Moved console on top (alwaysOnTop enabled), "+moveTopAttempts+" attempts left.",-1);
+					}
+				}
 				panels.mainPanel.update(!_isPaused && _lineAdded);
 				if(_lineAdded) {
 					var chPanel:ChannelsPanel = panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
@@ -487,7 +487,7 @@ package com.luaye.console {
 			var lines:Array = obj[0];
 			for each( var line:Object in lines){
 				if(line){
-					addLine(line.text,line.p,line.c,line.r,line.s);
+					addLine(line.text,line.p,line.c,line.r,true);
 				}
 			}
 			var remoteMSPFs:Array = obj[1];
@@ -523,9 +523,9 @@ package com.luaye.console {
 		public function set viewingChannels(a:Array):void{
 			_viewingChannels.splice(0);
 			if(a && a.length) {
-				if(a.indexOf(GLOBAL_CHANNEL)>=0) a = [GLOBAL_CHANNEL];
+				if(a.indexOf(GLOBAL_CHANNEL)>=0) a = [];
 				for each(var item:Object in a) _viewingChannels.push(item is Ch?(Ch(item).name):String(item));
-			} else _viewingChannels.push(GLOBAL_CHANNEL);
+			}
 			panels.mainPanel.updateToBottom();
 			panels.updateMenu();
 		}
@@ -566,20 +566,26 @@ package com.luaye.console {
 				channel = DEFAULT_CHANNEL;
 			}
 			if(priority >= autoStackPriority && stacks<=0) stacks = defaultStackDepth;
+			var stackArr:Array = stacks>0?getStack(stacks):null;
+			
 			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
-				if(tracingPriority <= priority || tracingPriority <= 0){
-					_traceCall("["+channel+"] "+txt);
-				}
+				_traceCall("["+channel+"] "+(stackArr==null?txt:(txt+"\n @ "+stackArr.join("\n @ "))));
 			}
 			if(!skipSafe){
 				txt = txt.replace(/</gim, "&lt;");
  				txt = txt.replace(/>/gim, "&gt;");
 			}
-			if(stacks>0) txt += getStack(stacks, priority);
+			if(stackArr != null) {
+				var tp:int = priority;
+				for each(var sline:String in stackArr) {
+					txt += "\n<p"+tp+"> @ "+sline+"</p"+tp+">";
+					if(tp>0) tp--;
+				}
+			}
 			if(_channels.indexOf(channel) < 0){
 				_channels.push(channel);
 			}
-			var line:Log = new Log(txt,channel,priority, isRepeating, skipSafe);
+			var line:Log = new Log(txt,channel,priority, isRepeating);
 			if(isRepeat){
 				_lines.pop();
 				_lines.push(line);
@@ -600,39 +606,25 @@ package com.luaye.console {
 				_remoter.addLineQueue(line);
 			}
 		}
-		private function getStack(depth:int, p:int):String{
+		private function getStack(depth:int):Array{
 			var e:Error = new Error();
 			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
-			if(!str){
-				return "";
-			}
-			var lines:Array = str.split(/\n\s*/);
+			if(!str) return null;
+			var lines:Array = str.split(/\n\sat\s/);
 			var len:int = lines.length;
 			// TODO: cache it.
-			var reg:RegExp = new RegExp("(\\s*)at(\\s+)(Function|"+getQualifiedClassName(this)+"|"+getQualifiedClassName(C)+")");
-			var parts:Array = [];
-			var found:Boolean = false;
-			for (var i:int = 1; i < len; i++){
-				var line:String = lines[i];
-				if((line.search(reg) != 0)){
-					found = true;
-				}
-				if(found){
-					parts.push("<p"+p+"> "+line.replace(/\s*at/, " @")+"</p"+p+">");
-					if(p>0) p--;
-					depth--;
-					if(depth<=0) break;
+			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(this)+"|"+getQualifiedClassName(C));
+			for (var i:int = 2; i < len; i++){
+				if((lines[i].search(reg) != 0)){
+					return lines.slice(i, i+depth);
 				}
 			}
-			if(parts.length>0){
-				return "\n"+parts.join("\n");
-			}
-			return "";
+			return null;
 		}
 		public function lineShouldShow(line:Log):Boolean{
 			return (
 				(
-					_viewingChannels[0] == Console.GLOBAL_CHANNEL
+					_viewingChannels.length == 0
 			 		|| _viewingChannels.indexOf(line.c)>=0 
 			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.toLowerCase().indexOf(_filterText.toLowerCase())>=0 )
 			 		|| (_filterRegExp && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )

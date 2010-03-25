@@ -41,8 +41,8 @@ package {
 		
 		public function Sample() {
 			//
-			// SET UP
-			
+			// SET UP - only required once
+			//
 			var style:ConsoleStyle = new ConsoleStyle(); // optional.
 			//style.big(); // BIG text
 			//style.whiteBase(); // Black on white
@@ -56,9 +56,13 @@ package {
 			C.height = 220;
 			C.maxLines = 2000;
 			C.fpsMonitor = true;
+			C.remotingPassword = null; // Just so that remote don't ask for password
 			C.remoting = true;
 			C.displayRoller = true;
-			C.remotingPassword = null; // Just so that remote don't ask for password
+			//
+			// End of setup
+			//
+			
 			//
 			// BASICS
 			//

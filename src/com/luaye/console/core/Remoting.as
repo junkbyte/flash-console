@@ -58,6 +58,7 @@ package com.luaye.console.core {
 		}
 		public function set remotingPassword(str:String):void{
 			_remotingPassword = str;
+			if(_isRemoting && !str) login();
 		}
 		public function addLineQueue(line:Log):void{
 			if(!_loggedIn) return;
@@ -214,6 +215,7 @@ package com.luaye.console.core {
 				_master.report("Attempting to login...", -1);
 				send("login", pass);
 			}else{
+				trace("login");
 				// once logged in, next login attempts will always be success
 				if(_loggedIn || checkLogin(pass)){
 					_loggedIn = true;
