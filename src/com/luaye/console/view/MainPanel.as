@@ -24,6 +24,8 @@
 */
 
 package com.luaye.console.view {
+	import com.luaye.console.Ch;
+
 	import flash.text.TextFormat;
 	import flash.system.System;	
 	
@@ -50,7 +52,7 @@ package com.luaye.console.view {
 
 	public class MainPanel extends AbstractPanel {
 		
-		private static const CHANNELS_IN_MENU:int = 7;
+		private static const MAX_MENU_CHANNELS:int = 7;
 		
 		public static const TOOLTIPS:Object = {
 				fps:"Frames Per Second",
@@ -101,6 +103,9 @@ package com.luaye.console.view {
 		private var _lines:Logs;
 		private var _commandsHistory:Array = [];
 		private var _commandsInd:int = -1;
+		private var _priority:int;
+		private var _filterText:String;
+		private var _filterRegExp:RegExp;
 		
 		private var _needUpdateMenu:Boolean;
 		private var _needUpdateTrace:Boolean;
@@ -108,12 +113,12 @@ package com.luaye.console.view {
 		private var _atBottom:Boolean = true;
 		private var _enteringLogin:Boolean;
 		
-		public function MainPanel(m:Console, lines:Logs, channels:Array, chanviews:Array) {
+		public function MainPanel(m:Console, lines:Logs, channels:Array) {
 			super(m);
 			_canUseTrace = (Capabilities.playerType=="External"||Capabilities.isDebugger);
 			var fsize:int = m.style.menuFontSize;
 			_channels = channels;
-			_viewingChannels = chanviews;
+			_viewingChannels = new Array();
 			_lines = lines;
 			_commandsHistory = m.ud.commandLineHistory;
 			
@@ -302,7 +307,7 @@ package com.luaye.console.view {
 			var str:String = "";
 			var line:Log = _lines.first;
 			while(line){
-				if(master.lineShouldShow(line)){
+				if(lineShouldShow(line)){
 					str += makeLine(line);
 				}
 				line = line.next;
@@ -328,7 +333,7 @@ package com.luaye.console.view {
 			var linesLeft:int = Math.round(_traceField.height/master.style.traceFontSize);
 			var line:Log = _lines.last;
 			while(line){
-				if(master.lineShouldShow(line)){
+				if(lineShouldShow(line)){
 					linesLeft--;
 					lines.push(makeLine(line));
 					if(linesLeft<=0){
@@ -343,10 +348,70 @@ package com.luaye.console.view {
 			_lockScrollUpdate = false;
 			updateScroller();
 		}
+		private function lineShouldShow(line:Log):Boolean{
+			return (
+				(
+					_viewingChannels.length == 0
+			 		|| _viewingChannels.indexOf(line.c)>=0 
+			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.toLowerCase().indexOf(_filterText.toLowerCase())>=0 )
+			 		|| (_filterRegExp && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )
+			 	) 
+			 	&& ( _priority <= 0 || line.p >= _priority)
+			);
+		}
+		public function set priority (i:int):void{
+			_priority = i;
+			updateToBottom();
+			updateMenu();
+		}
+		public function get priority ():int{
+			return _priority;
+		}
+		public function get viewingChannels():Array{
+			return _viewingChannels;
+		}
+		public function set viewingChannels(a:Array):void{
+			_viewingChannels.splice(0);
+			if(a && a.length) {
+				if(a.indexOf(Console.GLOBAL_CHANNEL)>=0) a = [];
+				for each(var item:Object in a) _viewingChannels.push(item is Ch?(Ch(item).name):String(item));
+			}
+			updateToBottom();
+			master.panels.updateMenu();
+		}
+		//
+		public function set filterText(str:String):void{
+			_filterText = str;
+			if(str){
+				_filterRegExp = null;
+				master.clear(Console.FILTERED_CHANNEL);
+				_channels.splice(1,0,Console.FILTERED_CHANNEL);
+				master.ch(Console.FILTERED_CHANNEL, "Filtering ["+str+"]", 10);
+				viewingChannels = [Console.FILTERED_CHANNEL];
+			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == Console.FILTERED_CHANNEL){
+				viewingChannels = [Console.GLOBAL_CHANNEL];
+			}
+		}
+		public function get filterText():String{
+			return _filterText?_filterText:(_filterRegExp?String(_filterRegExp):null);
+		}
+		//
+		public function set filterRegExp(exp:RegExp):void{
+			_filterRegExp = exp;
+			if(exp){
+				_filterText = null;
+				master.clear(Console.FILTERED_CHANNEL);
+				_channels.splice(1,0,Console.FILTERED_CHANNEL);
+				master.ch(Console.FILTERED_CHANNEL, "Filtering RegExp ["+exp+"]", 10);
+				viewingChannels = [Console.FILTERED_CHANNEL];
+			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == Console.FILTERED_CHANNEL){
+				viewingChannels = [Console.GLOBAL_CHANNEL];
+			}
+		}
 		private function makeLine(line:Log):String{
 			var str:String = "";
 			var txt:String = line.text;
-			if(master.prefixChannelNames && (_viewingChannels.length == 0 || _viewingChannels.length>1) && line.c != Console.DEFAULT_CHANNEL){
+			if(line.c != Console.DEFAULT_CHANNEL && (_viewingChannels.length == 0 || _viewingChannels.length>1)){
 				txt = "[<a href=\"event:channel_"+line.c+"\">"+line.c+"</a>] "+txt;
 			}
 			var ptag:String = "p"+line.p;
@@ -371,11 +436,6 @@ package com.luaye.console.view {
 			}else{
 				_scrollbar.visible = true;
 				_scroller.visible = true;
-				/* // scroller resize... works but waste of resouse I think
-				var h:Number = (height*20)/_lines.length;
-				var mh:Number = _bottomLine.y-40;
-				_scroller.height = h<16?16:(h>mh?mh:h);
-				*/
 				
 				if(_atBottom) {
 					_scroller.y = scrollerMaxY;
@@ -527,7 +587,7 @@ package com.luaye.console.view {
 				str += doActive(" <a href=\"event:trace\">T</a>", master.tracing);
 			}
 			str += " <a href=\"event:copy\">Cc</a>";
-			str += " <a href=\"event:priority\">P"+master.priority+"</a>";
+			str += " <a href=\"event:priority\">P"+_priority+"</a>";
 			str += doActive(" <a href=\"event:pause\">P</a>", master.paused);
 			str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a>";
 			
@@ -538,7 +598,7 @@ package com.luaye.console.view {
 		public function getChannelsLink(limited:Boolean = false):String{
 			var str:String = "<chs>";
 			var len:int = _channels.length;
-			if(limited && len>CHANNELS_IN_MENU) len = CHANNELS_IN_MENU;
+			if(limited && len>MAX_MENU_CHANNELS) len = MAX_MENU_CHANNELS;
 			for(var ci:int = 0; ci<len;  ci++){
 				var channel:String = _channels[ci];
 				var channelTxt:String = ((ci == 0 && _viewingChannels.length == 0) || _viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
@@ -616,10 +676,10 @@ package com.luaye.console.view {
 			}else if(e.text == "fps"){
 				master.fpsMonitor = !master.fpsMonitor;
 			}else if(e.text == "priority"){
-				if(master.priority<10){
-					master.priority++;
+				if(_priority<10){
+					priority++;
 				}else{
-					master.priority = 0;
+					priority = 0;
 				}
 			}else if(e.text == "mm"){
 				master.memoryMonitor = !master.memoryMonitor;
@@ -663,9 +723,9 @@ package com.luaye.console.view {
 				}else{
 					current.push(chn);
 				}
-				master.viewingChannels = current;
+				viewingChannels = current;
 			}else{
-				master.viewingChannels = [chn];
+				viewingChannels = [chn];
 			}
 		}
 		//
@@ -757,6 +817,7 @@ package com.luaye.console.view {
 				_commandPrefx.visible = false;
 				_commandBackground.visible = false;
 			}
+			_needUpdateMenu = true;
 			this.height = height;
 		}
 		public function get commandLine ():Boolean{

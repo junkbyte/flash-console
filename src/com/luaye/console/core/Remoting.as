@@ -239,5 +239,19 @@ package com.luaye.console.core {
 			}
 			_sharedConnection = null;
 		}
+		//
+		//
+		//
+		/*public static function get RemoteIsRunning():Boolean{
+			var sCon:LocalConnection = new LocalConnection();
+			try{
+				sCon.allowInsecureDomain("*");
+				sCon.connect(Console.RemotingConnectionName+REMOTE_PREFIX);
+			}catch(error:Error){
+				return true;
+			}
+			sCon.close();
+			return false;
+		}*/
 	}
 }

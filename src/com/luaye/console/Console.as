@@ -23,9 +23,8 @@
 * 
 */
 package com.luaye.console {
-	import com.luaye.console.core.CommandTools;
-	import com.luaye.console.view.MainPanel;
 	import com.luaye.console.core.CommandLine;
+	import com.luaye.console.core.CommandTools;
 	import com.luaye.console.core.Log;
 	import com.luaye.console.core.Logs;
 	import com.luaye.console.core.MemoryMonitor;
@@ -34,6 +33,7 @@ package com.luaye.console {
 	import com.luaye.console.utils.Utils;
 	import com.luaye.console.view.ChannelsPanel;
 	import com.luaye.console.view.FPSPanel;
+	import com.luaye.console.view.MainPanel;
 	import com.luaye.console.view.PanelsManager;
 	import com.luaye.console.view.RollerPanel;
 
@@ -42,7 +42,6 @@ package com.luaye.console {
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.geom.Rectangle;
-	import flash.net.LocalConnection;
 	import flash.system.System;
 	import flash.text.StyleSheet;
 	import flash.utils.getQualifiedClassName;
@@ -100,7 +99,7 @@ package com.luaye.console {
 		//
 		public var quiet:Boolean;
 		public var maxLines:int = 1000;
-		public var prefixChannelNames:Boolean = true;
+		//public var prefixChannelNames:Boolean = true;
 		public var alwaysOnTop:Boolean = true;
 		public var moveTopAttempts:int = 50;
 		public var maxRepeats:Number = 75;
@@ -113,8 +112,6 @@ package com.luaye.console {
 		private var _password:String;
 		private var _passwordIndex:int;
 		private var _tracing:Boolean = false;
-		private var _filterText:String;
-		private var _filterRegExp:RegExp;
 		private var _keyBinds:Object = {};
 		private var _mspf:Number;
 		private var _previousTime:Number;
@@ -123,10 +120,8 @@ package com.luaye.console {
 		private var _commandLineAllowed:Boolean = true;
 		
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
-		private var _viewingChannels:Array = [];
 		private var _tracingChannels:Array = [];
 		private var _isRepeating:Boolean;
-		private var _priority:int;
 		private var _repeated:int;
 		private var _lines:Logs;
 		private var _lineAdded:Boolean;
@@ -154,7 +149,7 @@ package com.luaye.console {
 			// VIEW setup
 			style = skin?skin:new ConsoleStyle();
 			generateCSS();
-			var mainPanel:MainPanel = new MainPanel(this, _lines, _channels, _viewingChannels);
+			var mainPanel:MainPanel = new MainPanel(this, _lines, _channels);
 			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
 			panels = new PanelsManager(this, mainPanel, _channels);
 			//
@@ -518,20 +513,15 @@ package com.luaye.console {
 		//
 		//
 		public function get viewingChannels():Array{
-			return _viewingChannels.concat();
+			return panels.mainPanel.viewingChannels;
 		}
 		public function set viewingChannels(a:Array):void{
-			_viewingChannels.splice(0);
-			if(a && a.length) {
-				if(a.indexOf(GLOBAL_CHANNEL)>=0) a = [];
-				for each(var item:Object in a) _viewingChannels.push(item is Ch?(Ch(item).name):String(item));
-			}
-			panels.mainPanel.updateToBottom();
-			panels.updateMenu();
+			panels.mainPanel.viewingChannels = a;
 		}
 		public function set tracingChannels(a:Array):void{
 			_tracingChannels.splice(0);
 			if(a){
+				if(a.indexOf(Console.GLOBAL_CHANNEL)>=0) a = [];
 				for each(var item:Object in a) _tracingChannels.push(item is Ch?(Ch(item).name):String(item));
 			}
 		}
@@ -620,25 +610,6 @@ package com.luaye.console {
 				}
 			}
 			return null;
-		}
-		public function lineShouldShow(line:Log):Boolean{
-			return (
-				(
-					_viewingChannels.length == 0
-			 		|| _viewingChannels.indexOf(line.c)>=0 
-			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.toLowerCase().indexOf(_filterText.toLowerCase())>=0 )
-			 		|| (_filterRegExp && _viewingChannels.indexOf(Console.FILTERED_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )
-			 	) 
-			 	&& ( _priority <= 0 || line.p >= _priority)
-			);
-		}
-		public function set priority (i:int):void{
-			_priority = i;
-			panels.mainPanel.updateToBottom();
-			panels.updateMenu();
-		}
-		public function get priority ():int{
-			return _priority;
 		}
 		//
 		// COMMAND LINE
@@ -747,32 +718,13 @@ package com.luaye.console {
 		}
 		//
 		public function set filterText(str:String):void{
-			_filterText = str;
-			if(str){
-				_filterRegExp = null;
-				clear(FILTERED_CHANNEL);
-				_channels.splice(1,0,FILTERED_CHANNEL);
-				addLine("Filtering ["+str+"]", 10,FILTERED_CHANNEL);
-				viewingChannels = [FILTERED_CHANNEL];
-			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == FILTERED_CHANNEL){
-				viewingChannels = [GLOBAL_CHANNEL];
-			}
+			panels.mainPanel.filterText = str;
 		}
 		public function get filterText():String{
-			return _filterText?_filterText:(_filterRegExp?String(_filterRegExp):null);
+			return panels.mainPanel.filterText;
 		}
-		//
 		public function set filterRegExp(exp:RegExp):void{
-			_filterRegExp = exp;
-			if(exp){
-				_filterText = null;
-				clear(FILTERED_CHANNEL);
-				_channels.splice(1,0,FILTERED_CHANNEL);
-				addLine("Filtering RegExp ["+exp+"]", 10,FILTERED_CHANNEL);
-				viewingChannels = [FILTERED_CHANNEL];
-			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == FILTERED_CHANNEL){
-				viewingChannels = [GLOBAL_CHANNEL];
-			}
+			panels.mainPanel.filterRegExp = exp;
 		}
 		//
 		public function clear(channel:String = null):void{
@@ -811,17 +763,6 @@ package com.luaye.console {
 				line = line.next;
 			}
 			return str;
-		}
-		public static function get remoteIsRunning():Boolean{
-			var sCon:LocalConnection = new LocalConnection();
-			try{
-				sCon.allowInsecureDomain("*");
-				sCon.connect(RemotingConnectionName+Remoting.REMOTE_PREFIX);
-			}catch(error:Error){
-				return true;
-			}
-			sCon.close();
-			return false;
 		}
 	}
 }

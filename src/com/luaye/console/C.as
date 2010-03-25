@@ -404,13 +404,13 @@ package com.luaye.console {
 		 * When turned on, it shows channel names when multiple channels are visible in the same log view.
 		 * Default: true
 		 * </p>
-		 */
 		public static function get prefixChannelNames():Boolean{
 			return getter("prefixChannelNames") as Boolean;
 		}
 		public static function set prefixChannelNames(v:Boolean):void{
 			setter("prefixChannelNames",v);
 		}
+		 */
 		/**
 		 * Maximum number of logs Console should remember.
 		 * 0 = unlimited. Setting to very high will slow down performance as it grows
@@ -953,7 +953,7 @@ package com.luaye.console {
 		/*private static function canRunWithBrowserSetup(s:Stage, setup:uint):Boolean{
 			if(setup>0 && s && (Capabilities.playerType == "PlugIn" || Capabilities.playerType == "ActiveX")){
 				var flashVars:Object = s.loaderInfo.parameters;
-				if(flashVars["allowConsole"] != "true" && (setup == 1 || (setup == 2 && !Console.remoteIsRunning)) ){
+				if(flashVars["allowConsole"] != "true" && (setup == 1 || (setup == 2 && !Remoting.RemoteIsRunning)) ){
 					return false;
 				}
 			}
