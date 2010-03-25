@@ -1,7 +1,7 @@
 #labels Featured,Phase-Implementation
 =Command Line: help and tutorial=
 
-==This document applies to v2.31 or above only==
+==This document applies to v2.4 or above only==
 
 == Introduction ==
   * Command line lets you execute ActionScript3 code during run-time (on the fly)...
@@ -22,8 +22,8 @@
 
 
 == Getting started ==
-  * Command line is not visible in console by default.
-  * To start commandliine: `C.commandline = true` in source OR in console interface you can click on *CL* in top menu.
+  * Command line is not enabled in console by default.
+  * To start commandliine: `C.commandline = true` OR `C.commandlineAllowed = true` and then you can press *CL* on console's top menu UI when you need it.
   * Command line appear as a text field at the bottom of the console window.
   * It uses the same syntax as actionscript - Except that you can only do 1 simple line of code at a time.
   * The class name of current scope is displayed on the left of command line. 
@@ -266,7 +266,7 @@ Examples of security risk:
   * You can load external swf files in with application domain set to current flash domain - which again defeat the point of flash security sandbox.
 
 How to increase security.
-  * It is likely very useful to have Console running during beta or even final deployment. However it is highly recommended that you either have a long password to Console OR disable commandLine.
+  * It is likely very useful to have Console running during beta or even final deployment. However it is highly recommended that you either have a long password to Console OR disable commandLine (by default it is).
 {{{
 C.commandLineAllowed = false;
 }}}
