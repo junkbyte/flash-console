@@ -547,15 +547,15 @@ package com.luaye.console {
 			return _traceCall;
 		}
 		public function report(obj:*,priority:Number = 0, skipSafe:Boolean = true):void{
-			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe);
+			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe, 0);
 		}
-		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:uint = 0):void{
+		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
 			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL){
 				channel = DEFAULT_CHANNEL;
 			}
-			if(priority >= autoStackPriority && stacks<=0) stacks = defaultStackDepth;
+			if(priority >= autoStackPriority && stacks<0) stacks = defaultStackDepth;
 			var stackArr:Array = stacks>0?getStack(stacks):null;
 			
 			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
