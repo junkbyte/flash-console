@@ -808,7 +808,7 @@ package com.luaye.console.view {
 			_commandField.width = width-15-_commandField.x;
 		}
 		public function set commandLine (b:Boolean):void{
-			if(b && master.commandLineAllowed>0){
+			if(b && master.commandLineAllowed){
 				_commandField.visible = true;
 				_commandPrefx.visible = true;
 				_commandBackground.visible = true;

@@ -614,21 +614,16 @@ package com.luaye.console {
 		//
 		// COMMAND LINE
 		//
-		public function set commandLine (newB:Boolean):void{
-			if(newB){
-				_commandLineAllowed = true;
-				//report("CommandLine is disabled. Set commandLineAllowed from source code to allow.");
-			}
-			panels.mainPanel.commandLine = newB;
+		public function set commandLine(b:Boolean):void{
+			if(b) _commandLineAllowed = true;
+			panels.mainPanel.commandLine = b;
 		}
 		public function get commandLine ():Boolean{
 			return panels.mainPanel.commandLine;
 		}
-		public function set commandLineAllowed (v:Boolean):void{
-			_commandLineAllowed = v;
-			if(!v && commandLine){
-				commandLine = false;
-			}
+		public function set commandLineAllowed (b:Boolean):void{
+			_commandLineAllowed = b;
+			if(!b && commandLine) commandLine = false;
 		}
 		public function get commandLineAllowed ():Boolean{
 			return _commandLineAllowed;
