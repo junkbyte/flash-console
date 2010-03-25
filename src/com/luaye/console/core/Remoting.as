@@ -196,6 +196,7 @@ package com.luaye.console.core {
 				};
 		}
 		public function loginFail():void{
+			if(!_isRemote) return;
 			_master.report("Login Failed", 10);
 			_master.panels.mainPanel.requestLogin();
 		}
@@ -203,6 +204,7 @@ package com.luaye.console.core {
 			_master.report("Login Successful", -1);
 		}
 		public function requestLogin():void{
+			if(!_isRemote) return;
 			if(_lastLogin){
 				login(_lastLogin);
 			}else{

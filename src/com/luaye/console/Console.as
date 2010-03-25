@@ -117,7 +117,7 @@ package com.luaye.console {
 		private var _previousTime:Number;
 		private var _traceCall:Function = trace;
 		private var _rollerCaptureKey:String;
-		private var _commandLineAllowed:Boolean = true;
+		private var _commandLineAllowed:Boolean;
 		
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
 		private var _tracingChannels:Array = [];
@@ -615,12 +615,11 @@ package com.luaye.console {
 		// COMMAND LINE
 		//
 		public function set commandLine (newB:Boolean):void{
-			if(newB && !_commandLineAllowed){
-				panels.updateMenu();
-				report("CommandLine is disabled. Set commandLineAllowed from source code to allow.");
-			}else{
-				panels.mainPanel.commandLine = newB;
+			if(newB){
+				_commandLineAllowed = true;
+				//report("CommandLine is disabled. Set commandLineAllowed from source code to allow.");
 			}
+			panels.mainPanel.commandLine = newB;
 		}
 		public function get commandLine ():Boolean{
 			return panels.mainPanel.commandLine;

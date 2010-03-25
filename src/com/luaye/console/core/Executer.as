@@ -25,18 +25,20 @@
 package com.luaye.console.core {
 	public class Executer {
 		
+		public static const EXE_CLASSNAMES:String = "ExecuterExe|ExecuterValue";
+		
 		public static function Exec(scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
-			var e:Exe = new Exe();
+			var e:ExecuterExe = new ExecuterExe();
 			return e.exec(scope, str, saved, reserved).pop();
 		}
 		public static function Execs(scope:Object, str:String, saved:Object = null, reserved:Array = null):Array{
-			var e:Exe = new Exe();
+			var e:ExecuterExe = new ExecuterExe();
 			return e.exec(scope, str, saved, reserved);
 		}
 	}
 }
-class Exe{
-	import flash.utils.getDefinitionByName;
+import flash.utils.getDefinitionByName;
+internal class ExecuterExe{
 	
 		private static const VALUE_CONST:String = "#";
 		private var _saved:Object;
@@ -97,7 +99,7 @@ class Exe{
 				var end:int = match.lastIndexOf(quote);
 				var string:String = match.substring(start+1,end).replace(/\\(.)/g, "$1");
 				//trace(VALUE_CONST+_values.length+" = "+string);
-				str = tempValue(str,new Value(string), result.index+start, result.index+end+1);
+				str = tempValue(str,new ExecuterValue(string), result.index+start, result.index+end+1);
 				//trace(str);
 				result = strReg.exec(str);
 			}
@@ -151,12 +153,12 @@ class Exe{
 					if(isfun){
 						var params:Array = inside.split(",");
 						//trace("#"+_values.length+" stores function params ["+params+"]");
-						line = tempValue(line,new Value(params), indOpen+1, indClose);
+						line = tempValue(line,new ExecuterValue(params), indOpen+1, indClose);
 						for(var X:String in params){
 							params[X] = execOperations(ignoreWhite(params[X])).value;
 						}
 					}else{
-						var groupv:Value = new Value(groupv);
+						var groupv:ExecuterValue = new ExecuterValue(groupv);
 						//trace("#"+_values.length+" stores group value for "+inside);
 						line = tempValue(line,groupv, indOpen, indClose+1);
 						groupv.setValue(execOperations(ignoreWhite(inside)).value);
@@ -188,7 +190,7 @@ class Exe{
 		// Simple strip with operations.
 		// aaa.bbb.ccc(1/2,3).ddd += fff+$g.hhh();
 		//
-		private function execOperations(str:String):Value{
+		private function execOperations(str:String):ExecuterValue{
 			var reg:RegExp = /\s*(((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^]|\=\=?|\!\=|\>\>?\>?|\<\<?)\=?)|=|\~|\sis\s|typeof\s)\s*/g;
 			var result:Object = reg.exec(str);
 			var seq:Array = [];
@@ -226,7 +228,7 @@ class Exe{
 				if(op.replace(setter,"")!=""){
 					res = operate(seq[i-1], op, seq[i+1]);
 					//debug("operate: "+seq[i-1].value, op, seq[i+1].value, "=", res);
-					var sv:Value = Value(seq[i-1]);
+					var sv:ExecuterValue = ExecuterValue(seq[i-1]);
 					sv.setValue(res);
 					seq.splice(i,2);
 					i-=2;
@@ -235,12 +237,12 @@ class Exe{
 			}
 			// EXEC setter operations after reversing the sequence
 			seq.reverse();
-			var v:Value = seq[0];
+			var v:ExecuterValue = seq[0];
 			for(i = 1;i<len;i+=2){
 				op = seq[i];
 				if(op.replace(setter,"")==""){
 					v = seq[i-1];
-					var subject:Value = seq[i+1];
+					var subject:ExecuterValue = seq[i+1];
 					if(op.length>1) op = op.substring(0,op.length-1);
 					res = operate(subject, op, v);
 					subject.setValue(res);
@@ -253,8 +255,8 @@ class Exe{
 		// aaa.bbb.ccc(0.5,3).ddd
 		// includes class path detection and 'new' operation
 		//
-		private function execSimple(str:String):Value{
-			var v:Value = new Value(_scope);
+		private function execSimple(str:String):ExecuterValue{
+			var v:ExecuterValue = new ExecuterValue(_scope);
 			//debug('execStrip: '+str);
 			//
 			// if it is 'new' operation
@@ -265,7 +267,7 @@ class Exe{
 					newstr = str.substring(0, defclose+1);
 				}
 				var newobj:* = makeNew(newstr.substring(4));
-				str = tempValue(str, new Value(newobj), 0, newstr.length);
+				str = tempValue(str, new ExecuterValue(newobj), 0, newstr.length);
 			}
 			//
 			//
@@ -284,7 +286,7 @@ class Exe{
 						var def:* = getDefinitionByName(ignoreWhite(classstr));
 						var havemore:Boolean = str.length>classstr.length;
 						//trace(classstr+" is a definition:", def);
-						str = tempValue(str, new Value(def), 0, classstr.length);
+						str = tempValue(str, new ExecuterValue(def), 0, classstr.length);
 						//trace(str);
 						if(havemore){
 							reg.lastIndex = 0;
@@ -307,7 +309,7 @@ class Exe{
 				var isFun:Boolean = str.charAt(index)=="(";
 				var basestr:String = ignoreWhite(str.substring(previndex, index));
 				//trace("scopestr = "+basestr+ " v.base = "+v.value);
-				var newv:Value = execValue(basestr, v.value);
+				var newv:ExecuterValue = execValue(basestr, v.value);
 				//trace("scope = "+newv.value+"  isFun:"+isFun);
 				if(isFun){
 					var newbase:* = newv.value;
@@ -361,8 +363,8 @@ class Exe{
 		//
 		// single values such as string, int, null, $a, ^1 and Classes without package.
 		//
-		private function execValue(str:String, base:* = null, basePrior:Boolean = false):Value{
-			var v:Value = new Value();
+		private function execValue(str:String, base:* = null, basePrior:Boolean = false):ExecuterValue{
+			var v:ExecuterValue = new ExecuterValue();
 			if(basePrior && base){
 				try{
 					var testValue:* = base[str];
@@ -392,7 +394,7 @@ class Exe{
 			}else if (!isNaN(Number(str))) {
 				v.base = Number(str);
 			}else if(str.indexOf(VALUE_CONST)==0){
-				var vv:Value = _values[str.substring(VALUE_CONST.length)];
+				var vv:ExecuterValue = _values[str.substring(VALUE_CONST.length)];
 				v.base = vv.value;
 			}else if(str.charAt(0) == "$"){
 				var key:String = str.substring(1);
@@ -414,7 +416,7 @@ class Exe{
 			return v;
 		}
 		// * typed cause it could be String +  OR comparison such as || or &&
-		private function operate(v1:Value, op:String, v2:Value):*{
+		private function operate(v1:ExecuterValue, op:String, v2:ExecuterValue):*{
 			switch (op){
 				case "=":
 					return v2.value;
@@ -544,16 +546,12 @@ class Exe{
 		//private function debug(...args):void{
 		//	master.report(_master.joinArgs(args), 2, false);
 		//}
-	}
-class Value{
-	// TODO: potentially, we can have value only for 'non-reference', and have a boolen to tell if its a reference or value
-	
-	// this is a class to remember the base object and property name that holds the value...
+}
+internal class ExecuterValue{
 	public var base:*;
 	public var prop:String;
-	//private var value:*;
 	
-	public function Value(b:Object = null, p:String = null):void{
+	public function ExecuterValue(b:Object = null, p:String = null):void{
 		base = b;
 		prop = p;
 		//value = v;

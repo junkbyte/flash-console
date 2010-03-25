@@ -35,6 +35,7 @@ http://code.google.com/p/flash-console/issues/
 
 ===2.4===
 
+  * Due to security concern, CommandLine is no longer allowed by default. You must do C.commandLineAllowed = true OR C.commandLine = true (to allow and show)
   * Added C.explode
   * Added C.stack
   * C.error and C.fatal will get auto stack trace by default.

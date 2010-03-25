@@ -217,11 +217,10 @@ package com.luaye.console.core {
 			var internalerrs:int = 0;
 			var len:int = lines.length;
 			var parts:Array = [];
-			var selfreg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(this));
-			var exereg:RegExp = new RegExp("\\s*at "+getQualifiedClassName(Executer));
+			var reg:RegExp = new RegExp("\\s*at\\s+("+Executer.EXE_CLASSNAMES+")");
 			for (var i:int = 0; i < len; i++){
 				var line:String = lines[i];
-				if(MAX_INTERNAL_STACK_TRACE >=0 && (line.search(selfreg) == 0 || line.search(exereg) == 0)){
+				if(MAX_INTERNAL_STACK_TRACE >=0 && (line.search(reg) == 0)){
 					// don't trace too many internal errors :)
 					if(internalerrs>=MAX_INTERNAL_STACK_TRACE && i > 0) {
 						break;
