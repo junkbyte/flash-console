@@ -95,11 +95,11 @@ package com.luaye.console {
 		public var maxLines:int = 1000;
 		public var alwaysOnTop:Boolean = true;
 		public var moveTopAttempts:int = 50;
-		public var maxRepeats:Number = 75;
-		public var remoteDelay:int = 20;
+		public var maxRepeats:uint = 75;
 		public var rulerHidesMouse:Boolean = true;
 		public var autoStackPriority:int = ERROR_LEVEL;
 		public var defaultStackDepth:int = 3;
+		
 		//
 		private var _style:ConsoleStyle;
 		private var _css:StyleSheet;
@@ -119,8 +119,7 @@ package com.luaye.console {
 		private var _commandLineAllowed:Boolean;
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
 		private var _tracingChannels:Array = [];
-		private var _isRepeating:Boolean;
-		private var _repeated:int;
+		private var _repeating:uint;
 		private var _lines:Logs;
 		private var _lineAdded:Boolean;
 		
@@ -338,11 +337,8 @@ package com.luaye.console {
 			_mspf = time-_previousTime;
 			_previousTime = time;
 			
-			if( _isRepeating ){
-				_repeated++;
-				if(_repeated > maxRepeats && maxRepeats >= 0){
-					_isRepeating = false;
-				}
+			if(_repeating > 0){
+				_repeating--;
 			}
 			if(!_paused && _mm!=null){
 				var arr:Array = _mm.update();
@@ -402,6 +398,8 @@ package com.luaye.console {
 		private function onMainPanelConnectRequest(e:Event) : void {
 			_remoter.login(MainPanel(e.currentTarget).commandLineText);
 		}
+		public function get remoteDelay():uint{ return _remoter.delay; };
+		public function set remoteDelay(i:uint):void{ _remoter.delay = i; };
 		//
 		// this is sent from client for remote...
 		// obj[0] = array of log lines (text, priority, channel, repeating, safeHTML)
@@ -478,7 +476,7 @@ package com.luaye.console {
 			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe, 0);
 		}
 		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
-			var isRepeat:Boolean = (isRepeating && _isRepeating);
+			var isRepeat:Boolean = (isRepeating && _repeating > 0);
 			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL) channel = DEFAULT_CHANNEL;
 			if(priority >= autoStackPriority && stacks<0) stacks = defaultStackDepth;
@@ -506,7 +504,7 @@ package com.luaye.console {
 				_lines.pop();
 				_lines.push(line);
 			}else{
-				_repeated = 0;
+				_repeating = isRepeating?maxRepeats:0;
 				_lines.push(line);
 				if(maxLines > 0 ){
 					var off:int = _lines.length - maxLines;
@@ -516,7 +514,6 @@ package com.luaye.console {
 				}
 			}
 			_lineAdded = true;
-			_isRepeating = isRepeating;
 			
 			_remoter.addLineQueue(line);
 		}

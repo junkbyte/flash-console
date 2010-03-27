@@ -431,10 +431,10 @@ package com.luaye.console {
 		 * Default = 75;
 		 * </p>
 		 */
-		public static function get maxRepeats():Number{
-			return getter("maxRepeats") as Number;
+		public static function get maxRepeats():uint{
+			return getter("maxRepeats") as uint;
 		}
-		public static function set maxRepeats(v:Number):void{
+		public static function set maxRepeats(v:uint):void{
 			setter("maxRepeats",v);
 		}
 		/**
@@ -678,10 +678,10 @@ package com.luaye.console {
 		 * Accessor for remoter's broadcast interval in frames.
 		 * Default = 20 
 		 */
-		public static function get remoteDelay():int{
-			return getter("remoteDelay") as int;
+		public static function get remoteDelay():uint{
+			return getter("remoteDelay") as uint;
 		}
-		public static function set remoteDelay(v:int):void{
+		public static function set remoteDelay(v:uint):void{
 			setter("remoteDelay",v);
 		}
 		/**

@@ -122,7 +122,6 @@ package com.luaye.console.view {
 			_lines = lines;
 			_commandsHistory = m.ud.commandLineHistory;
 			
-			
 			name = Console.PANEL_MAIN;
 			minimumWidth = 50;
 			minimumHeight = 18;

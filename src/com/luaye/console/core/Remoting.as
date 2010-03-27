@@ -43,13 +43,15 @@ package com.luaye.console.core {
 		private var _sharedConnection:LocalConnection;
 		private var _remoteLinesQueue:Array;
 		private var _mspfsForRemote:Array;
-		private var _remoteDelayed:int;
+		private var _delayed:int;
 		
 		private var _lastLogin:String = "";
 		private var _remotingPassword:String;
 		private var _loggedIn:Boolean;
 		
 		public var remoteMem:int;
+		
+		public var delay:uint = 20;
 		
 		public function Remoting(m:Console, logsend:Function, pass:String) {
 			_master = m;
@@ -69,7 +71,7 @@ package com.luaye.console.core {
 			}
 		}
 		public function update(mspf:Number, sFR:Number = NaN):void{
-			_remoteDelayed++;
+			_delayed++;
 			if(!_loggedIn) return;
 			_mspfsForRemote.push(mspf);
 			if(sFR){
@@ -81,15 +83,15 @@ package com.luaye.console.core {
 					frames--;
 				}
 			}
-			if(_remoteDelayed >= _master.remoteDelay){
-				_remoteDelayed = 0;
+			if(_delayed >= delay){
+				_delayed = 0;
 				var newQueue:Array = new Array();
 				// don't send too many lines at once cause there is 50kb limit with LocalConnection.send
 				// Buffer it...
 				if(_remoteLinesQueue.length > 20){
 					newQueue = _remoteLinesQueue.splice(20);
 					// to force update next farme
-					_remoteDelayed = _master.remoteDelay;
+					_delayed = delay;
 				}
 				send("logSend", [_remoteLinesQueue, _mspfsForRemote, _master.currentMemory, _master.cl.scopeString]);
 				_remoteLinesQueue = newQueue;
@@ -113,7 +115,7 @@ package com.luaye.console.core {
 			_mspfsForRemote = null;
 			if(newV){
 				_isRemote = false;
-				_remoteDelayed = 0;
+				_delayed = 0;
 				_mspfsForRemote = [30];
 				_remoteLinesQueue = new Array();
 				startSharedConnection();
