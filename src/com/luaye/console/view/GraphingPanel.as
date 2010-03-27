@@ -343,7 +343,7 @@ package com.luaye.console.view {
 }
 
 import com.luaye.console.core.Executer;
-import com.luaye.console.utils.WeakRef;
+import com.luaye.console.vos.WeakRef;
 
 class Interest{
 	private var _ref:WeakRef;

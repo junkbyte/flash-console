@@ -24,7 +24,7 @@
 */
 package com.luaye.console.core {
 	import com.luaye.console.utils.Utils;
-	import com.luaye.console.utils.WeakObject;
+	import com.luaye.console.vos.WeakObject;
 	import com.luaye.console.Console;
 
 	import flash.display.DisplayObject;

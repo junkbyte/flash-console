@@ -23,10 +23,10 @@
 * 
 */
 package com.luaye.console.core {
-	import com.luaye.console.utils.WeakRef;
+	import com.luaye.console.vos.WeakRef;
 	import com.luaye.console.Console;
 	import com.luaye.console.utils.Utils;
-	import com.luaye.console.utils.WeakObject;
+	import com.luaye.console.vos.WeakObject;
 
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;

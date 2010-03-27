@@ -31,8 +31,8 @@ package com.luaye.console.view {
 	
 	import com.luaye.console.Console;
 	import com.luaye.console.core.CommandLine;
-	import com.luaye.console.core.Log;
-	import com.luaye.console.core.Logs;
+	import com.luaye.console.vos.Log;
+	import com.luaye.console.vos.Logs;
 
 	import flash.display.Shape;
 	import flash.display.Sprite;

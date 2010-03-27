@@ -23,6 +23,7 @@
 * 
 */
 package com.luaye.console.core {
+	import com.luaye.console.vos.Log;
 	import com.luaye.console.Console;
 
 	import flash.events.EventDispatcher;

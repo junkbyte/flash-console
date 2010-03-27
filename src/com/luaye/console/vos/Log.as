@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.luaye.console.core {
+package com.luaye.console.vos {
 	
 	public dynamic class Log{
 		public var text:String;

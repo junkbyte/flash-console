@@ -27,8 +27,8 @@ package com.luaye.console {
 	import com.luaye.console.utils.GetCSSfromStyle;
 	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.core.CommandTools;
-	import com.luaye.console.core.Log;
-	import com.luaye.console.core.Logs;
+	import com.luaye.console.vos.Logs;
+	import com.luaye.console.vos.Log;
 	import com.luaye.console.core.MemoryMonitor;
 	import com.luaye.console.core.Remoting;
 	import com.luaye.console.core.UserData;

@@ -23,7 +23,7 @@
 * 
 */
 package {
-	import com.luaye.console.core.Log;
+	import com.luaye.console.vos.Log;
 	import com.luaye.console.ConsoleStyle;
 	import com.luaye.console.C;
 	import flash.geom.Rectangle;	
@@ -47,7 +47,7 @@ package {
 			//style.big(); // BIG text
 			//style.whiteBase(); // Black on white
 			
-			C.startOnStage(this, null, style); // "`" - change for password. This will start hidden
+			C.startOnStage(this, "`", style); // "`" - change for password. This will start hidden
 			C.visible = true; // show console, because having password hides console.
 			//C.tracing = true; // trace on flash's normal trace
 			C.commandLine = true; // enable command line
