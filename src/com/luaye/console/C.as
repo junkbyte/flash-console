@@ -398,6 +398,9 @@ package com.luaye.console {
 		public static function set filterText(v:String):void{
 			setter("filterText",v);
 		}
+		public function set filterRegExp(v:RegExp):void{
+			setter("filterRegExp",v);
+		}
 		/**
 		 * Enable/disable prefixing channel names infront of log lines.
 		 * <p>

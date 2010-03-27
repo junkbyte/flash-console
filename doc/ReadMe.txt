@@ -41,7 +41,7 @@ http://code.google.com/p/flash-console/issues/
   * C.error and C.fatal will get auto stack trace by default.
   * Added C.autoStackPriority
   * Added C.defaultStackDepth
-  * Removed tracingPriorty
+  * Removed tracingPriorty and prefixChannelNames
 
 ===2.35===
   * Removed /strong AND C.strongRef. Must now use /savestrong individually.

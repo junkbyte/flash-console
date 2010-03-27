@@ -23,6 +23,8 @@
 * 
 */
 package com.luaye.console.core {	
+	import com.luaye.console.utils.Utils;
+
 	import flash.events.EventDispatcher;
 	import flash.system.System;
 	import flash.utils.Dictionary;
@@ -82,8 +84,7 @@ package com.luaye.console.core {
 			return arr;
 		}
 		public function get haveItemsWatching():Boolean{
-			for (var X:Object in _namesList) return true;
-			return false;
+			return Utils.HaveItemsInObject(_namesList);
 		}
 		/*private function seedGCDummy():void{
 			if(!_namesList[DUMMY_GARBAGE]){

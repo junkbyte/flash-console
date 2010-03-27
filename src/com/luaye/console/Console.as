@@ -23,6 +23,8 @@
 * 
 */
 package com.luaye.console {
+	import com.luaye.console.core.KeyBinder;
+	import com.luaye.console.utils.GetCSSfromStyle;
 	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.core.CommandTools;
 	import com.luaye.console.core.Log;
@@ -89,17 +91,8 @@ package com.luaye.console {
 		// Change BEFORE starting console.
 		public static var SharedObjectName:String = "com/luaye/Console/UserData";
 		//
-		public var style:ConsoleStyle;
-		public var css:StyleSheet;
-		public var panels:PanelsManager;
-		public var cl:CommandLine;
-		public var ud:UserData;
-		private var _mm:MemoryMonitor;
-		private var _remoter:Remoting;
-		//
 		public var quiet:Boolean;
 		public var maxLines:int = 1000;
-		//public var prefixChannelNames:Boolean = true;
 		public var alwaysOnTop:Boolean = true;
 		public var moveTopAttempts:int = 50;
 		public var maxRepeats:Number = 75;
@@ -108,17 +101,22 @@ package com.luaye.console {
 		public var autoStackPriority:int = ERROR_LEVEL;
 		public var defaultStackDepth:int = 3;
 		//
-		private var _isPaused:Boolean;
-		private var _password:String;
-		private var _passwordIndex:int;
-		private var _tracing:Boolean = false;
-		private var _keyBinds:Object = {};
+		private var _style:ConsoleStyle;
+		private var _css:StyleSheet;
+		private var _panels:PanelsManager;
+		private var _cl:CommandLine;
+		private var _ud:UserData;
+		private var _kb:KeyBinder;
+		private var _mm:MemoryMonitor;
+		private var _remoter:Remoting;
+		//
+		private var _paused:Boolean;
+		private var _tracing:Boolean;
 		private var _mspf:Number;
 		private var _previousTime:Number;
 		private var _traceCall:Function = trace;
 		private var _rollerCaptureKey:String;
 		private var _commandLineAllowed:Boolean;
-		
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
 		private var _tracingChannels:Array = [];
 		private var _isRepeating:Boolean;
@@ -137,116 +135,70 @@ package com.luaye.console {
 		 */
 		public function Console(pass:String = "", skin:ConsoleStyle = null) {
 			name = NAME;
-			if(pass == null) pass = "";
 			tabChildren = false; // Tabbing is not supported
-			_password = pass;
 			//
 			_lines = new Logs();
-			ud = new UserData(SharedObjectName,"/");
-			cl = new CommandLine(this);
+			_ud = new UserData(SharedObjectName,"/");
+			_cl = new CommandLine(this);
 			_remoter = new Remoting(this, remoteLogSend, pass);
+			_kb = new KeyBinder(pass);
+			_kb.addEventListener(KeyBinder.PASSWORD_ENTERED, passwordEnteredHandle, false, 0, true);
 			//
 			// VIEW setup
-			style = skin?skin:new ConsoleStyle();
-			generateCSS();
+			_style = skin?skin:new ConsoleStyle();
+			_css = GetCSSfromStyle(_style);
 			var mainPanel:MainPanel = new MainPanel(this, _lines, _channels);
 			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
-			panels = new PanelsManager(this, mainPanel, _channels);
+			_panels = new PanelsManager(this, mainPanel, _channels);
 			//
 			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy coding!</b>", -2);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			if(_password) visible = false;
+			if(pass) visible = false;
 			// must have enterFrame here because user can start without a parent display and use remoting.
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 		}
-
 		private function stageAddedHandle(e:Event=null):void{
-			if(cl.base == null) cl.base = parent;
+			if(_cl.base == null) _cl.base = parent;
 			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			//
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
-			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, _kb.keyDownHandler, false, 0, true);
 		}
 		private function stageRemovedHandle(e:Event=null):void{
-			if(cl.base == parent) cl.base = null;
+			_cl.base = null;
 			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			//
 			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
-			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, _kb.keyDownHandler);
 		}
 		private function onStageMouseLeave(e:Event):void{
-			panels.tooltip(null);
+			_panels.tooltip(null);
 		}
-		private function keyDownHandler(e:KeyboardEvent):void{
-			var char:String = String.fromCharCode(e.charCode);
-			if(!char) return;
-			if(char == _password.substring(_passwordIndex,_passwordIndex+1)){
-				_passwordIndex++;
-				if(_passwordIndex >= _password.length){
-					_passwordIndex = 0;
-					if(visible && !panels.mainPanel.visible){
-						panels.mainPanel.visible = true;
-					}else visible = !visible;
-				}
-			}else{
-				_passwordIndex = 0;
-				var key:String = char.toLowerCase()+(e.ctrlKey?"1":"0")+(e.altKey?"1":"0")+(e.shiftKey?"1":"0");
-				if(_keyBinds[key]){
-					var bind:Array = _keyBinds[key];
-					(bind[0] as Function).apply(this, bind[1]);
-				}
-			}
+		private function passwordEnteredHandle(e:Event):void{
+			if(visible && !_panels.mainPanel.visible){
+				_panels.mainPanel.visible = true;
+			}else visible = !visible;
 		}
 		public function destroy():void{
 			_remoter.close();
 			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			cl.destory();
+			_cl.destory();
 		}
-		private function generateCSS():void{
-			css = new StyleSheet();
-			with(style){
-				css.setStyle("r",{textAlign:'right', display:'inline'});
-				css.setStyle("w",{color:hesh(highColor), fontFamily:menuFont, fontSize:menuFontSize, display:'inline'});
-				css.setStyle("s",{color:hesh(lowColor), fontFamily:menuFont, fontSize:menuFontSize-2, display:'inline'});
-				css.setStyle("hi",{color:hesh(menuHighlightColor), display:'inline'});
-				css.setStyle("menu",{color:hesh(menuColor), display:'inline'});
-				css.setStyle("chs",{color:hesh(channelsColor), fontSize:menuFontSize, leading:'2', display:'inline'});
-				css.setStyle("ch",{color:hesh(channelColor), display:'inline'});
-				css.setStyle("tooltip",{color:hesh(tooltipColor),fontFamily:menuFont,fontSize:menuFontSize, textAlign:'center'});
-				css.setStyle("p",{fontFamily:traceFont, fontSize:traceFontSize});
-				css.setStyle("p0",{color:hesh(priority0), display:'inline'});
-				css.setStyle("p1",{color:hesh(priority1), display:'inline'});
-				css.setStyle("p2",{color:hesh(priority2), display:'inline'});
-				css.setStyle("p3",{color:hesh(priority3), display:'inline'});
-				css.setStyle("p4",{color:hesh(priority4), display:'inline'});
-				css.setStyle("p5",{color:hesh(priority5), display:'inline'});
-				css.setStyle("p6",{color:hesh(priority6), display:'inline'});
-				css.setStyle("p7",{color:hesh(priority7), display:'inline'});
-				css.setStyle("p8",{color:hesh(priority8), display:'inline'});
-				css.setStyle("p9",{color:hesh(priority9), display:'inline'});
-				css.setStyle("p10",{color:hesh(priority10), fontWeight:'bold', display:'inline'});
-				css.setStyle("p-1",{color:hesh(priorityC1), display:'inline'});
-				css.setStyle("p-2",{color:hesh(priorityC2), display:'inline'});
-			}
-		}
-		private function hesh(n:Number):String{return "#"+n.toString(16);}
 		
 		public function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
 			if(obj == null) {
 				report("ERROR: Graph ["+n+"] received a null object to graph property ["+prop+"].", 10);
 				return;
 			}
-			panels.addGraph(n,obj,prop,col,key,rect,inverse);
+			_panels.addGraph(n,obj,prop,col,key,rect,inverse);
 		}
 		public function fixGraphRange(n:String, min:Number = NaN, max:Number = NaN):void{
-			panels.fixGraphRange(n, min, max);
+			_panels.fixGraphRange(n, min, max);
 		}
 		public function removeGraph(n:String, obj:Object = null, prop:String = null):void{
-			panels.removeGraph(n, obj, prop);
+			_panels.removeGraph(n, obj, prop);
 		}
 		//
 		// WARNING: key binding hard references the function. 
@@ -257,72 +209,51 @@ package com.luaye.console {
 				report("Binding key must be a single character. You gave ["+char+"]", 10);
 				return;
 			}
-			bindByKey(getKey(char, ctrl, alt, shift), fun, args);
-			if(!quiet){
-				report((fun is Function?"Bined":"Unbined")+" key <b>"+ char.toUpperCase() +"</b>"+ (ctrl?"+ctrl":"")+(alt?"+alt":"")+(shift?"+shift":"")+".",-1);
-			}
-		}
-		private function bindByKey(key:String, fun:Function ,args:Array = null):void{
-			if(fun==null){
-				delete _keyBinds[key];
-			}else{
-				_keyBinds[key] = [fun,args];
-			}
-		}
-		private function getKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):String{
-			return char.toLowerCase()+(ctrl?"1":"0")+(alt?"1":"0")+(shift?"1":"0");
+			_kb.bindKey(char, ctrl, alt, shift, fun, args);
+			if(!quiet) report((fun ==null?"Unbined":"Bined")+" key <b>"+ char.toUpperCase() +"</b>"+ (ctrl?"+ctrl":"")+(alt?"+alt":"")+(shift?"+shift":"")+".",-1);
 		}
 		//
 		// Panel settings
 		// basically passing through to panels manager to save lines
 		//
 		public function setPanelArea(panelname:String, rect:Rectangle):void{
-			panels.setPanelArea(panelname, rect);
-		}
-		public function get channelsPanel():Boolean{
-			return panels.channelsPanel;
-		}
-		public function set channelsPanel(b:Boolean):void{
-			panels.channelsPanel = b;
+			_panels.setPanelArea(panelname, rect);
 		}
 		//
 		public function get displayRoller():Boolean{
-			return panels.displayRoller;
+			return _panels.displayRoller;
 		}
 		public function set displayRoller(b:Boolean):void{
-			panels.displayRoller = b;
+			_panels.displayRoller = b;
 		}
 		public function setRollerCaptureKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):void{
 			if(_rollerCaptureKey){
-				bindByKey(_rollerCaptureKey, null);
+				_kb.bindByKey(_rollerCaptureKey, null);
 				_rollerCaptureKey = null;
 			}
-			if(char && char.length==1){
-				_rollerCaptureKey = getKey(char.toLowerCase(), ctrl, alt, shift);
-				bindByKey(_rollerCaptureKey, onRollerCaptureKey);
-			}
+			if(char && char.length==1) _rollerCaptureKey = _kb.bindKey(char, ctrl, alt, shift, onRollerCaptureKey);
 		}
 		public function get rollerCaptureKey():String{
 			return _rollerCaptureKey;
 		}
 		private function onRollerCaptureKey():void{
 			if(displayRoller){
-				report("Display Roller Capture:<br/>"+RollerPanel(panels.getPanel(PANEL_ROLLER)).capture(), -1);
+				report("Display Roller Capture:<br/>"+RollerPanel(_panels.getPanel(PANEL_ROLLER)).capture(), -1);
 			}
 		}
 		//
 		public function get fpsMonitor():Boolean{
-			return panels.fpsMonitor;
+			return _panels.fpsMonitor;
 		}
 		public function set fpsMonitor(b:Boolean):void{
-			panels.fpsMonitor = b;
+			_panels.fpsMonitor = b;
 		}
 		//
 		public function get memoryMonitor():Boolean{
-			return panels.memoryMonitor;
+			return _panels.memoryMonitor;
 		}
 		public function set memoryMonitor(b:Boolean):void{
-			panels.memoryMonitor = b;
+			_panels.memoryMonitor = b;
 		}
 		//
 		public function watch(o:Object,n:String = null):String{
@@ -351,53 +282,53 @@ package com.luaye.console {
 			}
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void{
-			cl.store(n, obj, strong);
+			_cl.store(n, obj, strong);
 		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
-			cl.map(base, maxstep);
+			_cl.map(base, maxstep);
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
-			cl.inspect(obj,detail);
+			_cl.inspect(obj,detail);
 		}
 		public function explode(obj:Object, depth:int = -1):void{
 			report(CommandTools.explode(obj, depth), 1);
 		}
 		public function get paused():Boolean{
-			return _isPaused;
+			return _paused;
 		}
 		public function set paused(newV:Boolean):void{
-			if(_isPaused == newV) return;
+			if(_paused == newV) return;
 			if(newV) report("Paused", 10);
 			else report("Resumed", -1);
-			_isPaused = newV;
-			panels.mainPanel.setPaused(newV);
+			_paused = newV;
+			_panels.mainPanel.setPaused(newV);
 		}
 		//
 		//
 		//
 		override public function get width():Number{
-			return panels.mainPanel.width;
+			return _panels.mainPanel.width;
 		}
 		override public function set width(newW:Number):void{
-			panels.mainPanel.width = newW;
+			_panels.mainPanel.width = newW;
 		}
 		override public function set height(newW:Number):void{
-			panels.mainPanel.height = newW;
+			_panels.mainPanel.height = newW;
 		}
 		override public function get height():Number{
-			return panels.mainPanel.height;
+			return _panels.mainPanel.height;
 		}
 		override public function get x():Number{
-			return panels.mainPanel.x;
+			return _panels.mainPanel.x;
 		}
 		override public function set x(newW:Number):void{
-			panels.mainPanel.x = newW;
+			_panels.mainPanel.x = newW;
 		}
 		override public function set y(newW:Number):void{
-			panels.mainPanel.y = newW;
+			_panels.mainPanel.y = newW;
 		}
 		override public function get y():Number{
-			return panels.mainPanel.y;
+			return _panels.mainPanel.y;
 		}
 		//
 		//
@@ -413,7 +344,7 @@ package com.luaye.console {
 					_isRepeating = false;
 				}
 			}
-			if(!_isPaused && _mm!=null){
+			if(!_paused && _mm!=null){
 				var arr:Array = _mm.update();
 				if(arr.length>0){
 					report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
@@ -429,9 +360,9 @@ package com.luaye.console {
 						report("Moved console on top (alwaysOnTop enabled), "+moveTopAttempts+" attempts left.",-1);
 					}
 				}
-				panels.mainPanel.update(!_isPaused && _lineAdded);
+				_panels.mainPanel.update(!_paused && _lineAdded);
 				if(_lineAdded) {
-					var chPanel:ChannelsPanel = panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
+					var chPanel:ChannelsPanel = _panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
 					if(chPanel) chPanel.update();
 					_lineAdded = false;
 				}
@@ -463,7 +394,7 @@ package com.luaye.console {
 		}
 		public function set remote(newV:Boolean):void{
 			_remoter.isRemote = newV;
-			panels.updateMenu();
+			_panels.updateMenu();
 		}
 		public function set remotingPassword(str:String):void{
 			_remoter.remotingPassword = str;
@@ -487,7 +418,7 @@ package com.luaye.console {
 			}
 			var remoteMSPFs:Array = obj[1];
 			if(remoteMSPFs){
-				var fpsp:FPSPanel = panels.getPanel(PANEL_FPS) as FPSPanel;
+				var fpsp:FPSPanel = _panels.getPanel(PANEL_FPS) as FPSPanel;
 				if(fpsp){
 					// the first value is stage.FrameRate
 					var highest:Number = remoteMSPFs[0];
@@ -506,17 +437,17 @@ package com.luaye.console {
 			_remoter.remoteMem = obj[2];
 			if(obj[3]){ 
 				// older clients don't send CL scope
-				panels.mainPanel.updateCLScope(obj[3]);
+				_panels.mainPanel.updateCLScope(obj[3]);
 			}
 		}
 		//
 		//
 		//
 		public function get viewingChannels():Array{
-			return panels.mainPanel.viewingChannels;
+			return _panels.mainPanel.viewingChannels;
 		}
 		public function set viewingChannels(a:Array):void{
-			panels.mainPanel.viewingChannels = a;
+			_panels.mainPanel.viewingChannels = a;
 		}
 		public function set tracingChannels(a:Array):void{
 			_tracingChannels.splice(0);
@@ -534,14 +465,11 @@ package com.luaye.console {
 		}
 		public function set tracing(b:Boolean):void{
 			_tracing = b;
-			panels.mainPanel.updateMenu();
+			_panels.mainPanel.updateMenu();
 		}
 		public function set traceCall (f:Function):void{
-			if(f==null){
-				report("C.traceCall function setter can not be null.", 10);
-			}else{
-				_traceCall = f;
-			}
+			if(f==null) report("C.traceCall function setter can not be null.", 10);
+			else _traceCall = f;
 		}
 		public function get traceCall ():Function{
 			return _traceCall;
@@ -552,9 +480,7 @@ package com.luaye.console {
 		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
 			var isRepeat:Boolean = (isRepeating && _isRepeating);
 			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
-			if(!channel || channel == GLOBAL_CHANNEL){
-				channel = DEFAULT_CHANNEL;
-			}
+			if(!channel || channel == GLOBAL_CHANNEL) channel = DEFAULT_CHANNEL;
 			if(priority >= autoStackPriority && stacks<0) stacks = defaultStackDepth;
 			var stackArr:Array = stacks>0?getStack(stacks):null;
 			
@@ -562,8 +488,8 @@ package com.luaye.console {
 				_traceCall("["+channel+"] "+(stackArr==null?txt:(txt+"\n @ "+stackArr.join("\n @ "))));
 			}
 			if(!skipSafe){
-				txt = txt.replace(/</gim, "&lt;");
- 				txt = txt.replace(/>/gim, "&gt;");
+				txt = txt.replace(/</gm, "&lt;");
+ 				//txt = txt.replace(/>/gm, "&gt;");
 			}
 			if(stackArr != null) {
 				var tp:int = priority;
@@ -592,9 +518,7 @@ package com.luaye.console {
 			_lineAdded = true;
 			_isRepeating = isRepeating;
 			
-			if(_remoter.remoting){
-				_remoter.addLineQueue(line);
-			}
+			_remoter.addLineQueue(line);
 		}
 		private function getStack(depth:int):Array{
 			var e:Error = new Error();
@@ -602,7 +526,6 @@ package com.luaye.console {
 			if(!str) return null;
 			var lines:Array = str.split(/\n\sat\s/);
 			var len:int = lines.length;
-			// TODO: cache it.
 			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(this)+"|"+getQualifiedClassName(C));
 			for (var i:int = 2; i < len; i++){
 				if((lines[i].search(reg) != 0)){
@@ -616,10 +539,10 @@ package com.luaye.console {
 		//
 		public function set commandLine(b:Boolean):void{
 			if(b) _commandLineAllowed = true;
-			panels.mainPanel.commandLine = b;
+			_panels.mainPanel.commandLine = b;
 		}
 		public function get commandLine ():Boolean{
-			return panels.mainPanel.commandLine;
+			return _panels.mainPanel.commandLine;
 		}
 		public function set commandLineAllowed (b:Boolean):void{
 			_commandLineAllowed = b;
@@ -629,10 +552,10 @@ package com.luaye.console {
 			return _commandLineAllowed;
 		}
 		public function set commandBase (v:Object):void{
-			if(v) cl.base = v;
+			if(v) _cl.base = v;
 		}
 		public function get commandBase ():Object{
-			return cl.base;
+			return _cl.base;
 		}
 		public function runCommand(line:String):*{
 			if(_remoter.isRemote){
@@ -643,7 +566,7 @@ package com.luaye.console {
 					report("Command could not be sent to client: " + err, 10);
 				}
 			}else{
-				return cl.run(line);
+				return _cl.run(line);
 			}
 			return null;
 		}
@@ -652,13 +575,9 @@ package com.luaye.console {
 		//
 		public function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			var chn:String;
-			if(channel is String){
-				chn = channel as String;
-			}else if(channel){
-				chn = Utils.shortClassName(channel);
-			}else{
-				chn = DEFAULT_CHANNEL;
-			}
+			if(channel is String) chn = channel as String;
+			else if(channel) chn = Utils.shortClassName(channel);
+			else chn = DEFAULT_CHANNEL;
 			addLine(newLine,priority,chn, isRepeating);
 		}
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
@@ -703,22 +622,23 @@ package com.luaye.console {
 		public function fatalch(channel:*, ...args):void{
 			ch(channel, joinArgs(args), FATAL_LEVEL);
 		}
-		public function joinArgs(args:Array):String{
+		private function joinArgs(args:Array):String{
 			for(var X:String in args){
-				// XML.toString() doesn't print all if its single node. Therefore need to convert them with toXMLString().
 				if(args[X] is XML || args[X] is XMLList) args[X] = args[X].toXMLString();
 			}
 			return args.join(" ");
 		}
 		//
+		//
+		//
 		public function set filterText(str:String):void{
-			panels.mainPanel.filterText = str;
+			_panels.mainPanel.filterText = str;
 		}
 		public function get filterText():String{
-			return panels.mainPanel.filterText;
+			return _panels.mainPanel.filterText;
 		}
 		public function set filterRegExp(exp:RegExp):void{
-			panels.mainPanel.filterRegExp = exp;
+			_panels.mainPanel.filterRegExp = exp;
 		}
 		//
 		public function clear(channel:String = null):void{
@@ -737,9 +657,16 @@ package com.luaye.console {
 				_channels.splice(0);
 				_channels.push(GLOBAL_CHANNEL, DEFAULT_CHANNEL);
 			}
-			if(!_isPaused) panels.mainPanel.updateToBottom();
-			panels.updateMenu();
+			if(!_paused) _panels.mainPanel.updateToBottom();
+			_panels.updateMenu();
 		}
+		//
+		public function get css():StyleSheet{return _css;}
+		public function get style():ConsoleStyle{return _style;}
+		public function get panels():PanelsManager{return _panels;}
+		public function get cl():CommandLine{return _cl;}
+		public function get ud():UserData{return _ud;}
+		//
 		public function getLogsAsObjects():Array{
 			var a:Array = [];
 			var line:Log = _lines.first;

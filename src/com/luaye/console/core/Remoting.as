@@ -46,7 +46,7 @@ package com.luaye.console.core {
 		private var _remoteDelayed:int;
 		
 		private var _lastLogin:String = "";
-		private var _remotingPassword:String = "";
+		private var _remotingPassword:String;
 		private var _loggedIn:Boolean;
 		
 		public var remoteMem:int;
@@ -61,7 +61,7 @@ package com.luaye.console.core {
 			if(_isRemoting && !str) login();
 		}
 		public function addLineQueue(line:Log):void{
-			if(!_loggedIn) return;
+			if(!(_isRemoting && _loggedIn)) return;
 			_remoteLinesQueue.push(line.toObject());
 			var maxlines:int = _master.maxLines;
 			if(_remoteLinesQueue.length > maxlines && maxlines > 0 ){

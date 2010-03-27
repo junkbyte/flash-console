@@ -47,7 +47,7 @@ package {
 			//style.big(); // BIG text
 			//style.whiteBase(); // Black on white
 			
-			C.startOnStage(this, "`", style); // "`" - change for password. This will start hidden
+			C.startOnStage(this, null, style); // "`" - change for password. This will start hidden
 			C.visible = true; // show console, because having password hides console.
 			//C.tracing = true; // trace on flash's normal trace
 			C.commandLine = true; // enable command line
@@ -130,7 +130,6 @@ package {
 			// End of console related sample
 			//
 			setupUI();
-			
 			var o:Log = new Log("test", "ch1", 5);
 			o.dynamicProp = "some dynamic property";
 			o.prev = new Log("Previous log", "ch0", 1);

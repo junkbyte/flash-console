@@ -23,6 +23,8 @@
 * 
 */
 package com.luaye.console.view {
+	import com.luaye.console.core.KeyBinder;
+
 	import flash.events.KeyboardEvent;
 
 	import com.luaye.console.Console;
@@ -92,7 +94,7 @@ package com.luaye.console.view {
 			var stg:Stage = _base.stage;
 			var str:String = "";
 			if(!dolink){
-				var key:String = master.rollerCaptureKey?master.rollerCaptureKey.charAt(0).toUpperCase():"unassigned";
+				var key:String = master.rollerCaptureKey?KeyBinder.GetStringOfKey(master.rollerCaptureKey):"unassigned";
 				str = "<menu> <a href=\"event:close\"><b>X</b></a></menu> Capture key: <menu><a href=\"event:capture\">"+key+"</a></menu><br/>";
 			}
 			var objs:Array = stg.getObjectsUnderPoint(new Point(stg.mouseX, stg.mouseY));
@@ -160,10 +162,7 @@ package com.luaye.console.view {
 			}else if(txt == "capture"){
 				var key:String = master.rollerCaptureKey;
 				if(key){
-					txt = "Unassign key ::"+key.charAt(0).toUpperCase();
-					if(key.charAt(1) == "1") txt+="+ctrl";
-					if(key.charAt(2) == "1") txt+="+alt";
-					if(key.charAt(3) == "1") txt+="+shift";
+					txt = "Unassign key ::"+KeyBinder.GetStringOfKey(key);
 				}else{
 					txt = "Assign key";
 				}
