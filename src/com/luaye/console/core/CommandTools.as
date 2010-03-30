@@ -221,7 +221,7 @@ package com.luaye.console.core {
 				report("Tip: use /inspectfull to see full inspection with inheritance",-1);
 			}
 		}
-		public static function explode(obj:Object, depth:int = -1, p:int = 9):String{
+		public static function explode(obj:Object, depth:int = 3, p:int = 9):String{
 			var t:String = typeof obj;
 			if(t != "object" || depth == 0){
 				if(t == "string"){

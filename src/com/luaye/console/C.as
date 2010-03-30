@@ -718,10 +718,25 @@ package com.luaye.console {
 		 * @param Depth of explosion, -1 = unlimited (default)
 		 * 
 		 */
-		public static function explode(obj:Object, depth:int = -1):void {
+		public static function explode(obj:Object, depth:int = 3):void {
 			if(_console){
 				_console.explode(obj,depth);
 			}
+		}
+		/**
+		 * WORK IN PROGRESS... Brings up a panel to monitor values of the object
+		 * 
+		 * @param Object to monitor
+		 * @param Depth of explosion, -1 = unlimited (default)
+		 * 
+		 */
+		public static function monitor(obj:Object):void {
+			// WORK IN PROGRESS
+			if(_console){
+			// WORK IN PROGRESS
+				_console.monitor(obj);
+			}
+			// WORK IN PROGRESS
 		}
 		/**
 		 * CommandLine UI's visibility.

@@ -23,6 +23,7 @@
 * 
 */
 package com.luaye.console {
+	import com.luaye.console.core.ObjectsMonitor;
 	import com.luaye.console.core.KeyBinder;
 	import com.luaye.console.utils.GetCSSfromStyle;
 	import com.luaye.console.core.CommandLine;
@@ -99,7 +100,6 @@ package com.luaye.console {
 		public var rulerHidesMouse:Boolean = true;
 		public var autoStackPriority:int = ERROR_LEVEL;
 		public var defaultStackDepth:int = 3;
-		
 		//
 		private var _style:ConsoleStyle;
 		private var _css:StyleSheet;
@@ -107,6 +107,7 @@ package com.luaye.console {
 		private var _cl:CommandLine;
 		private var _ud:UserData;
 		private var _kb:KeyBinder;
+		private var _om:ObjectsMonitor;
 		private var _mm:MemoryMonitor;
 		private var _remoter:Remoting;
 		//
@@ -140,6 +141,7 @@ package com.luaye.console {
 			_ud = new UserData(SharedObjectName,"/");
 			_cl = new CommandLine(this);
 			_remoter = new Remoting(this, remoteLogSend, pass);
+			_om = new ObjectsMonitor();
 			_kb = new KeyBinder(pass);
 			_kb.addEventListener(KeyBinder.PASSWORD_ENTERED, passwordEnteredHandle, false, 0, true);
 			//
@@ -289,8 +291,15 @@ package com.luaye.console {
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			_cl.inspect(obj,detail);
 		}
-		public function explode(obj:Object, depth:int = -1):void{
+		public function explode(obj:Object, depth:int = 3):void{
 			report(CommandTools.explode(obj, depth), 1);
+		}
+		public function monitor(obj:Object):void{
+			if(obj == null || typeof obj != "object"){
+				report("Can not monitor "+getQualifiedClassName(obj)+".", 10);
+				return;
+			}
+			_om.monitor(obj);
 		}
 		public function get paused():Boolean{
 			return _paused;
@@ -340,12 +349,15 @@ package com.luaye.console {
 			if(_repeating > 0){
 				_repeating--;
 			}
-			if(!_paused && _mm!=null){
-				var arr:Array = _mm.update();
-				if(arr.length>0){
-					report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
-					if(!_mm.haveItemsWatching) _mm = null;
+			if(!_paused){
+				if(_mm!=null){
+					var arr:Array = _mm.update();
+					if(arr.length>0){
+						report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
+						if(!_mm.haveItemsWatching) _mm = null;
+					}
 				}
+				_om.update();
 			}
 			// VIEW UPDATES ONLY
 			if(visible && parent!=null){

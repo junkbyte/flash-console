@@ -58,6 +58,9 @@ package com.luaye.console.vos {
 	    override flash_proxy function nextName(index:int):String {
 	        return _item[index - 1];
 	    }
+	    override flash_proxy function nextValue(index:int):* {
+	        return this[flash_proxy::nextName(index)];
+	    }
 		override flash_proxy function nextNameIndex (index:int):int {
 	         if (index == 0) {
 	             _item = new Array();
