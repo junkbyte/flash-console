@@ -220,7 +220,6 @@ package com.luaye.console.core {
 				_master.report("Attempting to login...", -1);
 				send("login", pass);
 			}else{
-				trace("login");
 				// once logged in, next login attempts will always be success
 				if(_loggedIn || checkLogin(pass)){
 					_loggedIn = true;
