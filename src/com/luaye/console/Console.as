@@ -98,7 +98,7 @@ package com.luaye.console {
 		public var moveTopAttempts:int = 50;
 		public var maxRepeats:uint = 75;
 		public var rulerHidesMouse:Boolean = true;
-		public var autoStackPriority:int = ERROR_LEVEL;
+		public var autoStackPriority:int = FATAL_LEVEL;
 		public var defaultStackDepth:int = 3;
 		//
 		private var _style:ConsoleStyle;
@@ -294,12 +294,18 @@ package com.luaye.console {
 		public function explode(obj:Object, depth:int = 3):void{
 			report(CommandTools.explode(obj, depth), 1);
 		}
-		public function monitor(obj:Object):void{
+		public function monitor(obj:Object, n:String = null):void{
 			if(obj == null || typeof obj != "object"){
 				report("Can not monitor "+getQualifiedClassName(obj)+".", 10);
 				return;
 			}
-			_om.monitor(obj);
+			_om.monitor(obj, n);
+		}
+		public function unmonitorById(i:String):void{
+			_om.unmonitorById(i);
+		}
+		public function monitorIn(i:String, n:String):void{
+			_om.monitorIn(i,n);
 		}
 		public function get paused():Boolean{
 			return _paused;
@@ -346,9 +352,9 @@ package com.luaye.console {
 			_mspf = time-_previousTime;
 			_previousTime = time;
 			
-			if(_repeating > 0){
-				_repeating--;
-			}
+			if(_repeating > 0) _repeating--;
+			
+			var om:Object;
 			if(!_paused){
 				if(_mm!=null){
 					var arr:Array = _mm.update();
@@ -357,7 +363,7 @@ package com.luaye.console {
 						if(!_mm.haveItemsWatching) _mm = null;
 					}
 				}
-				_om.update();
+				om = _om.update();
 			}
 			// VIEW UPDATES ONLY
 			if(visible && parent!=null){
@@ -369,6 +375,7 @@ package com.luaye.console {
 					}
 				}
 				_panels.mainPanel.update(!_paused && _lineAdded);
+				if(om != null) _panels.updateObjMonitors(om);
 				if(_lineAdded) {
 					var chPanel:ChannelsPanel = _panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
 					if(chPanel) chPanel.update();
@@ -675,6 +682,7 @@ package com.luaye.console {
 		public function get panels():PanelsManager{return _panels;}
 		public function get cl():CommandLine{return _cl;}
 		public function get ud():UserData{return _ud;}
+		public function get om():ObjectsMonitor{return _om;}
 		//
 		public function getLogsAsObjects():Array{
 			var a:Array = [];

@@ -242,9 +242,11 @@ package com.luaye.console.core {
 			//
 			nodes = V.accessor;
 			for each (var accessorX:XML in nodes) {
-				if(accessorX.@access!="readonly"){
+				if(accessorX.@access!="writeonly"){
 					n = accessorX.@name;
-					list.push(n+":"+explode(obj[n], depth-1, p-1));
+					try{
+						list.push(n+":"+explode(obj[n], depth-1, p-1));
+					}catch(e:Error){}
 				}
 			}
 			//
@@ -258,9 +260,7 @@ package com.luaye.console.core {
 				for (var X:String in obj) {
 					list.push(X+":"+explode(obj[X], depth-1, p-1));
 				}
-			}catch(e:Error){
-				//
-			}
+			}catch(e:Error){}
 			return "<p"+p+">{"+Utils.shortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
 		}
 		private function makeInheritLine(props:Array, props2:Array, viewAll:Boolean, type:String, breaker:String):void{

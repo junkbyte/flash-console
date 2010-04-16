@@ -34,12 +34,14 @@ package com.luaye.console.view {
 		
 		
 		private static const USER_GRAPH_PREFIX:String = "graph_";
+		private static const USER_OBJECTMONITOR_PREFIX:String = "objMonitor_";
 		
 		private var _master:Console;
 		private var _mainPanel:MainPanel;
 		private var _ruler:Ruler;
 		private var _channels:Array;
 		
+		private var _objMonitors:Object = {};
 		private var _tooltipField:TextField;
 		
 		public function PanelsManager(master:Console, mp:MainPanel, channels:Array) {
@@ -114,6 +116,29 @@ package com.luaye.console.view {
 			_mainPanel.updateMenu();
 			var chpanel:ChannelsPanel = getPanel(Console.PANEL_CHANNELS) as ChannelsPanel;
 			if(chpanel) chpanel.update();
+		}
+		public function updateObjMonitors(objs:Object):void{
+			var usedMap:Object = {};
+			for (var X:String in objs){
+				var panel:ObjMonitorPanel = _objMonitors[X] as ObjMonitorPanel;
+				if(panel == null){
+					panel = new ObjMonitorPanel(_master);
+					panel.x = 200;
+					panel.y = 200;
+					panel.id = X;
+					panel.name = USER_OBJECTMONITOR_PREFIX+X;
+					_objMonitors[X] = panel;
+					addPanel(panel);
+				}
+				panel.update(objs[X]);
+				usedMap[X] = true;
+			}
+			for(var Z:String in _objMonitors){
+				if(!usedMap[Z]){
+					_objMonitors[Z].close();
+					delete _objMonitors[Z];
+				}
+			}
 		}
 		//
 		//

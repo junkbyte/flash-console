@@ -23,35 +23,75 @@
 * 
 */
 package com.luaye.console.core {	
+	import flash.utils.describeType;
+
+	import com.luaye.console.utils.Utils;
 	import com.luaye.console.vos.WeakObject;
 
 	import flash.events.EventDispatcher;
 
 	public class ObjectsMonitor extends EventDispatcher{
 		
-		private var _lastIndex:int;
-		private var _list:WeakObject;
+		private var _list:Object;
+		//
 		//
 		//
 		public function ObjectsMonitor() {
-			_list = new WeakObject();
+			_list = new Object();
 		}
 		
-		public function monitor(obj:Object, keys:Array = null):void{
-			_list[_lastIndex] = obj;
-			_lastIndex++;
+		public function monitor(obj:Object, n:String = null):void{
+			if(!n) n = "default";
+			_list[n] = obj;
 		}
-		public function unmonitor(obj:Object, keys:Array = null):void{
-			_list[_lastIndex] = obj;
-			_lastIndex++;
-		}
-		
-		public function update():void{
-			for each(var obj:Object in _list){
-				//for (var X:String in obj){
-				//	trace(X, obj[X]);
-				//}
+		public function monitorIn(i:String, n:String):void{
+			var obj:Object = _list[i];
+			obj = obj[n];
+			if(obj == null || typeof obj != "object"){
+				return;
 			}
+			_list[i] = obj;
+		}
+		public function unmonitorById(i:String):void{
+			delete _list[i];
+		}
+		
+		public function update():Object{
+			var values:Object = {};
+			for (var X:String in _list){
+				var obj:Object =_list[X];
+				var value:Object = {};
+				var b:Boolean;
+				for (var Y:String in obj){
+					b = true;
+					value[Y] = getStringOf(obj[Y]);
+				}
+				if(!b){
+					var V:XML = describeType(obj);
+					var nodes:XMLList, n:String;
+					nodes = V.accessor;
+					for each (var accessorX:XML in nodes) {
+						if(accessorX.@access!="writeonly"){
+							n = accessorX.@name;
+							try{
+								value[n] = getStringOf(obj[n]);
+							}catch(err:Error){}
+						}
+					}
+					nodes = V.variable;
+					for each (var variableX:XML in nodes) {
+						n = variableX.@name;
+						value[n] = getStringOf(obj[n]);
+					}
+				}
+				values[X] = value;
+			}
+			return values;
+		}
+		private function getStringOf(v:*):String{
+			var t:String = typeof v;
+			if(t == "object" || t =="xml") return Utils.shortClassName(v);
+			return String(v);
 		}
 	}
 }

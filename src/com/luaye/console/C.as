@@ -730,11 +730,11 @@ package com.luaye.console {
 		 * @param Depth of explosion, -1 = unlimited (default)
 		 * 
 		 */
-		public static function monitor(obj:Object):void {
+		public static function monitor(obj:Object, n:String = null):void {
 			// WORK IN PROGRESS
 			if(_console){
 			// WORK IN PROGRESS
-				_console.monitor(obj);
+				_console.monitor(obj, n);
 			}
 			// WORK IN PROGRESS
 		}

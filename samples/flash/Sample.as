@@ -137,6 +137,7 @@ package {
 			C.explode(["a","b","c",{o1:{o2:{o3:{}}}}, o]);
 			
 			a();
+			C.monitor(C.instance);
 		}
 		private function a():void{
 			b();
