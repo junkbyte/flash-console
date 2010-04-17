@@ -25,7 +25,7 @@
 package com.luaye.console.core {
 	public class Executer {
 		
-		public static const EXE_CLASSNAMES:String = "ExecuterExe|ExecuterValue";
+		public static const EXE_CLASSNAMES:String = "Executer|::ExecuterExe|::ExecuterValue";
 		
 		public static function Exec(scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
 			var e:ExecuterExe = new ExecuterExe();

@@ -123,6 +123,7 @@ package com.luaye.console.view {
 				var panel:ObjMonitorPanel = _objMonitors[X] as ObjMonitorPanel;
 				if(panel == null){
 					panel = new ObjMonitorPanel(_master);
+					//TODO: better placing.
 					panel.x = 200;
 					panel.y = 200;
 					panel.id = X;

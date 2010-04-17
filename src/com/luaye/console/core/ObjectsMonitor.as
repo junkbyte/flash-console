@@ -23,10 +23,12 @@
 * 
 */
 package com.luaye.console.core {	
+	import com.luaye.console.vos.WeakRef;
+	import com.luaye.console.vos.MonitorValue;
+
 	import flash.utils.describeType;
 
 	import com.luaye.console.utils.Utils;
-	import com.luaye.console.vos.WeakObject;
 
 	import flash.events.EventDispatcher;
 
@@ -41,25 +43,50 @@ package com.luaye.console.core {
 		}
 		
 		public function monitor(obj:Object, n:String = null):void{
-			if(!n) n = "default";
-			_list[n] = obj;
+			if(!n) n = "0";
+			var v:MonitorValue = new MonitorValue();
+			v.history.push(new WeakRef(obj, true));
+			_list[n] = v;
 		}
 		public function monitorIn(i:String, n:String):void{
-			var obj:Object = _list[i];
-			obj = obj[n];
-			if(obj == null || typeof obj != "object"){
+			var v:MonitorValue = _list[i];
+			if(!v) return;
+			var h:Array = v.history;
+			var curref:WeakRef = h[h.length-1];
+			var newobj:Object = curref.reference[n];
+			if(newobj == null || typeof newobj != "object") {
 				return;
+			}else{
+				curref.strong = false;
+				v.history.push(new WeakRef(newobj, true));
 			}
-			_list[i] = obj;
 		}
-		public function unmonitorById(i:String):void{
-			delete _list[i];
+		public function monitorOut(i:String):void{
+			var v:MonitorValue = _list[i];
+			if(!v) return;
+			var h:Array = v.history;
+			if(h.length<2) return;
+			var newref:WeakRef = h[h.length-2];
+			if(newref.reference != null){
+				newref.strong = true;
+				h.pop();
+			}
+		}
+		public function getObject(n:String = null):Object{
+			if(!n) n = "0";
+			var mv:MonitorValue = _list[n];
+			return mv?mv.history[mv.history.length-1].reference:null;
+		}
+		public function unmonitor(n:String = null):void{
+			if(!n) n = "0";
+			delete _list[n];
 		}
 		
 		public function update():Object{
-			var values:Object = {};
+			var mvs:Object = {};
 			for (var X:String in _list){
-				var obj:Object =_list[X];
+				var mv:MonitorValue = _list[X];
+				var obj:Object = mv.history[mv.history.length-1].reference;
 				var value:Object = {};
 				var b:Boolean;
 				for (var Y:String in obj){
@@ -84,13 +111,14 @@ package com.luaye.console.core {
 						value[n] = getStringOf(obj[n]);
 					}
 				}
-				values[X] = value;
+				mv.values = value;
+				mvs[X] = value;
 			}
-			return values;
+			return mvs;
 		}
 		private function getStringOf(v:*):String{
 			var t:String = typeof v;
-			if(t == "object" || t =="xml") return Utils.shortClassName(v);
+			if(t == "object" || t =="xml") return "["+Utils.shortClassName(v)+"]";
 			return String(v);
 		}
 	}

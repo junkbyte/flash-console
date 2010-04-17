@@ -37,11 +37,10 @@ package com.luaye.console.core {
 		public static const CHANGED_SCOPE:String = "changedScope";
 		
 		private static const MAX_INTERNAL_STACK_TRACE:int = 1;
-		private static const RESERVED_SAVES:Array = ["returned", "base", "C"];
+		private static const RESERVED_SAVES:Array = ["returned", "base", "C", "monObj"];
 		
 		private var _saved:WeakObject;
 		
-		// TODO: prev scope should be weak.
 		private var _scope:*;
 		private var _prevScope:WeakRef;
 		
@@ -55,6 +54,7 @@ package com.luaye.console.core {
 			_prevScope = new WeakRef(m);
 			_scope = m;
 			_saved.set("C", m);
+			_saved.set("monObj", m.om.getObject);
 		}
 		public function set base(obj:Object):void {
 			if (base) {
@@ -165,6 +165,12 @@ package com.luaye.console.core {
 				if (_scope) {
 					var depth:int = Number(param);
 					_master.explode(_scope, depth<=0?-1:depth);
+				} else {
+					report("Empty", 10);
+				}
+			} else if (cmd == "monitor") {
+				if (_scope) {
+					_master.monitor(_scope, param);
 				} else {
 					report("Empty", 10);
 				}

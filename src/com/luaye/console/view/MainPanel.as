@@ -93,10 +93,7 @@ package com.luaye.console.view {
 		private var _isMinimised:Boolean;
 		private var _shift:Boolean;
 		private var _canUseTrace:Boolean;
-		private var _scrollbar:Sprite;
-		private var _scroller:Sprite;
-		private var _scrolldelay:uint;
-		private var _scrolldir:int;
+		private var _txtscroll:TextScroller;
 		
 		private var _channels:Array;
 		private var _viewingChannels:Array;
@@ -182,23 +179,13 @@ package com.luaye.console.view {
 			_bottomLine.alpha = 0.2;
 			addChild(_bottomLine);
 			//
-			_scrollbar = new Sprite();
-			_scrollbar.name = "scrollbar";
-			_scrollbar.buttonMode = true;
-			_scrollbar.addEventListener(MouseEvent.MOUSE_DOWN, onScrollbarDown, false, 0, true);
-			_scrollbar.y = fsize+4;
-			addChild(_scrollbar);
-			//
-			_scroller = new Sprite();
-			_scroller.name = "scroller";
-			_scroller.graphics.beginFill(style.controlColor, 1);
-			_scroller.graphics.drawRect(-5, 0, 5, 30);
-			_scroller.graphics.beginFill(0, 0);
-			_scroller.graphics.drawRect(-10, 0, 10, 30);
-			_scroller.graphics.endFill();
-			_scroller.buttonMode = true;
-			_scroller.addEventListener(MouseEvent.MOUSE_DOWN, onScrollerDown, false, 0, true);
-			addChild(_scroller);
+			_txtscroll = new TextScroller(null, style.controlColor);
+			_txtscroll.y = fsize+4;
+			_txtscroll.addEventListener(TextScroller.STARTED_SCROLLING, startedScrollingHandle, false, 0, true);
+			_txtscroll.addEventListener(TextScroller.STOPPED_SCROLLING, stoppedScrollingHandle,  false, 0, true);
+			_txtscroll.addEventListener(TextScroller.SCROLLED, onScrolledHandle,  false, 0, true);
+			_txtscroll.addEventListener(TextScroller.SCROLL_INCREMENT, onScrollIncHandle,  false, 0, true);
+			addChild(_txtscroll);
 			//
 			_commandField.visible = false;
 			_commandPrefx.visible = false;
@@ -429,74 +416,35 @@ package com.luaye.console.view {
 			updateScroller();
 		}
 		private function updateScroller():void{
-			if(_traceField.maxScrollV<=1 || scrollerMaxY<22){
-				_scroller.visible = false;
-				_scrollbar.visible = false;
+			if(_traceField.maxScrollV <= 1){
+				_txtscroll.visible = false;
 			}else{
-				_scrollbar.visible = true;
-				_scroller.visible = true;
-				
+				_txtscroll.visible = true;
 				if(_atBottom) {
-					_scroller.y = scrollerMaxY;
+					_txtscroll.scrollPercent = 1;
 				}else{
-					var per:Number = (_traceField.scrollV-1)/(_traceField.maxScrollV-1);
-					_scroller.y = 21+((scrollerMaxY-21)*per);
+					_txtscroll.scrollPercent = (_traceField.scrollV-1)/(_traceField.maxScrollV-1);
 				}
 			}
 		}
-		private function onScrollerDown(e:MouseEvent):void{
+		private function startedScrollingHandle(e:Event):void{
 			if(!master.paused){
 				_atBottom = false;
-				var Y:int = _scroller.y;
+				var p:Number = _txtscroll.scrollPercent;
 				_updateTraces();
-				_scroller.y = Y;
+				_txtscroll.scrollPercent = p;
 			}
-			var bound:Number = master.style.menuFontSize+8;
-			_scroller.startDrag(false, new Rectangle(_scroller.x,bound, 0, (scrollerMaxY-bound)));
-			stage.addEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove, false, 0, true);
-			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollerUp, false, 0, true);
 		}
-		private function onScrollerMove(e:MouseEvent):void{
-			var minY:Number = master.style.menuFontSize+8;
-			var per:Number = (_scroller.y-minY)/(scrollerMaxY-minY);
+		private function onScrolledHandle(e:Event):void{
 			_lockScrollUpdate = true;
-			_traceField.scrollV = Math.round((per*(_traceField.maxScrollV-1))+1);
+			_traceField.scrollV = Math.round((_txtscroll.scrollPercent*(_traceField.maxScrollV-1))+1);
 			_lockScrollUpdate = false;
 		}
-		private function get scrollerMaxY():Number{
-			return _bottomLine.y-_scroller.height-(_commandField.visible?5:(master.style.menuFontSize+5));
+		private function onScrollIncHandle(e:Event):void{
+			_traceField.scrollV += _txtscroll.targetIncrement;
 		}
-		private function onScrollerUp(e:MouseEvent):void{
-			_scroller.stopDrag();
-			stage.removeEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove);
-			stage.removeEventListener(MouseEvent.MOUSE_UP, onScrollerUp);
+		private function stoppedScrollingHandle(e:Event):void{
 			onTraceScroll();
-		}
-		private function onScrollbarDown(e:MouseEvent):void{
-			if(_scroller.mouseY>0) {
-				_traceField.scrollV += 3;
-				_scrolldir = 3;
-			}
-			else {
-				_traceField.scrollV -= 3;
-				_scrolldir = -3;
-			}
-			_scrolldelay = 0;
-			_scrollbar.addEventListener(Event.ENTER_FRAME, onScrollBarFrame, false, 0, true);
-			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollBarUp, false, 0, true);
-		}
-		private function onScrollBarFrame(e:Event):void{
-			_scrolldelay++;
-			if(_scrolldelay>10){
-				_scrolldelay = 9;
-				if((_scrolldir<0 && _scroller.y>mouseY)||(_scrolldir>0 && _scroller.y+_scroller.height<mouseY)){
-					_traceField.scrollV += _scrolldir;
-				}
-			}
-		}
-		private function onScrollBarUp(e:Event):void{
-			_scrollbar.removeEventListener(Event.ENTER_FRAME, onScrollBarFrame);
-			stage.removeEventListener(MouseEvent.MOUSE_UP, onScrollBarUp);
 		}
 		override public function set width(n:Number):void{
 			_lockScrollUpdate = true;
@@ -510,8 +458,7 @@ package com.luaye.console.view {
 			_bottomLine.graphics.lineStyle(1, style.controlColor);
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
-			_scroller.x = n;
-			_scrollbar.x = n;
+			_txtscroll.x = n;
 			onUpdateCommandLineScope();
 			_atBottom = true;
 			_needUpdateMenu = true;
@@ -540,14 +487,7 @@ package com.luaye.console.view {
 			_commandBackground.y = cmdy;
 			_bottomLine.y = _commandField.visible?cmdy:n;
 			//
-			var sbh:Number = (_bottomLine.y-(_commandField.visible?0:10))-_scrollbar.y;
-			_scrollbar.graphics.clear();
-			_scrollbar.graphics.beginFill(style.controlColor, 0.7);
-			_scrollbar.graphics.drawRect(-5, 0, 5, 5);
-			_scrollbar.graphics.drawRect(-5, sbh-5, 5, 5);
-			_scrollbar.graphics.beginFill(style.controlColor, 0.25);
-			_scrollbar.graphics.drawRect(-5, 5, 5, sbh-10);
-			_scrollbar.graphics.endFill();
+			_txtscroll.height = (_bottomLine.y-(_commandField.visible?0:10))-_txtscroll.y;
 			//
 			_atBottom = true;
 			_needUpdateTrace = true;
@@ -789,6 +729,9 @@ package com.luaye.console.view {
 		}
 		public function get commandLineText():String{
 			return _commandField.text;
+		}
+		public function set  commandLineText(str:String):void{
+			_commandField.text = str?str:"";
 		}
 		public function updateCLScope(str:String):void{
 			if(_enteringLogin) {

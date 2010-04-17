@@ -139,9 +139,9 @@ package com.luaye.console {
 			//
 			_lines = new Logs();
 			_ud = new UserData(SharedObjectName,"/");
+			_om = new ObjectsMonitor();
 			_cl = new CommandLine(this);
 			_remoter = new Remoting(this, remoteLogSend, pass);
-			_om = new ObjectsMonitor();
 			_kb = new KeyBinder(pass);
 			_kb.addEventListener(KeyBinder.PASSWORD_ENTERED, passwordEnteredHandle, false, 0, true);
 			//
@@ -301,11 +301,14 @@ package com.luaye.console {
 			}
 			_om.monitor(obj, n);
 		}
-		public function unmonitorById(i:String):void{
-			_om.unmonitorById(i);
+		public function unmonitor(i:String = null):void{
+			_om.unmonitor(i);
 		}
 		public function monitorIn(i:String, n:String):void{
 			_om.monitorIn(i,n);
+		}
+		public function monitorOut(i:String):void{
+			_om.monitorOut(i);
 		}
 		public function get paused():Boolean{
 			return _paused;
