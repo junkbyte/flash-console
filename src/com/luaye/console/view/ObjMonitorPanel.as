@@ -40,17 +40,6 @@ package com.luaye.console.view {
 		
 		public function ObjMonitorPanel(m:Console) {
 			super(m);
-			_menuField = new TextField();
-			_menuField.name = "monitorField";
-			_menuField.styleSheet = m.css;
-			_menuField.height = m.style.menuFontSize+6;
-			_menuField.y = -2;
-			_menuField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-			registerRollOverTextField(_menuField);
-			_menuField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
-			registerDragger(_menuField);
-			addChild(_menuField);
-			updateMenu();
 			
 			_txtField = new TextField();
 			_txtField.name = "monitorField";
@@ -62,10 +51,22 @@ package com.luaye.console.view {
 			registerDragger(_txtField);
 			addChild(_txtField);
 			
+			_menuField = new TextField();
+			_menuField.name = "menuField";
+			_menuField.styleSheet = m.css;
+			_menuField.height = m.style.menuFontSize+6;
+			_menuField.y = -2;
+			_menuField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
+			registerRollOverTextField(_menuField);
+			_menuField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
+			registerDragger(_menuField);
+			addChild(_menuField);
+			
 			_scroller = new TextScroller(_txtField, style.controlColor);
 			_scroller.y = style.menuFontSize;
 			addChild(_scroller);
 			
+			updateMenu();
 			init(160,100,true);
 		}
 		public override function set width(n:Number):void{
@@ -90,7 +91,15 @@ package com.luaye.console.view {
 			_txtField.htmlText = str+"</w>";
 		}
 		private function onMenuRollOver(e:TextEvent):void{
-			master.panels.mainPanel.onMenuRollOver(e, this);
+			var txt:String = e.text?e.text.replace("event:",""):"";
+			if(txt == "close"){
+				txt = "Close";
+			}else if(txt == "out"){
+				txt = "Previous object";
+			}else{
+				txt = null;
+			}
+			master.panels.tooltip(txt, this);
 		}
 		protected function linkHandler(e:TextEvent):void{
 			if(e.text == "close"){

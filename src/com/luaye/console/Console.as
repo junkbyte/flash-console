@@ -23,30 +23,27 @@
 * 
 */
 package com.luaye.console {
-	import com.luaye.console.core.Graphing;
-	import com.luaye.console.core.ObjectsMonitor;
-	import com.luaye.console.core.KeyBinder;
-	import com.luaye.console.utils.GetCSSfromStyle;
 	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.core.CommandTools;
-	import com.luaye.console.vos.Logs;
-	import com.luaye.console.vos.Log;
+	import com.luaye.console.core.Graphing;
+	import com.luaye.console.core.KeyBinder;
 	import com.luaye.console.core.MemoryMonitor;
+	import com.luaye.console.core.ObjectsMonitor;
 	import com.luaye.console.core.Remoting;
 	import com.luaye.console.core.UserData;
+	import com.luaye.console.utils.GetCSSfromStyle;
 	import com.luaye.console.utils.Utils;
-	import com.luaye.console.view.ChannelsPanel;
-	import com.luaye.console.view.FPSPanel;
 	import com.luaye.console.view.MainPanel;
 	import com.luaye.console.view.PanelsManager;
 	import com.luaye.console.view.RollerPanel;
+	import com.luaye.console.vos.Log;
+	import com.luaye.console.vos.Logs;
 
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.geom.Rectangle;
-	import flash.system.System;
 	import flash.text.StyleSheet;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
