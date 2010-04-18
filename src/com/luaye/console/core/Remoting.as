@@ -23,6 +23,8 @@
 * 
 */
 package com.luaye.console.core {
+	import com.luaye.console.vos.RemoteSync;
+	import com.luaye.console.vos.GraphGroup;
 	import com.luaye.console.vos.Log;
 	import com.luaye.console.Console;
 
@@ -38,7 +40,6 @@ package com.luaye.console.core {
 		public static const CLIENT_PREFIX:String = "C";
 		
 		private var _master:Console;
-		private var _logsend:Function;
 		private var _isRemoting:Boolean;
 		private var _isRemote:Boolean;
 		private var _sharedConnection:LocalConnection;
@@ -50,13 +51,10 @@ package com.luaye.console.core {
 		private var _remotingPassword:String;
 		private var _loggedIn:Boolean;
 		
-		public var remoteMem:int;
+		public var delay:uint = 1;
 		
-		public var delay:uint = 20;
-		
-		public function Remoting(m:Console, logsend:Function, pass:String) {
+		public function Remoting(m:Console, pass:String) {
 			_master = m;
-			_logsend = logsend;
 			_remotingPassword = pass;
 		}
 		public function set remotingPassword(str:String):void{
@@ -71,19 +69,9 @@ package com.luaye.console.core {
 				_remoteLinesQueue.splice(0,1);
 			}
 		}
-		public function update(mspf:Number, sFR:Number = NaN):void{
+		public function update(graphs:Array):void{
 			_delayed++;
 			if(!_loggedIn) return;
-			_mspfsForRemote.push(mspf);
-			if(sFR){
-				// this is to try add the frames that have been lagged
-				var frames:int = Math.floor(mspf/(1000/sFR));
-				if(frames>Console.FPS_MAX_LAG_FRAMES) frames = Console.FPS_MAX_LAG_FRAMES;
-				while(frames>1){
-					_mspfsForRemote.push(mspf);
-					frames--;
-				}
-			}
 			if(_delayed >= delay){
 				_delayed = 0;
 				var newQueue:Array = new Array();
@@ -94,10 +82,34 @@ package com.luaye.console.core {
 					// to force update next farme
 					_delayed = delay;
 				}
-				send("logSend", [_remoteLinesQueue, _mspfsForRemote, _master.currentMemory, _master.cl.scopeString]);
+				var a:Array = [];
+				for each(var ggroup:GraphGroup in graphs){
+					a.push(ggroup.toObject());
+				}
+				var vo:RemoteSync = new RemoteSync();
+				vo.lines = _remoteLinesQueue;
+				vo.graphs = a;
+				vo.cl = _master.cl.scopeString;
+				send("sync", vo);
 				_remoteLinesQueue = newQueue;
-				_mspfsForRemote = [sFR?sFR:30];
 			}
+		}
+		private function remoteSync(obj:Object):void{
+			if(!isRemote || !obj) return;
+			var vo:RemoteSync = RemoteSync.FromObject(obj);
+			for each( var line:Object in vo.lines){
+				if(line) _master.addLine(line.t,line.p,line.c,line.r, true);
+			}
+			try{
+				var a:Array = [];
+				for each(var o:Object in vo.graphs){
+					a.push(GraphGroup.FromObject(o));
+				}
+				_master.panels.updateGraphs(a); 
+			}catch(e:Error){
+				_master.report(e);
+			}
+			_master.panels.mainPanel.updateCLScope(vo.cl);
 		}
 		public function send(command:String, ...args):void{
 			var target:String = Console.RemotingConnectionName+(_isRemote?CLIENT_PREFIX:REMOTE_PREFIX);
@@ -195,8 +207,14 @@ package com.luaye.console.core {
 			// just for sort of security
 			_sharedConnection.client = {
 				login:login, requestLogin:requestLogin, loginFail:loginFail, loginSuccess:loginSuccess,
-				logSend:_logsend, gc:_master.gc, runCommand:_master.runCommand
+				sync:remoteSync, gc:_master.gc, fps:fpsRequest, mem:memRequest, runCommand:_master.runCommand
 				};
+		}
+		private function fpsRequest(b:Boolean):void{
+			_master.fpsMonitor = b;
+		}
+		private function memRequest(b:Boolean):void{
+			_master.memoryMonitor = b;
 		}
 		public function loginFail():void{
 			if(!_isRemote) return;

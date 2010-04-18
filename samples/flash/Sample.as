@@ -131,7 +131,7 @@ package {
 			//
 			setupUI();
 			var o:Log = new Log("test", "ch1", 5);
-			o.dynamicProp = "some dynamic property";
+			//o.dynamicProp = "some dynamic property";
 			o.prev = new Log("Previous log", "ch0", 1);
 			
 			C.explode(["a","b","c",{o1:{o2:{o3:{}}}}, o]);

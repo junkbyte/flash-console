@@ -23,6 +23,7 @@
 * 
 */
 package com.luaye.console {
+	import com.luaye.console.core.Graphing;
 	import com.luaye.console.core.ObjectsMonitor;
 	import com.luaye.console.core.KeyBinder;
 	import com.luaye.console.utils.GetCSSfromStyle;
@@ -109,6 +110,7 @@ package com.luaye.console {
 		private var _kb:KeyBinder;
 		private var _om:ObjectsMonitor;
 		private var _mm:MemoryMonitor;
+		private var _graphing:Graphing;
 		private var _remoter:Remoting;
 		//
 		private var _paused:Boolean;
@@ -141,7 +143,8 @@ package com.luaye.console {
 			_ud = new UserData(SharedObjectName,"/");
 			_om = new ObjectsMonitor();
 			_cl = new CommandLine(this);
-			_remoter = new Remoting(this, remoteLogSend, pass);
+			_graphing = new Graphing(report);
+			_remoter = new Remoting(this, pass);
 			_kb = new KeyBinder(pass);
 			_kb.addEventListener(KeyBinder.PASSWORD_ENTERED, passwordEnteredHandle, false, 0, true);
 			//
@@ -193,13 +196,13 @@ package com.luaye.console {
 				report("ERROR: Graph ["+n+"] received a null object to graph property ["+prop+"].", 10);
 				return;
 			}
-			_panels.addGraph(n,obj,prop,col,key,rect,inverse);
+			_graphing.add(n,obj,prop,col,key,rect,inverse);
 		}
 		public function fixGraphRange(n:String, min:Number = NaN, max:Number = NaN):void{
-			_panels.fixGraphRange(n, min, max);
+			_graphing.fixRange(n, min, max);
 		}
 		public function removeGraph(n:String, obj:Object = null, prop:String = null):void{
-			_panels.removeGraph(n, obj, prop);
+			_graphing.remove(n, obj, prop);
 		}
 		//
 		// WARNING: key binding hard references the function. 
@@ -244,17 +247,29 @@ package com.luaye.console {
 		}
 		//
 		public function get fpsMonitor():Boolean{
-			return _panels.fpsMonitor;
+			if(_remoter.isRemote) return panels.fpsMonitor;
+			return _graphing.fpsMonitor;
 		}
 		public function set fpsMonitor(b:Boolean):void{
-			_panels.fpsMonitor = b;
+			if(_remoter.isRemote){
+				_remoter.send("fps", b);
+			}else{
+				_graphing.fpsMonitor = b;
+				panels.mainPanel.updateMenu();
+			}
 		}
 		//
 		public function get memoryMonitor():Boolean{
-			return _panels.memoryMonitor;
+			if(_remoter.isRemote) return panels.memoryMonitor;
+			return _graphing.memoryMonitor;
 		}
 		public function set memoryMonitor(b:Boolean):void{
-			_panels.memoryMonitor = b;
+			if(_remoter.isRemote){
+				_remoter.send("mem", b);
+			}else{
+				_graphing.memoryMonitor = b;
+				panels.mainPanel.updateMenu();
+			}
 		}
 		//
 		public function watch(o:Object,n:String = null):String{
@@ -358,6 +373,7 @@ package com.luaye.console {
 			if(_repeating > 0) _repeating--;
 			
 			var om:Object;
+			var graphsList:Array;
 			if(!_paused){
 				if(_mm!=null){
 					var arr:Array = _mm.update();
@@ -367,36 +383,22 @@ package com.luaye.console {
 					}
 				}
 				om = _om.update();
+				if(!_remoter.isRemote) graphsList = _graphing.update(stage?stage.frameRate:0);
+				if(_remoter.remoting) _remoter.update(graphsList);
 			}
 			// VIEW UPDATES ONLY
 			if(visible && parent!=null){
 				if(alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && moveTopAttempts>0){
 					moveTopAttempts--;
 					parent.addChild(this);
-					if(!quiet){
-						report("Moved console on top (alwaysOnTop enabled), "+moveTopAttempts+" attempts left.",-1);
-					}
+					if(!quiet) report("Moved console on top (alwaysOnTop enabled), "+moveTopAttempts+" attempts left.",-1);
 				}
 				_panels.mainPanel.update(!_paused && _lineAdded);
+				_panels.update(_paused, _lineAdded);
 				if(om != null) _panels.updateObjMonitors(om);
-				if(_lineAdded) {
-					var chPanel:ChannelsPanel = _panels.getPanel(PANEL_CHANNELS) as ChannelsPanel;
-					if(chPanel) chPanel.update();
-					_lineAdded = false;
-				}
+				if(graphsList) _panels.updateGraphs(graphsList); 
+				_lineAdded = false;
 			}
-			if(_remoter.remoting){
-				_remoter.update(_mspf, stage?stage.frameRate:0);
-			}
-		}
-		public function get fps():Number{
-			return 1000/_mspf;
-		}
-		public function get mspf():Number{
-			return _mspf;
-		}
-		public function get currentMemory():uint {
-			return _remoter.isRemote?_remoter.remoteMem:System.totalMemory;
 		}
 		//
 		// REMOTING
@@ -422,44 +424,6 @@ package com.luaye.console {
 		}
 		public function get remoteDelay():uint{ return _remoter.delay; };
 		public function set remoteDelay(i:uint):void{ _remoter.delay = i; };
-		//
-		// this is sent from client for remote...
-		// obj[0] = array of log lines (text, priority, channel, repeating, safeHTML)
-		// obj[1] = array of 'milliseconds per frame' since previous logsend - for FPS display
-		// obj[2] = client's current memory usage
-		// obj[3] = client's command line scope - string
-		private function remoteLogSend(obj:Array):void{
-			if(!_remoter.isRemote || !obj) return;
-			var lines:Array = obj[0];
-			for each( var line:Object in lines){
-				if(line){
-					addLine(line.text,line.p,line.c,line.r,true);
-				}
-			}
-			var remoteMSPFs:Array = obj[1];
-			if(remoteMSPFs){
-				var fpsp:FPSPanel = _panels.getPanel(PANEL_FPS) as FPSPanel;
-				if(fpsp){
-					// the first value is stage.FrameRate
-					var highest:Number = remoteMSPFs[0];
-					fpsp.highest = highest;
-					fpsp.averaging = highest;
-					var len:int = remoteMSPFs.length;
-					for(var i:int = 1; i<len;i++){
-						var fps:Number = 1000/remoteMSPFs[i];
-						if(fps > highest) fps = highest;
-						fpsp.addCurrent(fps);
-					}
-					fpsp.updateKeyText();
-					fpsp.drawGraph();
-				}
-			}
-			_remoter.remoteMem = obj[2];
-			if(obj[3]){ 
-				// older clients don't send CL scope
-				_panels.mainPanel.updateCLScope(obj[3]);
-			}
-		}
 		//
 		//
 		//
@@ -497,7 +461,7 @@ package com.luaye.console {
 		public function report(obj:*,priority:Number = 0, skipSafe:Boolean = true):void{
 			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe, 0);
 		}
-		private function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
+		public function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
 			var isRepeat:Boolean = (isRepeating && _repeating > 0);
 			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL) channel = DEFAULT_CHANNEL;
@@ -686,6 +650,7 @@ package com.luaye.console {
 		public function get cl():CommandLine{return _cl;}
 		public function get ud():UserData{return _ud;}
 		public function get om():ObjectsMonitor{return _om;}
+		public function get graphing():Graphing{return _graphing;}
 		//
 		public function getLogsAsObjects():Array{
 			var a:Array = [];

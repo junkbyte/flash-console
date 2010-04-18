@@ -24,36 +24,31 @@
 */
 package com.luaye.console.view {
 	import com.luaye.console.Console;
-	import com.luaye.console.utils.Utils;
+	import com.luaye.console.vos.GraphGroup;
+	import com.luaye.console.vos.GraphInterest;
 
 	import flash.display.Graphics;
 	import flash.display.Shape;
-	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.text.TextField;
 
 	public class GraphingPanel extends AbstractPanel {
-		private var _interests:Array = [];
-		private var _updatedFrame:uint = 0;
-		private var _drawnFrame:uint = 0;
-		private var _needRedraw:Boolean;
-		private var _isRunning:Boolean;
-		protected var _history:Array = [];
 		//
-		protected var fixed:Boolean;
+		public static const FPS_MAX_LAG_FRAMES:uint = 30;
+		//
+		protected var _group:GraphGroup;
+		protected var _interest:GraphInterest;
+		protected var _infoMap:Object = new Object();
+		//
+		private var _needRedraw:Boolean;
+		//
 		protected var underlay:Shape;
 		protected var graph:Shape;
 		protected var lowTxt:TextField;
 		protected var highTxt:TextField;
 		protected var keyTxt:TextField;
 		//
-		public var updateEvery:uint = 1;
-		public var drawEvery:uint = 1;
-		public var lowest:Number;
-		public var highest:Number;
-		public var averaging:uint;
 		public var startOffset:int = 5;
-		public var inverse:Boolean;
 		//
 		public function GraphingPanel(m:Console, W:int = 0, H:int = 0, resizable:Boolean = true) {
 			super(m);
@@ -95,90 +90,14 @@ package com.luaye.console.view {
 			//
 			init(W?W:100,H?H:80,resizable);
 		}
-		
-		public function get rand():Number{
-			return Math.random();
-		}
-		public function add(obj:Object, prop:String, col:Number = -1, key:String=null):void{
-			if(isNaN(col) || col<0) col = Math.random()*0xFFFFFF;
-			if(key == null) key = prop;
-			var i:Interest = new Interest(obj, prop, col, key);
-			var cur:Number;
-			try{
-				cur = i.getValue();
-				if(!isNaN(cur)){
-					if(isNaN(lowest)) lowest = cur;
-					if(isNaN(highest)) highest = cur;
-				}
-			}catch(e:Error){
-				
-			}
-			_interests.push(i);
-			updateKeyText();
-			//
-			start();
-		}
-		public function remove(obj:Object = null, prop:String = null):void{
-			var all:Boolean = (obj==null&&prop==null);
-			for(var i:int = _interests.length-1;i>=0;i--){
-				var interest:Interest = _interests[i];
-				if(all || (interest && (obj == null || interest.obj == obj) && (prop == null || interest.prop == prop))){
-					_interests.splice(i, 1);
-				}
-			}
-			if(_interests.length==0){
-				close();
-			}else{
-				updateKeyText();
-			}
-		}
-		/*public function mark(col:Number = -1, v:Number = NaN):void{
-			if(_history.length==0) return;
-			var interests:Array = _history[_history.length-1];
-			interests.push([col, v]);
-		}*/
-		public function start():void{
-			_isRunning = true;
-			// Note that if it has already started, it won't add another listener on top.
-			addEventListener(Event.ENTER_FRAME, onFrame, false, 0, true);
-			addEventListener(Event.REMOVED_FROM_STAGE, removeListeners);
-		}
-		public function stop():void {
-			_isRunning = false;
-			removeListeners();
-		}
-		private function removeListeners(e:Event=null):void{
-			removeEventListener(Event.ENTER_FRAME, onFrame);
-			removeEventListener(Event.REMOVED_FROM_STAGE, removeListeners);
-		}
-		public function get numInterests():int{
-			return _interests.length;
-		}
-		override public function close():void {
-			stop();
-			super.close();
+		private function stop():void {
+			if(_group) master.graphing.remove(_group.name);
 		}
 		public function reset():void{
-			if(!fixed){
-				lowest = NaN;
-				highest = NaN;
-			}
-			_history = [];
+			_infoMap = {};
 			graph.graphics.clear();
 		}
-		public function get running():Boolean {
-			return _isRunning;
-		}
-		public function fixRange(low:Number,high:Number):void{
-			if(isNaN(low) || isNaN(high)) {
-				fixed = false;
-				return;
-			}
-			fixed = true;
-			lowest = low;
-			highest = high;
-		}
-		public function set showKeyText(b:Boolean):void{
+		/*public function set showKeyText(b:Boolean):void{
 			keyTxt.visible = b;
 		}
 		public function get showKeyText():Boolean{
@@ -190,7 +109,7 @@ package com.luaye.console.view {
 		}
 		public function get showBoundsText():Boolean{
 			return lowTxt.visible;
-		}
+		}*/
 		override public function set height(n:Number):void{
 			super.height = n;
 			lowTxt.y = n-master.style.menuFontSize;
@@ -210,118 +129,92 @@ package com.luaye.console.view {
 			keyTxt.width = n;
 			keyTxt.scrollH = keyTxt.maxScrollH;
 			_needRedraw = true;
-			
-		}
-		protected function getCurrentOf(i:int):Number{
-			var values:Array = _history[_history.length-1];
-			return values?values[i]:0;
-		}
-		protected function getAverageOf(i:int):Number{
-			var interest:Interest = _interests[i];
-			return interest?interest.avg:0;
 		}
 		//
 		//
 		//
-		protected function onFrame(e:Event):Boolean{
-			var ok:Boolean = (master.visible && !master.paused);
-			if(ok) {
-				updateData();
+		public function update(group:GraphGroup):void{
+			_group = group;
+			var push:int = 1; // 0 = no push, 1 = 1 push, 2 = push all
+			if(group.idle>0){
+				push = 0;
+				if(!_needRedraw) return;
 			}
-			if(ok || _needRedraw){
-				drawGraph();
-			}
-			return ok;
-		}
-		protected function updateData():void{
-			_updatedFrame++;
-			if(_updatedFrame < updateEvery) return;
-			_updatedFrame= 0;
-			var values:Array = [];
-			var v:Number;
-			for each(var interest:Interest in _interests){
-				try{
-					v = interest.getValue();
-					if(isNaN(v)){
-						v = 0;
-					}else{
-						if(isNaN(lowest)) lowest = v;
-						if(isNaN(highest)) highest = v;
-					}
-					values.push(v);
-					if(averaging>0){
-						var avg:Number = interest.avg;
-						if(isNaN(avg)) {
-							interest.avg = v;
-						}else{
-							interest.avg = Utils.averageOut(avg, v, averaging);
-						}
-					}
-					if(!fixed){
-						if(v > highest) highest = v;
-						if(v < lowest) lowest = v;
-					}
-				}catch(e:Error){
-					remove(interest.obj, interest.prop);
-				}
-			}
-			_history.push(values);
-			// clean up off screen data
-			var maxLen:int = Math.floor(width)+10;
-			var len:uint = _history.length;
-			if(len > maxLen){
-				_history.splice(0, (len-maxLen));
-			}
-		}
-		public function drawGraph():void{
-			_drawnFrame++;
-			if(!_needRedraw && _drawnFrame < drawEvery) return;
 			_needRedraw = false;
-			_drawnFrame= 0;
-			var W:Number = width-startOffset;
-			var H:Number = height-graph.y;
+			var interests:Array = group.interests;
+			var W:int = width-startOffset;
+			var H:int = height-graph.y;
 			graph.graphics.clear();
+			var lowest:Number = group.low;
+			var highest:Number = group.hi;
 			var diffGraph:Number = highest-lowest;
-			var numInterests:int = _interests.length;
-			var len:int = _history.length;
-			for(var j:int = 0;j<numInterests;j++){
-				var interest:Interest = _interests[j];
-				var first:Boolean = true;
-				for(var i:int = 1;i<W;i++){
-					if(len < i) break;
-					var values:Array = _history[len-i];
-					if(first){
-						graph.graphics.lineStyle(1,interest.col);
+			var keys:Object = {};
+			var listchanged:Boolean = false;
+			for each(_interest in interests){
+				var n:String = _interest.key;
+				keys[n] = true;
+				var info:InterestInfo = _infoMap[n];
+				if(info == null){
+					listchanged = true;
+					info = new InterestInfo(_interest.col);
+					_infoMap[n] = info;
+				}
+				var history:Array = info.history;
+				if(push == 1) {
+					// special case for FPS, because it needs to fill some frames for lagged 1s...
+					if(group.type == GraphGroup.TYPE_FPS){
+						var frames:int = Math.floor(group.hi/_interest.v);
+						if(frames>FPS_MAX_LAG_FRAMES) frames = FPS_MAX_LAG_FRAMES; // Don't add too many
+						while(frames>0){
+							history.push(_interest.v);
+							frames--;
+						}
+					}else{
+						history.push(_interest.v);
 					}
-					var Y:Number = (diffGraph?((values[j]-lowest)/diffGraph):0.5)*H;
-					if(!inverse) Y = H-Y;
+				}
+				var len:int = history.length;
+				var maxLen:int = Math.floor(W)+10;
+				if(len > maxLen){
+					history.splice(0, (len-maxLen));
+					len = history.length;
+				}
+				graph.graphics.lineStyle(1, _interest.col);
+				var maxi:int = W>len?len:W;
+				for(var i:int = 1; i<maxi; i++){
+					var Y:Number = (diffGraph?((history[len-i]-lowest)/diffGraph):0.5)*H;
+					if(!group.inv) Y = H-Y;
 					if(Y<0)Y=0;
 					if(Y>H)Y=H;
-					if(first){
+					if(i==1){
 						graph.graphics.moveTo(width, Y);
-						graph.graphics.lineTo((W-i), Y);
-					}else{
-						graph.graphics.lineTo((W-i), Y);
 					}
-					first = false;
+					graph.graphics.lineTo((W-i), Y);
 				}
-				if(averaging>0 && diffGraph){
-					Y = ((interest.avg-lowest)/diffGraph)*H;
-					if(!inverse) Y = H-Y;
-					if(Y<-1)Y=-1;
-					if(Y>H)Y=H+1;
-					graph.graphics.lineStyle(1,interest.col, 0.3);
+				if(isNaN(_interest.avg) && diffGraph){
+					Y = ((_interest.avg-lowest)/diffGraph)*H;
+					if(!group.inv) Y = H-Y;
+					if(Y<0)Y=0;
+					if(Y>H)Y=H;
+					graph.graphics.lineStyle(1,_interest.col, 0.3);
 					graph.graphics.moveTo(0, Y);
 					graph.graphics.lineTo(W, Y);
 				}
 			}
-			(inverse?highTxt:lowTxt).text = isNaN(lowest)?"":"<s>"+lowest+"</s>";
-			(inverse?lowTxt:highTxt).text = isNaN(highest)?"":"<s>"+highest+"</s>";
+			for(var X:String in _infoMap){
+				if(keys[X] == undefined){
+					listchanged = true;
+					delete _infoMap[X];
+				}
+			}
+			(group.inv?highTxt:lowTxt).text = isNaN(group.low)?"":"<s>"+group.low+"</s>";
+			(group.inv?lowTxt:highTxt).text = isNaN(group.hi)?"":"<s>"+group.hi+"</s>";
+			if(listchanged) updateKeyText();
 		}
 		public function updateKeyText():void{
 			var str:String = "<r><s>";
-			for each(var interest:Interest in _interests){
-				str += " <font color='#"+interest.col.toString(16)+"'>"+interest.key+"</font>";
+			for(var X:String in _infoMap){
+				str += " <font color='#"+InterestInfo(_infoMap[X]).col.toString(16)+"'>"+X+"</font>";
 			}
 			str +=  " | <menu><a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></s></r>";
 			keyTxt.htmlText = str;
@@ -332,7 +225,7 @@ package com.luaye.console.view {
 			if(e.text == "reset"){
 				reset();
 			}else if(e.text == "close"){
-				close();
+				stop();
 			}
 			e.stopPropagation();
 		}
@@ -341,28 +234,10 @@ package com.luaye.console.view {
 		}
 	}
 }
-
-import com.luaye.console.core.Executer;
-import com.luaye.console.vos.WeakRef;
-
-class Interest{
-	private var _ref:WeakRef;
-	public var prop:String;
+class InterestInfo{
 	public var col:Number;
-	public var key:String;
-	public var avg:Number;
-	private var useExec:Boolean;
-	public function Interest(object:Object, property:String, color:Number, keystr:String):void{
-		_ref = new WeakRef(object);
-		prop = property;
-		col = color;
-		key = keystr;
-		useExec = prop.search(/[^\w\d]/) >= 0;
-	}
-	public function getValue():Number{
-		return useExec?Executer.Exec(obj, prop):obj[prop];
-	}
-	public function get obj():Object{
-		return _ref.reference;
+	public var history:Array = [];
+	public function InterestInfo(c:Number){
+		col = c;
 	}
 }

@@ -24,23 +24,25 @@
 */
 package com.luaye.console.vos {
 	
-	public dynamic class Log{
+	public class Log{
 		public var text:String;
 		public var c:String;
 		public var p:int;
 		public var r:Boolean;
+		public var s:Boolean;
 		//
 		public var next:Log;
 		public var prev:Log;
 		//
-		public function Log(t:String, ch:String, pr:int, repeating:Boolean = false){
+		public function Log(t:String, ch:String, pr:int, repeating:Boolean = false, skipSafe:Boolean = false){
 			text = t;
 			c = ch;
 			p = pr;
 			r = repeating;
+			s = skipSafe;
 		}
 		public function toObject():Object{
-			return {text:text, c:c, p:p, r:r};
+			return {t:text, c:c, p:p, r:r};
 		}
 		public function toString():String{
 			return "["+c+"] " + text;
