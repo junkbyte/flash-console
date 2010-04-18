@@ -23,6 +23,8 @@
 * 
 */
 package com.luaye.console.view {
+	import flash.events.TextEvent;
+
 	import com.luaye.console.Console;
 	import com.luaye.console.view.GraphingPanel;
 	import com.luaye.console.vos.GraphGroup;
@@ -35,9 +37,12 @@ package com.luaye.console.view {
 			minimumWidth = 32;
 			// 
 		}
-		public override function close():void {
-			master.fpsMonitor = false;
-			super.close();
+		protected override function linkHandler(e:TextEvent):void{
+			if(e.text == "close"){
+				master.fpsMonitor = false;
+			}else{
+				super.linkHandler(e);
+			}
 		}
 		public override function update(group:GraphGroup):void{
 			super.update(group);

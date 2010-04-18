@@ -36,10 +36,6 @@ package com.luaye.console.view {
 			name = Console.PANEL_MEMORY;
 			minimumWidth = 32;
 		}
-		public override function close():void {
-			master.memoryMonitor = false;
-			super.close();
-		}
 		public override function update(group:GraphGroup):void{
 			super.update(group);
 			updateKeyText();
@@ -55,8 +51,11 @@ package com.luaye.console.view {
 		protected override function linkHandler(e:TextEvent):void{
 			if(e.text == "gc"){
 				master.gc();
+			}else if(e.text == "close"){
+				master.memoryMonitor = false;
+			}else{
+				super.linkHandler(e);
 			}
-			super.linkHandler(e);
 		}
 		protected override function onMenuRollOver(e:TextEvent):void{
 			var txt:String = e.text?e.text.replace("event:",""):null;
