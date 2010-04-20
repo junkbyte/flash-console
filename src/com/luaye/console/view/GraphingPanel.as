@@ -133,23 +133,28 @@ package com.luaye.console.view {
 		//
 		//
 		//
-		public function update(group:GraphGroup):void{
+		public function update(group:GraphGroup, draw:Boolean = true):void{
 			_group = group;
 			var push:int = 1; // 0 = no push, 1 = 1 push, 2 = push all
 			if(group.idle>0){
 				push = 0;
 				if(!_needRedraw) return;
 			}
+			if(_needRedraw) draw = true;
 			_needRedraw = false;
 			var interests:Array = group.interests;
 			var W:int = width-startOffset;
 			var H:int = height-graph.y;
-			graph.graphics.clear();
 			var lowest:Number = group.low;
 			var highest:Number = group.hi;
 			var diffGraph:Number = highest-lowest;
 			var keys:Object = {};
 			var listchanged:Boolean = false;
+			if(draw) {
+				(group.inv?highTxt:lowTxt).text = isNaN(group.low)?"":"<s>"+group.low+"</s>";
+				(group.inv?lowTxt:highTxt).text = isNaN(group.hi)?"":"<s>"+group.hi+"</s>";
+				graph.graphics.clear();
+			}
 			for each(_interest in interests){
 				var n:String = _interest.key;
 				keys[n] = true;
@@ -179,26 +184,28 @@ package com.luaye.console.view {
 					history.splice(0, (len-maxLen));
 					len = history.length;
 				}
-				graph.graphics.lineStyle(1, _interest.col);
-				var maxi:int = W>len?len:W;
-				for(var i:int = 1; i<maxi; i++){
-					var Y:Number = (diffGraph?((history[len-i]-lowest)/diffGraph):0.5)*H;
-					if(!group.inv) Y = H-Y;
-					if(Y<0)Y=0;
-					if(Y>H)Y=H;
-					if(i==1){
-						graph.graphics.moveTo(width, Y);
+				if(draw) {
+					graph.graphics.lineStyle(1, _interest.col);
+					var maxi:int = W>len?len:W;
+					for(var i:int = 1; i<maxi; i++){
+						var Y:Number = (diffGraph?((history[len-i]-lowest)/diffGraph):0.5)*H;
+						if(!group.inv) Y = H-Y;
+						if(Y<0)Y=0;
+						if(Y>H)Y=H;
+						if(i==1){
+							graph.graphics.moveTo(width, Y);
+						}
+						graph.graphics.lineTo((W-i), Y);
 					}
-					graph.graphics.lineTo((W-i), Y);
-				}
-				if(isNaN(_interest.avg) && diffGraph){
-					Y = ((_interest.avg-lowest)/diffGraph)*H;
-					if(!group.inv) Y = H-Y;
-					if(Y<0)Y=0;
-					if(Y>H)Y=H;
-					graph.graphics.lineStyle(1,_interest.col, 0.3);
-					graph.graphics.moveTo(0, Y);
-					graph.graphics.lineTo(W, Y);
+					if(isNaN(_interest.avg) && diffGraph){
+						Y = ((_interest.avg-lowest)/diffGraph)*H;
+						if(!group.inv) Y = H-Y;
+						if(Y<0)Y=0;
+						if(Y>H)Y=H;
+						graph.graphics.lineStyle(1,_interest.col, 0.3);
+						graph.graphics.moveTo(0, Y);
+						graph.graphics.lineTo(W, Y);
+					}
 				}
 			}
 			for(var X:String in _infoMap){
@@ -207,8 +214,6 @@ package com.luaye.console.view {
 					delete _infoMap[X];
 				}
 			}
-			(group.inv?highTxt:lowTxt).text = isNaN(group.low)?"":"<s>"+group.low+"</s>";
-			(group.inv?lowTxt:highTxt).text = isNaN(group.hi)?"":"<s>"+group.hi+"</s>";
 			if(listchanged) updateKeyText();
 		}
 		public function updateKeyText():void{

@@ -381,7 +381,7 @@ package com.luaye.console {
 				}
 				om = _om.update();
 				if(!_remoter.isRemote) graphsList = _graphing.update(stage?stage.frameRate:0);
-				if(_remoter.remoting) _remoter.update(graphsList);
+				_remoter.update(graphsList);
 			}
 			// VIEW UPDATES ONLY
 			if(visible && parent!=null){

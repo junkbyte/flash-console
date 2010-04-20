@@ -110,7 +110,7 @@ package com.luaye.console.view {
 				}
 			}
 		}
-		public function updateGraphs(graphs:Array):void{
+		public function updateGraphs(graphs:Array, draw:Boolean = true):void{
 			var usedMap:Object = {};
 			var fpsGroup:GraphGroup;
 			var memGroup:GraphGroup;
@@ -137,7 +137,7 @@ package com.luaye.console.view {
 						_graphsMap[n] = panel;
 						addPanel(panel);
 					}
-					panel.update(group);
+					panel.update(group, draw);
 				}
 				usedMap[group.name] = true;
 			}

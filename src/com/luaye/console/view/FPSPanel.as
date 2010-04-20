@@ -44,7 +44,7 @@ package com.luaye.console.view {
 				super.linkHandler(e);
 			}
 		}
-		public override function update(group:GraphGroup):void{
+		public override function update(group:GraphGroup, draw:Boolean = true):void{
 			super.update(group);
 			updateKeyText();
 		}

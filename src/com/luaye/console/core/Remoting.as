@@ -50,6 +50,7 @@ package com.luaye.console.core {
 		private var _lastLogin:String = "";
 		private var _remotingPassword:String;
 		private var _loggedIn:Boolean;
+		private var _canDraw:Boolean;
 		
 		public var delay:uint = 1;
 		
@@ -70,32 +71,38 @@ package com.luaye.console.core {
 			}
 		}
 		public function update(graphs:Array):void{
-			_delayed++;
-			if(!_loggedIn) return;
-			if(_delayed >= delay){
-				_delayed = 0;
-				var newQueue:Array = new Array();
-				// don't send too many lines at once cause there is 50kb limit with LocalConnection.send
-				// Buffer it...
-				if(_remoteLinesQueue.length > 20){
-					newQueue = _remoteLinesQueue.splice(20);
-					// to force update next farme
-					_delayed = delay;
+			if(_isRemoting){
+				if(!_loggedIn) return;
+				_delayed++;
+				if(_delayed >= delay){
+					_delayed = 0;
+					var newQueue:Array = new Array();
+					// don't send too many lines at once cause there is 50kb limit with LocalConnection.send
+					// Buffer it...
+					if(_remoteLinesQueue.length > 10){
+						newQueue = _remoteLinesQueue.splice(10);
+						// to force update next farme
+						_delayed = delay;
+					}
+					var a:Array = [];
+					for each(var ggroup:GraphGroup in graphs){
+						a.push(ggroup.toObject());
+					}
+					var vo:RemoteSync = new RemoteSync();
+					vo.lines = _remoteLinesQueue;
+					vo.graphs = a;
+					vo.cl = _master.cl.scopeString;
+					send("sync", vo);
+					_remoteLinesQueue = newQueue;
 				}
-				var a:Array = [];
-				for each(var ggroup:GraphGroup in graphs){
-					a.push(ggroup.toObject());
-				}
-				var vo:RemoteSync = new RemoteSync();
-				vo.lines = _remoteLinesQueue;
-				vo.graphs = a;
-				vo.cl = _master.cl.scopeString;
-				send("sync", vo);
-				_remoteLinesQueue = newQueue;
+			}else if(!_master.paused){
+				_canDraw = true;
 			}
 		}
 		private function remoteSync(obj:Object):void{
 			if(!isRemote || !obj) return;
+			//_master.clear();
+			//_master.explode(obj, -1);
 			var vo:RemoteSync = RemoteSync.FromObject(obj);
 			for each( var line:Object in vo.lines){
 				if(line) _master.addLine(line.t,line.p,line.c,line.r, true);
@@ -105,11 +112,12 @@ package com.luaye.console.core {
 				for each(var o:Object in vo.graphs){
 					a.push(GraphGroup.FromObject(o));
 				}
-				_master.panels.updateGraphs(a); 
+				_master.panels.updateGraphs(a, _canDraw);
+				if(_canDraw) _master.panels.mainPanel.updateCLScope(vo.cl);
+				_canDraw = false;
 			}catch(e:Error){
 				_master.report(e);
 			}
-			_master.panels.mainPanel.updateCLScope(vo.cl);
 		}
 		public function send(command:String, ...args):void{
 			var target:String = Console.RemotingConnectionName+(_isRemote?CLIENT_PREFIX:REMOTE_PREFIX);
@@ -154,10 +162,10 @@ package com.luaye.console.core {
 			}
 		}
 		private function onRemotingStatus(e:StatusEvent):void{
-			// this will get called quite often...
+			if(e.level == "error") _loggedIn = false;
 		}
 		private function onRemotingSecurityError(e:SecurityErrorEvent):void{
-			_master.report("Sandbox security error.", 10);
+			_master.report("Remoting security error.", 9);
 			printHowToGlobalSetting();
 		}
 		public function get isRemote():Boolean{
