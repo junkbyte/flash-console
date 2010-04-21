@@ -37,7 +37,7 @@ package com.luaye.console.view {
 			minimumWidth = 32;
 		}
 		public override function update(group:GraphGroup, draw:Boolean = true):void{
-			super.update(group);
+			super.update(group, draw);
 			updateKeyText();
 		}
 		public override function updateKeyText():void{

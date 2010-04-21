@@ -119,7 +119,9 @@ package com.luaye.console.core {
 		private function getStringOf(v:*):String{
 			var t:String = typeof v;
 			if(t == "object" || t =="xml") return "["+Utils.shortClassName(v)+"]";
-			return String(v);
+			t = String(v);
+			t = t.length<50?t:(t.substring(0,48)+"...");
+			return t.replace(/</gm, "&lt;");
 		}
 	}
 }

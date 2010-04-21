@@ -45,7 +45,7 @@ package com.luaye.console.view {
 			}
 		}
 		public override function update(group:GraphGroup, draw:Boolean = true):void{
-			super.update(group);
+			super.update(group, draw);
 			updateKeyText();
 		}
 		public override function updateKeyText():void{

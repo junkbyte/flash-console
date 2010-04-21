@@ -36,9 +36,10 @@ http://code.google.com/p/flash-console/issues/
 ===2.4===
 
   * Due to security concern, CommandLine is no longer allowed by default. You must do C.commandLineAllowed = true OR C.commandLine = true (to allow and show)
+  * Custom graphing is now passed into remote.
   * Added C.explode
   * Added C.stack
-  * C.error and C.fatal will get auto stack trace by default.
+  * C.fatal will get auto stack trace by default.
   * Added C.autoStackPriority
   * Added C.defaultStackDepth
   * Removed tracingPriorty and prefixChannelNames

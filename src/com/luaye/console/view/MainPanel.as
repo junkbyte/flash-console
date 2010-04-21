@@ -25,17 +25,12 @@
 
 package com.luaye.console.view {
 	import com.luaye.console.Ch;
-
-	import flash.text.TextFormat;
-	import flash.system.System;	
-	
 	import com.luaye.console.Console;
 	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.vos.Log;
 	import com.luaye.console.vos.Logs;
 
 	import flash.display.Shape;
-	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
@@ -45,9 +40,11 @@ package com.luaye.console.view {
 	import flash.system.Capabilities;
 	import flash.system.Security;
 	import flash.system.SecurityPanel;
+	import flash.system.System;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFieldType;
+	import flash.text.TextFormat;
 	import flash.ui.Keyboard;
 
 	public class MainPanel extends AbstractPanel {
