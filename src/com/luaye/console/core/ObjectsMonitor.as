@@ -84,6 +84,7 @@ package com.luaye.console.core {
 		
 		public function update():Object{
 			var mvs:Object = {};
+			// TODO: need to primitive properties and object properties which can do monitorIn();
 			for (var X:String in _list){
 				var mv:MonitorValue = _list[X];
 				var obj:Object = mv.history[mv.history.length-1].reference;

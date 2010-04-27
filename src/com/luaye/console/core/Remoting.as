@@ -70,7 +70,7 @@ package com.luaye.console.core {
 				_remoteLinesQueue.splice(0,1);
 			}
 		}
-		public function update(graphs:Array):void{
+		public function update(graphs:Array, om:Object):void{
 			if(_isRemoting){
 				if(!_loggedIn) return;
 				_delayed++;
@@ -92,6 +92,7 @@ package com.luaye.console.core {
 					vo.lines = _remoteLinesQueue;
 					vo.graphs = a;
 					vo.cl = _master.cl.scopeString;
+					vo.om = om;
 					send("sync", vo);
 					_remoteLinesQueue = newQueue;
 				}
@@ -113,8 +114,11 @@ package com.luaye.console.core {
 					a.push(GraphGroup.FromObject(o));
 				}
 				_master.panels.updateGraphs(a, _canDraw);
-				if(_canDraw) _master.panels.mainPanel.updateCLScope(vo.cl);
-				_canDraw = false;
+				if(_canDraw) {
+					_master.panels.updateObjMonitors(vo.om);
+					_master.panels.mainPanel.updateCLScope(vo.cl);
+					_canDraw = false;
+				}
 			}catch(e:Error){
 				_master.report(e);
 			}
@@ -215,7 +219,8 @@ package com.luaye.console.core {
 			// just for sort of security
 			_sharedConnection.client = {
 				login:login, requestLogin:requestLogin, loginFail:loginFail, loginSuccess:loginSuccess,
-				sync:remoteSync, gc:_master.gc, fps:fpsRequest, mem:memRequest, runCommand:_master.runCommand
+				sync:remoteSync, gc:_master.gc, fps:fpsRequest, mem:memRequest, runCommand:_master.runCommand,
+				unmonitor:_master.unmonitor, monitorIn:_master.monitorIn, monitorOut:_master.monitorOut
 				};
 		}
 		private function fpsRequest(b:Boolean):void{

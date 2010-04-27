@@ -491,8 +491,8 @@ internal class ExecuterExe{
 				}
 				var len:int = p.length;
 				//
-				// TODO: HELP! how do you construct an object with unknown number of arguments?
-				// calling a functionw with multiple arguments can be done by fun.apply()... but can't for constructor :(
+				// HELP! how do you construct an object with unknown number of arguments?
+				// calling a function with multiple arguments can be done by fun.apply()... but can't for constructor :(
 				if(len==0){
 					return new (def)();
 				}if(len==1){

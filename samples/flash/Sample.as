@@ -55,10 +55,8 @@ package {
 			C.width = 640;
 			C.height = 220;
 			C.maxLines = 2000;
-			C.fpsMonitor = true;
 			C.remotingPassword = null; // Just so that remote don't ask for password
 			C.remoting = true;
-			C.displayRoller = true;
 			//
 			// End of setup
 			//

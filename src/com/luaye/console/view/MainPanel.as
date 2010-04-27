@@ -275,7 +275,7 @@ package com.luaye.console.view {
 			}
 		}
 		private function _updateTraces(onlyBottom:Boolean = false):void{
-			// TODO: onlyBottom: when you are scrolled up, it doesnt update for new lines, because
+			// onlyBottom: when you are scrolled up, it doesnt update for new lines, because
 			// you won't see them while scrolled up anyway... (it increase performace a lot on long logs)
 			// BUT scroll up, add lots of new lines, scroll back down,
 			// you'll see it jumps to the bottom of log which can be annoying in rare cases

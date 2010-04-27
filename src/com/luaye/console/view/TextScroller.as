@@ -29,9 +29,6 @@ package com.luaye.console.view {
 	import flash.text.TextField;
 	import flash.display.Sprite;
 
-	/**
-	 * @author LuAye
-	 */
 	public class TextScroller extends Sprite {
 		
 		public static const SCROLL_INCREMENT:String = "SCROLL_INCREMENT";
@@ -59,7 +56,7 @@ package com.luaye.console.view {
 			addEventListener(MouseEvent.MOUSE_DOWN, onScrollbarDown, false, 0, true);
 			//
 			_scroller = new Sprite();
-			_scroller.name = "scroller";
+			_scroller.name = "scrollbar";
 			_scroller.y = 5;
 			_scroller.graphics.beginFill(_color, 1);
 			_scroller.graphics.drawRect(-5, 0, 5, 30);

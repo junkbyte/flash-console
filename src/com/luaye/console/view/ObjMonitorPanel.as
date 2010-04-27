@@ -84,6 +84,7 @@ package com.luaye.console.view {
 			_menuField.htmlText = "<w><menu> <b><a href=\"event:close\">X</a></b>"+(_hasPrevious?" | <a href=\"event:out\">previous</a>":"")+"</menu></w>";
 		}
 		public function update(obj:Object):void{
+			_txtField.mouseEnabled = true;
 			var str:String = "<w>";
 			for(var X:String in obj){
 				str += "<p-2><a href=\"event:n_"+X+"\">"+X+"</a></p-2>=<p-1><a href=\"event:o_"+X+"\">"+obj[X]+"</a></p-1><br/>";
@@ -105,11 +106,13 @@ package com.luaye.console.view {
 			if(e.text == "close"){
 				master.unmonitor(id);
 			}else if(e.text == "out"){
+				_txtField.mouseEnabled = false;
 				master.monitorOut(id);
 			}else if(e.text.substring(0,2) == "n_"){
 				master.panels.mainPanel.commandLineText = "$monObj('"+id+"')."+e.text.substring(2);
 			}else if(e.text.substring(0,2) == "o_"){
 				_hasPrevious = true;
+				_txtField.mouseEnabled = false;
 				master.monitorIn(id, e.text.substring(2));
 				updateMenu();
 			}

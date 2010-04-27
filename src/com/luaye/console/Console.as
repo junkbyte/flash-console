@@ -268,6 +268,7 @@ package com.luaye.console {
 				panels.mainPanel.updateMenu();
 			}
 		}
+		
 		//
 		public function watch(o:Object,n:String = null):String{
 			var className:String = getQualifiedClassName(o);
@@ -314,13 +315,25 @@ package com.luaye.console {
 			_om.monitor(obj, n);
 		}
 		public function unmonitor(i:String = null):void{
-			_om.unmonitor(i);
+			if(_remoter.isRemote){
+				_remoter.send("unmonitor", i);
+			}else{
+				_om.unmonitor(i);
+			}
 		}
 		public function monitorIn(i:String, n:String):void{
-			_om.monitorIn(i,n);
+			if(_remoter.isRemote){
+				_remoter.send("monitorIn", i,n);
+			}else{
+				_om.monitorIn(i,n);
+			}
 		}
 		public function monitorOut(i:String):void{
-			_om.monitorOut(i);
+			if(_remoter.isRemote){
+				_remoter.send("monitorOut", i);
+			}else{
+				_om.monitorOut(i);
+			}
 		}
 		public function get paused():Boolean{
 			return _paused;
@@ -369,20 +382,20 @@ package com.luaye.console {
 			
 			if(_repeating > 0) _repeating--;
 			
-			var om:Object;
-			var graphsList:Array;
-			if(!_paused){
-				if(_mm!=null){
-					var arr:Array = _mm.update();
-					if(arr.length>0){
-						report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
-						if(!_mm.haveItemsWatching) _mm = null;
-					}
+			if(_mm!=null){
+				var arr:Array = _mm.update();
+				if(arr.length>0){
+					report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
+					if(!_mm.haveItemsWatching) _mm = null;
 				}
-				om = _om.update();
-				if(!_remoter.isRemote) graphsList = _graphing.update(stage?stage.frameRate:0);
-				_remoter.update(graphsList);
 			}
+			var graphsList:Array, om:Object;
+			if(!_remoter.isRemote){
+			 	om = _om.update();
+			 	graphsList = _graphing.update(stage?stage.frameRate:0);
+			}
+			_remoter.update(graphsList, om);
+			
 			// VIEW UPDATES ONLY
 			if(visible && parent!=null){
 				if(alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && moveTopAttempts>0){
@@ -392,8 +405,8 @@ package com.luaye.console {
 				}
 				_panels.mainPanel.update(!_paused && _lineAdded);
 				_panels.update(_paused, _lineAdded);
-				if(om != null) _panels.updateObjMonitors(om);
-				if(graphsList) _panels.updateGraphs(graphsList); 
+				if(!_paused && om != null) _panels.updateObjMonitors(om);
+				if(graphsList != null) _panels.updateGraphs(graphsList, !_paused); 
 				_lineAdded = false;
 			}
 		}
@@ -463,6 +476,7 @@ package com.luaye.console {
 			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL) channel = DEFAULT_CHANNEL;
 			if(priority >= autoStackPriority && stacks<0) stacks = defaultStackDepth;
+			if(skipSafe) stacks = -1;
 			var stackArr:Array = stacks>0?getStack(stacks):null;
 			
 			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
