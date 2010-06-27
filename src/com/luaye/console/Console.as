@@ -469,11 +469,10 @@ package com.luaye.console {
 			return _traceCall;
 		}
 		public function report(obj:*,priority:Number = 0, skipSafe:Boolean = true):void{
-			addLine(obj, priority, CONSOLE_CHANNEL, false, skipSafe, 0);
+			addLine(castString(obj), priority, CONSOLE_CHANNEL, false, skipSafe, 0);
 		}
-		public function addLine(obj:*,priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
+		public function addLine(txt:String, priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
 			var isRepeat:Boolean = (isRepeating && _repeating > 0);
-			var txt:String = (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 			if(!channel || channel == GLOBAL_CHANNEL) channel = DEFAULT_CHANNEL;
 			if(priority >= autoStackPriority && stacks<0) stacks = defaultStackDepth;
 			if(skipSafe) stacks = -1;
@@ -572,13 +571,13 @@ package com.luaye.console {
 			if(channel is String) chn = channel as String;
 			else if(channel) chn = Utils.shortClassName(channel);
 			else chn = DEFAULT_CHANNEL;
-			addLine(newLine,priority,chn, isRepeating);
+			addLine(castString(newLine), priority,chn, isRepeating);
 		}
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(newLine,priority, DEFAULT_CHANNEL, isRepeating);
+			addLine(castString(newLine), priority, DEFAULT_CHANNEL, isRepeating);
 		}
 		public function stack(newLine:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
-			addLine(newLine,priority, ch, false, false, depth>=0?depth:defaultStackDepth);
+			addLine(castString(newLine), priority, ch, false, false, depth>=0?depth:defaultStackDepth);
 		}
 		public function log(...args):void{
 			addLine(joinArgs(args), LOG_LEVEL);
@@ -617,10 +616,17 @@ package com.luaye.console {
 			ch(channel, joinArgs(args), FATAL_LEVEL);
 		}
 		private function joinArgs(args:Array):String{
-			for(var X:String in args){
-				if(args[X] is XML || args[X] is XMLList) args[X] = args[X].toXMLString();
+			var str:String = "";
+			var len:int = args.length;
+			for(var i:int = 0; i < len; i++){
+				// need to spifically cast to string to produce correct results
+				// example arg.join produces null/undefined values to "".
+				str += (args[i] is XML || args[i] is XMLList)?args[i].toXMLString():String(args[i]);
 			}
-			return args.join(" ");
+			return str;
+		}
+		private function castString(obj:*):String{
+			return (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 		}
 		//
 		//

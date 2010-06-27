@@ -26,7 +26,6 @@
 package com.luaye.console.view {
 	import com.luaye.console.Ch;
 	import com.luaye.console.Console;
-	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.vos.Log;
 	import com.luaye.console.vos.Logs;
 
@@ -195,7 +194,7 @@ package com.luaye.console.view {
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
 			
-			master.cl.addEventListener(CommandLine.CHANGED_SCOPE, onUpdateCommandLineScope, false, 0, true);
+			master.cl.addEventListener(Event.CHANGE, onUpdateCommandLineScope, false, 0, true);
 		}
 		public function addMenuKey(key:String):void{
 			_extraMenuKeys.push(key);
@@ -667,6 +666,12 @@ package com.luaye.console.view {
 		//
 		// COMMAND LINE
 		//
+		public function clearCommandLineHistory():void
+		{
+			_commandsHistory.splice(0);
+			_commandsInd = -1;
+			master.ud.commandLineHistoryChanged();
+		}
 		private function commandKeyDown(e:KeyboardEvent):void{
 			e.stopPropagation();
 		}
@@ -678,20 +683,22 @@ package com.luaye.console.view {
 					requestLogin(false);
 				}else{
 					var txt:String = _commandField.text;
-					master.runCommand(txt);
-					var i:int = _commandsHistory.indexOf(txt);
-					while(i>=0){
-						_commandsHistory.splice(i,1);
-						i = _commandsHistory.indexOf(txt);
+					if(txt.length > 2){
+						var i:int = _commandsHistory.indexOf(txt);
+						while(i>=0){
+							_commandsHistory.splice(i,1);
+							i = _commandsHistory.indexOf(txt);
+						}
+						_commandsHistory.unshift(txt);
+						_commandsInd = -1;
+						// maximum 20 commands history
+						if(_commandsHistory.length>20){
+							_commandsHistory.splice(20);
+						}
+						master.ud.commandLineHistoryChanged();
 					}
-					_commandsHistory.unshift(txt);
-					_commandsInd = -1;
 					_commandField.text = "";
-					// maximum 20 commands history
-					if(_commandsHistory.length>20){
-						_commandsHistory.splice(20);
-					}
-					master.ud.commandLineHistoryChanged();
+					master.runCommand(txt);
 				}
 			}if( e.keyCode == Keyboard.ESCAPE){
 				if(stage) stage.focus = null;

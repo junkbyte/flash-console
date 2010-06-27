@@ -23,6 +23,7 @@
 * 
 */
 package com.luaye.console.view {
+	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.Console;
 
 	import flash.events.TextEvent;
@@ -109,7 +110,7 @@ package com.luaye.console.view {
 				_txtField.mouseEnabled = false;
 				master.monitorOut(id);
 			}else if(e.text.substring(0,2) == "n_"){
-				master.panels.mainPanel.commandLineText = "$monObj('"+id+"')."+e.text.substring(2);
+				master.panels.mainPanel.commandLineText = "$"+CommandLine.MONITORING_OBJ_KEY+"('"+id+"')."+e.text.substring(2);
 			}else if(e.text.substring(0,2) == "o_"){
 				_hasPrevious = true;
 				_txtField.mouseEnabled = false;

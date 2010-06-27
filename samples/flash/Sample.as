@@ -61,7 +61,6 @@ package {
 			// End of setup
 			//
 			
-			//
 			// BASICS
 			//
 			C.info("Hello world.");
