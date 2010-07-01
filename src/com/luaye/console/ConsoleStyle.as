@@ -76,11 +76,11 @@ package com.luaye.console {
 		/** Color of log priority level 0.*/
 		public var priority0:uint = 0x336633;
 		/** Color of log priority level 1. C.log(...)*/
-		public var priority1:uint = 0x33AA33;
+		public var priority1:uint = 0x44BB44;
 		/** Color of log priority level 2. */
 		public var priority2:uint = 0x77D077;
 		/** Color of info log priority level 3. C.info(...) */
-		public var priority3:uint = 0xAAEEAA;
+		public var priority3:uint = 0xA0E0A0;
 		/** Color of log priority level 4. */
 		public var priority4:uint = 0xD6FFD6;
 		/** Color of debug log priority level 5. C.debug(...) */

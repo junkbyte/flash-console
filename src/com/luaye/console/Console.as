@@ -23,6 +23,9 @@
 * 
 */
 package com.luaye.console {
+	import flash.events.ErrorEvent;
+	import flash.display.LoaderInfo;
+	import flash.events.IEventDispatcher;
 	import com.luaye.console.core.CommandLine;
 	import com.luaye.console.core.CommandTools;
 	import com.luaye.console.core.Graphing;
@@ -160,6 +163,9 @@ package com.luaye.console {
 		}
 		private function stageAddedHandle(e:Event=null):void{
 			if(_cl.base == null) _cl.base = parent;
+			if(loaderInfo){
+				listenUncaughtErrors(loaderInfo);
+			}
 			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
@@ -187,6 +193,32 @@ package com.luaye.console {
 			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			_cl.destory();
 		}
+		
+		// requires flash player target to be 10.1
+		public function listenUncaughtErrors(loaderinfo:LoaderInfo):void {
+			try{
+				var uncaughtErrorEvents:IEventDispatcher = loaderinfo["uncaughtErrorEvents"];
+				if(uncaughtErrorEvents){
+					uncaughtErrorEvents.addEventListener("uncaughtError", uncaughtErrorHandle, false, 0, true);
+				}
+			}catch(err:Error){
+				// seems uncaughtErrorEvents is not avaviable on this player/target, which is fine.
+			}
+		}
+		private function uncaughtErrorHandle(e:Event):void{
+			var error:Object = e["error"];
+			var str:String;
+			if (error is Error){
+				str = Error(error).message;
+			}else if (error is ErrorEvent){
+				str = ErrorEvent(error).text;
+			}else{
+				str = error.toString();
+			}
+			report(str, FATAL_LEVEL, false);
+		}
+		
+		
 		
 		public function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
 			if(obj == null) {
@@ -621,7 +653,7 @@ package com.luaye.console {
 			for(var i:int = 0; i < len; i++){
 				// need to spifically cast to string to produce correct results
 				// example arg.join produces null/undefined values to "".
-				str += (args[i] is XML || args[i] is XMLList)?args[i].toXMLString():String(args[i]);
+				str += (i?" ":"")+((args[i] is XML || args[i] is XMLList)?args[i].toXMLString():String(args[i]));
 			}
 			return str;
 		}

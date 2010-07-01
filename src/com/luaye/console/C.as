@@ -70,6 +70,7 @@
 		C.isRemote = true; // (default: false) set to recieve broadcasts from LocalConnection remote
 */
 package com.luaye.console {
+	import flash.display.LoaderInfo;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
@@ -371,6 +372,17 @@ package com.luaye.console {
 				_console.clear(channel);
 			}
 		}
+		
+		/**
+		 * Listen for uncaught errors from loaderInfo instance
+		 * @param  loaderInfo instance that can dispatch errors
+		 */
+		public static function listenUncaughtErrors(loaderinfo:LoaderInfo):void{
+			if(_console){
+				_console.listenUncaughtErrors(loaderinfo);
+			}
+		}
+		
 		/**
 		 * Accessor for currently viewing channels.
 		 * <p>

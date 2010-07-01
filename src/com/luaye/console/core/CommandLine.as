@@ -64,7 +64,7 @@ package com.luaye.console.core {
 			if (base) {
 				report("Set new commandLine base from "+base+ " to "+ obj, 10);
 			}else{
-				_prevScope.reference = _scope;
+				_prevScope.reference = _scope.reference;
 				_scope.reference = obj;
 				dispatchEvent(new Event(Event.CHANGE));
 			}
@@ -170,7 +170,7 @@ package com.luaye.console.core {
 			} else if (cmd == "explode") {
 				if (_scope.reference) {
 					var depth:int = Number(param);
-					_master.explode(_scope.reference, depth<=0?-1:depth);
+					_master.explode(_scope.reference, depth<=0?3:depth);
 				} else {
 					report("Empty", 10);
 				}
@@ -190,7 +190,8 @@ package com.luaye.console.core {
 				var fakeFunction:FakeFunction = new FakeFunction(run, param);
 				setReturned(fakeFunction.exec);
 			} else if (cmd == "/") {
-				setScope(_prevScope.reference?_prevScope.reference:base);
+				if(_prevScope.reference) setScope(_prevScope.reference);
+				else report("No previous scope",8);
 			} else if (cmd == "" || cmd == "scope") {
 				setScope(_saved["returned"]);
 			} else if (cmd == "autoscope") {
@@ -230,7 +231,7 @@ package com.luaye.console.core {
 				var rtext:String = String(returned);
 				// this is incase its something like XML, need to keep the <> tags...
 				rtext = rtext.replace(new RegExp("<", "gm"), "&lt;");
- 				rtext = rtext.replace(new RegExp(">", "gm"), "&gt;");
+ 				//rtext = rtext.replace(new RegExp(">", "gm"), "&gt;");
 				report("Returned "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -2);
 			}else{
 				report("Exec successful, undefined return.", -2);

@@ -32,6 +32,8 @@ package com.luaye.console {
 		private var _c:*; // because it could be Console or C. This is the cheapest way I think...
 		private var _name:String;
 		
+		public var enabled:Boolean = true;
+		
 		/**
 		 * Construct channel instance
 		 *
@@ -44,6 +46,7 @@ package com.luaye.console {
 			_c = c?c:C;
 		}
 		public function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void{
+			if(!enabled) return;
 			_c.ch(_name, str, priority, isRepeating);
 		}
 		/**
@@ -53,6 +56,7 @@ package com.luaye.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function log(...args):void{
+			if(!enabled) return;
 			_c.logch.apply(null, [_name].concat(args));
 		}
 		/**
@@ -62,6 +66,7 @@ package com.luaye.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function info(...args):void{
+			if(!enabled) return;
 			_c.infoch.apply(null, [_name].concat(args));
 		}
 		/**
@@ -71,6 +76,7 @@ package com.luaye.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function debug(...args):void{
+			if(!enabled) return;
 			_c.debugch.apply(null, [_name].concat(args));
 		}
 		/**
@@ -80,6 +86,7 @@ package com.luaye.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function warn(...args):void{
+			if(!enabled) return;
 			_c.warnch.apply(null, [_name].concat(args));
 		}
 		/**
@@ -90,6 +97,7 @@ package com.luaye.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function error(...args):void{
+			if(!enabled) return;
 			_c.errorch.apply(null, [_name].concat(args));
 		}
 		/**
@@ -100,6 +108,7 @@ package com.luaye.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function fatal(...args):void{
+			if(!enabled) return;
 			_c.fatalch.apply(null, [_name].concat(args));
 		}
 		
@@ -116,6 +125,8 @@ package com.luaye.console {
 		public function clear():void{
 			_c.clear(_name);
 		}
+		
+		
 		/* Not worth using...
 		public function set tracing(v:Boolean):void{
 			var chs:Array = _c.tracingChannels;
