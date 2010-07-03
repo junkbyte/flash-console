@@ -313,6 +313,37 @@ package com.luaye.console.view {
 		private function updateBottom():void{
 			var lines:Array = new Array();
 			var linesLeft:int = Math.round(_traceField.height/master.style.traceFontSize);
+			var maxchars:int = Math.round(_traceField.width*2/master.style.traceFontSize);
+			
+			var line:Log = _lines.last;
+			while(line){
+				if(lineShouldShow(line)){
+					var numlines:int = Math.ceil(line.text.length/ maxchars);
+					if(linesLeft >= numlines ){
+						lines.push(makeLine(line));
+					}else{
+						line = line.clone();
+						line.text = line.text.substring(Math.max(0,line.text.length-(maxchars*linesLeft)));
+						lines.push(makeLine(line));
+						break;
+					}
+					linesLeft-=numlines;
+					if(linesLeft<=0){
+						break;
+					}
+				}
+				line = line.prev;
+			}
+			_lockScrollUpdate = true;
+			_traceField.htmlText = lines.reverse().join("");
+			_traceField.scrollV = _traceField.maxScrollV;
+			_lockScrollUpdate = false;
+			updateScroller();
+			
+			
+			
+			/*var lines:Array = new Array();
+			var linesLeft:int = Math.round(_traceField.height/master.style.traceFontSize);
 			var line:Log = _lines.last;
 			while(line){
 				if(lineShouldShow(line)){
@@ -328,7 +359,7 @@ package com.luaye.console.view {
 			_traceField.htmlText = lines.reverse().join("");
 			_traceField.scrollV = _traceField.maxScrollV;
 			_lockScrollUpdate = false;
-			updateScroller();
+			updateScroller();*/
 		}
 		private function lineShouldShow(line:Log):Boolean{
 			return (

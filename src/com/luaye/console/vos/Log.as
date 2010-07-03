@@ -47,5 +47,8 @@ package com.luaye.console.vos {
 		public function toString():String{
 			return "["+c+"] " + text;
 		}
+		public function clone():Log{
+			return new Log(text, c, p, r, s);
+		}
 	}
 }

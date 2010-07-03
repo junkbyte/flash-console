@@ -121,7 +121,6 @@ package com.luaye.console {
 		private var _rollerCaptureKey:String;
 		private var _commandLineAllowed:Boolean;
 		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
-		private var _tracingChannels:Array = [];
 		private var _repeating:uint;
 		private var _lines:Logs;
 		private var _lineAdded:Boolean;
@@ -475,16 +474,6 @@ package com.luaye.console {
 		public function set viewingChannels(a:Array):void{
 			_panels.mainPanel.viewingChannels = a;
 		}
-		public function set tracingChannels(a:Array):void{
-			_tracingChannels.splice(0);
-			if(a){
-				if(a.indexOf(Console.GLOBAL_CHANNEL)>=0) a = [];
-				for each(var item:Object in a) _tracingChannels.push(item is Ch?(Ch(item).name):String(item));
-			}
-		}
-		public function get tracingChannels():Array{
-			return _tracingChannels.concat();
-		}
 		//
 		public function get tracing():Boolean{
 			return _tracing;
@@ -510,12 +499,12 @@ package com.luaye.console {
 			if(skipSafe) stacks = -1;
 			var stackArr:Array = stacks>0?getStack(stacks):null;
 			
-			if( _tracing && !isRepeat && (_tracingChannels.length==0 || _tracingChannels.indexOf(channel)>=0) ){
-				_traceCall("["+channel+"] "+(stackArr==null?txt:(txt+"\n @ "+stackArr.join("\n @ "))));
+			if( _tracing && !isRepeat ){
+				_traceCall(channel, (stackArr==null?txt:(txt+"\n @ "+stackArr.join("\n @ "))));
 			}
 			if(!skipSafe){
 				txt = txt.replace(/</gm, "&lt;");
- 				//txt = txt.replace(/>/gm, "&gt;");
+ 				txt = txt.replace(new RegExp(">", "gm"), "&gt;");
 			}
 			if(stackArr != null) {
 				var tp:int = priority;
