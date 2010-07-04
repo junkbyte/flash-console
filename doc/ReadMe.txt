@@ -6,7 +6,7 @@
 
 ==Flash Console==
 
-  * Version: 2.4 (WIP) (March 2010)
+  * Version: 2.35 (March 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.luaye.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -32,22 +32,6 @@ http://code.google.com/p/flash-console/issues/
 
 
 == Change Log ==
-
-===2.4===
-
-  * Due to security concern, CommandLine is no longer allowed by default. You must do C.commandLineAllowed = true OR C.commandLine = true (to allow and show)
-  * CommandLine: no longer auto scope to new return. Enter '/' to change scope to last returned object. Turn on auto-scoping by typing /autoscope
-  * CommandLine: /save will now save the last returned value rather than the current scope.
-  * Custom graphing is now passed into remote.
-  * Added C.explode
-  * Added C.stack
-  * Added C.autoStackPriority
-  * Added C.defaultStackDepth
-  * C.fatal will get auto stack trace by default.
-  * External trace call will have channel name as first param and the rest of text as second param
-  * Removed tracingPriorty, prefixChannelNames, tracingChannels
-  * Removed C.filterText and C.filterRegExp - use /filter in interface
-  * Removed C.gc() - use memoryMonitor - G button in interface.
 
 ===2.35===
   * Removed /strong AND C.strongRef. Must now use /savestrong individually.

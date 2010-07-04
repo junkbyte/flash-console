@@ -23,9 +23,6 @@
 * 
 */
 package com.luaye.console.core {
-	import com.luaye.console.vos.RemoteSync;
-	import com.luaye.console.vos.GraphGroup;
-	import com.luaye.console.vos.Log;
 	import com.luaye.console.Console;
 
 	import flash.events.EventDispatcher;
@@ -40,87 +37,62 @@ package com.luaye.console.core {
 		public static const CLIENT_PREFIX:String = "C";
 		
 		private var _master:Console;
+		private var _logsend:Function;
 		private var _isRemoting:Boolean;
 		private var _isRemote:Boolean;
 		private var _sharedConnection:LocalConnection;
 		private var _remoteLinesQueue:Array;
 		private var _mspfsForRemote:Array;
-		private var _delayed:int;
+		private var _remoteDelayed:int;
 		
 		private var _lastLogin:String = "";
-		private var _remotingPassword:String;
+		private var _remotingPassword:String = "";
 		private var _loggedIn:Boolean;
-		private var _canDraw:Boolean;
 		
-		public var delay:uint = 1;
+		public var remoteMem:int;
 		
-		public function Remoting(m:Console, pass:String) {
+		public function Remoting(m:Console, logsend:Function, pass:String) {
 			_master = m;
+			_logsend = logsend;
 			_remotingPassword = pass;
 		}
 		public function set remotingPassword(str:String):void{
 			_remotingPassword = str;
-			if(_isRemoting && !str) login();
 		}
 		public function addLineQueue(line:Log):void{
-			if(!(_isRemoting && _loggedIn)) return;
+			if(!_loggedIn) return;
 			_remoteLinesQueue.push(line.toObject());
 			var maxlines:int = _master.maxLines;
 			if(_remoteLinesQueue.length > maxlines && maxlines > 0 ){
 				_remoteLinesQueue.splice(0,1);
 			}
 		}
-		public function update(graphs:Array, om:Object):void{
-			if(_isRemoting){
-				if(!_loggedIn) return;
-				_delayed++;
-				if(_delayed >= delay){
-					_delayed = 0;
-					var newQueue:Array = new Array();
-					// don't send too many lines at once cause there is 50kb limit with LocalConnection.send
-					// Buffer it...
-					if(_remoteLinesQueue.length > 10){
-						newQueue = _remoteLinesQueue.splice(10);
-						// to force update next farme
-						_delayed = delay;
-					}
-					var a:Array = [];
-					for each(var ggroup:GraphGroup in graphs){
-						a.push(ggroup.toObject());
-					}
-					var vo:RemoteSync = new RemoteSync();
-					vo.lines = _remoteLinesQueue;
-					vo.graphs = a;
-					vo.cl = _master.cl.scopeString;
-					vo.om = om;
-					send("sync", vo);
-					_remoteLinesQueue = newQueue;
+		public function update(mspf:Number, sFR:Number = NaN):void{
+			_remoteDelayed++;
+			if(!_loggedIn) return;
+			_mspfsForRemote.push(mspf);
+			if(sFR){
+				// this is to try add the frames that have been lagged
+				var frames:int = Math.floor(mspf/(1000/sFR));
+				if(frames>Console.FPS_MAX_LAG_FRAMES) frames = Console.FPS_MAX_LAG_FRAMES;
+				while(frames>1){
+					_mspfsForRemote.push(mspf);
+					frames--;
 				}
-			}else if(!_master.paused){
-				_canDraw = true;
 			}
-		}
-		private function remoteSync(obj:Object):void{
-			if(!isRemote || !obj) return;
-			//_master.clear();
-			//_master.explode(obj, -1);
-			var vo:RemoteSync = RemoteSync.FromObject(obj);
-			for each( var line:Object in vo.lines){
-				if(line) _master.addLine(line.t,line.p,line.c,line.r, true);
-			}
-			try{
-				var a:Array = [];
-				for each(var o:Object in vo.graphs){
-					a.push(GraphGroup.FromObject(o));
+			if(_remoteDelayed >= _master.remoteDelay){
+				_remoteDelayed = 0;
+				var newQueue:Array = new Array();
+				// don't send too many lines at once cause there is 50kb limit with LocalConnection.send
+				// Buffer it...
+				if(_remoteLinesQueue.length > 20){
+					newQueue = _remoteLinesQueue.splice(20);
+					// to force update next farme
+					_remoteDelayed = _master.remoteDelay;
 				}
-				_master.panels.updateGraphs(a, _canDraw);
-				if(_canDraw) {
-					_master.panels.updateObjMonitors(vo.om);
-					_master.panels.mainPanel.updateCLScope(vo.cl);
-					_canDraw = false;
-				}
-			}catch(e:Error){
-				_master.report(e);
+				send("logSend", [_remoteLinesQueue, _mspfsForRemote, _master.currentMemory, _master.cl.scopeString]);
+				_remoteLinesQueue = newQueue;
+				_mspfsForRemote = [sFR?sFR:30];
 			}
 		}
 		public function send(command:String, ...args):void{
@@ -140,7 +112,7 @@ package com.luaye.console.core {
 			_mspfsForRemote = null;
 			if(newV){
 				_isRemote = false;
-				_delayed = 0;
+				_remoteDelayed = 0;
 				_mspfsForRemote = [30];
 				_remoteLinesQueue = new Array();
 				startSharedConnection();
@@ -166,10 +138,10 @@ package com.luaye.console.core {
 			}
 		}
 		private function onRemotingStatus(e:StatusEvent):void{
-			if(e.level == "error") _loggedIn = false;
+			// this will get called quite often...
 		}
 		private function onRemotingSecurityError(e:SecurityErrorEvent):void{
-			_master.report("Remoting security error.", 9);
+			_master.report("Sandbox security error.", 10);
 			printHowToGlobalSetting();
 		}
 		public function get isRemote():Boolean{
@@ -219,18 +191,10 @@ package com.luaye.console.core {
 			// just for sort of security
 			_sharedConnection.client = {
 				login:login, requestLogin:requestLogin, loginFail:loginFail, loginSuccess:loginSuccess,
-				sync:remoteSync, gc:_master.gc, fps:fpsRequest, mem:memRequest, runCommand:_master.runCommand,
-				unmonitor:_master.unmonitor, monitorIn:_master.monitorIn, monitorOut:_master.monitorOut
+				logSend:_logsend, gc:_master.gc, runCommand:_master.runCommand
 				};
 		}
-		private function fpsRequest(b:Boolean):void{
-			_master.fpsMonitor = b;
-		}
-		private function memRequest(b:Boolean):void{
-			_master.memoryMonitor = b;
-		}
 		public function loginFail():void{
-			if(!_isRemote) return;
 			_master.report("Login Failed", 10);
 			_master.panels.mainPanel.requestLogin();
 		}
@@ -238,7 +202,6 @@ package com.luaye.console.core {
 			_master.report("Login Successful", -1);
 		}
 		public function requestLogin():void{
-			if(!_isRemote) return;
 			if(_lastLogin){
 				login(_lastLogin);
 			}else{
@@ -274,19 +237,5 @@ package com.luaye.console.core {
 			}
 			_sharedConnection = null;
 		}
-		//
-		//
-		//
-		/*public static function get RemoteIsRunning():Boolean{
-			var sCon:LocalConnection = new LocalConnection();
-			try{
-				sCon.allowInsecureDomain("*");
-				sCon.connect(Console.RemotingConnectionName+REMOTE_PREFIX);
-			}catch(error:Error){
-				return true;
-			}
-			sCon.close();
-			return false;
-		}*/
 	}
 }

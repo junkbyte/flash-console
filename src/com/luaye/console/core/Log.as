@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.luaye.console.vos {
+package com.luaye.console.core {
 	
 	public class Log{
 		public var text:String;
@@ -42,13 +42,10 @@ package com.luaye.console.vos {
 			s = skipSafe;
 		}
 		public function toObject():Object{
-			return {t:text, c:c, p:p, r:r};
+			return {text:text, c:c, p:p, r:r, s:s};
 		}
 		public function toString():String{
 			return "["+c+"] " + text;
-		}
-		public function clone():Log{
-			return new Log(text, c, p, r, s);
 		}
 	}
 }

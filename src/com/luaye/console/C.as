@@ -70,7 +70,6 @@
 		C.isRemote = true; // (default: false) set to recieve broadcasts from LocalConnection remote
 */
 package com.luaye.console {
-	import flash.display.LoaderInfo;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
@@ -166,20 +165,6 @@ package com.luaye.console {
 		public static function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(_console){
 				_console.add(str,priority, isRepeating);
-			}
-		}
-		/**
-		 * Stack log
-		 *
-		 * @param  String to add
-		 * @param  The depth of stack trace
-		 * @param  Priority of line. 0-10 (optional, default: 5)
-		 * @param  Name of channel (optional)
-		 * 
-		 */
-		public static function stack(str:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
-			if(_console){
-				_console.stack(str,depth,priority, ch);
 			}
 		}
 		/**
@@ -372,18 +357,6 @@ package com.luaye.console {
 				_console.clear(channel);
 			}
 		}
-		
-		/**
-		 * Listen for uncaught errors from loaderInfo instance
-		 * Only works for flash player target 10.1 or later
-		 * @param  loaderInfo instance that can dispatch errors
-		 */
-		public static function listenUncaughtErrors(loaderinfo:LoaderInfo):void{
-			if(_console){
-				_console.listenUncaughtErrors(loaderinfo);
-			}
-		}
-		
 		/**
 		 * Accessor for currently viewing channels.
 		 * <p>
@@ -395,6 +368,34 @@ package com.luaye.console {
 		}
 		public static function set viewingChannels(v:Array):void{
 			setter("viewingChannels",v);
+		}
+		/**
+		 * Accessor for filtering text.
+		 * <p>
+		 * When set, Console will create a new channel called filtered and
+		 * show all log lines that match the param text.
+		 * 
+		 * Same as using /filter (text) in commandLine.
+		 * </p>
+		 */
+		public static function get filterText():String{
+			return getter("filterText") as String;
+		}
+		public static function set filterText(v:String):void{
+			setter("filterText",v);
+		}
+		/**
+		 * Enable/disable prefixing channel names infront of log lines.
+		 * <p>
+		 * When turned on, it shows channel names when multiple channels are visible in the same log view.
+		 * Default: true
+		 * </p>
+		 */
+		public static function get prefixChannelNames():Boolean{
+			return getter("prefixChannelNames") as Boolean;
+		}
+		public static function set prefixChannelNames(v:Boolean):void{
+			setter("prefixChannelNames",v);
 		}
 		/**
 		 * Maximum number of logs Console should remember.
@@ -413,33 +414,12 @@ package com.luaye.console {
 		 * Default = 75;
 		 * </p>
 		 */
-		public static function get maxRepeats():uint{
-			return getter("maxRepeats") as uint;
+		public static function get maxRepeats():Number{
+			return getter("maxRepeats") as Number;
 		}
-		public static function set maxRepeats(v:uint):void{
+		public static function set maxRepeats(v:Number):void{
 			setter("maxRepeats",v);
 		}
-		/**
-		 * Auto stack trace logs for this priority and above
-		 * default priortiy = 10; fatal level
-		 */
-		public static function get autoStackPriority():int{
-			return getter("autoStackPriority") as int;
-		}
-		public static function set autoStackPriority(v:int):void{
-			setter("autoStackPriority",v);
-		}
-		/**
-		 * Default stack trace depth.
-		 * default depth = 3;
-		 */
-		public static function get defaultStackDepth():int{
-			return getter("defaultStackDepth") as int;
-		}
-		public static function set defaultStackDepth(v:int):void{
-			setter("defaultStackDepth",v);
-		}
-		
 		/**
 		 * Accessor for using flash's build in (or external) trace().
 		 * <p>
@@ -454,6 +434,35 @@ package com.luaye.console {
 		}
 		public static function set tracing(v:Boolean):void{
 			setter("tracing",v);
+		}
+		/**
+		 * Accessor for channels to call trace.
+		 * <p>
+		 * When set, console will only call trace for channels that match the channel name.
+		 * set to null or empty array to trace on all channels.
+		 * C.tracing must be set to true for this to effect
+		 * </p>
+		 * @see #tracing
+		 */
+		public static function get tracingChannels():Array{
+			return getter("tracingChannels") as Array;
+		}
+		public static function set tracingChannels(v:Array):void{
+			setter("tracingChannels",v);
+		}
+		/**
+		 * Accessor for minimum priority required to call trace.
+		 * <p>
+		 * set to zero (default) to call on all priorities.
+		 * C.tracing must be set to true for this to effect
+		 * </p>
+		 * @see #tracing
+		 */
+		public static function get tracingPriority():int{
+			return getter("tracingPriority") as int;
+		}
+		public static function set tracingPriority(v:int):void{
+			setter("tracingPriority",v);
 		}
 		/**
 		 * Assign custom trace function.
@@ -646,10 +655,10 @@ package com.luaye.console {
 		 * Accessor for remoter's broadcast interval in frames.
 		 * Default = 20 
 		 */
-		public static function get remoteDelay():uint{
-			return getter("remoteDelay") as uint;
+		public static function get remoteDelay():int{
+			return getter("remoteDelay") as int;
 		}
-		public static function set remoteDelay(v:uint):void{
+		public static function set remoteDelay(v:int):void{
 			setter("remoteDelay",v);
 		}
 		/**
@@ -679,36 +688,8 @@ package com.luaye.console {
 			}
 		}
 		/**
-		 * Output an object's values.
-		 * commandLine: /inspect  OR  /inspectfull
-		 * 
-		 * @param Object to explode
-		 * @param Depth of explosion, -1 = unlimited (default)
-		 * 
-		 */
-		public static function explode(obj:Object, depth:int = 3):void {
-			if(_console){
-				_console.explode(obj,depth);
-			}
-		}
-		/**
-		 * WORK IN PROGRESS... Brings up a panel to monitor values of the object
-		 * 
-		 * @param Object to monitor
-		 * @param Depth of explosion, -1 = unlimited (default)
-		 * 
-		 */
-		public static function monitor(obj:Object, n:String = null):void {
-			// WORK IN PROGRESS
-			if(_console){
-			// WORK IN PROGRESS
-				_console.monitor(obj, n);
-			}
-			// WORK IN PROGRESS
-		}
-		/**
 		 * CommandLine UI's visibility.
-		 * When this is set to true, it will also automatically set commandLineAllowed to true.
+		 * CommandLine will still be avaviable to use through code.
 		 */
 		public static function get commandLine ():Boolean{
 			return getter("commandLine") as Boolean;
@@ -758,7 +739,7 @@ package com.luaye.console {
 		 * Print the display list map
 		 * (same as /map in commandLine)
 		 * 
-		 * @param  Display object to start mapping from
+		 * @param  Display object to start maping from
 		 * @param  (optional) maximum child depth. 0 = unlimited
 		 */
 		public static function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
@@ -802,6 +783,15 @@ package com.luaye.console {
 		public static function unwatch(n:String):void{
 			if(_console){
 				_console.unwatch(n);
+			}
+		}
+		/**
+		 * Force Garbage collect.
+		 * Requires debugger version of flash player
+		 */
+		public static function gc():void {
+			if(_console){
+				_console.gc();
 			}
 		}
 		//
@@ -930,7 +920,7 @@ package com.luaye.console {
 		/*private static function canRunWithBrowserSetup(s:Stage, setup:uint):Boolean{
 			if(setup>0 && s && (Capabilities.playerType == "PlugIn" || Capabilities.playerType == "ActiveX")){
 				var flashVars:Object = s.loaderInfo.parameters;
-				if(flashVars["allowConsole"] != "true" && (setup == 1 || (setup == 2 && !Remoting.RemoteIsRunning)) ){
+				if(flashVars["allowConsole"] != "true" && (setup == 1 || (setup == 2 && !Console.remoteIsRunning)) ){
 					return false;
 				}
 			}

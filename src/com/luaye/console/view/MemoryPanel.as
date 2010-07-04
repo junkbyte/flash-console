@@ -25,38 +25,55 @@
 
 package com.luaye.console.view {
 	import com.luaye.console.Console;
-	import com.luaye.console.vos.GraphGroup;
 
+	import flash.events.Event;
 	import flash.events.TextEvent;
 
 	public class MemoryPanel extends GraphingPanel {
+		
 		//
 		public function MemoryPanel(m:Console) {
 			super(m, 80,40);
 			name = Console.PANEL_MEMORY;
+			updateEvery = 5;
+			drawEvery = 5;
 			minimumWidth = 32;
+			//master.mm.addEventListener(MemoryMonitor.GARBAGE_COLLECTED, onGC, false, 0, true);
+			//master.mm.notifyGC = !m.isRemote;
+			add(this, "current", 0x5060FF, "Memory");
 		}
-		public override function update(group:GraphGroup, draw:Boolean = true):void{
-			super.update(group, draw);
-			updateKeyText();
+		public override function close():void {
+			super.close();
+			master.panels.updateMenu(); // should be black boxed :/
+		}
+		public function get current():Number{
+			// in MB, up to 2 decimal
+			return Math.round(master.currentMemory/10485.76)/100;
+		}
+		protected override function onFrame(e:Event):Boolean{
+			if(super.onFrame(e)){
+				updateKeyText();
+				return true;
+			}
+			return false;
 		}
 		public override function updateKeyText():void{
-			if(isNaN(_interest.v)){
-				keyTxt.htmlText = "<r><s>no mem input <menu><a href=\"event:close\">X</a></menu></s></r>";
+			var mem:Number = getCurrentOf(0);
+			if(mem>0){
+				keyTxt.htmlText =  "<r><s>"+mem.toFixed(2)+"mb <menu><a href=\"event:gc\">G</a> <a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
 			}else{
-				keyTxt.htmlText =  "<r><s>"+_interest.v.toFixed(2)+"mb <menu><a href=\"event:gc\">G</a> <a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
+				keyTxt.htmlText = "<r><s>no mem input <menu><a href=\"event:close\">X</a></menu></s></r>";
 			}
 			keyTxt.scrollH = keyTxt.maxScrollH;
 		}
 		protected override function linkHandler(e:TextEvent):void{
 			if(e.text == "gc"){
 				master.gc();
-			}else if(e.text == "close"){
-				master.memoryMonitor = false;
-			}else{
-				super.linkHandler(e);
 			}
+			super.linkHandler(e);
 		}
+		//
+		
 		protected override function onMenuRollOver(e:TextEvent):void{
 			var txt:String = e.text?e.text.replace("event:",""):null;
 			if(txt == "gc"){
@@ -64,5 +81,8 @@ package com.luaye.console.view {
 			}
 			master.panels.tooltip(txt, this);
 		}
+		/*private function onGC(e:Event):void{
+			mark(0xFF000000);
+		}*/
 	}
 }

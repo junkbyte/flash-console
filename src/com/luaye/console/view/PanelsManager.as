@@ -23,7 +23,6 @@
 * 
 */
 package com.luaye.console.view {
-	import com.luaye.console.vos.GraphGroup;
 	import com.luaye.console.Console;
 
 	import flash.events.Event;
@@ -35,18 +34,11 @@ package com.luaye.console.view {
 		
 		
 		private static const USER_GRAPH_PREFIX:String = "graph_";
-		private static const USER_OBJECTMONITOR_PREFIX:String = "objMonitor_";
 		
 		private var _master:Console;
 		private var _mainPanel:MainPanel;
 		private var _ruler:Ruler;
 		private var _channels:Array;
-		
-		private var _chsPanel:ChannelsPanel;
-		private var _fpsPanel:FPSPanel;
-		private var _memPanel:MemoryPanel;
-		private var _graphsMap:Object = {};
-		private var _objMonitors:Object = {};
 		
 		private var _tooltipField:TextField;
 		
@@ -97,110 +89,31 @@ package com.luaye.console.view {
 				if(rect.height) panel.height = rect.height;
 			}
 		}
+		//
+		//
+		//
+		public function get channelsPanel():Boolean{
+			return (getPanel(Console.PANEL_CHANNELS) as ChannelsPanel)?true:false;
+		}
+		public function set channelsPanel(b:Boolean):void{
+			if(channelsPanel != b){
+				if(b){
+					var chpanel:ChannelsPanel = new ChannelsPanel(_master);
+					chpanel.x = _mainPanel.x+_mainPanel.width-332;
+					chpanel.y = _mainPanel.y-2;
+					addPanel(chpanel);
+					chpanel.start(_channels);
+					updateMenu();
+				}else {
+					removePanel(Console.PANEL_CHANNELS);
+				}
+				updateMenu();
+			}
+		}
 		public function updateMenu():void{
 			_mainPanel.updateMenu();
 			var chpanel:ChannelsPanel = getPanel(Console.PANEL_CHANNELS) as ChannelsPanel;
 			if(chpanel) chpanel.update();
-		}
-		public function update(paused:Boolean, lineAdded:Boolean):void{
-			_mainPanel.update(!paused && lineAdded);
-			if(!paused) {
-				if(lineAdded && _chsPanel!=null){
-					_chsPanel.update();
-				}
-			}
-		}
-		public function updateGraphs(graphs:Array, draw:Boolean = true):void{
-			var usedMap:Object = {};
-			var fpsGroup:GraphGroup;
-			var memGroup:GraphGroup;
-			for each(var group:GraphGroup in graphs){
-				if(group.type == GraphGroup.TYPE_FPS) {
-					fpsGroup = group;
-				}else if(group.type == GraphGroup.TYPE_MEM) {
-					memGroup = group;
-				}else{
-					var n:String = group.name;
-					var panel:GraphingPanel = _graphsMap[n] as GraphingPanel;
-					if(!panel){
-						var rect:Rectangle = group.rect;
-						if(rect == null) rect = new Rectangle(NaN,NaN, 0, 0);
-						// TODO: somehow auto place the panel if rect is empty
-						if(isNaN(rect.x))  rect.x = _mainPanel.x+80;
-						if(isNaN(rect.y)) rect.y = _mainPanel.y+20;
-						if(rect.width<=0 || isNaN(rect.width))  rect.width = 100;
-						if(rect.height<=0 || isNaN(rect.height)) rect.height = 100;
-						panel = new GraphingPanel(_master, rect.width,rect.height);
-						panel.x = rect.x;
-						panel.y = rect.y;
-						panel.name = USER_GRAPH_PREFIX+n;
-						_graphsMap[n] = panel;
-						addPanel(panel);
-					}
-					panel.update(group, draw);
-				}
-				usedMap[group.name] = true;
-			}
-			for(var X:String in _graphsMap){
-				if(!usedMap[X]){
-					_graphsMap[X].close();
-					delete _graphsMap[X];
-				}
-			}
-			//
-			//
-			if(fpsGroup != null){
-				if(_fpsPanel == null){
-					_fpsPanel = new FPSPanel(_master);
-					_fpsPanel.x = _mainPanel.x+_mainPanel.width-160;
-					_fpsPanel.y = _mainPanel.y+15;
-					addPanel(_fpsPanel);
-					_mainPanel.updateMenu();
-				}
-				_fpsPanel.update(fpsGroup);
-			}else if(_fpsPanel!=null){
-				removePanel(Console.PANEL_FPS);
-				_fpsPanel = null;
-			}
-			//
-			//
-			if(memGroup != null){
-				if(_memPanel == null){
-					_memPanel = new MemoryPanel(_master);
-					_memPanel.x = _mainPanel.x+_mainPanel.width-80;
-					_memPanel.y = _mainPanel.y+15;
-					addPanel(_memPanel);
-					_mainPanel.updateMenu();
-				}
-				_memPanel.update(memGroup);
-			}else if(_memPanel!=null){
-				removePanel(Console.PANEL_MEMORY);
-				_memPanel = null;
-			}
-		}
-		public function updateObjMonitors(objs:Object):void{
-			var usedMap:Object = {};
-			for (var X:String in objs){
-				var panel:ObjMonitorPanel = _objMonitors[X] as ObjMonitorPanel;
-				if(panel == null){
-					panel = new ObjMonitorPanel(_master);
-					//TODO: better placing.
-					panel.x = 200;
-					panel.y = 200;
-					panel.id = X;
-					panel.name = USER_OBJECTMONITOR_PREFIX+X;
-					_objMonitors[X] = panel;
-					addPanel(panel);
-				}
-				panel.update(objs[X]);
-				usedMap[X] = true;
-			}
-			for(var Z:String in _objMonitors){
-				if(!usedMap[Z]){
-					_objMonitors[Z].close();
-					delete _objMonitors[Z];
-				}
-			}
 		}
 		//
 		//
@@ -225,33 +138,76 @@ package com.luaye.console.view {
 		//
 		//
 		//
-		public function get channelsPanel():Boolean{
-			return _chsPanel!=null;
+		public function get fpsMonitor():Boolean{
+			return (getPanel(Console.PANEL_FPS) as FPSPanel)!=null;
 		}
-		public function set channelsPanel(b:Boolean):void{
-			if(channelsPanel != b){
+		public function set fpsMonitor(b:Boolean):void{
+			if(fpsMonitor != b){
 				if(b){
-					_chsPanel = new ChannelsPanel(_master);
-					_chsPanel.x = _mainPanel.x+_mainPanel.width-332;
-					_chsPanel.y = _mainPanel.y-2;
-					addPanel(_chsPanel);
-					_chsPanel.start(_channels);
-					updateMenu();
+					var fps:FPSPanel = new FPSPanel(_master);
+					fps.x = _mainPanel.x+_mainPanel.width-160;
+					fps.y = _mainPanel.y+15;
+					addPanel(fps);
 				}else {
-					removePanel(Console.PANEL_CHANNELS);
-					_chsPanel = null;
+					removePanel(Console.PANEL_FPS);
 				}
-				updateMenu();
+				_mainPanel.updateMenu();
 			}
 		}
 		//
 		//
 		//
 		public function get memoryMonitor():Boolean{
-			return _memPanel!=null;
+			return (getPanel(Console.PANEL_MEMORY) as MemoryPanel)!=null;
 		}
-		public function get fpsMonitor():Boolean{
-			return _fpsPanel!=null;
+		public function set memoryMonitor(b:Boolean):void{
+			if(memoryMonitor != b){
+				if(b){
+					var mp:MemoryPanel = new MemoryPanel(_master);
+					mp.x = _mainPanel.x+_mainPanel.width-80;
+					mp.y = _mainPanel.y+15;
+					addPanel(mp);
+				}else {
+					removePanel(Console.PANEL_MEMORY);
+				}
+				_mainPanel.updateMenu();
+			}
+		}
+		//
+		//
+		//
+		public function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
+			n = USER_GRAPH_PREFIX+n;
+			var graph:GraphingPanel = getPanel(n) as GraphingPanel;
+			if(!graph){
+				graph = new GraphingPanel(_master, 100,100);
+				graph.x = _mainPanel.x + 80;
+				graph.y = _mainPanel.y + 20;
+				graph.name = n;
+			}
+			if(rect){
+				graph.x = rect.x;
+				graph.y = rect.y;
+				if(rect.width>0)
+					graph.width = rect.width;
+				if(rect.height>0)
+					graph.height = rect.height;
+			}
+			if(inverse) graph.inverse = true; // one way setting
+			graph.add(obj,prop,col, key);
+			addPanel(graph);
+		}
+		public function fixGraphRange(n:String, min:Number = NaN, max:Number = NaN):void{
+			var graph:GraphingPanel = getPanel(USER_GRAPH_PREFIX+n) as GraphingPanel;
+			if(graph){
+				graph.fixRange(min, max);
+			}
+		}
+		public function removeGraph(n:String, obj:Object = null, prop:String = null):void{
+			var graph:GraphingPanel = getPanel(USER_GRAPH_PREFIX+n) as GraphingPanel;
+			if(graph){
+				graph.remove(obj, prop);
+			}
 		}
 		//
 		//
@@ -340,5 +296,6 @@ package com.luaye.console.view {
 				target.registerSnaps(X, Y);
 			}
 		}
+		
 	}
 }

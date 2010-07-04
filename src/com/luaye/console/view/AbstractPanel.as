@@ -50,7 +50,7 @@ package com.luaye.console.view {
 		private var _snaps:Array;
 		private var _dragOffset:Point;
 		private var _resizeTxt:TextField;
-		//
+		
 		protected var master:Console;
 		protected var style:ConsoleStyle;
 		protected var bg:Sprite;

@@ -73,14 +73,13 @@ package com.luaye.console.utils {
 			// This way is more light weight but not as accurate.
 			return current+((addition-current)/over);
 		}
+		public static function replaceByIndexes(str:String, replace:String, start:int, end:int):String {
+			return str.substring(0,start)+replace+str.substring(end);
+		}
 		public static function shortClassName(cls:Object):String{
 			var str:String = getQualifiedClassName(cls);
 			var ind:int = str.lastIndexOf("::");
 			return str.substring(ind>=0?(ind+2):0);
-		}
-		public static function HaveItemsInObject(o:Object):Boolean{
-			for (var X:Object in o) return true;
-			return false;
 		}
 	}
 }

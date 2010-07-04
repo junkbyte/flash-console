@@ -23,8 +23,7 @@
 * 
 */
 package com.luaye.console.core {
-	import com.luaye.console.utils.Utils;
-	import com.luaye.console.vos.WeakObject;
+	import com.luaye.console.utils.WeakObject;
 	import com.luaye.console.Console;
 
 	import flash.display.DisplayObject;
@@ -221,48 +220,6 @@ package com.luaye.console.core {
 				report("Tip: use /inspectfull to see full inspection with inheritance",-1);
 			}
 		}
-		public static function explode(obj:Object, depth:int = 3, p:int = 9):String{
-			var t:String = typeof obj;
-			if(t != "object" || depth == 0){
-				if(t == "string"){
-					return "<p-2>\""+String(obj)+"\"</p-2>";
-				}else if(t == "xml"){
-					return "<p-2>"+obj.toXMLString()+"</p-2>";
-				}else{
-					return "<p-2>"+obj+"</p-2>";
-				}
-			}else if(obj == null){ 
-				// could be null, undefined, NaN, etc. all should be printed as is
-				return "<p-2>"+obj+"</p-2>";
-			}
-			if(p<0) p = 0;
-			var V:XML = describeType(obj);
-			var nodes:XMLList, n:String;
-			var list:Array = [];
-			//
-			nodes = V.accessor;
-			for each (var accessorX:XML in nodes) {
-				if(accessorX.@access!="writeonly"){
-					n = accessorX.@name;
-					try{
-						list.push(n+":"+explode(obj[n], depth-1, p-1));
-					}catch(e:Error){}
-				}
-			}
-			//
-			nodes = V.variable;
-			for each (var variableX:XML in nodes) {
-				n = variableX.@name;
-				list.push(n+":"+explode(obj[n], depth-1, p-1));
-			}
-			//
-			try{
-				for (var X:String in obj) {
-					list.push(X+":"+explode(obj[X], depth-1, p-1));
-				}
-			}catch(e:Error){}
-			return "<p"+p+">{"+Utils.shortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
-		}
 		private function makeInheritLine(props:Array, props2:Array, viewAll:Boolean, type:String, breaker:String):void{
 			var str:String = "";
 			if(props.length || props2.length){
@@ -385,7 +342,6 @@ package com.luaye.console.core {
 			report("/stored = list all stored variables",5);
 			report("/inspect = get info of your current scope.",5);
 			report("/inspectfull = get more detailed info of your current scope.",5);
-			report("/explode = get properties and values of current scope.",5);
 			report("/map = get the display list map starting from your current scope",5);
 			report("/string = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.",5);
 			report("Press up/down arrow keys to recall previous commands",2);

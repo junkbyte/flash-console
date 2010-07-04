@@ -23,7 +23,6 @@
 * 
 */
 package {
-	import com.luaye.console.vos.Log;
 	import com.luaye.console.ConsoleStyle;
 	import com.luaye.console.C;
 	import flash.geom.Rectangle;	
@@ -41,8 +40,8 @@ package {
 		
 		public function Sample() {
 			//
-			// SET UP - only required once
-			//
+			// SET UP
+			
 			var style:ConsoleStyle = new ConsoleStyle(); // optional.
 			//style.big(); // BIG text
 			//style.whiteBase(); // Black on white
@@ -55,12 +54,11 @@ package {
 			C.width = 640;
 			C.height = 220;
 			C.maxLines = 2000;
-			C.remotingPassword = null; // Just so that remote don't ask for password
+			C.fpsMonitor = true;
 			C.remoting = true;
+			C.displayRoller = true;
+			C.remotingPassword = null; // Just so that remote don't ask for password
 			//
-			// End of setup
-			//
-			
 			// BASICS
 			//
 			C.info("Hello world.");
@@ -127,29 +125,6 @@ package {
 			// End of console related sample
 			//
 			setupUI();
-			var o:Log = new Log("test", "ch1", 5);
-			//o.dynamicProp = "some dynamic property";
-			o.prev = new Log("Previous log", "ch0", 1);
-			
-			C.explode(["a","b","c",{o1:{o2:{o3:{}}}}, o]);
-			
-			a();
-			C.monitor(C.instance);
-		}
-		private function a():void{
-			b();
-		}
-		private function b():void{
-			c();
-		}
-		private function c():void{
-			d();
-		}
-		private function d():void{
-			e();
-		}
-		private function e():void{
-			C.stack("HELLO");
 		}
 		private function setupUI():void{
 			TextField(txtPriority).restrict = "0-9";

@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.luaye.console.vos {
+package com.luaye.console.utils {
 	import flash.utils.Dictionary;
 	
 	public class WeakRef{
