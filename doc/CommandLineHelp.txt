@@ -6,7 +6,7 @@
 == Introduction ==
   * Command line lets you execute ActionScript3 code during run-time (on the fly)...
   * It uses the same syntax as actionscript
-  * As there is only one line at a time, CommandLine have to rely on 'scoping'. i.e, the scope changes every time there is new object returned. - your next line of code will be applied to that new scope object.
+  * As there is only one line at a time, CommandLine have to rely on 'scoping'. i.e, Your line of code is applied to your current scope.
   * Most AS3 syntax is supported. Currently do NOT support: for (loops), if (statements), namespaces,...
 
 === Example Uses ===
@@ -34,8 +34,7 @@
 
 ==== Basics ====
   * For this tutorial, we will use the sample flash provided in download or found online at: http://www.luaye.com/flash_console/. 
-  * The document class file is located at build/classes/Sample.as
-  * For clearer view of the tutorial, it is recommended to close the FPS monitor by pressing the X at the top right corner of the mini panel.
+  * The document class file is located at samples/flash/Sample.as
 
   * Command line starts with its parent display as the first scope (by default). You should see 'Stage' on the left of commandLine at the moment, meaning the stage is your current scope. If you write:
 {{{
@@ -70,9 +69,13 @@ OR
 {{{
 getChildByName('root1')
 }}} 
+  * You should see it returned "Sample: [object Sample]"
+  * Note that you can not write 'this.root1' in this case because Stage is not a dynamic class...
+  * To change your scope to this retrurned object, type:
+{{{
+/
+}}} 
   * You should see that the scope name on the left of commandLine is now changed to 'Sample'.
-  * You can also tell from the '+' sign on the line `[C] + Returned Sample ...` - this means the scope have changed.
-  * Note that you can not write 'this.root1' in this case because Stage is not a dynamic class... (but the document class Sample is)
   * If you do /inspect again you should get slightly different results this time.
 {{{
 /inspect
@@ -87,7 +90,10 @@ OR
 {{{
 getChildByName('mcBunny')
 }}} 
-  * Now you have changed scope to the bunny MovieClip.
+  * To change your scope to bunny MovieClip:
+{{{
+/
+}}} 
   * Lets demonstrate another command, /map - which maps the display list of your current scope.
 {{{
 /map
@@ -96,11 +102,12 @@ getChildByName('mcBunny')
   * You can click on any of the names in the log to change to the scope of that displayObject.
   * Lets go to the head, *click on 'head (sample_fla::bunnyHead_6)'* - near the bottom. OR just type: 
 {{{
+// alternatively type:
 head
+/
 }}} 
-  * it should return
-{{{
- + Returned sample_fla::bunnyHead_6: [object bunnyHead_6]
+  * it should say "Returned sample_fla::bunnyHead_6: [object bunnyHead_6]"
+  * Scope should now also be changed to bunnyHead_6 automatically
 }}}
   * The head have animation on the timeline, so you can play it.
 {{{
@@ -117,16 +124,24 @@ name
 }}}
   * You should see that it is the clip 'mcBunny'.
   * For easy access to the bunny clip from console you can save it into command line's variables.
+  * First you need to return to object reference first by typing "this":
 {{{
-/store bunny
+this
+}}}
+  * If you did not call this first, you will be saving the last returned String: 'mcBunny'.
+{{{
+/save bunny
 }}}
   * This way, where ever your scope is, you can refer to this clip by typing $bunny.
   * like wise, your base command line scope (Stage in this example) is automatically saved as $base.
   * Storing is not only limited to displays, you can store anything, including class references, functions, etc..
   * In source code, you can use `C.store(<name>, <object>)` to store variables to Console.
-  * so typing the line below will get you back to Stage as scope.
+  * so typing the 2 line below will get you back to Stage as scope.
 {{{
 $base
+}}}
+{{{
+/
 }}}
   * for demonstration purposes, what about move the mcBunny clip around... 
   * remember your scope is stage at the moment so referring to bunny clip is required here.
@@ -147,7 +162,7 @@ $bunny.stopDrag()
   * It is not just those functions and properties, you can call ANY public properties and method of $bunny.
   * You can even do addEventListener... But ofc you'll need a function that accept events... 
 
-*Optional Example*: you could generate event logs on MOUSE_MOVE events of the bunny.
+For example, you could generate event logs on MOUSE_MOVE events of the bunny.
 {{{
 $bunny.addEventListener('mouseMove', $C.log)
 }}}
@@ -156,7 +171,6 @@ To stop:
 {{{
 $bunny.removeEventListener('mouseMove', $C.log)
 }}}
-Potentially, this means you can re-assign your event listeners on the fly.
 
 === Static classes/singletons ===
   * To access class singletons, you need to write the full path, as there is no room for 'import' syntax in a single line.
@@ -167,7 +181,7 @@ com.luaye.console.C
   * Command line should resolve it as a class definition reference and return.
   * If you do `/inspect` on this return, you will see that all of the properties and methods have a prefix [static] in them, because they are...
 
-*Optional*: As another static class example, you could hide the mouse by typing:
+As another static class example, you could hide the mouse by typing:
 {{{
 flash.ui.Mouse.hide()
 }}}
@@ -191,7 +205,8 @@ new com.luaye.console.Console()
 /storestrong myC
 }}}
   * The reason to use `savestrong` here is because Console (by default) only store outside references as a weak reference to make sure it has minimal impact on the client's environment (unless `C.strongRef` is set).
-  * Exceptional to this, CommandLine caches your last 2 console returns as strong references to make sure it doesn't get garbage collected before you can do anything with it.
+  * Exceptional to this, CommandLine caches your last returned value as strong references to make sure it doesn't get garbage collected before you can do anything with it.
+  * This does however mean that your current scope can sometimes get garbage collected while you are still working on it - so do a /savestrong.
 
   * Console is not visible yet because it needs a parent display, so why not put it on stage...
 {{{
@@ -200,7 +215,7 @@ $base.addChild($myC)
   * You might see several lines saying Console is moved to top on both consoles. This is because 'alwaysOnTop' is enabled by default and both consoles will fight to be on top until their attempts run out.
   * Move the new console down so that you can see both. Drag it down OR code it here as beloew:
 {{{
-$myC.y = 310;
+$myC.y = 310
 }}}
   * Now that's a nightmare you got not 1 but 2 bloody annoying consoles!
   * Ok, so now this is your own console, managed by you, through another console's command line... Why not try the normal console methods:
@@ -210,7 +225,7 @@ $myC.fpsMonitor = true;
 $myC.commandLine = true;
 }}}
   * If you are not bored yet, you can even start commandLine from the new console and command the parent console using `C` - backwards!
-  * Write in the new console's command line:
+  * Write in the NEW console's command line:
 {{{
 com.luaye.console.C.fatal('STOP CONTROLLING YOUR MINION! :(')
 }}}
@@ -236,21 +251,22 @@ It is not limited to displays, it can access and execute ANY object/class.
 
 == Notes ==
   * You can do nested calls. such as, $base.getChildByName('root1').mcBunny.getChildByName($bunny.getChildAt(0).name); - etc, etc... 
-  * You can execute multiple lines of code in one go by separating with ; - however the scope can change after each line execution so you will need to write accordingly.
+  * You can execute multiple lines of code in one go by separating with ; - you will need to add '/'s to change scope as well.
 
-
-  * `/filter <text>` = filter/search logs for matching text
+  * `/` = change scope to last returned value
   * `//` = return to previous scope
-  * `/base` = return to base scope (same as typing $base)
-  * `/store <name>` = store current scope to that name (weak reference). To call back: `$<name>`
-  * `/storestrong <name>` = store current scope to that name using strong referencing (to make sure it doesn't get garbage collected). To call back: `$<name>`
+  * `/filter <text>` = filter/search logs for matching text
+  * `/base` = return to base scope (same as typing "$base;/")
+  * `/store <name>` = store last returned value to that name (weak reference). To call back: `$<name>`
+  * `/storestrong <name>` = store last returned value to that name using strong referencing (to make sure it doesn't get garbage collected). To call back: `$<name>`
   * `/stored` = list all stored variables
   * `/inspect` = get detailed info of your current scope.
-  * `/inspectfull` = get more detailed info of your current scope.
+  * `/inspectfull` = get more detailed info of your current scope
   * `/map` =  get the display list map starting from your current scope
   * `/scope` = Force change scope, If previous return was a primitive value (String / Number) scope is not changed automatically to it. Use this command if you need to force change to that scope. For example when you want to do `/save` to that return.
   * `/string` = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.
 
+  * `this` = returns current scope (as it would in normal AS);
   * `$C` = Reference to Console `com.luaye.console.Console`
   * `$base` = Reference to base (original) scope
   * `$returned` = Previously returned value (this is not always the same as `this` as previous return could be a primitive value (Number / String) which does not get scoped automatically)

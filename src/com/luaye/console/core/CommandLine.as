@@ -44,7 +44,7 @@ package com.luaye.console.core {
 		
 		private var _saved:WeakObject;
 		
-		private var _scope:WeakRef;
+		private var _scope:*;
 		private var _prevScope:WeakRef;
 		
 		private var _master:Console;
@@ -55,7 +55,7 @@ package com.luaye.console.core {
 			_master = m;
 			_tools = new CommandTools(report);
 			_saved = new WeakObject();
-			_scope = new WeakRef(m);
+			_scope = m;
 			_prevScope = new WeakRef(m);
 			_saved.set("C", m);
 			_saved.set(MONITORING_OBJ_KEY, m.om.getObject);
@@ -64,8 +64,8 @@ package com.luaye.console.core {
 			if (base) {
 				report("Set new commandLine base from "+base+ " to "+ obj, 10);
 			}else{
-				_prevScope.reference = _scope.reference;
-				_scope.reference = obj;
+				_prevScope.reference = _scope;
+				_scope = obj;
 				dispatchEvent(new Event(Event.CHANGE));
 			}
 			_saved.set("base", obj);
@@ -95,7 +95,7 @@ package com.luaye.console.core {
 			}
 		}
 		public function get scopeString():String{
-			return Utils.shortClassName(_scope.reference);
+			return Utils.shortClassName(_scope);
 		}
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
@@ -108,15 +108,23 @@ package com.luaye.console.core {
 				if(str.charAt(0) == "/"){
 					execCommand(str);
 				}else{
-					var a:Array = Executer.Execs(_scope.reference, str, _saved, RESERVED_SAVES);
-					for each(v in a) {
-						setReturned(v);
-					}
+					var exe:Executer = new Executer();
+					exe.addEventListener(Event.COMPLETE, onExecLineComplete, false, 0, true);
+					v = exe.exec(_scope, str, _saved, RESERVED_SAVES);
 				}
 			}catch(e:Error){
 				reportError(e);
 			}
 			return v;
+		}
+		private function onExecLineComplete(e:Event):void{
+			var exe:Executer = e.currentTarget as Executer;
+			if(_scope == exe.scope) setReturned(exe.returned);
+			else if(exe.scope == exe.returned) setReturned(exe.scope, true);
+			else {
+				setReturned(exe.returned);
+				setReturned(exe.scope, true);
+			}
 		}
 		private function execCommand(str:String):void{
 			var brk:int = str.indexOf(" ");
@@ -127,24 +135,21 @@ package com.luaye.console.core {
 				_tools.printHelp();
 			} else if (cmd == "remap") {
 				// this is a special case... no user will be able to do this command
-				setScope(_tools.reMap(param, _master.stage));
+				setReturned(_tools.reMap(param, _master.stage), true);
 			} else if (cmd == "save" || cmd == "store" || cmd == "savestrong" || cmd == "storestrong") {
-				if (_saved[RETURNED_KEY]) {
+				if (_scope) {
 					param = param.replace(/[^\w]/g, "");
 					if(!param){
 						report("ERROR: Give a name to save.",10);
 					}else{
-						store(param, _saved[RETURNED_KEY], (cmd == "savestrong" || cmd == "storestrong"));
+						store(param, _scope, (cmd == "savestrong" || cmd == "storestrong"));
 					}
 				} else {
 					report("Nothing to save", 10);
 				}
 			} else if (cmd == "string") {
-				report("String with "+param.length+" chars stored. Use /save <i>(name)</i> to save.", -2);
-				if(_autoScope) setScope(param);
-				else setReturned(param);
-				//_scope = param;
-				//dispatchEvent(new Event(Event.CHANGE));
+				report("String with "+param.length+" chars entered. Use /save <i>(name)</i> to save.", -2);
+				setReturned(param, true);
 			} else if (cmd == "saved" || cmd == "stored") {
 				report("Saved vars: ", -1);
 				var sii:uint = 0;
@@ -161,28 +166,28 @@ package com.luaye.console.core {
 			} else if (cmd == "filterexp" || cmd == "searchexp") {
 				_master.filterRegExp = new RegExp(param, "i");
 			} else if (cmd == "inspect" || cmd == "inspectfull") {
-				if (_scope.reference) {
+				if (_scope) {
 					var viewAll:Boolean = (cmd == "inspectfull")? true: false;
-					inspect(_scope.reference, viewAll);
+					inspect(_scope, viewAll);
 				} else {
 					report("Empty", 10);
 				}
 			} else if (cmd == "explode") {
-				if (_scope.reference) {
+				if (_scope) {
 					var depth:int = Number(param);
-					_master.explode(_scope.reference, depth<=0?3:depth);
+					_master.explode(_scope, depth<=0?3:depth);
 				} else {
 					report("Empty", 10);
 				}
 			} else if (cmd == "monitor") {
-				if (_scope.reference) {
-					_master.monitor(_scope.reference, param);
+				if (_scope) {
+					_master.monitor(_scope, param);
 				} else {
 					report("Empty", 10);
 				}
 			} else if (cmd == "map") {
-				if (_scope.reference) {
-					map(_scope.reference as DisplayObjectContainer, int(param));
+				if (_scope) {
+					map(_scope as DisplayObjectContainer, int(param));
 				} else {
 					report("Empty", 10);
 				}
@@ -190,49 +195,53 @@ package com.luaye.console.core {
 				var fakeFunction:FakeFunction = new FakeFunction(run, param);
 				setReturned(fakeFunction.exec);
 			} else if (cmd == "/") {
-				if(_prevScope.reference) setScope(_prevScope.reference);
+				if(_prevScope.reference) setReturned(_prevScope.reference, true);
 				else report("No previous scope",8);
 			} else if (cmd == "" || cmd == "scope") {
-				setScope(_saved["returned"]);
+				setReturned(_saved["returned"], true);
 			} else if (cmd == "autoscope") {
 				_autoScope = !_autoScope;
 				report("Auto-scoping <b>"+(_autoScope?"enabled":"disabled")+"</b>.",10);
 			} else if (cmd == "clearhistory") {
 				_master.panels.mainPanel.clearCommandLineHistory();
 			} else if (cmd == "base") {
-				setScope(base);
+				setReturned(base, true);
 			} else{
 				report("Undefined command <b>/help</b> for info.",10);
 			}
 		}
-		private function setScope(newscope:*):void
-		{
-			if(newscope && _scope.reference !== newscope)
-			{
-				_prevScope.reference = _scope.reference;
-				_scope.reference = newscope;
-				setReturned(newscope);
-				dispatchEvent(new Event(Event.CHANGE));
-			}
-		}
-		private function setReturned(returned:*):void{
+		private function setReturned(returned:*, changeScope:Boolean = false):void{
+			var change:Boolean = false;
 			if(returned)
 			{
 				_saved.set("returned", returned, true);
-				if(_autoScope && _scope.reference !== returned){
-					var typ:String = typeof(returned);
-					if(typ == "object" || typ=="xml"){
-						setScope(returned);
-						return;
+				if(returned !== _scope){
+					if(changeScope){
+						change = true;
+					}else if(_autoScope){
+						var typ:String = typeof(returned);
+						if(typ == "object" || typ=="xml"){
+							change = true;
+						}
+					}
+					if(change){
+						_prevScope.reference = _scope;
+						_scope = returned;
+						dispatchEvent(new Event(Event.CHANGE));
 					}
 				}
+				
 			}
 			if(returned !== undefined){
 				var rtext:String = String(returned);
 				// this is incase its something like XML, need to keep the <> tags...
 				rtext = rtext.replace(new RegExp("<", "gm"), "&lt;");
  				//rtext = rtext.replace(new RegExp(">", "gm"), "&gt;");
-				report("Returned "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -2);
+ 				if(change){
+					report("Changed to "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -1);
+ 				}else{
+					report("Returned "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -2);
+ 				}
 			}else{
 				report("Exec successful, undefined return.", -2);
 			}

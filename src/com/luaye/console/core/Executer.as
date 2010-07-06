@@ -22,32 +22,41 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.luaye.console.core {
-	public class Executer {
+package com.luaye.console.core 
+{
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.utils.getDefinitionByName;
+
+	public class Executer extends EventDispatcher{
 		
-		public static const EXE_CLASSNAMES:String = "Executer|::ExecuterExe|::ExecuterValue";
+		public static const EXE_CLASSNAMES:String = "ExecuterValue|((com.luaye.console.core)?::Executer)";
 		
-		public static function Exec(scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
-			var e:ExecuterExe = new ExecuterExe();
-			return e.exec(scope, str, saved, reserved).pop();
+		public static function Exec(_scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
+			var e:Executer = new Executer();
+			return e.exec(_scope, str, saved, reserved);
 		}
-		public static function Execs(scope:Object, str:String, saved:Object = null, reserved:Array = null):Array{
-			var e:ExecuterExe = new ExecuterExe();
-			return e.exec(scope, str, saved, reserved);
-		}
-	}
-}
-import flash.utils.getDefinitionByName;
-internal class ExecuterExe{
-	
+		
+		
 		private static const VALUE_CONST:String = "#";
 		private var _saved:Object;
 		private var _reserved:Array;
 		private var _values:Array;
-		private var _scope:*;
-		private var _returns:Array;
 		private var _running:Boolean;
+		private var _scope:*;
+		private var _returned:*;
 		
+		public function Executer(){
+			
+		}
+		public function get returned():*
+		{
+			return _returned;
+		}
+		public function get scope():*
+		{
+			return _scope;
+		}
 		// TEST CASES...
 		// com.luaye.console.C.instance.visible
 		// com.luaye.console.C.instance.addGraph('test',stage,'mouseX')
@@ -58,13 +67,12 @@ internal class ExecuterExe{
 		// getChildByName(new String('Console')).getChildByName('mainPanel').alpha = 0.5
 		// com.luaye.console.C.add('Hey how are you?');
 		// third(second(first('console'))).final(0).alpha;
-		public function exec(s:*, str:String, saved:Object = null, reserved:Array = null):Array{
+		public function exec(s:*, str:String, saved:Object = null, reserved:Array = null):*{
 			if(_running) throw new Error("CommandExec.exec() is already runnnig. Does not support loop backs.");
 			_running = true;
 			_scope = s;
 			_saved = saved;
 			_values = [];
-			_returns = [];
 			if(!_saved) _saved = new Object();
 			_reserved = reserved;
 			if(!_reserved) _reserved = [];
@@ -74,22 +82,18 @@ internal class ExecuterExe{
 				reset();
 				throw e;
 			}
-			var a:Array = _returns;
 			reset();
-			return a;
+			return _returned;
 		}
 		private function reset():void{
 			_saved = null;
 			_reserved = null;
 			_values = null;
-			_scope = null;
-			_returns = [];
 			_running = false;
 		}
 		private function _exec(str:String):void{
 			//
 			// STRIP strings - '...', "...", '', "", while ignoring \' \" etc inside.
-			
 			var strReg:RegExp = /''|""|('(.*?)[^\\]')|("(.*?)[^\\]")/;
 			var result:Object = strReg.exec(str);
 			while(result != null){
@@ -113,7 +117,12 @@ internal class ExecuterExe{
 			var lineBreaks:Array = str.split(/\s*;\s*/);
 			for each(var line:String in lineBreaks){
 				if(line.length){
-					execNest(line);
+					if(_saved["returned"] && (line == "/" || line == "/scope")){
+						_scope = _saved["returned"];
+						dispatchEvent(new Event(Event.COMPLETE));
+					}else{
+						execNest(line);
+					}
 				}
 			}
 		}
@@ -168,17 +177,9 @@ internal class ExecuterExe{
 				}
 				indOpen = line.lastIndexOf("(", indOpen-1);
 			}
-			var v:* = execOperations(line).value;
-			
-			_returns.push(v);
-			if(v != null){
-				_saved["returned"] = v;
-				var typ:String = typeof(v);
-				if(typ == "object" || typ=="xml"){
-					_scope = v;
-				}
-			}
-			return v;
+			_returned = execOperations(line).value;
+			dispatchEvent(new Event(Event.COMPLETE));
+			return _returned;
 		}
 		private function tempValue(str:String,v:*, indOpen:int, indClose:int):String{
 			//trace("tempValue", VALUE_CONST+_values.length, " = "+str);
@@ -308,9 +309,9 @@ internal class ExecuterExe{
 				var index:int = result.index;
 				var isFun:Boolean = str.charAt(index)=="(";
 				var basestr:String = ignoreWhite(str.substring(previndex, index));
-				//trace("scopestr = "+basestr+ " v.base = "+v.value);
+				//trace("_scopestr = "+basestr+ " v.base = "+v.value);
 				var newv:ExecuterValue = execValue(basestr, v.value);
-				//trace("scope = "+newv.value+"  isFun:"+isFun);
+				//trace("_scope = "+newv.value+"  isFun:"+isFun);
 				if(isFun){
 					var newbase:* = newv.value;
 					var closeindex:int = str.indexOf(")", index);
@@ -546,6 +547,7 @@ internal class ExecuterExe{
 		//private function debug(...args):void{
 		//	master.report(_master.joinArgs(args), 2, false);
 		//}
+	}
 }
 internal class ExecuterValue{
 	public var base:*;

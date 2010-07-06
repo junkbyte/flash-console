@@ -313,7 +313,7 @@ package com.luaye.console.view {
 		private function updateBottom():void{
 			var lines:Array = new Array();
 			var linesLeft:int = Math.round(_traceField.height/master.style.traceFontSize);
-			var maxchars:int = Math.round(_traceField.width*2/master.style.traceFontSize);
+			var maxchars:int = Math.round(_traceField.width*3/master.style.traceFontSize);
 			
 			var line:Log = _lines.last;
 			while(line){
