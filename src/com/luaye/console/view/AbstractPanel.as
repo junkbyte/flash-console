@@ -73,11 +73,15 @@ package com.luaye.console.view {
 			bg.graphics.beginFill(col, a);
 			var size:int = 100;
 			var roundSize:int = 100-(rounding*2);
-			bg.graphics.drawRoundRect(0, 0, size, size,rounding,rounding);
-			var grid:Rectangle = new Rectangle(rounding, rounding, roundSize, roundSize);
-			bg.scale9Grid = grid;
+			if(rounding<=0) bg.graphics.drawRect(0, 0, size, size);
+			else {
+				bg.graphics.drawRoundRect(0, 0, size, size,rounding,rounding);
+				var grid:Rectangle = new Rectangle(rounding, rounding, roundSize, roundSize);
+				bg.scale9Grid = grid;
+			}
 		}
-		public function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = 10):void{
+		public function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
+			if(rounding <0 ) rounding = style.roundBorder;
 			drawBG(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha, rounding);
 			scalable = resizable;
 			width = w;

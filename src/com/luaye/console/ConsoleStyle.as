@@ -41,6 +41,9 @@ package com.luaye.console {
 		/** Panels backround color */
 		public var backgroundColor:uint;
 		
+		/** Panels backround color */
+		public var roundBorder:int = 10;
+		
 		/** Panels background alpha */
 		public var backgroundAlpha:Number = 0.85;
 		
