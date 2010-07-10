@@ -6,7 +6,7 @@
 
 ==Flash Console==
 
-  * Version: 2.4 (WIP) (March 2010)
+  * Version: 2.4 beta (July 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above

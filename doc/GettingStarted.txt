@@ -20,7 +20,7 @@ If you want to set a keyword for console to start, assign at second parameter.
 Use letters and numbers only. Console will start hidden if you set a password (you can set `C.visible = true;` to force display console)
 You will need to type the keyword in correct sequence to show the console.
 Recommended keyword: ` or ~ or debug (remember to have keyboard short cuts disabled in flash test authoring for some keys to be captured)
-If you want to assign custom style with ConsoleStyle, pass the style object as third param.
+If you want to assign custom style or configuration, pass the modified ConsoleConfig as third param.
 
 Logging...
 
@@ -126,16 +126,8 @@ C.fpsMonitor= true;
 // It will keep logging but will stop all update processes
 C.visible = false;
 
-// disable console
-// It will stop all processes until you enable by code again
-C.enabled = false;
-
-// disable always on top (default is on)
-// when disabled console will stop from keeping it self at the top of the display list
-// this can sometimes fix some problems if you need to manage the display list
-C.alwaysOnTop = false;
 }}}
-Please see JavaDoc for more usage document.
+Please see ASDoc for more usage document.
 
 ==Others==
 If you want to start console in a custom display container, use the following:
