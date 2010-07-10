@@ -39,6 +39,7 @@ http://code.google.com/p/flash-console/issues/
   * Move a lot of 'configuration' settings from C. to ConsoleConfig (that you pass at start)
   * Due to security concern, CommandLine is no longer allowed by default. You must do C.commandLineAllowed = true OR C.commandLine = true (to allow and show)
   * CommandLine: no longer auto scope to new return. Enter '/' to change scope to last returned object. Turn on auto-scoping by typing /autoscope
+  * Very long lines are automatically split before displaying to increase speed
   * Custom graphing is now passed into remote.
   * Added C.explode
   * Added C.stack
