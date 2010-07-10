@@ -38,7 +38,6 @@ http://code.google.com/p/flash-console/issues/
   * Renamed source package name to com.junkbyte.console - to be less personal.
   * Due to security concern, CommandLine is no longer allowed by default. You must do C.commandLineAllowed = true OR C.commandLine = true (to allow and show)
   * CommandLine: no longer auto scope to new return. Enter '/' to change scope to last returned object. Turn on auto-scoping by typing /autoscope
-  * CommandLine: /save will now save the last returned value rather than the current scope.
   * Custom graphing is now passed into remote.
   * Added C.explode
   * Added C.stack
