@@ -35,16 +35,16 @@ http://code.google.com/p/flash-console/issues/
 
 ===2.4===
 
-  * Renamed source package name to com.junkbyte.console - to be less personal.
+  * Renamed source package name to com.junkbyte.console - to be less personal
+  * Move a lot of 'configuration' settings from C. to ConsoleConfig (that you pass at start)
   * Due to security concern, CommandLine is no longer allowed by default. You must do C.commandLineAllowed = true OR C.commandLine = true (to allow and show)
   * CommandLine: no longer auto scope to new return. Enter '/' to change scope to last returned object. Turn on auto-scoping by typing /autoscope
   * Custom graphing is now passed into remote.
   * Added C.explode
   * Added C.stack
-  * Added C.autoStackPriority
-  * Added C.defaultStackDepth
+  * Added C.autoStackPriority and defaultStackDepth in ConsoleConfig
   * C.fatal will get auto stack trace by default.
-  * External trace call will have channel name as first param and the rest of text as second param
+  * External trace call will have channel name as first param, log line as second param and priority as third
   * Removed tracingPriorty, prefixChannelNames, tracingChannels
   * Removed C.filterText and C.filterRegExp - use /filter in interface
   * Removed C.gc() - use memoryMonitor - G button in interface.
