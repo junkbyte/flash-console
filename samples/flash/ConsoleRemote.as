@@ -24,6 +24,7 @@
 */
 package {
 	
+	import com.luaye.console.ConsoleConfig;
 	import com.luaye.console.C;
 
 	import flash.display.*;
@@ -31,16 +32,20 @@ package {
 
 	[SWF(width='600',height='420',backgroundColor='0xCCCCCC',frameRate='30')]
 	// used to compile in flex/fdt
+	// Might want to add compile argument: -use-network=false
 	// To compile in flash, point this class as document class.
 	// comment out the metadata tag above if you are getting an error.
 	
 	public class ConsoleRemote extends MovieClip {
 
 		public function ConsoleRemote() {
-			C.start(this, "");
+			
+			var config:ConsoleConfig = new ConsoleConfig();
+			config.maxLines = 2000;
+			
+			C.start(this, "", config);
 			C.remote = true;
 			C.commandLine = true;
-			C.maxLines = 2000;
 			
 			//
 			// This is special case for remote to disable scaling and moving

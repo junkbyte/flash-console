@@ -23,13 +23,13 @@
 * 
 */
 package com.luaye.console.utils {
-	import com.luaye.console.ConsoleStyle;
+	import com.luaye.console.ConsoleConfig;
 
 	import flash.text.StyleSheet;
 	/**
 	 * @author LuAye
 	 */
-	public function GetCSSfromStyle(style:ConsoleStyle) : StyleSheet {
+	public function GetCSSfromStyle(style:ConsoleConfig) : StyleSheet {
 		var css:StyleSheet = new StyleSheet();
 		with(style){
 			css.setStyle("r",{textAlign:'right', display:'inline'});

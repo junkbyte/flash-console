@@ -23,8 +23,7 @@
 * 
 */
 package com.luaye.console.view {
-	import com.luaye.console.core.KeyBinder;
-
+	import com.luaye.console.KeyBind;
 	import flash.events.KeyboardEvent;
 
 	import com.luaye.console.Console;
@@ -94,7 +93,7 @@ package com.luaye.console.view {
 			var stg:Stage = _base.stage;
 			var str:String = "";
 			if(!dolink){
-				var key:String = master.rollerCaptureKey?KeyBinder.GetStringOfKey(master.rollerCaptureKey):"unassigned";
+				var key:String = master.rollerCaptureKey?master.rollerCaptureKey.toString():"unassigned";
 				str = "<menu> <a href=\"event:close\"><b>X</b></a></menu> Capture key: <menu><a href=\"event:capture\">"+key+"</a></menu><br/>";
 			}
 			var objs:Array = stg.getObjectsUnderPoint(new Point(stg.mouseX, stg.mouseY));
@@ -160,9 +159,9 @@ package com.luaye.console.view {
 			if(txt == "close"){
 				txt = "Close";
 			}else if(txt == "capture"){
-				var key:String = master.rollerCaptureKey;
+				var key:KeyBind = master.rollerCaptureKey;
 				if(key){
-					txt = "Unassign key ::"+KeyBinder.GetStringOfKey(key);
+					txt = "Unassign key ::"+key.toString();
 				}else{
 					txt = "Assign key";
 				}
@@ -199,7 +198,7 @@ package com.luaye.console.view {
 			if(!e.charCode) return;
 			var char:String = String.fromCharCode(e.charCode);
 			cancelCaptureKeySet();
-			master.setRollerCaptureKey(char, e.ctrlKey, e.altKey, e.shiftKey);
+			master.setRollerCaptureKey(char, e.shiftKey, e.ctrlKey, e.altKey);
 			master.panels.tooltip(null);
 		}
 	}

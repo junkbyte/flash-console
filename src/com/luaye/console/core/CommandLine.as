@@ -99,7 +99,7 @@ package com.luaye.console.core {
 		}
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
-			if(!_master.commandLineAllowed) {
+			if(!_master.config.commandLineAllowed) {
 				report("CommandLine is disabled.",10);
 				return null;
 			}

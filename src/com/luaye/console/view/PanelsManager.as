@@ -58,7 +58,7 @@ package com.luaye.console.view {
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
 			_tooltipField.multiline = true;
 			_tooltipField.background = true;
-			_tooltipField.backgroundColor = _master.style.backgroundColor;
+			_tooltipField.backgroundColor = _master.config.backgroundColor;
 			_tooltipField.styleSheet = _master.css;
 			_tooltipField.mouseEnabled = false;
 			addPanel(_mainPanel);
@@ -299,7 +299,7 @@ package com.luaye.console.view {
 				return;
 			}
 			_ruler = new Ruler();
-			_ruler.addEventListener(Ruler.EXIT, onRulerExit, false, 0, true);
+			_ruler.addEventListener(Event.COMPLETE, onRulerExit, false, 0, true);
 			_master.addChild(_ruler);
 			_ruler.start(_master);
 			_mainPanel.updateMenu();

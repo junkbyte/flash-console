@@ -31,11 +31,6 @@ package com.luaye.console.view {
 
 	public class TextScroller extends Sprite {
 		
-		public static const SCROLL_INCREMENT:String = "SCROLL_INCREMENT";
-		public static const STARTED_SCROLLING:String = "STARTED_SCROLLING";
-		public static const SCROLLED:String = "SCROLL";
-		public static const STOPPED_SCROLLING:String = "STOPPED_SCROLLING";
-		
 		private var _scroller:Sprite;
 		private var _scrolldelay:uint;
 		private var _scrolldir:int;
@@ -98,7 +93,7 @@ package com.luaye.console.view {
 		private function incScroll(i:int):void{
 			if(_field == null) {
 				targetIncrement = i;
-				dispatchEvent(new Event(SCROLL_INCREMENT));
+				dispatchEvent(new Event(Event.CHANGE));
 			}
 			else _field.scrollV += i;
 		}
@@ -131,7 +126,7 @@ package com.luaye.console.view {
 		//
 		private function onScrollerDown(e:MouseEvent):void{
 			_scrolling = true;
-			dispatchEvent(new Event(STARTED_SCROLLING));
+			dispatchEvent(new Event(Event.INIT));
 			_scroller.startDrag(false, new Rectangle(0,5, 0, (_h-40)));
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollerUp, false, 0, true);
@@ -139,7 +134,7 @@ package com.luaye.console.view {
 		}
 		private function onScrollerMove(e:MouseEvent):void{
 			if(_field==null){
-				dispatchEvent(new Event(SCROLLED));
+				dispatchEvent(new Event(Event.SCROLL));
 			}else {
 				_field.scrollV = Math.round((scrollPercent*(_field.maxScrollV-1))+1);
 			}
@@ -149,7 +144,7 @@ package com.luaye.console.view {
 			stage.removeEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove);
 			stage.removeEventListener(MouseEvent.MOUSE_UP, onScrollerUp);
 			_scrolling = false;
-			dispatchEvent(new Event(STOPPED_SCROLLING));
+			dispatchEvent(new Event(Event.COMPLETE));
 		}
 	}
 }

@@ -59,20 +59,20 @@ package com.luaye.console.view {
 			lowTxt.name = "lowestField";
 			lowTxt.mouseEnabled = false;
 			lowTxt.styleSheet = m.css;
-			lowTxt.height = master.style.menuFontSize+2;
+			lowTxt.height = master.config.menuFontSize+2;
 			addChild(lowTxt);
 			highTxt = new TextField();
 			highTxt.name = "highestField";
 			highTxt.mouseEnabled = false;
 			highTxt.styleSheet = m.css;
-			highTxt.height = master.style.menuFontSize+2;
-			highTxt.y = master.style.menuFontSize-4;
+			highTxt.height = master.config.menuFontSize+2;
+			highTxt.y = master.config.menuFontSize-4;
 			addChild(highTxt);
 			//
 			keyTxt = new TextField();
 			keyTxt.name = "menuField";
 			keyTxt.styleSheet = m.css;
-			keyTxt.height = m.style.menuFontSize+4;
+			keyTxt.height = m.config.menuFontSize+4;
 			keyTxt.y = -3;
 			keyTxt.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			registerRollOverTextField(keyTxt);
@@ -85,7 +85,7 @@ package com.luaye.console.view {
 			//
 			graph = new Shape();
 			graph.name = "graph";
-			graph.y = m.style.menuFontSize;
+			graph.y = m.config.menuFontSize;
 			addChild(graph);
 			//
 			init(W?W:100,H?H:80,resizable);
@@ -112,12 +112,12 @@ package com.luaye.console.view {
 		}*/
 		override public function set height(n:Number):void{
 			super.height = n;
-			lowTxt.y = n-master.style.menuFontSize;
+			lowTxt.y = n-master.config.menuFontSize;
 			_needRedraw = true;
 			
 			var g:Graphics = underlay.graphics;
 			g.clear();
-			g.lineStyle(1,master.style.controlColor, 0.6);
+			g.lineStyle(1,master.config.controlColor, 0.6);
 			g.moveTo(0, graph.y);
 			g.lineTo(width-startOffset, graph.y);
 			g.lineTo(width-startOffset, n);

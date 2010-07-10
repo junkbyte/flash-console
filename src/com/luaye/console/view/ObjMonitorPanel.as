@@ -44,7 +44,7 @@ package com.luaye.console.view {
 			
 			_txtField = new TextField();
 			_txtField.name = "monitorField";
-			_txtField.y = m.style.menuFontSize;
+			_txtField.y = m.config.menuFontSize;
 			_txtField.wordWrap = true;
 			_txtField.multiline = true;
 			_txtField.styleSheet = m.css;
@@ -55,7 +55,7 @@ package com.luaye.console.view {
 			_menuField = new TextField();
 			_menuField.name = "menuField";
 			_menuField.styleSheet = m.css;
-			_menuField.height = m.style.menuFontSize+6;
+			_menuField.height = m.config.menuFontSize+6;
 			_menuField.y = -2;
 			_menuField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			registerRollOverTextField(_menuField);
@@ -63,8 +63,8 @@ package com.luaye.console.view {
 			registerDragger(_menuField);
 			addChild(_menuField);
 			
-			_scroller = new TextScroller(_txtField, style.controlColor);
-			_scroller.y = style.menuFontSize;
+			_scroller = new TextScroller(_txtField, config.controlColor);
+			_scroller.y = config.menuFontSize;
 			addChild(_scroller);
 			
 			updateMenu();
@@ -77,8 +77,8 @@ package com.luaye.console.view {
 			super.width = n;
 		}
 		public override function set height(n:Number):void{
-			_scroller.height = n - style.menuFontSize-12;
-			_txtField.height = n - style.menuFontSize;
+			_scroller.height = n - config.menuFontSize-12;
+			_txtField.height = n - config.menuFontSize;
 			super.height = n;
 		}
 		private function updateMenu():void{

@@ -23,6 +23,7 @@
 * 
 */
 package com.luaye.console.core {
+	import com.luaye.console.ConsoleConfig;
 	import com.luaye.console.vos.RemoteSync;
 	import com.luaye.console.vos.GraphGroup;
 	import com.luaye.console.vos.Log;
@@ -40,6 +41,7 @@ package com.luaye.console.core {
 		public static const CLIENT_PREFIX:String = "C";
 		
 		private var _master:Console;
+		private var _config:ConsoleConfig;
 		private var _isRemoting:Boolean;
 		private var _isRemote:Boolean;
 		private var _sharedConnection:LocalConnection;
@@ -52,10 +54,9 @@ package com.luaye.console.core {
 		private var _loggedIn:Boolean;
 		private var _canDraw:Boolean;
 		
-		public var delay:uint = 1;
-		
 		public function Remoting(m:Console, pass:String) {
 			_master = m;
+			_config = _master.config;
 			_remotingPassword = pass;
 		}
 		public function set remotingPassword(str:String):void{
@@ -65,7 +66,7 @@ package com.luaye.console.core {
 		public function addLineQueue(line:Log):void{
 			if(!(_isRemoting && _loggedIn)) return;
 			_remoteLinesQueue.push(line.toObject());
-			var maxlines:int = _master.maxLines;
+			var maxlines:int = _config.maxLines;
 			if(_remoteLinesQueue.length > maxlines && maxlines > 0 ){
 				_remoteLinesQueue.splice(0,1);
 			}
@@ -74,7 +75,7 @@ package com.luaye.console.core {
 			if(_isRemoting){
 				if(!_loggedIn) return;
 				_delayed++;
-				if(_delayed >= delay){
+				if(_delayed >= _config.remoteDelay){
 					_delayed = 0;
 					var newQueue:Array = new Array();
 					// don't send too many lines at once cause there is 50kb limit with LocalConnection.send
@@ -82,7 +83,7 @@ package com.luaye.console.core {
 					if(_remoteLinesQueue.length > 10){
 						newQueue = _remoteLinesQueue.splice(10);
 						// to force update next farme
-						_delayed = delay;
+						_delayed = _config.remoteDelay;
 					}
 					var a:Array = [];
 					for each(var ggroup:GraphGroup in graphs){
@@ -124,7 +125,7 @@ package com.luaye.console.core {
 			}
 		}
 		public function send(command:String, ...args):void{
-			var target:String = Console.RemotingConnectionName+(_isRemote?CLIENT_PREFIX:REMOTE_PREFIX);
+			var target:String = _config.remotingConnectionName+(_isRemote?CLIENT_PREFIX:REMOTE_PREFIX);
 			args = [target, command].concat(args);
 			try{
 				_sharedConnection.send.apply(this, args);
@@ -147,7 +148,7 @@ package com.luaye.console.core {
 				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemotingStatus);
 				_sharedConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError);
 				try{
-					_sharedConnection.connect(Console.RemotingConnectionName+CLIENT_PREFIX);
+					_sharedConnection.connect(_config.remotingConnectionName+CLIENT_PREFIX);
 					_master.report("<b>Remoting started.</b> "+getInfo(),-1);
 					_isRemoting = true;
 					_loggedIn = checkLogin("");
@@ -183,7 +184,7 @@ package com.luaye.console.core {
 				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemoteStatus);
 				_sharedConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError);
 				try{
-					_sharedConnection.connect(Console.RemotingConnectionName+REMOTE_PREFIX);
+					_sharedConnection.connect(_config.remotingConnectionName+REMOTE_PREFIX);
 					_master.report("<b>Remote started.</b> "+getInfo(),-1);
 					var sdt:String = Security.sandboxType;
 					if(sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK){
@@ -205,7 +206,7 @@ package com.luaye.console.core {
 			}
 		}
 		private function getInfo():String{
-			return "</p5>channel:<p5>"+Console.RemotingConnectionName+" ("+Security.sandboxType+")";
+			return "</p5>channel:<p5>"+_config.remotingConnectionName+" ("+Security.sandboxType+")";
 		}
 		private function printHowToGlobalSetting():void{
 			_master.report("Make sure your flash file is 'trusted' in Global Security Settings.", -2);

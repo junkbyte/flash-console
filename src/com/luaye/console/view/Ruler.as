@@ -40,7 +40,7 @@ package com.luaye.console.view {
 	import flash.ui.Mouse;
 
 	public class Ruler extends Sprite{
-		public static const EXIT:String = "exit";
+		
 		private static const POINTER_DISTANCE:int = 12;
 		
 		private var _master:Console;
@@ -63,7 +63,7 @@ package com.luaye.console.view {
 			var p:Point = new Point();
 			p = globalToLocal(p);
 			_area = new Rectangle(-stage.stageWidth*1.5+p.x, -stage.stageHeight*1.5+p.y, stage.stageWidth*3, stage.stageHeight*3);
-			graphics.beginFill(console.style.backgroundColor, 0.2);
+			graphics.beginFill(console.config.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
@@ -71,7 +71,7 @@ package com.luaye.console.view {
 			_posTxt.name = "positionText";
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
             _posTxt.background = true;
-            _posTxt.backgroundColor = _master.style.backgroundColor;
+            _posTxt.backgroundColor = _master.config.backgroundColor;
 			_posTxt.styleSheet = console.css;
 			_posTxt.mouseEnabled = false;
 			addChild(_posTxt);
@@ -79,7 +79,7 @@ package com.luaye.console.view {
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
 			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, false, 0, true);
 			onMouseMove();
-			if(_master.rulerHidesMouse) Mouse.hide();
+			if(_master.config.rulerHidesMouse) Mouse.hide();
 			_master.report("<b>Ruler started. Click on two locations to measure.</b>", -1);
 		}
 		private function onMouseMove(e:MouseEvent = null):void{
@@ -110,7 +110,7 @@ package com.luaye.console.view {
 				graphics.drawCircle(p.x, p.y, 3);
 				_points.push(p);
 			}else if(_points.length==1){
-				if(_master.rulerHidesMouse) Mouse.show();
+				if(_master.config.rulerHidesMouse) Mouse.show();
 				removeChild(_pointer);
 				removeChild(_posTxt);
 				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
@@ -118,7 +118,7 @@ package com.luaye.console.view {
 				var p2:Point =  new Point(e.localX, e.localY);
 				_points.push(p2);
 				graphics.clear();
-				graphics.beginFill(_master.style.backgroundColor, 0.4);
+				graphics.beginFill(_master.config.backgroundColor, 0.4);
 				graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 				graphics.endFill();
 				graphics.lineStyle(1.5, 0xFF0000);
@@ -146,20 +146,20 @@ package com.luaye.console.view {
 				var h:Number = ymax.y-ymin.y;
 				var d:Number = Point.distance(p, p2);
 				//
-				var txt:TextField = makeTxtField(_master.style.highColor);
+				var txt:TextField = makeTxtField(_master.config.highColor);
 				txt.text = Utils.round(p.x,10)+","+ Utils.round(p.y,10);
 				txt.x = p.x;
 				txt.y = p.y-(ymin==p?14:0);
 				addChild(txt);
 				//
-				txt = makeTxtField(_master.style.highColor);
+				txt = makeTxtField(_master.config.highColor);
 				txt.text = Utils.round(p2.x,10)+","+ Utils.round(p2.y,10);
 				txt.x = p2.x;
 				txt.y = p2.y-(ymin==p2?14:0);;
 				addChild(txt);
 				//
 				if(w>40 || h>25){
-					txt = makeTxtField(_master.style.lowColor);
+					txt = makeTxtField(_master.config.lowColor);
 					txt.text = Utils.round(mp.x,10)+","+ Utils.round(mp.y,10);
 					txt.x = mp.x;
 					txt.y = mp.y;
@@ -213,10 +213,10 @@ package com.luaye.console.view {
 		public function exit():void{
 			_points = null;
 			_master = null;
-			dispatchEvent(new Event(EXIT));
+			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		private function makeTxtField(col:Number, b:Boolean = true):TextField{
-			var format:TextFormat = new TextFormat(_master.style.menuFont, _master.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
+			var format:TextFormat = new TextFormat(_master.config.menuFont, _master.config.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
 			var txt:TextField = new TextField();
 			txt.autoSize = TextFieldAutoSize.RIGHT;
 			txt.selectable = false;

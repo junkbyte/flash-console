@@ -23,6 +23,7 @@
 * 
 */
 package com.luaye.console.core {
+	import com.luaye.console.KeyBind;
 	import com.luaye.console.utils.Utils;
 
 	import flash.events.KeyboardEvent;
@@ -33,8 +34,6 @@ package com.luaye.console.core {
 	 * Suppse this could be 'view' ?
 	 */
 	public class KeyBinder extends EventDispatcher {
-		
-		public static const PASSWORD_ENTERED:String = "PASSWORD_ENTERED";
 		
 		private var _password:String;
 		private var _passwordIndex:int;
@@ -50,42 +49,32 @@ package com.luaye.console.core {
 				_passwordIndex++;
 				if(_passwordIndex >= _password.length){
 					_passwordIndex = 0;
-					dispatchEvent(new Event(PASSWORD_ENTERED));
+					dispatchEvent(new Event(Event.CONNECT));
 				}
-			}else if(_keyBinds != null){
+			}
+			else
+			{
 				_passwordIndex = 0;
-				var key:String = getKey(char, e.ctrlKey, e.altKey, e.shiftKey);
-				if(_keyBinds[key]){
-					var bind:Array = _keyBinds[key];
-					(bind[0] as Function).apply(this, bind[1]);
+				if(_keyBinds != null){
+					var keybind:KeyBind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey);
+					if(_keyBinds[keybind.key]){
+						var bind:Array = _keyBinds[keybind.key];
+						(bind[0] as Function).apply(this, bind[1]);
+					}
 				}
 			}
 		}
-		public function bindKey(char:String, ctrl:Boolean, alt:Boolean, shift:Boolean, fun:Function ,args:Array = null):String{
-			var key:String = getKey(char, ctrl, alt, shift);
-			bindByKey(key, fun, args);
-			return key; 
-		}
-		public function bindByKey(key:String, fun:Function ,args:Array = null):void{
-			if(fun==null){
+		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
+			var keystr:String = key.key;
+			if(fun == null){
 				if(_keyBinds != null) {
-					delete _keyBinds[key];
+					delete _keyBinds[keystr];
 					if(!Utils.HaveItemsInObject(_keyBinds)) _keyBinds = null;
 				}
 			}else{
 				if(_keyBinds == null) _keyBinds = {};
-				_keyBinds[key] = [fun,args];
+				_keyBinds[keystr] = [fun, args];
 			}
-		}
-		private function getKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):String{
-			return char.toLowerCase()+(ctrl?"1":"0")+(alt?"1":"0")+(shift?"1":"0");
-		}
-		public static function GetStringOfKey(key:String):String{
-			var str:String = key.charAt(0).toUpperCase();
-			if(key.charAt(1) == "1") str+="+ctrl";
-			if(key.charAt(2) == "1") str+="+alt";
-			if(key.charAt(3) == "1") str+="+shift";
-			return str;
 		}
 	}
 }

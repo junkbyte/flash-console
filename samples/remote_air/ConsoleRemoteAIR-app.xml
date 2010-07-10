@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?> 
 <application xmlns="http://ns.adobe.com/air/application/1.5"> 
     <id>com.luaye.console.RemoteAIR</id> 
-    <version>2.35</version> 
+    <version>2.4</version> 
     <filename>ConsoleRemote</filename> 
     <name>Console Remote</name> 
     <description> 
         <text xml:lang="en">flash-console Remote</text> 
     </description> 
-    <copyright>Lu Aye Oo (c) 2009</copyright> 
+    <copyright>Lu Aye Oo (c) 2010</copyright> 
     <initialWindow> 
         <title>Hello World</title> 
         <content>ConsoleRemoteAIR.swf</content> 

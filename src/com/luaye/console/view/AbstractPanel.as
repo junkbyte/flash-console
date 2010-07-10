@@ -23,7 +23,7 @@
 * 
 */
 package com.luaye.console.view {
-	import com.luaye.console.ConsoleStyle;
+	import com.luaye.console.ConsoleConfig;
 
 	import flash.events.TextEvent;
 
@@ -52,7 +52,7 @@ package com.luaye.console.view {
 		private var _resizeTxt:TextField;
 		//
 		protected var master:Console;
-		protected var style:ConsoleStyle;
+		protected var config:ConsoleConfig;
 		protected var bg:Sprite;
 		protected var scaler:Sprite;
 		protected var minimumWidth:int = 18;
@@ -63,7 +63,7 @@ package com.luaye.console.view {
 		
 		public function AbstractPanel(m:Console) {
 			master = m;
-			style = master.style;
+			config = master.config;
 			bg = new Sprite();
 			bg.name = "background";
 			addChild(bg);
@@ -81,8 +81,8 @@ package com.luaye.console.view {
 			}
 		}
 		public function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
-			if(rounding <0 ) rounding = style.roundBorder;
-			drawBG(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha, rounding);
+			if(rounding <0 ) rounding = config.roundBorder;
+			drawBG(col>=0?col:config.backgroundColor, a>=0?a:config.backgroundAlpha, rounding);
 			scalable = resizable;
 			width = w;
 			height = h;
@@ -178,7 +178,7 @@ package com.luaye.console.view {
 			if(b && !scaler){
 				scaler = new Sprite();
 				scaler.name = "scaler";
-				scaler.graphics.beginFill(style.controlColor, style.backgroundAlpha);
+				scaler.graphics.beginFill(config.controlColor, config.backgroundAlpha);
 	            scaler.graphics.lineTo(-10, 0);
 	            scaler.graphics.lineTo(0, -10);
 	            scaler.graphics.endFill();
@@ -237,7 +237,7 @@ package com.luaye.console.view {
 		//
 		private function formatText(txt:TextField):void{
             txt.background = true;
-            txt.backgroundColor = style.backgroundColor;
+            txt.backgroundColor = config.backgroundColor;
 			txt.styleSheet = master.css;
 			txt.mouseEnabled = false;
 		}

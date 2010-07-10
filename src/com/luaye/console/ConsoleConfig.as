@@ -24,7 +24,139 @@
 */
 package com.luaye.console {
 
-	public class ConsoleStyle {
+	public class ConsoleConfig {
+		
+		
+		//////////////////////
+		//                  //
+		//  LOGGING CONIFG  //
+		//                  //
+		//////////////////////
+		
+		/** Global channel name (where it prints all logs) */
+		public var globalChannel:String = " * ";
+		
+		/** Default channel name (logs without channel name) */
+		public var defaultChannel:String = "-";
+		
+		/** Console's channel name */
+		public var consoleChannel:String = "C";
+		
+		/** Filtered channel name */
+		public var filteredChannel:String = "~";
+		
+		/**
+		 * Maximum number of logs Console should remember.
+		 * 0 = unlimited. Setting to very high will take up more memory and potentially slow down.
+		 */
+		public var maxLines:uint = 1000;
+		
+		/**
+		 * Frames before repeating line is forced to print to next line.
+		 * <p>
+		 * Set to -1 to never force. Set to 0 to force every line.
+		 * Default = 75;
+		 * </p>
+		 */
+		public var maxRepeats:uint = 75;
+		
+		/**
+		 * Auto stack trace logs for this priority and above
+		 * default priortiy = 10; fatal level
+		 */
+		public var autoStackPriority:int = Console.FATAL_LEVEL;
+
+		/**
+		 * Default stack trace depth.
+		 * default depth = 3;
+		 */
+		public var defaultStackDepth:int = 3;
+		
+		/**
+		 * Assign custom trace function.
+		 * <p>
+		 * Strong reference to function. Console will only call this when C.tracing is true.
+		 * Custom function must accept at 3 parameter:
+		 * @param	String channel name.
+		 * @param	String the log line.
+		 * @param	int    priority level -2 to 10.
+		 * Default function calls flash build-in trace in this format: "[channel] log line" (ignores priority)
+		 * Example:
+		 * function defaultTrace(ch:String, line:String, level:int):void {
+		 * 	  trace("["+ch+"] "+line);
+		 * }
+		 * </p>
+		 * @see C.tracing
+		 */
+		public var traceCall:Function = defaultTrace;
+		
+		private static function defaultTrace(ch:String, line:String, level:int):void
+		{
+			trace("["+ch+"] "+line);
+		}
+		
+		///////////////////////
+		//                   //
+		//  REMOTING CONFIG  //
+		//                   //
+		///////////////////////
+		
+		/** 
+		 * Shared connection name used for remoting 
+		 * You can change this if you don't want to use default channel
+		 * Other remotes with different remoting channel won't be able to connect your flash.
+		 * Start with _ to work in any domain + platform (air/swf - local / network)
+		 * Note that local to network sandbox still apply.
+		 */
+		public var remotingConnectionName:String = "_Console";
+		
+		/**
+		 * Accessor for remoter's broadcast interval in frames.
+		 * Default = 1 (sent every frame)
+		 */
+		public var remoteDelay:uint = 1;
+		
+		
+		///////////////////
+		//               //
+		//  MISC CONFIG  //
+		//               //
+		///////////////////
+		
+		/**
+		 * Command line usage allowance.
+		 * <p>
+		 * CommandLine is a big security hole for your code and flash. It is a very good
+		 * practice to disable it after development phase.
+		 * On the other hand having it on full access will let you debug the code easier.
+		 * This will automatically set to true when you set C.commandLine = true
+		 * </p>
+		 */
+		public var commandLineAllowed:Boolean;
+		
+		/**
+		 * Determine if Console should hide the mouse cursor when using Ruler tool.
+		 * <p>
+		 * You may want to turn it off if your app/game don't use system mouse.
+		 * Default: true
+		 * </p>
+		 */
+		public var rulerHidesMouse:Boolean = true;
+		
+		/** Local shared object used for storing user data such as command line history
+		 *  Set to null to disable storing to local shared object.
+		 */
+		public var sharedObjectName:String = "com/luaye/Console/UserData";
+		
+		/** Local shared object path */
+		public var sharedObjectPath:String = "/";
+		
+		
+		////////////////////
+		//                //
+		//  STYLE CONFIG  //
+		//                //
+		////////////////////
 		
 		/** Font for menus and almost all others */
 		public var menuFont:String = "Arial";
@@ -108,7 +240,7 @@ package com.luaye.console {
 		 * Construct ConsoleStyle. Starts with default black based style.
 		 * You must pass set up the desired style before starting Console.
 		 */
-		public function ConsoleStyle() {
+		public function ConsoleConfig() {
 			
 		}
 		/** Use white base pre configuration */

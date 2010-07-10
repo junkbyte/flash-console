@@ -60,7 +60,7 @@ package com.luaye.console {
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.4;
-		public static const VERSION_STAGE:String = "WIP";
+		public static const VERSION_STAGE:String = "beta";
 		//
 		public static const NAME:String = "Console";
 		public static const PANEL_MAIN:String = "mainPanel";
@@ -69,11 +69,6 @@ package com.luaye.console {
 		public static const PANEL_MEMORY:String = "memoryPanel";
 		public static const PANEL_ROLLER:String = "rollerPanel";
 		//
-		public static const GLOBAL_CHANNEL:String = " * ";
-		public static const CONSOLE_CHANNEL:String = "C";
-		public static const FILTERED_CHANNEL:String = "~";
-		public static const DEFAULT_CHANNEL:String = "-";
-		//
 		public static const LOG_LEVEL:uint = 1;
 		public static const INFO_LEVEL:uint = 3;
 		public static const DEBUG_LEVEL:uint = 5;
@@ -81,28 +76,13 @@ package com.luaye.console {
 		public static const ERROR_LEVEL:uint = 9;
 		public static const FATAL_LEVEL:uint = 10;
 		//
-		public static const FPS_MAX_LAG_FRAMES:uint = 25;
 		public static const MAPPING_SPLITTER:String = "|";
 		//
-		// You can change this if you don't want to use default channel
-		// Other remotes with different remoting channel won't be able to connect your flash.
-		// Start with _ to work in any domain + platform (air/swf - local / network)
-		// Change BEFORE starting remote / remoting
-		public static var RemotingConnectionName:String = "_Console";
-		// You can change this if you want to use different Shared data. set to null to avoid using.
-		// Change BEFORE starting console.
-		public static var SharedObjectName:String = "com/luaye/Console/UserData";
-		//
 		public var quiet:Boolean;
-		public var maxLines:int = 1000;
 		public var alwaysOnTop:Boolean = true;
 		public var moveTopAttempts:int = 50;
-		public var maxRepeats:uint = 75;
-		public var rulerHidesMouse:Boolean = true;
-		public var autoStackPriority:int = FATAL_LEVEL;
-		public var defaultStackDepth:int = 3;
 		//
-		private var _style:ConsoleStyle;
+		private var _config:ConsoleConfig;
 		private var _css:StyleSheet;
 		private var _panels:PanelsManager;
 		private var _cl:CommandLine;
@@ -116,11 +96,9 @@ package com.luaye.console {
 		private var _paused:Boolean;
 		private var _tracing:Boolean;
 		private var _mspf:Number;
-		private var _previousTime:Number;
-		private var _traceCall:Function = trace;
-		private var _rollerCaptureKey:String;
-		private var _commandLineAllowed:Boolean;
-		private var _channels:Array = [GLOBAL_CHANNEL, DEFAULT_CHANNEL];
+		private var _prevTime:int;
+		private var _rollerCaptureKey:KeyBind;
+		private var _channels:Array;
 		private var _repeating:uint;
 		private var _lines:Logs;
 		private var _lineAdded:Boolean;
@@ -134,22 +112,23 @@ package com.luaye.console {
 		 * @see com.luaye.console.C
 		 * @see http://code.google.com/p/flash-console/
 		 */
-		public function Console(pass:String = "", skin:ConsoleStyle = null) {
+		public function Console(pass:String = "", config:ConsoleConfig = null) {
 			name = NAME;
 			tabChildren = false; // Tabbing is not supported
+			_config = config?config:new ConsoleConfig();
 			//
+			_channels = [_config.globalChannel, _config.defaultChannel];
 			_lines = new Logs();
-			_ud = new UserData(SharedObjectName,"/");
+			_ud = new UserData(_config.sharedObjectName, _config.sharedObjectPath);
 			_om = new ObjectsMonitor();
 			_cl = new CommandLine(this);
 			_graphing = new Graphing(report);
 			_remoter = new Remoting(this, pass);
 			_kb = new KeyBinder(pass);
-			_kb.addEventListener(KeyBinder.PASSWORD_ENTERED, passwordEnteredHandle, false, 0, true);
+			_kb.addEventListener(Event.CONNECT, passwordEnteredHandle, false, 0, true);
 			//
 			// VIEW setup
-			_style = skin?skin:new ConsoleStyle();
-			_css = GetCSSfromStyle(_style);
+			_css = GetCSSfromStyle(_config);
 			var mainPanel:MainPanel = new MainPanel(this, _lines, _channels);
 			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
 			_panels = new PanelsManager(this, mainPanel, _channels);
@@ -236,13 +215,11 @@ package com.luaye.console {
 		// WARNING: key binding hard references the function. 
 		// This should only be used for development purposes only.
 		//
-		public function bindKey(char:String, ctrl:Boolean, alt:Boolean, shift:Boolean, fun:Function ,args:Array = null):void{
-			if(!char || char.length!=1){
-				report("Binding key must be a single character. You gave ["+char+"]", 10);
-				return;
+		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
+			_kb.bindKey(key, fun, args);
+			if(!quiet) {
+				report((fun ==null?"Unbined":"Bined")+" "+key.toString()+".",-1);
 			}
-			_kb.bindKey(char, ctrl, alt, shift, fun, args);
-			if(!quiet) report((fun ==null?"Unbined":"Bined")+" key <b>"+ char.toUpperCase() +"</b>"+ (ctrl?"+ctrl":"")+(alt?"+alt":"")+(shift?"+shift":"")+".",-1);
 		}
 		//
 		// Panel settings
@@ -258,14 +235,17 @@ package com.luaye.console {
 		public function set displayRoller(b:Boolean):void{
 			_panels.displayRoller = b;
 		}
-		public function setRollerCaptureKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):void{
+		public function setRollerCaptureKey(char:String, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false):void{
 			if(_rollerCaptureKey){
-				_kb.bindByKey(_rollerCaptureKey, null);
+				_kb.bindKey(_rollerCaptureKey, null);
 				_rollerCaptureKey = null;
 			}
-			if(char && char.length==1) _rollerCaptureKey = _kb.bindKey(char, ctrl, alt, shift, onRollerCaptureKey);
+			if(char && char.length==1) {
+				_rollerCaptureKey = new KeyBind(char, shift, ctrl, alt);
+				_kb.bindKey(_rollerCaptureKey, onRollerCaptureKey);
+			}
 		}
-		public function get rollerCaptureKey():String{
+		public function get rollerCaptureKey():KeyBind{
 			return _rollerCaptureKey;
 		}
 		private function onRollerCaptureKey():void{
@@ -408,8 +388,8 @@ package com.luaye.console {
 		//
 		private function _onEnterFrame(e:Event):void{
 			var time:int = getTimer();
-			_mspf = time-_previousTime;
-			_previousTime = time;
+			_mspf = time-_prevTime;
+			_prevTime = time;
 			
 			if(_repeating > 0) _repeating--;
 			
@@ -463,8 +443,6 @@ package com.luaye.console {
 		private function onMainPanelConnectRequest(e:Event) : void {
 			_remoter.login(MainPanel(e.currentTarget).commandLineText);
 		}
-		public function get remoteDelay():uint{ return _remoter.delay; };
-		public function set remoteDelay(i:uint):void{ _remoter.delay = i; };
 		//
 		//
 		//
@@ -482,25 +460,18 @@ package com.luaye.console {
 			_tracing = b;
 			_panels.mainPanel.updateMenu();
 		}
-		public function set traceCall (f:Function):void{
-			if(f==null) report("C.traceCall function setter can not be null.", 10);
-			else _traceCall = f;
-		}
-		public function get traceCall ():Function{
-			return _traceCall;
-		}
-		public function report(obj:*,priority:Number = 0, skipSafe:Boolean = true):void{
-			addLine(castString(obj), priority, CONSOLE_CHANNEL, false, skipSafe, 0);
+		public function report(obj:*, priority:Number = 0, skipSafe:Boolean = true):void{
+			addLine(castString(obj), priority, _config.consoleChannel, false, skipSafe, 0);
 		}
 		public function addLine(txt:String, priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
 			var isRepeat:Boolean = (isRepeating && _repeating > 0);
-			if(!channel || channel == GLOBAL_CHANNEL) channel = DEFAULT_CHANNEL;
-			if(priority >= autoStackPriority && stacks<0) stacks = defaultStackDepth;
+			if(!channel || channel == _config.globalChannel) channel = _config.defaultChannel;
+			if(priority >= _config.autoStackPriority && stacks<0) stacks = _config.defaultStackDepth;
 			if(skipSafe) stacks = -1;
 			var stackArr:Array = stacks>0?getStack(stacks):null;
 			
-			if( _tracing && !isRepeat ){
-				_traceCall(channel, (stackArr==null?txt:(txt+"\n @ "+stackArr.join("\n @ "))));
+			if( _tracing && !isRepeat && _config.traceCall != null){
+				_config.traceCall(channel, (stackArr==null?txt:(txt+"\n @ "+stackArr.join("\n @ "))), priority);
 			}
 			if(!skipSafe){
 				txt = txt.replace(/</gm, "&lt;");
@@ -521,10 +492,10 @@ package com.luaye.console {
 				_lines.pop();
 				_lines.push(line);
 			}else{
-				_repeating = isRepeating?maxRepeats:0;
+				_repeating = isRepeating?_config.maxRepeats:0;
 				_lines.push(line);
-				if(maxLines > 0 ){
-					var off:int = _lines.length - maxLines;
+				if(_config.maxLines > 0 ){
+					var off:int = _lines.length - _config.maxLines;
 					if(off > 0){
 						_lines.shift(off);
 					}
@@ -552,18 +523,11 @@ package com.luaye.console {
 		// COMMAND LINE
 		//
 		public function set commandLine(b:Boolean):void{
-			if(b) _commandLineAllowed = true;
+			if(b) _config.commandLineAllowed = true;
 			_panels.mainPanel.commandLine = b;
 		}
 		public function get commandLine ():Boolean{
 			return _panels.mainPanel.commandLine;
-		}
-		public function set commandLineAllowed (b:Boolean):void{
-			_commandLineAllowed = b;
-			if(!b && commandLine) commandLine = false;
-		}
-		public function get commandLineAllowed ():Boolean{
-			return _commandLineAllowed;
 		}
 		public function set commandBase (v:Object):void{
 			if(v) _cl.base = v;
@@ -591,14 +555,14 @@ package com.luaye.console {
 			var chn:String;
 			if(channel is String) chn = channel as String;
 			else if(channel) chn = Utils.shortClassName(channel);
-			else chn = DEFAULT_CHANNEL;
+			else chn = _config.defaultChannel;
 			addLine(castString(newLine), priority,chn, isRepeating);
 		}
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(castString(newLine), priority, DEFAULT_CHANNEL, isRepeating);
+			addLine(castString(newLine), priority, _config.defaultChannel, isRepeating);
 		}
 		public function stack(newLine:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
-			addLine(castString(newLine), priority, ch, false, false, depth>=0?depth:defaultStackDepth);
+			addLine(castString(newLine), priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		public function log(...args):void{
 			addLine(joinArgs(args), LOG_LEVEL);
@@ -676,14 +640,14 @@ package com.luaye.console {
 			}else{
 				_lines.clear();
 				_channels.splice(0);
-				_channels.push(GLOBAL_CHANNEL, DEFAULT_CHANNEL);
+				_channels.push(_config.globalChannel, _config.defaultChannel);
 			}
 			if(!_paused) _panels.mainPanel.updateToBottom();
 			_panels.updateMenu();
 		}
 		//
 		public function get css():StyleSheet{return _css;}
-		public function get style():ConsoleStyle{return _style;}
+		public function get config():ConsoleConfig{return _config;}
 		public function get panels():PanelsManager{return _panels;}
 		public function get cl():CommandLine{return _cl;}
 		public function get ud():UserData{return _ud;}

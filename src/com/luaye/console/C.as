@@ -117,11 +117,11 @@ package com.luaye.console {
 		 * 			Must be ASCII chars. Example passwords: ` OR debug. Make sure Controls > Disable Keyboard Shortcuts in Flash.
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 */
-		public static function start(mc:DisplayObjectContainer, pass:String = "", style:ConsoleStyle = null):void{
+		public static function start(mc:DisplayObjectContainer, pass:String = "", config:ConsoleConfig = null):void{
 			if(_console){
 				trace(ERROR_EXISTS);
 			}else{
-				_console = new Console(pass, style);
+				_console = new Console(pass, config);
 				// if no parent display, console will always be hidden, but using C.remoting is still possible so its not the end.
 				if(mc!=null) mc.addChild(_console);
 			}
@@ -141,13 +141,13 @@ package com.luaye.console {
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 * 			
 		 */
-		public static function startOnStage(mc:DisplayObject, pass:String = "", style:ConsoleStyle = null):void{
+		public static function startOnStage(mc:DisplayObject, pass:String = "", config:ConsoleConfig = null):void{
 			if(_console){
 				trace(ERROR_EXISTS);
 			}else if(mc !=null && mc.stage !=null ){
-				start(mc.stage, pass, style);
+				start(mc.stage, pass, config);
 			}else{
-			 	_console = new Console(pass, style);
+			 	_console = new Console(pass, config);
 			 	// if no parent display, console will always be hidden, but using C.remoting is still possible so its not the end.
 				if(mc!=null) mc.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
 			}
@@ -160,8 +160,7 @@ package com.luaye.console {
 		 *
 		 * @param  String to add, any type can be passed and will be converted to string
 		 * @param  Priority of line. 0-10, the higher the number the more visibilty it is in the log, and can be filtered through UI
-		 * @param  When set to true, log line will replace the previous line rather than making a new line (unless it has repeated more than C.maxRepeats)
-		 * 
+		 * @param  When set to true, log line will replace the previous line rather than making a new line (unless it has repeated more than ConsoleConfig -> maxRepeats)
 		 */
 		public static function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(_console){
@@ -189,8 +188,7 @@ package com.luaye.console {
 		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
 		 * @param  String to add, any type can be passed and will be converted to string
 		 * @param  Priority of line. 0-10, the higher the number the more visibilty it is in the log, and can be filtered through UI
-		 * @param  When set to true, log line will replace the previous line rather than making a new line (unless it has repeated more than C.maxRepeats)
-		 * 
+		 * @param  When set to true, log line will replace the previous line rather than making a new line (unless it has repeated more than ConsoleConfig -> maxRepeats)
 		 */
 		public static function ch(channel:*, str:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(_console){
@@ -396,50 +394,7 @@ package com.luaye.console {
 		public static function set viewingChannels(v:Array):void{
 			setter("viewingChannels",v);
 		}
-		/**
-		 * Maximum number of logs Console should remember.
-		 * 0 = unlimited. Setting to very high will slow down performance as it grows
-		 */
-		public static function get maxLines():int{
-			return getter("maxLines") as int;
-		}
-		public static function set maxLines(v:int):void{
-			setter("maxLines",v);
-		}
-		/**
-		 * Frames before repeating line is forced to print to next line.
-		 * <p>
-		 * Set to -1 to never force. Set to 0 to force every line.
-		 * Default = 75;
-		 * </p>
-		 */
-		public static function get maxRepeats():uint{
-			return getter("maxRepeats") as uint;
-		}
-		public static function set maxRepeats(v:uint):void{
-			setter("maxRepeats",v);
-		}
-		/**
-		 * Auto stack trace logs for this priority and above
-		 * default priortiy = 10; fatal level
-		 */
-		public static function get autoStackPriority():int{
-			return getter("autoStackPriority") as int;
-		}
-		public static function set autoStackPriority(v:int):void{
-			setter("autoStackPriority",v);
-		}
-		/**
-		 * Default stack trace depth.
-		 * default depth = 3;
-		 */
-		public static function get defaultStackDepth():int{
-			return getter("defaultStackDepth") as int;
-		}
-		public static function set defaultStackDepth(v:int):void{
-			setter("defaultStackDepth",v);
-		}
-		
+
 		/**
 		 * Accessor for using flash's build in (or external) trace().
 		 * <p>
@@ -447,30 +402,13 @@ package com.luaye.console {
 		 * trace function can be replaced with something of your own (such as Flex's logging).
 		 * default is trace(...);
 		 * </p>
-		 * @see #traceCall()
+		 * @see ConsoleConfig -> traceCall
 		 */
 		public static function get tracing():Boolean{
 			return getter("tracing") as Boolean;
 		}
 		public static function set tracing(v:Boolean):void{
 			setter("tracing",v);
-		}
-		/**
-		 * Assign custom trace function.
-		 * <p>
-		 * Strong reference to function. Console will only call this when C.tracing is true.
-		 * </p>
-		 * @see #tracing
-		 *
-		 * @param  Custom function to use, must accept at least 1 parameter as String.
-		 * @return Current trace function, default is flash's build in trace.
-		 * 
-		 */
-		public static function get traceCall():Function{
-			return getter("traceCall") as Function;
-		}
-		public static function set traceCall(f:Function):void{
-			setter("traceCall",f);
 		}
 		//
 		// Panel settings
@@ -518,19 +456,6 @@ package com.luaye.console {
 			setter("displayRoller", v);
 		}
 		/**
-		 * Determine if Console should hide the mouse cursor when using Ruler tool.
-		 * <p>
-		 * You may want to turn it off if your app/game don't use system mouse.
-		 * Default: true
-		 * </p>
-		 */
-		public static function get rulerHidesMouse():Boolean{
-			return getter("rulerHidesMouse") as Boolean;
-		}
-		public static function set rulerHidesMouse(v:Boolean):void{
-			setter("rulerHidesMouse",v);
-		}
-		/**
 		 * width of main console panel
 		 */
 		public static function get width():Number{
@@ -568,6 +493,10 @@ package com.luaye.console {
 		}
 		/**
 		 * visibility of all console panels
+		 * <p>
+		 * If you have closed the main console by pressing the X button, setting true here will not turn it back on.
+		 * You will need to press the password key to turn that panel back on instead.
+		 * </p>
 		 */
 		public static function get visible():Boolean{
 			return getter("visible") as Boolean;
@@ -621,9 +550,8 @@ package com.luaye.console {
 		 * for another Console remote to receive. 
 		 * <p>
 		 * Can not be remoting (sender) and remote (reciever) at the same time.
-		 * The broadcast interval can be changed through C.remoteDelay.
+		 * The broadcast interval can be changed through ConsoleConfig -> remoteDelay.
 		 * </p>
-		 * @see #remoteDelay
 		 */
 		public static function get remoting():Boolean{
 			return getter("remoting") as Boolean;
@@ -643,19 +571,10 @@ package com.luaye.console {
 			setter("remote",v);
 		}
 		/**
-		 * Accessor for remoter's broadcast interval in frames.
-		 * Default = 20 
-		 */
-		public static function get remoteDelay():uint{
-			return getter("remoteDelay") as uint;
-		}
-		public static function set remoteDelay(v:uint):void{
-			setter("remoteDelay",v);
-		}
-		/**
 		 * Set Password required to connect from remote.
 		 * <p>
 		 * By default this is the same as the password used in C.start() / C.startOnStage();
+		 * If you set this to null, remote will no longer need a password to connect.
 		 * </p>
 		 */
 		public static function set remotingPassword(v:String):void{
@@ -679,12 +598,11 @@ package com.luaye.console {
 			}
 		}
 		/**
-		 * Output an object's values.
-		 * commandLine: /inspect  OR  /inspectfull
+		 * Expand object values and print in console log channel
+		 * Similar to JSON encode
 		 * 
 		 * @param Object to explode
-		 * @param Depth of explosion, -1 = unlimited (default)
-		 * 
+		 * @param Depth of explosion, -1 = unlimited (default = 3)
 		 */
 		public static function explode(obj:Object, depth:int = 3):void {
 			if(_console){
@@ -695,7 +613,7 @@ package com.luaye.console {
 		 * WORK IN PROGRESS... Brings up a panel to monitor values of the object
 		 * 
 		 * @param Object to monitor
-		 * @param Depth of explosion, -1 = unlimited (default)
+		 * @param name of panel (optional)
 		 * 
 		 */
 		public static function monitor(obj:Object, n:String = null):void {
@@ -715,20 +633,6 @@ package com.luaye.console {
 		}
 		public static function set commandLine (v:Boolean):void{
 			setter("commandLine",v);
-		}
-		/**
-		 * Command line usage allowance.
-		 * <p>
-		 * CommandLine is a big security hole for your code and flash. It is a very good
-		 * practice to disable it after development phase.
-		 * On the other hand having it on full access will let you debug the code easier.
-		 * </p>
-		 */
-		public static function get commandLineAllowed ():Boolean{
-			return getter("commandLineAllowed") as Boolean;
-		}
-		public static function set commandLineAllowed (b:Boolean):void{
-			setter("commandLineAllowed",b);
 		}
 		/**
 		 * Command line base.
@@ -877,17 +781,14 @@ package com.luaye.console {
 		 * Pass null Function to unbind.
 		 * </p>
 		 *
-		 * @param  Keyboard character, must be ASCII.
-		 * @param  Set to true if CTRL key press is required to trigger.
-		 * @param  Set to true if ALT key press is required to trigger.
-		 * @param  Set to true if SHIFT key press is required to trigger.
+		 * @param  KeyBind (char:String, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false)
 		 * @param  Function to call on trigger. pass null to unbind previous.
 		 * @param  Arguments to pass when calling the Function.
 		 * 
 		 */
-		public static function bindKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false, fun:Function = null,args:Array = null):void{
+		public static function bindKey(key:KeyBind, fun:Function = null,args:Array = null):void{
 			if(_console){
-				_console.bindKey(char, ctrl, alt, shift, fun ,args);
+				_console.bindKey(key, fun ,args);
 			}
 		}
 		/**
@@ -907,7 +808,7 @@ package com.luaye.console {
 		 */
 		public static function setRollerCaptureKey(char:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):void{
 			if(_console){
-				_console.setRollerCaptureKey(char, ctrl, alt, shift);
+				_console.setRollerCaptureKey(char, shift, ctrl, alt);
 			}
 		}
 		/**

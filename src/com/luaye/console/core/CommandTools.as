@@ -378,9 +378,9 @@ package com.luaye.console.core {
 			report("____Command Line Help___",10);
 			report("/filter (text) = filter/search logs for matching text",5);
 			report("/filterexp (expression) = filter/search logs using RegExp search",5);
+			report("/ = set returned to scope",5);
 			report("// = return to previous scope",5);
-			report("/base = return to base scope (same as typing $base)",5);
-			report("/store (name) = store current scope to that name (default is weak reference). to call back: $(name)",5);
+			report("/save (name) = store current scope to that name (default is weak reference). to call back: $(name)",5);
 			report("/savestrong (name) = store current scope as strong reference",5);
 			report("/stored = list all stored variables",5);
 			report("/inspect = get info of your current scope.",5);
@@ -390,7 +390,7 @@ package com.luaye.console.core {
 			report("/string = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.",5);
 			report("Press up/down arrow keys to recall previous commands",2);
 			report("__Examples:",10);
-			report("<b>stage.width</b>",5);
+			report("<b>stage.stageWidth</b>",5);
 			report("<b>stage.scaleMode = flash.display.StageScaleMode.NO_SCALE</b>",5);
 			report("<b>stage.frameRate = 12</b>",5);
 			report("__________",10);

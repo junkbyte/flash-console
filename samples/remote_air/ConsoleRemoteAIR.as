@@ -23,7 +23,7 @@
 * 
 */
 package {
-	import com.luaye.console.ConsoleStyle;
+	import com.luaye.console.ConsoleConfig;
 	import com.luaye.console.Console;
 	import com.luaye.console.view.AbstractPanel;
 	
@@ -48,11 +48,11 @@ package {
 			
 			stage.nativeWindow.alwaysInFront = true;
 			
-			var style:ConsoleStyle = new ConsoleStyle();
-			style.backgroundAlpha = 0.55;
-			_c = new Console(null, style);
+			var config:ConsoleConfig = new ConsoleConfig();
+			config.maxLines = 2000;
+			config.backgroundAlpha = 0.55;
+			_c = new Console(null, config);
 			addChild(_c);
-			_c.maxLines = 2000;
 			_c.visible = true;
 			_c.remote = true;
 			_c.commandLine = true;
