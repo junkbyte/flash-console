@@ -1,6 +1,6 @@
 ﻿/*
 * 
-* Copyright (c) 2008-2009 Lu Aye Oo
+* Copyright (c) 2008-2010 Lu Aye Oo
 * 
 * @author 		Lu Aye Oo
 * 
@@ -24,8 +24,8 @@
 */
 package {
 	
-	import com.luaye.console.ConsoleConfig;
-	import com.luaye.console.C;
+	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.C;
 
 	import flash.display.*;
 	import flash.events.*;

@@ -1,4 +1,4 @@
-﻿/*
+/*
 * 
 * Copyright (c) 2008-2010 Lu Aye Oo
 * 
@@ -22,24 +22,22 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package {
-	import com.junkbyte.console.C;
-
-	import flash.display.MovieClip;
-
-	//
-	// This class is for exporting to SWC from flash CS3 (and above) with a component icon.
-	// To import SWC to CS3:
-	// Copy the swc into C:\Program Files\Adobe\Adobe Flash CS3\en\Configuration\Components\ 
-	// Restart flash. Look in components panel.
-	//
-	// To import SWC to CS4 (and above):
-	// Go to publish settings > Link library > point to SWC
-	//
-	public class ConsoleComponent extends MovieClip{
-		// just to have a reference to C, so that flash will include the source when compiling
-		public static function get CONSOLE():Class{
-			return C;
+package com.junkbyte.console.vos {
+	
+	public class RemoteSync {
+		public var lines:Array;
+		public var graphs:Array;
+		public var om:Object;
+		public var cl:String;
+		
+		
+		public static function FromObject(o:Object):RemoteSync{
+			var vo:RemoteSync = new RemoteSync();
+			vo.lines = o.lines;
+			vo.graphs = o.graphs;
+			vo.cl = o.cl;
+			vo.om = o.om;
+			return vo;
 		}
 	}
 }

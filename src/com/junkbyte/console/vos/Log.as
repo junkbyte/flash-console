@@ -1,4 +1,4 @@
-﻿/*
+/*
 * 
 * Copyright (c) 2008-2010 Lu Aye Oo
 * 
@@ -22,24 +22,33 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package {
-	import com.junkbyte.console.C;
-
-	import flash.display.MovieClip;
-
-	//
-	// This class is for exporting to SWC from flash CS3 (and above) with a component icon.
-	// To import SWC to CS3:
-	// Copy the swc into C:\Program Files\Adobe\Adobe Flash CS3\en\Configuration\Components\ 
-	// Restart flash. Look in components panel.
-	//
-	// To import SWC to CS4 (and above):
-	// Go to publish settings > Link library > point to SWC
-	//
-	public class ConsoleComponent extends MovieClip{
-		// just to have a reference to C, so that flash will include the source when compiling
-		public static function get CONSOLE():Class{
-			return C;
+package com.junkbyte.console.vos {
+	
+	public class Log{
+		public var text:String;
+		public var c:String;
+		public var p:int;
+		public var r:Boolean;
+		public var s:Boolean;
+		//
+		public var next:Log;
+		public var prev:Log;
+		//
+		public function Log(t:String, ch:String, pr:int, repeating:Boolean = false, skipSafe:Boolean = false){
+			text = t;
+			c = ch;
+			p = pr;
+			r = repeating;
+			s = skipSafe;
+		}
+		public function toObject():Object{
+			return {t:text, c:c, p:p, r:r};
+		}
+		public function toString():String{
+			return "["+c+"] " + text;
+		}
+		public function clone():Log{
+			return new Log(text, c, p, r, s);
 		}
 	}
 }

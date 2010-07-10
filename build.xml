@@ -12,6 +12,7 @@
 	<property name="temp.dir" value="${basedir}/temp"/>
 
 	
+	<!--
 	<path id="svnant.classpath" >
 		<fileset dir="${svnant.path}" >
 	         <include name= "*.jar" />
@@ -19,6 +20,7 @@
 	</path>
 	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant.classpath" />
 	<taskdef name="compc" classpath="${flex.ant}" classname="flex.ant.CompcTask"/>
+	-->
 	
 	<!--
 		- svn export trunk to temp/
@@ -65,7 +67,7 @@
 		<exec executable="${asdoc.exe}" failonerror="true">
             <arg line="-output '${asdoc.target.dir}'" />
 			<arg line="-source-path '${src.path}'" />
-			<arg line="-doc-classes com.luaye.console.C com.luaye.console.Console com.luaye.console.ConsoleStyle com.luaye.console.Ch" />
+			<arg line="-doc-classes com.junkbyte.console.C com.junkbyte.console.Console com.junkbyte.console.ConsoleConfig com.junkbyte.console.Ch com.junkbyte.console.KeyBind" />
 			<arg line="-exclude-dependencies" />
 			<arg line="-main-title 'Flash-Console v${src.version}'" />
             <arg line="-window-title 'Flash-Console v${src.version}'" />
@@ -79,7 +81,7 @@
 	
 	This does not export the icons, which makes it unusable in CS3...
 	<target name="buildSWC">
-	        <compc output="${basedir}/bin/swc.swc"  include-classes="com.luaye.console.C">
+	        <compc output="${basedir}/bin/swc.swc"  include-classes="com.junkbyte.console.C">
 	            <source-path path-element="${src.path}"/>
 	        </compc>
 	</target>

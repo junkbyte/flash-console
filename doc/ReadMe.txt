@@ -8,7 +8,7 @@
 
   * Version: 2.4 (WIP) (March 2010)
   * Project home page: http://code.google.com/p/flash-console/
-  * Author: Lu Aye Oo, http://www.luaye.com
+  * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
   * Authoring: Flash, Flex or AIR
 
@@ -35,6 +35,7 @@ http://code.google.com/p/flash-console/issues/
 
 ===2.4===
 
+  * Renamed source package name to com.junkbyte.console - to be less personal.
   * Due to security concern, CommandLine is no longer allowed by default. You must do C.commandLineAllowed = true OR C.commandLine = true (to allow and show)
   * CommandLine: no longer auto scope to new return. Enter '/' to change scope to last returned object. Turn on auto-scoping by typing /autoscope
   * CommandLine: /save will now save the last returned value rather than the current scope.
@@ -65,7 +66,7 @@ http://code.google.com/p/flash-console/issues/
 
 
 ===2.3===
-  * console source package renamed to com.luaye.console.
+  * console source package renamed to com.junkbyte.console.
   * memoryMonitor and fpsMonitor setters are now Boolean (used to be int)
   * Added Ch functionality where you can create instances of console channel.
   * Performace increase in terms of log lines management.

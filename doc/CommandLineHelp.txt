@@ -33,7 +33,7 @@
 == Tutorial==
 
 ==== Basics ====
-  * For this tutorial, we will use the sample flash provided in download or found online at: http://www.luaye.com/flash_console/. 
+  * For this tutorial, we will use the sample flash provided in download or found online at: http://www.junkbyte.com/flash-console/. 
   * The document class file is located at samples/flash/Sample.as
 
   * Command line starts with its parent display as the first scope (by default). You should see 'Stage' on the left of commandLine at the moment, meaning the stage is your current scope. If you write:
@@ -56,7 +56,7 @@ this
   * That will give you an even bigger block of text...
   * Interesting part here is that it also list the children of Stage (at the very bottom). You should be able to see:
 {{{
-[C] Children: root1:(0)Sample; Console:(1)com.luaye.console::Console
+[C] Children: root1:(0)Sample; Console:(1)com.junkbyte.console::Console
 }}} 
   * You can now tell that there are two children on stage.
   * Let's get to the document class 'Sample'. We can see its called 'root1' at child index 0.
@@ -174,9 +174,9 @@ $bunny.removeEventListener('mouseMove', $C.log)
 
 === Static classes/singletons ===
   * To access class singletons, you need to write the full path, as there is no room for 'import' syntax in a single line.
-  * For example, to jump to the scope of com.luaye.console.C - class (not instance), simply type:
+  * For example, to jump to the scope of com.junkbyte.console.C - class (not instance), simply type:
 {{{
-com.luaye.console.C
+com.junkbyte.console.C
 }}}
   * Command line should resolve it as a class definition reference and return.
   * If you do `/inspect` on this return, you will see that all of the properties and methods have a prefix [static] in them, because they are...
@@ -193,11 +193,11 @@ flash.ui.Mouse.show()
 
 
 === New instance ===
-  * If you have read the GettingStarted document, you would know that com.luaye.console.C is mearly an adaptor/manager for a com.luaye.console.Console instance.
+  * If you have read the GettingStarted document, you would know that com.junkbyte.console.C is mearly an adaptor/manager for a com.junkbyte.console.Console instance.
   * What about make your own Console instance from inside commandLine and manage it? - for demonstration purposes ofc...
   * Note that you need to use the full class path (because there is no room for 'import' in a single line).
 {{{
-new com.luaye.console.Console()
+new com.junkbyte.console.Console()
 }}}
   * No password param passed here to make sure its visible to start with :)
   * Now save it as a variable using strong referencing... NOTE: you can't save it as C, because C is reserved value for your current Console.
@@ -227,7 +227,7 @@ $myC.commandLine = true;
   * If you are not bored yet, you can even start commandLine from the new console and command the parent console using `C` - backwards!
   * Write in the NEW console's command line:
 {{{
-com.luaye.console.C.fatal('STOP CONTROLLING YOUR MINION! :(')
+com.junkbyte.console.C.fatal('STOP CONTROLLING YOUR MINION! :(')
 }}}
   * You should see the message back at the main Console...
 
@@ -267,7 +267,7 @@ It is not limited to displays, it can access and execute ANY object/class.
   * `/string` = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.
 
   * `this` = returns current scope (as it would in normal AS);
-  * `$C` = Reference to Console `com.luaye.console.Console`
+  * `$C` = Reference to Console `com.junkbyte.console.Console`
   * `$base` = Reference to base (original) scope
   * `$returned` = Previously returned value (this is not always the same as `this` as previous return could be a primitive value (Number / String) which does not get scoped automatically)
   * Press up/down arrow keys to recall previous commands.

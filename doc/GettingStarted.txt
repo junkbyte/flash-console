@@ -3,7 +3,7 @@
 
 ==Introduction==
 
-The main class need to use for console is `C`, (`com.luaye.console.C`). `C` is a static / singleton adapter for `Console` (`com.luaye.console.Console`). 
+The main class need to use for console is `C`, (`com.junkbyte.console.C`). `C` is a static / singleton adapter for `Console` (`com.junkbyte.console.Console`). 
 
 In a later date when you don't need console in your flash project, you can just remove `C.startOnStage(..)` OR `C.start(..)` from your code and the rest of console related codes will stop executing to save memory and performance.
 
@@ -12,7 +12,7 @@ In a later date when you don't need console in your flash project, you can just 
 
 Start console on stage... 
 {{{
-import com.luaye.console.C;
+import com.junkbyte.console.C;
 C.startOnStage(this, "");
 }}}
 First parameter is any DisplayObject which is already on stage or to be added.
@@ -140,14 +140,14 @@ Please see JavaDoc for more usage document.
 ==Others==
 If you want to start console in a custom display container, use the following:
 {{{
-import com.luaye.console.C;
+import com.junkbyte.console.C;
 C.start(this);
 }}}
 
 
 You can manage your own instance of Console by directly managing it (`C` is designed to manage it for you ). 
 {{{
-import com.luaye.console.Console;
+import com.junkbyte.console.Console;
 
 private var _c:Console;
 

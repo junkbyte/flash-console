@@ -1,4 +1,4 @@
-﻿/*
+/*
 * 
 * Copyright (c) 2008-2010 Lu Aye Oo
 * 
@@ -22,24 +22,38 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package {
-	import com.junkbyte.console.C;
+package com.junkbyte.console.core {
+	import flash.net.SharedObject;
 
-	import flash.display.MovieClip;
-
-	//
-	// This class is for exporting to SWC from flash CS3 (and above) with a component icon.
-	// To import SWC to CS3:
-	// Copy the swc into C:\Program Files\Adobe\Adobe Flash CS3\en\Configuration\Components\ 
-	// Restart flash. Look in components panel.
-	//
-	// To import SWC to CS4 (and above):
-	// Go to publish settings > Link library > point to SWC
-	//
-	public class ConsoleComponent extends MovieClip{
-		// just to have a reference to C, so that flash will include the source when compiling
-		public static function get CONSOLE():Class{
-			return C;
+	public class UserData {
+		
+		private static const COMMANDLINE_HISTORY_KEY:String = "clhistory";
+		
+		private var _so:SharedObject;
+		private var _data:Object = {};
+		
+		public function UserData(name:String, localPath:String = null){
+			if(name){
+				try{
+					_so = SharedObject.getLocal(name, localPath);
+					_data = _so.data;
+				}catch(e:Error){
+					
+				}
+			}
+		}
+		
+		public function get commandLineHistory():Array{
+			if(_data[COMMANDLINE_HISTORY_KEY] is Array){
+				return _data[COMMANDLINE_HISTORY_KEY];
+			}else{
+				var a:Array = new Array();
+				_data[COMMANDLINE_HISTORY_KEY] = a;
+				return a;
+			}
+		}
+		public function commandLineHistoryChanged():void{
+			if(_so) _so.setDirty(COMMANDLINE_HISTORY_KEY);
 		}
 	}
 }

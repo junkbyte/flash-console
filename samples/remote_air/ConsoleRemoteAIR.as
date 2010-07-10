@@ -1,6 +1,6 @@
 ﻿/*
 * 
-* Copyright (c) 2008-2009 Lu Aye Oo
+* Copyright (c) 2008-2010 Lu Aye Oo
 * 
 * @author Lu Aye Oo
 * 
@@ -23,9 +23,9 @@
 * 
 */
 package {
-	import com.luaye.console.ConsoleConfig;
-	import com.luaye.console.Console;
-	import com.luaye.console.view.AbstractPanel;
+	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.Console;
+	import com.junkbyte.console.view.AbstractPanel;
 	
 	import flash.display.MovieClip;
 	import flash.display.NativeWindowDisplayState;

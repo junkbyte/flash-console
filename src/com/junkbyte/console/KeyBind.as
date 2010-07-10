@@ -1,4 +1,4 @@
-﻿/*
+/*
 * 
 * Copyright (c) 2008-2010 Lu Aye Oo
 * 
@@ -22,24 +22,40 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package {
-	import com.junkbyte.console.C;
-
-	import flash.display.MovieClip;
-
-	//
-	// This class is for exporting to SWC from flash CS3 (and above) with a component icon.
-	// To import SWC to CS3:
-	// Copy the swc into C:\Program Files\Adobe\Adobe Flash CS3\en\Configuration\Components\ 
-	// Restart flash. Look in components panel.
-	//
-	// To import SWC to CS4 (and above):
-	// Go to publish settings > Link library > point to SWC
-	//
-	public class ConsoleComponent extends MovieClip{
-		// just to have a reference to C, so that flash will include the source when compiling
-		public static function get CONSOLE():Class{
-			return C;
+package com.junkbyte.console 
+{
+	public class KeyBind 
+	{
+		
+		private static const SHIFT:uint = 1;
+		private static const CTRL:uint = 1<<1;
+		private static const ALT:uint = 1<<2;
+		
+		public var char:String;
+		public var extra:uint;
+		
+		public function KeyBind(character:String, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false)
+		{
+			if(!character || character.length != 1){
+				throw new Error("KeyBind: character (first char) must be a single character. You gave ["+character+"]");
+			}
+			char = character.toUpperCase();
+			if(shift) extra |= SHIFT;
+			if(ctrl) extra |= CTRL;
+			if(alt) extra |= ALT;
+		}
+		
+		public function get key():String
+		{
+			return char+extra;
+		}
+		public function toString():String
+		{
+			var str:String = char;
+			if(extra & SHIFT) str+="+shift";
+			if(extra & CTRL) str+="+ctrl";
+			if(extra & ALT) str+="+alt";
+			return str;
 		}
 	}
 }
