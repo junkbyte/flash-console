@@ -72,9 +72,9 @@ package
 			//
 			Cc.infoch("myChannel", "Hello myChannel.");
 			Cc.logch("myChannel", "A log message at myChannel.", "optionally there", "can be", "multiple arguments.");
-			//C.debugch("myChannel", "A debug level log.");
-			//C.warnch("myChannel", "This is a warning log.");
-			//C.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
+			//Cc.debugch("myChannel", "A debug level log.");
+			//Cc.warnch("myChannel", "This is a warning log.");
+			//Cc.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
 			//
 			// instanced channel
 			//

@@ -1,7 +1,7 @@
 #labels Featured,Phase-Implementation
 =Command Line: help and tutorial=
 
-==This document applies to v2.4 or above only==
+==This document applies to v2.4 beta2 or above only==
 
 == Introduction ==
   * Command line lets you execute ActionScript3 code during run-time (on the fly)...
@@ -23,7 +23,7 @@
 
 == Getting started ==
   * Command line is not enabled in console by default.
-  * To start commandliine: `Cc.commandline = true` OR `Cc.commandlineAllowed = true` and then you can press *CL* on console's top menu UI when you need it.
+  * To start commandliine: `Cc.commandline = true` OR `ConsoleConfig -> commandlineAllowed = true` and then you can press *CL* on console's top menu UI when you need it.
   * Command line appear as a text field at the bottom of the console window.
   * It uses the same syntax as actionscript - Except that you can only do 1 simple line of code at a time.
   * The class name of current scope is displayed on the left of command line. 
@@ -36,7 +36,7 @@
   * For this tutorial, we will use the sample flash provided in download or found online at: http://www.junkbyte.com/flash-console/. 
   * The document class file is located at samples/flash/Sample.as
 
-  * Command line starts with its parent display as the first scope (by default). You should see 'Stage' on the left of commandLine at the moment, meaning the stage is your current scope. If you write:
+  * Command line starts with its parent display as first scope (by default). You should see 'Stage' on the left of commandLine at the moment, meaning the stage is your current scope. If you write:
 {{{
 this
 }}} 
@@ -113,7 +113,7 @@ head
 {{{
 play()
 }}}
-  * Ok.. I know its just a crappy blink, I'll ask for a proper one later...
+  * You should see the bunny eyes blink briefly...
   * Just for the purpose of demonstration, if you want to go back to the previous scope, you can type:
 {{{
 //
@@ -124,11 +124,6 @@ name
 }}}
   * You should see that it is the clip 'mcBunny'.
   * For easy access to the bunny clip from console you can save it into command line's variables.
-  * First you need to return to object reference first by typing "this":
-{{{
-this
-}}}
-  * If you did not call this first, you will be saving the last returned String: 'mcBunny'.
 {{{
 /save bunny
 }}}
@@ -164,12 +159,12 @@ $bunny.stopDrag()
 
 For example, you could generate event logs on MOUSE_MOVE events of the bunny.
 {{{
-$bunny.addEventListener('mouseMove', $Cc.log)
+$bunny.addEventListener('mouseMove', $C.log)
 }}}
-Now if you roll your mouse on the bunny movieClip, you will see lots of mouse event logs. _I am only using the string 'mouseMove' instead of MouseEvent.MOUSE_MOVE because I will be explaining about static classes later in this tutorial._
+Now if you roll your mouse on the bunny movieClip, you will see lots of mouse event logs. _I am only using the string 'mouseMove' instead of MouseEvent.MOUSE_MOVE because I will be explaining about static classes later in this tutorial. $C is a stored reference to Console instance (not Cc)_
 To stop:
 {{{
-$bunny.removeEventListener('mouseMove', $Cc.log)
+$bunny.removeEventListener('mouseMove', $C.log)
 }}}
 
 === Static classes/singletons ===
@@ -177,9 +172,14 @@ $bunny.removeEventListener('mouseMove', $Cc.log)
   * For example, to jump to the scope of com.junkbyte.console.Cc - class (not instance), simply type:
 {{{
 com.junkbyte.console.Cc
+/
 }}}
+OR one line:
+{{{
+com.junkbyte.console.Cc; /
+}}} 
   * Command line should resolve it as a class definition reference and return.
-  * If you do `/inspect` on this return, you will see that all of the properties and methods have a prefix [static] in them, because they are...
+  * If you do `/inspect`, you will see that all of the properties and methods have a prefix [static] in them, because they are...
 
 As another static class example, you could hide the mouse by typing:
 {{{
@@ -193,38 +193,40 @@ flash.ui.Mouse.show()
 
 
 === New instance ===
-  * If you have read the GettingStarted document, you would know that com.junkbyte.console.Cc is mearly an adaptor/manager for a com.junkbyte.console.Console instance.
+  * If you have read the GettingStarted document, you will know com.junkbyte.console.Cc is mearly an adaptor/controller for a com.junkbyte.console.Console instance.
   * What about make your own Console instance from inside commandLine and manage it? - for demonstration purposes ofc...
   * Note that you need to use the full class path (because there is no room for 'import' in a single line).
 {{{
 new com.junkbyte.console.Console()
 }}}
   * No password param passed here to make sure its visible to start with :)
-  * Now save it as a variable using strong referencing... NOTE: you can't save it as C, because C is reserved value for your current Console.
+  * Now change scope to return and save it as a variable using strong referencing... NOTE: you can't save it as C, because C is reserved value for your current Console.
 {{{
-/storestrong myC
+/
 }}}
-  * The reason to use `savestrong` here is because Console (by default) only store outside references as a weak reference to make sure it has minimal impact on the client's environment (unless `Cc.strongRef` is set).
-  * Exceptional to this, CommandLine caches your last returned value as strong references to make sure it doesn't get garbage collected before you can do anything with it.
-  * This does however mean that your current scope can sometimes get garbage collected while you are still working on it - so do a /savestrong.
+{{{
+/savestrong myC
+}}}
+  * The reason to use `savestrong` here is because Console (by default) only store outside references as a weak reference to make sure it has minimal impact on the client's environment.
+  * Exceptional to this, CommandLine caches your last returned value and current scope as strong references to make sure it doesn't get garbage collected before you can do anything with it.
 
   * Console is not visible yet because it needs a parent display, so why not put it on stage...
 {{{
 $base.addChild($myC)
 }}}
-  * You might see several lines saying Console is moved to top on both consoles. This is because 'alwaysOnTop' is enabled by default and both consoles will fight to be on top until their attempts run out.
+  * You will probably see several lines saying Console is moved to top on both consoles. This is because 'alwaysOnTop' is enabled by default and both consoles will fight to be on top until their attempts run out.
   * Move the new console down so that you can see both. Drag it down OR code it here as beloew:
 {{{
-$myCc.y = 310
+$myC.y = 310
 }}}
   * Now that's a nightmare you got not 1 but 2 bloody annoying consoles!
-  * Ok, so now this is your own console, managed by you, through another console's command line... Why not try the normal console methods:
+  * Ok, so now this is your own console, managed through another console's command line... Why not try the normal console methods:
 {{{
-$myCc.log('Testing one two three');
-$myCc.fpsMonitor = true;
-$myCc.commandLine = true;
+$myC.log('Testing one two three');
+$myC.fpsMonitor = true;
+$myC.commandLine = true;
 }}}
-  * If you are not bored yet, you can even start commandLine from the new console and command the parent console using `C` - backwards!
+  * If you are not bored yet, you can even start commandLine from the new console and command the parent console using `Cc` - backwards!
   * Write in the NEW console's command line:
 {{{
 com.junkbyte.console.Cc.fatal('STOP CONTROLLING YOUR MINION! :(')
@@ -255,21 +257,20 @@ It is not limited to displays, it can access and execute ANY object/class.
 
   * `/` = change scope to last returned value
   * `//` = return to previous scope
-  * `/filter <text>` = filter/search logs for matching text
+  * `/filter <text>` = filter/search logs for matching text. When done, click on the `*` (global channel) at the top to see all logs.
   * `/base` = return to base scope (same as typing "$base;/")
-  * `/store <name>` = store last returned value to that name (weak reference). To call back: `$<name>`
-  * `/storestrong <name>` = store last returned value to that name using strong referencing (to make sure it doesn't get garbage collected). To call back: `$<name>`
-  * `/stored` = list all stored variables
+  * `/save <name>` = store last returned value to that name (weak reference). To call back: `$<name>`
+  * `/savestrong <name>` = store last returned value to that name using strong referencing (to make sure it doesn't get garbage collected). To call back: `$<name>`
+  * `/saved` = list all stored variables
   * `/inspect` = get detailed info of your current scope.
   * `/inspectfull` = get more detailed info of your current scope
   * `/map` =  get the display list map starting from your current scope
-  * `/scope` = Force change scope, If previous return was a primitive value (String / Number) scope is not changed automatically to it. Use this command if you need to force change to that scope. For example when you want to do `/save` to that return.
   * `/string` = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.
 
   * `this` = returns current scope (as it would in normal AS);
   * `$C` = Reference to Console `com.junkbyte.console.Console`
   * `$base` = Reference to base (original) scope
-  * `$returned` = Previously returned value (this is not always the same as `this` as previous return could be a primitive value (Number / String) which does not get scoped automatically)
+  * `$returned` = Previously returned value
   * Press up/down arrow keys to recall previous commands.
 
 
@@ -284,5 +285,5 @@ Examples of security risk:
 How to increase security.
   * It is likely very useful to have Console running during beta or even final deployment. However it is highly recommended that you either have a long password to Console OR disable commandLine (by default it is).
 {{{
-Cc.commandLineAllowed = false;
+ConsoleConfig -> commandLineAllowed = false;
 }}}

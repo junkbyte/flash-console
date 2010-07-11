@@ -197,9 +197,9 @@ package com.junkbyte.console.core {
 						for each(var i:GraphInterest in interests){
 							try{
 								v = i.getCurrentValue();
-								interest.setValue(v, averaging);
+								i.setValue(v, averaging);
 							}catch(e:Error){
-								_report("Error with graph value for key ["+i.key+"] in ["+group.name+"].", 10);
+								_report("Error with graph value for key ["+i.key+"] in ["+group.name+"]. "+e, 10);
 								remove(group.name, i.obj, i.prop);
 							}
 							group.updateMinMax(v);
