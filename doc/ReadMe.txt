@@ -35,7 +35,7 @@ http://code.google.com/p/flash-console/issues/
 
 ===2.4===
 
-  * Renamed C to Cc so that flash builder pick up as auto complete. Cc stands for Console controller.
+  * Renamed C to Cc so that FlashBuilder pick up as auto complete. Cc stands for Console controller.
   * Renamed source package name to com.junkbyte.console - to be less personal
   * Move a lot of 'configuration' settings from Cc. to ConsoleConfig (that you pass at start)
   * Due to security concern, CommandLine is no longer allowed by default. You must do Cc.commandLineAllowed = true OR Cc.commandLine = true (to allow and show)
