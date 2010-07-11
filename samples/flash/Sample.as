@@ -24,8 +24,8 @@
 */
 package 
 {
-	import com.junkbyte.console.C;
-	import com.junkbyte.console.Ch;
+	import com.junkbyte.console.Cc;
+	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleConfig;
 
 	import flash.display.*;
@@ -37,7 +37,7 @@ package
 		
 		private var _spamcount:int;
 		
-		private var _ch:Ch = new Ch('myCh');
+		private var _ch:ConsoleChannel = new ConsoleChannel('myCh');
 		
 		public function Sample() {
 			//
@@ -47,31 +47,31 @@ package
 			//style.big(); // BIG text
 			//style.whiteBase(); // Black on white
 			
-			C.startOnStage(this, "`", config); // "`" - change for password. This will start hidden
-			C.visible = true; // show console, because having password hides console.
+			Cc.startOnStage(this, "`", config); // "`" - change for password. This will start hidden
+			Cc.visible = true; // show console, because having password hides console.
 			//C.tracing = true; // trace on flash's normal trace
-			C.commandLine = true; // enable command line
+			Cc.commandLine = true; // enable command line
 			
-			C.height = 220;
-			C.remotingPassword = null; // Just so that remote don't ask for password
-			C.remoting = true;
+			Cc.height = 220;
+			Cc.remotingPassword = null; // Just so that remote don't ask for password
+			Cc.remoting = true;
 			//
 			// End of setup
 			//
 			
 			// BASICS
 			//
-			C.info("Hello world.");
-			C.log("A log message for console.", "optionally there", "can be", "multiple arguments.");
-			C.debug("A debug level log.");
-			C.warn("This is a warning log.");
-			C.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
-			C.fatal("This is a fatal error log.", "with high visibility");
+			Cc.info("Hello world.");
+			Cc.log("A log message for console.", "optionally there", "can be", "multiple arguments.");
+			Cc.debug("A debug level log.");
+			Cc.warn("This is a warning log.");
+			Cc.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
+			Cc.fatal("This is a fatal error log.", "with high visibility");
 			//
 			// basic channel logging
 			//
-			C.infoch("myChannel", "Hello myChannel.");
-			C.logch("myChannel", "A log message at myChannel.", "optionally there", "can be", "multiple arguments.");
+			Cc.infoch("myChannel", "Hello myChannel.");
+			Cc.logch("myChannel", "A log message at myChannel.", "optionally there", "can be", "multiple arguments.");
 			//C.debugch("myChannel", "A debug level log.");
 			//C.warnch("myChannel", "This is a warning log.");
 			//C.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
@@ -84,20 +84,20 @@ package
 			//
 			// advanced logging
 			//
-			C.add("My advanced log in priority 7.", 7);
-			C.add("My advanced log in priority 2, 1 (no repeats)", 2, true);
-			C.add("My advanced log in priority 2, 2 (no repeats)", 2, true);
-			C.add("My advanced log in priority 2, 3 (no repeats)", 2, true);
+			Cc.add("My advanced log in priority 7.", 7);
+			Cc.add("My advanced log in priority 2, 1 (no repeats)", 2, true);
+			Cc.add("My advanced log in priority 2, 2 (no repeats)", 2, true);
+			Cc.add("My advanced log in priority 2, 3 (no repeats)", 2, true);
 			// When 'no repeat' (3rd param) is set to true, it will not generate new lines for each log.
 			// It will keep replacing the previous line until a certain count is passed.
 			// For example, if you are tracing download progress and you don't want to flood console with it.
 			//
 			// Advanced channel logging
 			//
-			C.ch("chn", "Advanced log in priority 7.", 7);
-			C.ch("chn", "Advanced log in priority 3, 1 (no repeats)", 3, true);
-			C.ch("chn", "Advanced log in priority 3, 2 (no repeats)", 3, true);
-			C.ch("chn", "Advanced log in priority 3, 3 (no repeats)", 3, true);
+			Cc.ch("chn", "Advanced log in priority 7.", 7);
+			Cc.ch("chn", "Advanced log in priority 3, 1 (no repeats)", 3, true);
+			Cc.ch("chn", "Advanced log in priority 3, 2 (no repeats)", 3, true);
+			Cc.ch("chn", "Advanced log in priority 3, 3 (no repeats)", 3, true);
 			
 			
 			
@@ -129,10 +129,10 @@ package
 		private function onButtonClick(e:MouseEvent):void{
 			switch(e.currentTarget){
 				case btnAdd1:
-					C.add(txtLog.text,int(txtPriority.text));
+					Cc.add(txtLog.text,int(txtPriority.text));
 				break;
 				case btnAdd2:
-					C.ch(txtChannel.text, txtLog2.text,int(txtPriority2.text));
+					Cc.ch(txtChannel.text, txtLog2.text,int(txtPriority2.text));
 				break;
 				case btnInterval:
 					if(_interval){
@@ -150,7 +150,7 @@ package
 			}
 		}
 		private function onIntervalEvent():void{
-			C.add("Repeative log _ " + getTimer(), 5,true);
+			Cc.add("Repeative log _ " + getTimer(), 5,true);
 		}
 		private function spam():void{
 			for(var i:int = 0;i<100;i++){
@@ -168,7 +168,7 @@ package
 					str = "voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis";
 				}
 				_spamcount++;
-				C.ch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*10));
+				Cc.ch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*10));
 			}
 		}
 		

@@ -3,21 +3,21 @@
 
 ==Introduction==
 
-The main class need to use for console is `C`, (`com.junkbyte.console.C`). `C` is a static / singleton adapter for `Console` (`com.junkbyte.console.Console`). 
+The main class need to use for console is `Cc`, (`com.junkbyte.console.Cc`). `Cc` stands for Console controller which acts as a static / singleton adapter for `Console` (`com.junkbyte.console.Console`). 
 
-In a later date when you don't need console in your flash project, you can just remove `C.startOnStage(..)` OR `C.start(..)` from your code and the rest of console related codes will stop executing to save memory and performance.
+In a later date when you don't need console in your flash project, you can just remove `Cc.startOnStage(..)` OR `Cc.start(..)` from your code and the rest of console related codes will stop executing to save memory and performance.
 
 
 ==Basics==
 
 Start console on stage... 
 {{{
-import com.junkbyte.console.C;
-C.startOnStage(this, "");
+import com.junkbyte.console.Cc;
+Cc.startOnStage(this, "");
 }}}
 First parameter is any DisplayObject which is already on stage or to be added.
 If you want to set a keyword for console to start, assign at second parameter. 
-Use letters and numbers only. Console will start hidden if you set a password (you can set `C.visible = true;` to force display console)
+Use letters and numbers only. Console will start hidden if you set a password (you can set `Cc.visible = true;` to force display console)
 You will need to type the keyword in correct sequence to show the console.
 Recommended keyword: ` or ~ or debug (remember to have keyboard short cuts disabled in flash test authoring for some keys to be captured)
 If you want to assign custom style or configuration, pass the modified ConsoleConfig as third param.
@@ -28,43 +28,43 @@ Logging...
 //
 // BASICS
 //
-C.info("Hello world.");
-C.log("A log message for console.", "optionally there", "can be", "multiple arguments.");
-C.debug("A debug level log.");
-C.warn("This is a warning log.");
-C.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
-C.fatal("This is a fatal error log", "with high visibility");
+Cc.info("Hello world.");
+Cc.log("A log message for console.", "optionally there", "can be", "multiple arguments.");
+Cc.debug("A debug level log.");
+Cc.warn("This is a warning log.");
+Cc.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
+Cc.fatal("This is a fatal error log", "with high visibility");
 //
 // basic channel logging
 //
-C.infoch("myChannel", "Hello myChannel.");
-C.logch("myChannel", "A log message at myChannel.", "optionally there", "can be", "multiple arguments.");
-C.debugch("myChannel", "A debug level log.");
-C.warnch("myChannel", "This is a warning log.");
-C.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
+Cc.infoch("myChannel", "Hello myChannel.");
+Cc.logch("myChannel", "A log message at myChannel.", "optionally there", "can be", "multiple arguments.");
+Cc.debugch("myChannel", "A debug level log.");
+Cc.warnch("myChannel", "This is a warning log.");
+Cc.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
 //
 // instanced channel
 //
-var _ch:Ch = new Ch('myCh'); // already declared above.
+var _ch:ConsoleChannel = new ConsoleChannel('myCh'); // already declared above.
 _ch.log("Hello instanced channel.");
 _ch.info("Works just like other logging methods","but this way you keep the channel name as a class instance");
 //
 // advanced logging
 //
-C.add("My advanced log in priority 7.", 7);
-C.add("My advanced log in priority 2, 1 (no repeats)", 2, true);
-C.add("My advanced log in priority 2, 2 (no repeats)", 2, true);
-C.add("My advanced log in priority 2, 3 (no repeats)", 2, true);
+Cc.add("My advanced log in priority 7.", 7);
+Cc.add("My advanced log in priority 2, 1 (no repeats)", 2, true);
+Cc.add("My advanced log in priority 2, 2 (no repeats)", 2, true);
+Cc.add("My advanced log in priority 2, 3 (no repeats)", 2, true);
 // When 'no repeat' (3rd param) is set to true, it will not generate new lines for each log.
 // It will keep replacing the previous line untill a certain count is passed.
 // For example, if you are tracing download progress and you don't want to flood console with it.
 //
 // Advanced channel logging
 //
-C.ch("chn", "Advanced log in priority 7.", 7);
-C.ch("chn", "Advanced log in priority 3, 1 (no repeats)", 3, true);
-C.ch("chn", "Advanced log in priority 3, 2 (no repeats)", 3, true);
-C.ch("chn", "Advanced log in priority 3, 3 (no repeats)", 3, true);
+Cc.ch("chn", "Advanced log in priority 7.", 7);
+Cc.ch("chn", "Advanced log in priority 3, 1 (no repeats)", 3, true);
+Cc.ch("chn", "Advanced log in priority 3, 2 (no repeats)", 3, true);
+Cc.ch("chn", "Advanced log in priority 3, 3 (no repeats)", 3, true);
 }}}
 
 ===UI===
@@ -77,7 +77,7 @@ Console interface menu is at the top of main panel. Roll over each name to find 
   * Ro = Show/Hide display Roller
   * RL = Start ruler tool (measure distance/angle between 2 points)
 
-  * T = Toggle use 'trace()' - only visible in debugger or test player, can call a different function in place of trace(), see: C.traceCall.
+  * T = Toggle use 'trace()' - only visible in debugger or test player, can call a different function in place of trace(), see: ConsoleConfig -> traceCall.
   * Cc = Copy all log to clipboard as plain text.
   * P0 = Priority filter level. For example when set to P5, you will only see logs with priority 5 or above
   * P = pause logging. (it will still silently log but will not update in display)
@@ -100,7 +100,7 @@ You can scale panels by dragging the arrow on the bttom right.
 {{{
 import flash.display.Sprite;
 var aSprite = new Sprite();
-C.watch(aSprite, "aSprite");
+Cc.watch(aSprite, "aSprite");
 aSprite = null;
 }}}
 Above example creates a Sprite and then remove its reference. This marks the Sprite to be garbage collected, but it might not get collected straight away.
@@ -114,17 +114,17 @@ If you start using this in fairly big flash project, you will see that objects t
 // enable remoting broadcast
 // start broadcasting logs. It will also keep logging for it self
 // it can not be a remote while it is remoting...
-C.remoting = true;
+Cc.remoting = true;
 
 // Show/hide commandLine (hidden by default)
-C.commandLine= true;
+Cc.commandLine= true;
 
 // Show/hide fpxMonitor  (hidden by default)
-C.fpsMonitor= true;
+Cc.fpsMonitor= true;
 
 // show/hide console
 // It will keep logging but will stop all update processes
-C.visible = false;
+Cc.visible = false;
 
 }}}
 Please see ASDoc for more usage document.
@@ -132,8 +132,8 @@ Please see ASDoc for more usage document.
 ==Others==
 If you want to start console in a custom display container, use the following:
 {{{
-import com.junkbyte.console.C;
-C.start(this);
+import com.junkbyte.console.Cc;
+Cc.start(this);
 }}}
 
 

@@ -54,13 +54,9 @@ package com.junkbyte.console.view {
 			_master = master;
 			_mainPanel = mp;
 			_channels = channels;
-			_tooltipField = new TextField();
+			_tooltipField = mainPanel.makeTF("tooltip", false, true);
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
 			_tooltipField.multiline = true;
-			_tooltipField.background = true;
-			_tooltipField.backgroundColor = _master.config.backgroundColor;
-			_tooltipField.styleSheet = _master.css;
-			_tooltipField.mouseEnabled = false;
 			addPanel(_mainPanel);
 		}
 		public function addPanel(panel:AbstractPanel):void{
@@ -99,7 +95,7 @@ package com.junkbyte.console.view {
 		}
 		public function updateMenu():void{
 			_mainPanel.updateMenu();
-			var chpanel:ChannelsPanel = getPanel(Console.PANEL_CHANNELS) as ChannelsPanel;
+			var chpanel:ChannelsPanel = getPanel(ChannelsPanel.NAME) as ChannelsPanel;
 			if(chpanel) chpanel.update();
 		}
 		public function update(paused:Boolean, lineAdded:Boolean):void{
@@ -159,7 +155,7 @@ package com.junkbyte.console.view {
 				}
 				_fpsPanel.update(fpsGroup);
 			}else if(_fpsPanel!=null){
-				removePanel(Console.PANEL_FPS);
+				removePanel(FPSPanel.NAME);
 				_fpsPanel = null;
 			}
 			//
@@ -174,7 +170,7 @@ package com.junkbyte.console.view {
 				}
 				_memPanel.update(memGroup);
 			}else if(_memPanel!=null){
-				removePanel(Console.PANEL_MEMORY);
+				removePanel(MemoryPanel.NAME);
 				_memPanel = null;
 			}
 		}
@@ -206,7 +202,7 @@ package com.junkbyte.console.view {
 		//
 		//
 		public function get displayRoller():Boolean{
-			return (getPanel(Console.PANEL_ROLLER) as RollerPanel)?true:false;
+			return (getPanel(RollerPanel.NAME) as RollerPanel)?true:false;
 		}
 		public function set displayRoller(n:Boolean):void{
 			if(displayRoller != n){
@@ -217,7 +213,7 @@ package com.junkbyte.console.view {
 					addPanel(roller);
 					roller.start(_master);
 				}else{
-					removePanel(Console.PANEL_ROLLER);
+					removePanel(RollerPanel.NAME);
 				}
 				_mainPanel.updateMenu();
 			}
@@ -238,7 +234,7 @@ package com.junkbyte.console.view {
 					_chsPanel.start(_channels);
 					updateMenu();
 				}else {
-					removePanel(Console.PANEL_CHANNELS);
+					removePanel(ChannelsPanel.NAME);
 					_chsPanel = null;
 				}
 				updateMenu();
@@ -261,7 +257,7 @@ package com.junkbyte.console.view {
 				str = str.replace(/\:\:(.*)/, "<br/><s>$1</s>");
 				_master.addChild(_tooltipField);
 				_tooltipField.wordWrap = false;
-				_tooltipField.htmlText = "<tooltip>"+str+"</tooltip>";
+				_tooltipField.htmlText = "<tt>"+str+"</tt>";
 				if(_tooltipField.width>120){
 					_tooltipField.width = 120;
 					_tooltipField.wordWrap = true;

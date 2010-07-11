@@ -23,16 +23,9 @@
 * 
 */
 package com.junkbyte.console {
-
+	import flash.text.StyleSheet;	
+	
 	public class ConsoleConfig {
-		
-		/**
-		 * Construct ConsoleConfig. Starts with default black based style.
-		 * You must set up the desired style and configuration before starting Console.
-		 */
-		public function ConsoleConfig() {
-			
-		}
 		
 		//////////////////////
 		//                  //
@@ -132,6 +125,7 @@ package com.junkbyte.console {
 		//               //
 		///////////////////
 		
+		
 		/**
 		 * Command line usage allowance.
 		 * <p>
@@ -186,7 +180,7 @@ package com.junkbyte.console {
 		public var roundBorder:int = 10;
 		
 		/** Panels background alpha */
-		public var backgroundAlpha:Number = 0.85;
+		public var backgroundAlpha:Number = 0.9;
 		
 		/** Color of scroll bar, scaler, etc. Some gets alpha applied */
 		public var controlColor:uint = 0x990000;
@@ -297,6 +291,59 @@ package com.junkbyte.console {
 			priority10 = 0xFFFFFF;
 			priorityC1 = 0xBBC0CC;
 			priorityC2 = 0xFFEEDD;
+		}
+		
+		
+		/////////////////////
+		//                 //
+		//  END OF CONFIG  //
+		//                 //
+		/////////////////////
+				
+		private var _css:StyleSheet;
+		/**
+		 * Construct ConsoleConfig. Starts with default black based style.
+		 * You must set up the desired style and configuration before starting Console.
+		 */
+		public function ConsoleConfig() {
+			_css = new StyleSheet();
+		}
+		
+		/**
+		 * Called by console at start to generate the style sheet based on the style settings set
+		 * If you ever changed the style settings after console have already started, 
+		 * calling this method have a good chance of updating console style on the fly as well - not guarantee tho.
+		 */
+		public function updateStyleSheet():void
+		{
+			_css.setStyle("r",{textAlign:'right', display:'inline'});
+			_css.setStyle("w",{color:hesh(highColor), fontFamily:menuFont, fontSize:menuFontSize, display:'inline'});
+			_css.setStyle("s",{color:hesh(lowColor), fontFamily:menuFont, fontSize:menuFontSize-2, display:'inline'});
+			_css.setStyle("hi",{color:hesh(menuHighlightColor), display:'inline'});
+			_css.setStyle("menu",{color:hesh(menuColor), display:'inline'});
+			_css.setStyle("chs",{color:hesh(channelsColor), fontSize:menuFontSize, leading:'2', display:'inline'});
+			_css.setStyle("ch",{color:hesh(channelColor), display:'inline'});
+			_css.setStyle("tt",{color:hesh(tooltipColor),fontFamily:menuFont,fontSize:menuFontSize, textAlign:'center'});
+			_css.setStyle("p",{fontFamily:traceFont, fontSize:traceFontSize});
+			_css.setStyle("p0",{color:hesh(priority0), display:'inline'});
+			_css.setStyle("p1",{color:hesh(priority1), display:'inline'});
+			_css.setStyle("p2",{color:hesh(priority2), display:'inline'});
+			_css.setStyle("p3",{color:hesh(priority3), display:'inline'});
+			_css.setStyle("p4",{color:hesh(priority4), display:'inline'});
+			_css.setStyle("p5",{color:hesh(priority5), display:'inline'});
+			_css.setStyle("p6",{color:hesh(priority6), display:'inline'});
+			_css.setStyle("p7",{color:hesh(priority7), display:'inline'});
+			_css.setStyle("p8",{color:hesh(priority8), display:'inline'});
+			_css.setStyle("p9",{color:hesh(priority9), display:'inline'});
+			_css.setStyle("p10",{color:hesh(priority10), fontWeight:'bold', display:'inline'});
+			_css.setStyle("p-1",{color:hesh(priorityC1), display:'inline'});
+			_css.setStyle("p-2",{color:hesh(priorityC2), display:'inline'});
+		}
+		public function get styleSheet():StyleSheet	{
+			return _css;
+		}
+		private function hesh(n:Number):String{
+			return "#"+n.toString(16);
 		}
 	}
 }

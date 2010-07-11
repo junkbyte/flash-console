@@ -23,43 +23,39 @@
 * 
 */
 package com.junkbyte.console.view {
-	import com.junkbyte.console.KeyBind;
-	import flash.events.KeyboardEvent;
-
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.utils.Utils;
-
+	import com.junkbyte.console.KeyBind;
+	import com.junkbyte.console.utils.ShortClassName;
+	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
 	import flash.events.Event;
+	import flash.events.KeyboardEvent;
 	import flash.events.TextEvent;
 	import flash.geom.Point;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
-	import flash.utils.Dictionary;
+	import flash.utils.Dictionary;	
 
 	public class RollerPanel extends AbstractPanel{
 		
-		private var _txtField:TextField;
+		public static const NAME:String = "rollerPanel";
+		
 		private var _base:DisplayObjectContainer;
 		
 		private var _settingKey:Boolean;
 		
 		public function RollerPanel(m:Console) {
 			super(m);
-			name = Console.PANEL_ROLLER;
+			name = NAME;
 			init(60,100,false);
-			_txtField = new TextField();
-			_txtField.name = "rollerprints";
-			_txtField.multiline = true;
-			_txtField.autoSize = TextFieldAutoSize.LEFT;
-			_txtField.styleSheet = m.css;
-			_txtField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-			registerRollOverTextField(_txtField);
-			_txtField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
-			registerDragger(_txtField);
-			addChild(_txtField);
+			txtField = makeTF("rollerprints");
+			txtField.multiline = true;
+			txtField.autoSize = TextFieldAutoSize.LEFT;
+			registerTFRoller(txtField, onMenuRollOver, linkHandler);
+			registerDragger(txtField);
+			addChild(txtField);
 		}
 		public function start(base:DisplayObjectContainer):void{
 			_base = base;
@@ -80,14 +76,14 @@ package com.junkbyte.console.view {
 				return;
 			}
 			if(_settingKey){
-				_txtField.htmlText = "<w><menu>Press a key to set [ <a href=\"event:cancel\"><b>cancel</b></a> ]</menu></w>";
+				txtField.htmlText = "<w><menu>Press a key to set [ <a href=\"event:cancel\"><b>cancel</b></a> ]</menu></w>";
 			}else{
-				_txtField.htmlText = "<s>"+getMapString()+"</s>";
-				_txtField.autoSize = TextFieldAutoSize.LEFT;
-				_txtField.setSelection(0, 0);
+				txtField.htmlText = "<s>"+getMapString()+"</s>";
+				txtField.autoSize = TextFieldAutoSize.LEFT;
+				txtField.setSelection(0, 0);
 			}
-			width = _txtField.width+4;
-			height = _txtField.height;
+			width = txtField.width+4;
+			height = txtField.height;
 		}
 		private function getMapString(dolink:Boolean = false):String{
 			var stg:Stage = _base.stage;
@@ -120,17 +116,17 @@ package com.junkbyte.console.view {
 							if(obj == stg){
 								str +=  "<p3><a href='event:sclip_'><i>Stage</i></a> ["+stg.mouseX+","+stg.mouseY+"]</p3><br/>";
 							}else if(i == len-1){
-								str +=  "<p5><a href='event:sclip_"+mapUpward(obj)+"'>"+obj.name+" ("+Utils.shortClassName(obj)+")</a></p5><br/>";
+								str +=  "<p5><a href='event:sclip_"+mapUpward(obj)+"'>"+obj.name+" ("+ShortClassName(obj)+")</a></p5><br/>";
 							}else {
-								str +=  "<p2><a href='event:sclip_"+mapUpward(obj)+"'><i>"+obj.name+" ("+Utils.shortClassName(obj)+")</i></a></p2><br/>";
+								str +=  "<p2><a href='event:sclip_"+mapUpward(obj)+"'><i>"+obj.name+" ("+ShortClassName(obj)+")</i></a></p2><br/>";
 							}
 						}else{
 							if(obj == stg){
 								str +=  "<p1><i>Stage</i> ["+stg.mouseX+","+stg.mouseY+"]</p1><br/>";
 							}else if(i == len-1){
-								str +=  "<p5>"+obj.name+" ("+Utils.shortClassName(obj)+")</p5><br/>";
+								str +=  "<p5>"+obj.name+" ("+ShortClassName(obj)+")</p5><br/>";
 							}else {
-								str +=  "<p2>"+obj.name+" ("+Utils.shortClassName(obj)+")</p2><br/>";
+								str +=  "<p2>"+obj.name+" ("+ShortClassName(obj)+")</p2><br/>";
 							}
 						}
 					}

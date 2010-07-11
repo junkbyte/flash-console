@@ -31,10 +31,12 @@ package com.junkbyte.console.view {
 
 	public class FPSPanel extends GraphingPanel {
 		//
+		public static const NAME:String = "fpsPanel";
+		
 		public function FPSPanel(m:Console) {
 			super(m, 80,40);
-			name = Console.PANEL_FPS;
-			minimumWidth = 32;
+			name = NAME;
+			minWidth = 32;
 			// 
 		}
 		protected override function linkHandler(e:TextEvent):void{
@@ -50,11 +52,11 @@ package com.junkbyte.console.view {
 		}
 		public override function updateKeyText():void{
 			if(isNaN(_interest.v)) {
-				keyTxt.htmlText = "<r><s>no fps input <menu><a href=\"event:close\">X</a></menu></s></r>";
+				txtField.htmlText = "<r><s>no fps input <menu><a href=\"event:close\">X</a></menu></s></r>";
 			}else{
-				keyTxt.htmlText = "<r><s>"+_interest.v.toFixed(1)+" | "+_interest.avg.toFixed(1)+" <menu><a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
+				txtField.htmlText = "<r><s>"+_interest.v.toFixed(1)+" | "+_interest.avg.toFixed(1)+" <menu><a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
 			}
-			keyTxt.scrollH = keyTxt.maxScrollH;
+			txtField.scrollH = txtField.maxScrollH;
 		}
 	}
 }

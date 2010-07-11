@@ -23,51 +23,51 @@
 * 
 * 
 
-	BASIC USAGE:
+	BASICc USAGE:
 		
 		import com.junkbyte.console.*;
-		C.start(this); // this = preferably the root or stage
+		Cc.start(this); // this = preferably the root or stage
 		
-		// OR  C.start(this,"debug");
+		// OR  Cc.start(this,"debug");
 		// Start console, parameter "debug" (optional) sets the console's password.
 		// console will only open after you type "debug" in sequence at anytime on stage. 
 		// Leave blank to disable password, where console will launch straight away.
 		
-		C.add("Hello World"); 
+		Cc.add("Hello World"); 
 		// Output "Hello World" with default priority in defaultChannel
 		
-		C.add( ["Hello World" , "this is", "an array", "of arguments"] );
+		Cc.add( ["Hello World" , "this is", "an array", "of arguments"] );
 		// Passes multiple arguments as array (for the time being this is the only alternative)
 		
-		C.add("Important Trace!", 10);
+		Cc.add("Important Trace!", 10);
 		// Output "Important Trace!" with priority 10 in defaultChannel
 		
-		C.add("A Looping trace that I dont want to see a long list", 10, true);
+		Cc.add("A Looping trace that I dont want to see a long list", 10, true);
 		// Output the text in defaultChannel, replacing the last 'repeating' line. preventing it from generating so many lines.
 		// good for tracing loops.
-		// use C.forceLine = # to force print the line on # frames. # = a number.
+		// use Cc.forceLine = # to force print the line on # frames. # = a number.
 		
-		C.ch("myChannel","Hello my Channel"); 
+		Cc.ch("myChannel","Hello my Channel"); 
 		// Output "Hello my Channel" in "myChannel" channel.
 		// note: "global" channel show trace lines from all channels.
 		
-		C.ch("myChannel","Hello my Channel", 8); 
+		Cc.ch("myChannel","Hello my Channel", 8); 
 		// Output "Hello my Channel" in "myChannel" channel with priority 8
 		// note: "global" channel show trace lines from all channels.
 		
-		C.ch("myChannel","Hello my Channel", 8, true); 
+		Cc.ch("myChannel","Hello my Channel", 8, true); 
 		// Output "Hello my Channel" in "myChannel" channel with priority 8 replacing the last 'repeating' line
 		// note: "global" channel show trace lines from all channels.
 		
 		
 		// OPTIONAL USAGE
-		C.visible = false // (defauilt: true) set to change visibility. It will still record but will not update prints etc
+		Cc.visible = false // (defauilt: true) set to change visibility. It will still record but will not update prints etc
 
-		C.tracing = true; // (default: false) when set, all console input will be re-traced during authoring
-		C.alwaysOnTop = false; // (default: true) when set this console will try to keep it self on top of its parent display container.
+		Cc.tracing = true; // (default: false) when set, all console input will be re-traced during authoring
+		Cc.alwaysOnTop = false; // (default: true) when set this console will try to keep it self on top of its parent display container.
 
-		C.remoting = true; // (default: false) set to broadcast traces to LocalConnection
-		C.isRemote = true; // (default: false) set to recieve broadcasts from LocalConnection remote
+		Cc.remoting = true; // (default: false) set to broadcast traces to LocalConnection
+		Cc.isRemote = true; // (default: false) set to recieve broadcasts from LocalConnection remote
 */
 package com.junkbyte.console {
 	import flash.display.LoaderInfo;
@@ -77,8 +77,9 @@ package com.junkbyte.console {
 	import flash.geom.Rectangle;
 
 	/**
-	 * C is a static / singleton adapter for Console (com.junkbyte.console.Console).
-	 * In a later date when Console is no longer needed, remove C.start(..) or C.startOnStage(..) 
+	 * Cc stands for Console Controller.
+	 * It is a static / singleton controller for Console (com.junkbyte.console.Console).
+	 * In a later date when Console is no longer needed, remove Cc.start(..) or Cc.startOnStage(..) 
 	 * and the rest of console related codes will stop executing to save memory and performance.
 	 * @author  Lu Aye Oo
 	 * @version 2.4
@@ -86,34 +87,34 @@ package com.junkbyte.console {
 	 * @see #start()
 	 * @see #startOnStage()
 	 */
-	public class C{
+	public class Cc{
 		
-		private static const ERROR_EXISTS:String = "[CONSOLE] already exists. Will keep using the previously created console. If you want to create a fresh 1, C.remove() first.";
+		private static const ERROR_EXISTS:String = "[CONSOLE] already started.";
 		
 		private static var _console:Console;
 		
 		/**
 		 * Do not construct.
-		 * Please use C.start(..); or C.startOnStage(...);
+		 * Please use Cc.start(..); or Cc.startOnStage(...);
 		 * 
 		 * @throws Error error
 		 * @see #start()
 		 * @see #startOnStage()
 		 */
-		public function C() {
-			throw new Error("[CONSOLE] Do not construct class. Please use C.start(mc:DisplayObjectContainer, password:String='')");
+		public function Cc() {
+			throw new Error("[CONSOLE] Do not construct. Please use Cc.start() or Cc.startOnStage()");
 		}
 		/**
-		 * Start Console inside the given Display.
+		 * Start Console inside given Display.
 		 * <p>
 		 * Calling any other C calls before this (or startOnStage(...)) will fail silently.
 		 * When Console is no longer needed, removing this line alone will stop console from working without having any other errors.
-		 * In flex, it is more convenient to use C.startOnStage() as it will avoid UIComponent typing issue.
+		 * In flex, it is more convenient to use Cc.startOnStage() as it will avoid UIComponent typing issue.
 		 * </p>
 		 * @see #startOnStage()
 		 *
 		 * @param  Display in which console should be added to. Preferably stage or root of your flash document.
-		 * @param  Password sequence to toggle console's visibility. If password is set, console will start hidden. Set C.visible = ture to unhide at start.
+		 * @param  Password sequence to toggle console's visibility. If password is set, console will start hidden. Set Cc.visible = ture to unhide at start.
 		 * 			Must be ASCII chars. Example passwords: ` OR debug. Make sure Controls > Disable Keyboard Shortcuts in Flash.
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 */
@@ -122,7 +123,7 @@ package com.junkbyte.console {
 				trace(ERROR_EXISTS);
 			}else{
 				_console = new Console(pass, config);
-				// if no parent display, console will always be hidden, but using C.remoting is still possible so its not the end.
+				// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
 				if(mc!=null) mc.addChild(_console);
 			}
 		}
@@ -136,7 +137,7 @@ package com.junkbyte.console {
 		 * </p>
 		 * 
 		 * @param  Display which is Stage or will be added to Stage.
-		 * @param  Password sequence to toggle console's visibility. If password is set, console will start hidden. Set C.visible = ture to unhide at start.
+		 * @param  Password sequence to toggle console's visibility. If password is set, console will start hidden. Set Cc.visible = ture to unhide at start.
 		 * 			Must be ASCII chars. Example passwords: ` OR debug. Make sure Controls > Disable Keyboard Shortcuts in Flash.
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 * 			
@@ -148,7 +149,7 @@ package com.junkbyte.console {
 				start(mc.stage, pass, config);
 			}else{
 			 	_console = new Console(pass, config);
-			 	// if no parent display, console will always be hidden, but using C.remoting is still possible so its not the end.
+			 	// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
 				if(mc!=null) mc.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
 			}
 		}
@@ -528,7 +529,7 @@ package com.junkbyte.console {
 		 * <p>
 		 * However, if Console's parent display (root in example) is covered by another display (example: adding a child directly to stage), 
 		 * console will not be able to pull it self above it as it is in root, not stage.
-		 * If console is added on stage in the first place, there won't be an issue as described above. Use C.startOnStage(...).
+		 * If console is added on stage in the first place, there won't be an issue as described above. Use Cc.startOnStage(...).
 		 * </p>
 		 * <p>
 		 * Keeping it turned on may have other side effects if another display is also trying to put it self on top, 
@@ -573,7 +574,7 @@ package com.junkbyte.console {
 		/**
 		 * Set Password required to connect from remote.
 		 * <p>
-		 * By default this is the same as the password used in C.start() / C.startOnStage();
+		 * By default this is the same as the password used in Cc.start() / Cc.startOnStage();
 		 * If you set this to null, remote will no longer need a password to connect.
 		 * </p>
 		 */
@@ -721,8 +722,8 @@ package com.junkbyte.console {
 		 * </p>
 		 * <p>
 		 * Example: To graph both mouseX and mouseY of stage:
-		 * C.addGraph("mouse", stage, "mouseX", 0xFF0000, "x");
-		 * C.addGraph("mouse", stage, "mouseY", 0x0000FF, "y");
+		 * Cc.addGraph("mouse", stage, "mouseX", 0xFF0000, "x");
+		 * Cc.addGraph("mouse", stage, "mouseY", 0x0000FF, "y");
 		 * </p>
 		 *
 		 * @param  Name of graph, if same name already exist, graph line will be added to it.

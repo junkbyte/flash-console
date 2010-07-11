@@ -23,16 +23,15 @@
 * 
 */
 package com.junkbyte.console.view {
-	import com.junkbyte.console.core.CommandLine;
 	import com.junkbyte.console.Console;
-
+	import com.junkbyte.console.core.CommandLine;
+	
 	import flash.events.TextEvent;
-	import flash.text.TextField;
+	import flash.text.TextField;		
 
 	public class ObjMonitorPanel extends AbstractPanel{
 		
 		private var _menuField:TextField;
-		private var _txtField:TextField;
 		private var _scroller:TextScroller;
 		
 		private var _hasPrevious:Boolean;
@@ -42,28 +41,23 @@ package com.junkbyte.console.view {
 		public function ObjMonitorPanel(m:Console) {
 			super(m);
 			
-			_txtField = new TextField();
-			_txtField.name = "monitorField";
-			_txtField.y = m.config.menuFontSize;
-			_txtField.wordWrap = true;
-			_txtField.multiline = true;
-			_txtField.styleSheet = m.css;
-			_txtField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-			registerDragger(_txtField);
-			addChild(_txtField);
+			txtField = makeTF("monitorField");
+			txtField.name = "monitorField";
+			txtField.y = m.config.menuFontSize;
+			txtField.wordWrap = true;
+			txtField.multiline = true;
+			txtField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
+			registerDragger(txtField);
+			addChild(txtField);
 			
-			_menuField = new TextField();
-			_menuField.name = "menuField";
-			_menuField.styleSheet = m.css;
+			_menuField = makeTF("menuField");
 			_menuField.height = m.config.menuFontSize+6;
 			_menuField.y = -2;
-			_menuField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-			registerRollOverTextField(_menuField);
-			_menuField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
+			registerTFRoller(_menuField, onMenuRollOver, linkHandler);
 			registerDragger(_menuField);
 			addChild(_menuField);
 			
-			_scroller = new TextScroller(_txtField, config.controlColor);
+			_scroller = new TextScroller(txtField, config.controlColor);
 			_scroller.y = config.menuFontSize;
 			addChild(_scroller);
 			
@@ -73,24 +67,24 @@ package com.junkbyte.console.view {
 		public override function set width(n:Number):void{
 			_scroller.x = n;
 			_menuField.width = n;
-			_txtField.width = n-8;
+			txtField.width = n-8;
 			super.width = n;
 		}
 		public override function set height(n:Number):void{
 			_scroller.height = n - config.menuFontSize-12;
-			_txtField.height = n - config.menuFontSize;
+			txtField.height = n - config.menuFontSize;
 			super.height = n;
 		}
 		private function updateMenu():void{
 			_menuField.htmlText = "<w><menu> <b><a href=\"event:close\">X</a></b>"+(_hasPrevious?" | <a href=\"event:out\">previous</a>":"")+"</menu></w>";
 		}
 		public function update(obj:Object):void{
-			_txtField.mouseEnabled = true;
+			txtField.mouseEnabled = true;
 			var str:String = "<w>";
 			for(var X:String in obj){
 				str += "<p-2><a href=\"event:n_"+X+"\">"+X+"</a></p-2>=<p-1><a href=\"event:o_"+X+"\">"+obj[X]+"</a></p-1><br/>";
 			}
-			_txtField.htmlText = str+"</w>";
+			txtField.htmlText = str+"</w>";
 		}
 		private function onMenuRollOver(e:TextEvent):void{
 			var txt:String = e.text?e.text.replace("event:",""):"";
@@ -107,17 +101,17 @@ package com.junkbyte.console.view {
 			if(e.text == "close"){
 				master.unmonitor(id);
 			}else if(e.text == "out"){
-				_txtField.mouseEnabled = false;
+				txtField.mouseEnabled = false;
 				master.monitorOut(id);
 			}else if(e.text.substring(0,2) == "n_"){
 				master.panels.mainPanel.commandLineText = "$"+CommandLine.MONITORING_OBJ_KEY+"('"+id+"')."+e.text.substring(2);
 			}else if(e.text.substring(0,2) == "o_"){
 				_hasPrevious = true;
-				_txtField.mouseEnabled = false;
+				txtField.mouseEnabled = false;
 				master.monitorIn(id, e.text.substring(2));
 				updateMenu();
 			}
-			_txtField.setSelection(0, 0);
+			txtField.setSelection(0, 0);
 			e.stopPropagation();
 		}
 	}

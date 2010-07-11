@@ -23,23 +23,24 @@
 * 
 */
 package com.junkbyte.console.core {
-	import com.junkbyte.console.vos.WeakRef;
+	import com.junkbyte.console.utils.ShortClassName;
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.utils.Utils;
 	import com.junkbyte.console.vos.WeakObject;
-
+	import com.junkbyte.console.vos.WeakRef;
+	
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.utils.getQualifiedClassName;
+	import flash.utils.getQualifiedClassName;	
 
 	public class CommandLine extends EventDispatcher {
 		
 		private static const MAX_INTERNAL_STACK_TRACE:int = 1;
-		private static const RETURNED_KEY:String = "returned";
+		
+		public static const BASE_KEY:String = "base";
 		public static const MONITORING_OBJ_KEY:String = "monitorObj";
 		
-		private static const RESERVED_SAVES:Array = [RETURNED_KEY, "base", "C", MONITORING_OBJ_KEY];
+		private static const RESERVED_SAVES:Array = [Executer.RETURNED_KEY, BASE_KEY, "C", MONITORING_OBJ_KEY];
 		
 		
 		private var _saved:WeakObject;
@@ -68,10 +69,10 @@ package com.junkbyte.console.core {
 				_scope = obj;
 				dispatchEvent(new Event(Event.CHANGE));
 			}
-			_saved.set("base", obj);
+			_saved.set(BASE_KEY, obj);
 		}
 		public function get base():Object {
-			return _saved.get("base");
+			return _saved.get(BASE_KEY);
 		}
 		public function destory():void {
 			_saved = null;
@@ -95,7 +96,7 @@ package com.junkbyte.console.core {
 			}
 		}
 		public function get scopeString():String{
-			return Utils.shortClassName(_scope);
+			return ShortClassName(_scope);
 		}
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
@@ -198,7 +199,7 @@ package com.junkbyte.console.core {
 				if(_prevScope.reference) setReturned(_prevScope.reference, true);
 				else report("No previous scope",8);
 			} else if (cmd == "" || cmd == "scope") {
-				setReturned(_saved["returned"], true);
+				setReturned(_saved[Executer.RETURNED_KEY], true);
 			} else if (cmd == "autoscope") {
 				_autoScope = !_autoScope;
 				report("Auto-scoping <b>"+(_autoScope?"enabled":"disabled")+"</b>.",10);
@@ -214,7 +215,7 @@ package com.junkbyte.console.core {
 			var change:Boolean = false;
 			if(returned)
 			{
-				_saved.set("returned", returned, true);
+				_saved.set(Executer.RETURNED_KEY, returned, true);
 				if(returned !== _scope){
 					if(changeScope){
 						change = true;

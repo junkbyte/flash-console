@@ -41,6 +41,7 @@ package com.junkbyte.console.core {
 		
 		private var _previousTime:Number = -1;
 		private var _report:Function;
+		
 		public function Graphing(reporter:Function){
 			_report = reporter;
 		}
@@ -53,17 +54,16 @@ package com.junkbyte.console.core {
 			}
 			if(isNaN(col) || col<0) col = Math.random()*0xFFFFFF;
 			if(key == null) key = prop;
-			var interest:GraphInterest;
 			var interests:Array = group.interests;
-			for each(interest in interests){
-				if(interest.key == key){
+			for each(var i:GraphInterest in interests){
+				if(i.key == key){
 					_report("Graph with key ["+key+"] already exists in ["+n+"]", 10);
 					return;
 				}
 			}
 			if(rect) group.rect = rect;
 			if(inverse) group.inv = inverse;
-			interest = new GraphInterest(key, col);
+			var interest:GraphInterest = new GraphInterest(key, col);
 			var v:Number = NaN;
 			try{
 				v = interest.setObject(obj, prop);
@@ -194,13 +194,13 @@ package com.junkbyte.console.core {
 						group.updateMinMax(v);
 						interest.setValue(v, averaging);
 					}else{
-						for each(interest in interests){
+						for each(var i:GraphInterest in interests){
 							try{
-								v = interest.getCurrentValue();
+								v = i.getCurrentValue();
 								interest.setValue(v, averaging);
 							}catch(e:Error){
-								_report("Error with graph value for key ["+interest.key+"] in ["+group.name+"].", 10);
-								remove(group.name, interest.obj, interest.prop);
+								_report("Error with graph value for key ["+i.key+"] in ["+group.name+"].", 10);
+								remove(group.name, i.obj, i.prop);
 							}
 							group.updateMinMax(v);
 						}

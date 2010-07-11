@@ -30,11 +30,12 @@ package com.junkbyte.console.core
 
 	public class Executer extends EventDispatcher{
 		
-		public static const EXE_CLASSNAMES:String = "ExecuterValue|((com.junkbyte.console.core)?::Executer)";
+		public static const RETURNED_KEY:String = "returned";
+		public static const EXE_CLASSNAMES:String = "ExecuterValue|((com.junkbyte.console.core::)?Executer)";
 		
-		public static function Exec(_scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
+		public static function Exec(scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
 			var e:Executer = new Executer();
-			return e.exec(_scope, str, saved, reserved);
+			return e.exec(scope, str, saved, reserved);
 		}
 		
 		
@@ -117,8 +118,8 @@ package com.junkbyte.console.core
 			var lineBreaks:Array = str.split(/\s*;\s*/);
 			for each(var line:String in lineBreaks){
 				if(line.length){
-					if(_saved["returned"] && (line == "/" || line == "/scope")){
-						_scope = _saved["returned"];
+					if(_saved[RETURNED_KEY] && (line == "/" || line == "/scope")){
+						_scope = _saved[RETURNED_KEY];
 						dispatchEvent(new Event(Event.COMPLETE));
 					}else{
 						execNest(line);
@@ -516,20 +517,10 @@ package com.junkbyte.console.core
 					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
 				}else if(len==10){
 					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
-				}else if(len==11){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10]);
-				}else if(len==12){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11]);
-				}else if(len==13){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12]);
-				}else if(len==14){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13]);
-				}else if(len==15){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14]);
-				}else if(len>=16){
-					return new (def)(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15]);
+				}else {
+					throw new Error("CommandLine can't create new class instances with more than 10 arguments.");
 				}
-				// won't work with more than 16 arguments...
+				// won't work with more than 10 arguments...
 			}
 			return null;
 		}

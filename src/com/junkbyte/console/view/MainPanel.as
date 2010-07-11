@@ -24,7 +24,7 @@
 */
 
 package com.junkbyte.console.view {
-	import com.junkbyte.console.Ch;
+	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.Log;
 	import com.junkbyte.console.vos.Logs;
@@ -75,13 +75,14 @@ package com.junkbyte.console.view {
 				scope:"Current scope::(CommandLine)"
 		};
 		
+		public static const NAME:String = "mainPanel";
+		
 		// these are used for adding extended functionality such as from RemoteAIR
 		private var _extraMenuKeys:Array = [];
 		public var topMenuClick:Function;
 		public var topMenuRollOver:Function;
 		
 		private var _traceField:TextField;
-		private var _menuField:TextField;
 		private var _cmdPrefx:TextField;
 		private var _cmdField:TextField;
 		private var _cmdBG:Shape;
@@ -115,28 +116,22 @@ package com.junkbyte.console.view {
 			_lines = lines;
 			_commandsHistory = m.ud.commandLineHistory;
 			
-			name = Console.PANEL_MAIN;
-			minimumWidth = 50;
-			minimumHeight = 18;
+			name = NAME;
+			minWidth = 50;
+			minHeight = 18;
 			
-			_traceField = new TextField();
-			_traceField.name = "traceField";
+			_traceField = makeTF("traceField");
 			_traceField.wordWrap = true;
-			_traceField.background  = false;
 			_traceField.multiline = true;
-			_traceField.styleSheet = m.css;
 			_traceField.y = fsize;
 			_traceField.addEventListener(Event.SCROLL, onTraceScroll, false, 0, true);
 			addChild(_traceField);
 			//
-			_menuField = new TextField();
-			_menuField.name = "menuField";
-			_menuField.styleSheet = m.css;
-			_menuField.height = fsize+6;
-			_menuField.y = -2;
-			registerRollOverTextField(_menuField);
-			_menuField.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
-			addChild(_menuField);
+			txtField = makeTF("menuField");
+			txtField.height = fsize+6;
+			txtField.y = -2;
+			registerTFRoller(txtField, onMenuRollOver);
+			addChild(txtField);
 			//
 			_cmdBG = new Shape();
 			_cmdBG.name = "commandBackground";
@@ -188,7 +183,7 @@ package com.junkbyte.console.view {
 			_cmdBG.visible = false;
 			//
 			init(640,100,true);
-			registerDragger(_menuField);
+			registerDragger(txtField);
 			//
 			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
@@ -308,7 +303,7 @@ package com.junkbyte.console.view {
 		private function updateBottom():void{
 			var lines:Array = new Array();
 			var linesLeft:int = Math.round(_traceField.height/master.config.traceFontSize);
-			var maxchars:int = Math.round(_traceField.width*3/master.config.traceFontSize);
+			var maxchars:int = Math.round(_traceField.width*5/master.config.traceFontSize);
 			
 			var line:Log = _lines.last;
 			while(line){
@@ -361,7 +356,7 @@ package com.junkbyte.console.view {
 			_viewingChannels.splice(0);
 			if(a && a.length) {
 				if(a.indexOf(config.globalChannel) >= 0) a = [];
-				for each(var item:Object in a) _viewingChannels.push(item is Ch?(Ch(item).name):String(item));
+				for each(var item:Object in a) _viewingChannels.push(item is ConsoleChannel?(ConsoleChannel(item).name):String(item));
 			}
 			updateToBottom();
 			master.panels.updateMenu();
@@ -451,7 +446,7 @@ package com.junkbyte.console.view {
 			_lockScrollUpdate = true;
 			super.width = n;
 			_traceField.width = n-4;
-			_menuField.width = n;
+			txtField.width = n;
 			_cmdField.width = width-15-_cmdField.x;
 			_cmdBG.width = n;
 			
@@ -474,12 +469,12 @@ package com.junkbyte.console.view {
 				minimize = true;
 			}
 			if(_isMinimised != minimize){
-				registerDragger(_menuField, minimize);
+				registerDragger(txtField, minimize);
 				registerDragger(_traceField, !minimize);
 				_isMinimised = minimize;
 			}
 			var fsize:int = master.config.menuFontSize;
-			_menuField.visible = !minimize;
+			txtField.visible = !minimize;
 			_traceField.y = minimize?0:fsize;
 			_traceField.height = n-(_cmdField.visible?(fsize+4):0)-(minimize?0:fsize);
 			var cmdy:Number = n-(fsize+6);
@@ -523,7 +518,7 @@ package com.junkbyte.console.view {
 			for each(var link:String in _extraMenuKeys){
 				str += " <a href=\"event:"+link+"\">"+link+"</a>";
 			}
-			if(_canUseTrace){
+			if(config.traceCall != null && (_canUseTrace || config.traceCall != trace)){
 				str += doActive(" <a href=\"event:trace\">T</a>", master.tracing);
 			}
 			str += " <a href=\"event:copy\">Cc</a>";
@@ -532,8 +527,8 @@ package com.junkbyte.console.view {
 			str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a>";
 			
 			str += " ]</menu> </w></r>";
-			_menuField.htmlText = str;
-			_menuField.scrollH = _menuField.maxScrollH;
+			txtField.htmlText = str;
+			txtField.scrollH = txtField.maxScrollH;
 		}
 		public function getChannelsLink(limited:Boolean = false):String{
 			var str:String = "<chs>";
@@ -589,7 +584,7 @@ package com.junkbyte.console.view {
 			master.panels.tooltip(txt, src);
 		}
 		private function linkHandler(e:TextEvent):void{
-			_menuField.setSelection(0, 0);
+			txtField.setSelection(0, 0);
 			stopDrag();
 			if(topMenuClick!=null && topMenuClick(e.text)) return;
 			if(e.text == "pause"){
@@ -648,7 +643,7 @@ package com.junkbyte.console.view {
 				master.runCommand("/remap 0"+Console.MAPPING_SPLITTER+e.text.substring(6));
 				//master.cl.reMap(e.text.substring(6), stage);
 			}
-			_menuField.setSelection(0, 0);
+			txtField.setSelection(0, 0);
 			e.stopPropagation();
 		}
 		public function onChannelPressed(chn:String):void{

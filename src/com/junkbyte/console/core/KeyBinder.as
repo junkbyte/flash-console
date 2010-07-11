@@ -24,8 +24,6 @@
 */
 package com.junkbyte.console.core {
 	import com.junkbyte.console.KeyBind;
-	import com.junkbyte.console.utils.Utils;
-
 	import flash.events.KeyboardEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -37,7 +35,7 @@ package com.junkbyte.console.core {
 		
 		private var _password:String;
 		private var _passwordIndex:int;
-		private var _keyBinds:Object;
+		private var _keyBinds:Object = {};
 		
 		public function KeyBinder(pass:String) {
 			_password = pass == ""?null:pass;
@@ -55,24 +53,18 @@ package com.junkbyte.console.core {
 			else
 			{
 				_passwordIndex = 0;
-				if(_keyBinds != null){
-					var keybind:KeyBind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey);
-					if(_keyBinds[keybind.key]){
-						var bind:Array = _keyBinds[keybind.key];
-						(bind[0] as Function).apply(this, bind[1]);
-					}
+				var keybind:KeyBind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey);
+				if(_keyBinds[keybind.key]){
+					var bind:Array = _keyBinds[keybind.key];
+					(bind[0] as Function).apply(this, bind[1]);
 				}
 			}
 		}
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
 			var keystr:String = key.key;
 			if(fun == null){
-				if(_keyBinds != null) {
-					delete _keyBinds[keystr];
-					if(!Utils.HaveItemsInObject(_keyBinds)) _keyBinds = null;
-				}
+				delete _keyBinds[keystr];
 			}else{
-				if(_keyBinds == null) _keyBinds = {};
 				_keyBinds[keystr] = [fun, args];
 			}
 		}

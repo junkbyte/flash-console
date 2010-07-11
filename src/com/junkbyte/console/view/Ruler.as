@@ -24,9 +24,9 @@
 */
 package com.junkbyte.console.view {
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.utils.Utils;
-
+	
 	import flash.display.BlendMode;
+	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -37,7 +37,7 @@ package com.junkbyte.console.view {
 	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
-	import flash.ui.Mouse;
+	import flash.ui.Mouse;		
 
 	public class Ruler extends Sprite{
 		
@@ -67,13 +67,8 @@ package com.junkbyte.console.view {
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
-			_posTxt = new TextField();
-			_posTxt.name = "positionText";
+			_posTxt = _master.panels.mainPanel.makeTF("positionText", false, true);
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
-            _posTxt.background = true;
-            _posTxt.backgroundColor = _master.config.backgroundColor;
-			_posTxt.styleSheet = console.css;
-			_posTxt.mouseEnabled = false;
 			addChild(_posTxt);
 			//
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
@@ -147,20 +142,20 @@ package com.junkbyte.console.view {
 				var d:Number = Point.distance(p, p2);
 				//
 				var txt:TextField = makeTxtField(_master.config.highColor);
-				txt.text = Utils.round(p.x,10)+","+ Utils.round(p.y,10);
+				txt.text = round(p.x)+","+ round(p.y);
 				txt.x = p.x;
 				txt.y = p.y-(ymin==p?14:0);
 				addChild(txt);
 				//
 				txt = makeTxtField(_master.config.highColor);
-				txt.text = Utils.round(p2.x,10)+","+ Utils.round(p2.y,10);
+				txt.text = round(p2.x)+","+ round(p2.y);
 				txt.x = p2.x;
 				txt.y = p2.y-(ymin==p2?14:0);;
 				addChild(txt);
 				//
 				if(w>40 || h>25){
 					txt = makeTxtField(_master.config.lowColor);
-					txt.text = Utils.round(mp.x,10)+","+ Utils.round(mp.y,10);
+					txt.text = round(mp.x)+","+ round(mp.y);
 					txt.x = mp.x;
 					txt.y = mp.y;
 					addChild(txt);
@@ -189,19 +184,19 @@ package com.junkbyte.console.view {
 				graphics.moveTo(xmax.x, _area.y);
 				graphics.lineTo(xmax.x, _area.y+_area.height);
 				//
-				var a1:Number = Utils.round(Utils.angle(p,p2),100);
-				var a2:Number = Utils.round(Utils.angle(p2,p),100);
+				var a1:Number = round(angle(p,p2),100);
+				var a2:Number = round(angle(p2,p),100);
 				graphics.lineStyle(1, 0xAA0000, 0.8);
-				Utils.drawCircleSegment(graphics, 10,p, a1, -90);
+				drawCircleSegment(graphics, 10,p, a1, -90);
 				graphics.lineStyle(1, 0xCC8800, 0.8);
-				Utils.drawCircleSegment(graphics, 10,p2, a2, -90);
+				drawCircleSegment(graphics, 10,p2, a2, -90);
 				//
 				graphics.lineStyle(2, 0x00FF00, 0.7);
 				graphics.moveTo(p.x, p.y);
 				graphics.lineTo(p2.x, p2.y);
 				//
 				_master.report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", -2);
-				_master.report("Distance: <b>"+Utils.round(d,100) +"</b>", -2);
+				_master.report("Distance: <b>"+round(d,100) +"</b>", -2);
 				_master.report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", -2);
 				_master.report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", -2);
 				_master.report("Angle from first point (red): <b>"+a1+"°</b>", -2);
@@ -223,5 +218,48 @@ package com.junkbyte.console.view {
         	txt.defaultTextFormat = format;
            	return txt;
 		}
+		
+		
+		private function round(n:Number, d:uint = 10):Number{
+			return Math.round(n*d)/d;
+		}
+		private function angle(srcP:Point, point:Point):Number {
+			var a:Number = Math.atan2(point.y - srcP.y , point.x - srcP.x)/Math.PI * 180;
+			a +=90;
+			if(a>180) a -= 360;
+			return a;
+		}
+		private function drawCircleSegment(g : Graphics,radius :Number,pos:Point, deg:Number = 180, startDeg:Number = 0):Point
+		{
+			var reversed:Boolean = false;
+			if(deg<0){
+				reversed = true;
+				deg = Math.abs(deg);
+			}
+			var rad:Number = (deg*Math.PI)/180;
+			var rad2:Number = (startDeg*Math.PI)/180;
+			var p:Point = getPointOnCircle(radius, rad2);
+			p.offset(pos.x,pos.y);
+			g.moveTo(p.x,p.y);
+			var pra:Number = 0;
+			for (var i:int = 1; i<=(rad+1); i++) {
+				var ra:Number = i<=rad?i:rad;
+				var diffr:Number = ra-pra;
+				var offr:Number = 1+(0.12*diffr*diffr);
+				var ap:Point = getPointOnCircle(radius*offr, ((ra-(diffr/2))*(reversed?-1:1))+rad2);
+				ap.offset(pos.x,pos.y);
+				p = getPointOnCircle(radius, (ra*(reversed?-1:1))+rad2);
+				p.offset(pos.x,pos.y);
+				g.curveTo(ap.x,ap.y, p.x,p.y);
+				pra = ra;
+			}
+			return p;
+		}
+		private function getPointOnCircle(radius:Number, rad:Number):Point {
+			return new Point(radius * Math.cos(rad),radius * Math.sin(rad));
+		}
+		
+		
+		
 	}
 }

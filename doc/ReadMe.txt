@@ -6,7 +6,7 @@
 
 ==Flash Console==
 
-  * Version: 2.4 beta (July 2010)
+  * Version: 2.4 beta2 (July 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -35,20 +35,21 @@ http://code.google.com/p/flash-console/issues/
 
 ===2.4===
 
+  * Renamed C to Cc so that flash builder pick up as auto complete. Cc stands for Console controller.
   * Renamed source package name to com.junkbyte.console - to be less personal
-  * Move a lot of 'configuration' settings from C. to ConsoleConfig (that you pass at start)
-  * Due to security concern, CommandLine is no longer allowed by default. You must do C.commandLineAllowed = true OR C.commandLine = true (to allow and show)
+  * Move a lot of 'configuration' settings from Cc. to ConsoleConfig (that you pass at start)
+  * Due to security concern, CommandLine is no longer allowed by default. You must do Cc.commandLineAllowed = true OR Cc.commandLine = true (to allow and show)
   * CommandLine: no longer auto scope to new return. Enter '/' to change scope to last returned object. Turn on auto-scoping by typing /autoscope
   * Very long lines are automatically split before displaying to increase speed
   * Custom graphing is now passed into remote.
-  * Added C.explode
-  * Added C.stack
-  * Added C.autoStackPriority and defaultStackDepth in ConsoleConfig
-  * C.fatal will get auto stack trace by default.
+  * Added Cc.explode
+  * Added Cc.stack
+  * Added Cc.autoStackPriority and defaultStackDepth in ConsoleConfig
+  * Cc.fatal will get auto stack trace by default.
   * External trace call will have channel name as first param, log line as second param and priority as third
   * Removed tracingPriorty, prefixChannelNames, tracingChannels
-  * Removed C.filterText and C.filterRegExp - use /filter in interface
-  * Removed C.gc() - use memoryMonitor - G button in interface.
+  * Removed Cc.filterText and Cc.filterRegExp - use /filter in interface
+  * Removed Cc.gc() - use memoryMonitor - G button in interface.
 
 ===2.35===
   * Removed /strong AND C.strongRef. Must now use /savestrong individually.

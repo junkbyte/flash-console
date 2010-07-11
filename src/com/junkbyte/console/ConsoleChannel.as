@@ -24,9 +24,9 @@
 */
 package com.junkbyte.console {
 	
-	public class Ch {
+	public class ConsoleChannel {
 		
-		private var _c:*; // because it could be Console or C. This is the cheapest way I think...
+		private var _c:*; // because it could be Console or Cc. This is the cheapest way I think...
 		private var _name:String;
 		
 		public var enabled:Boolean = true;
@@ -37,10 +37,10 @@ package com.junkbyte.console {
 		 * @param String Name of channel
 		 * @param String (optional) instance of Console, leave blank to use C.
 		 */
-		public function Ch(n:String = null, c:Console = null){
+		public function ConsoleChannel(n:String = null, c:Console = null){
 			_name = n;
-			// allowed to pass in Console here incase you want to use a different console instance from whats used in C
-			_c = c?c:C;
+			// allowed to pass in Console here incase you want to use a different console instance from whats used in Cc
+			_c = c?c:Cc;
 		}
 		public function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(!enabled) return;

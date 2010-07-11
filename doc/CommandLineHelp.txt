@@ -15,7 +15,7 @@
   * We have a game that is purely based on physics. Sometimes we want to see what happened to object collisions slowly to see in detail. With commandline we can directly control stage frame rate by writing `stage.frameRate = 5`
   * If you use [http://puremvc.org/ PureMVC], you can save the reference of facade OR call directly to its singleton, and have access to all its model/view and even send commands on the fly through command line. As commandLine isn't made to specialise in using PureMVC, you will need to go through a few steps just like you would need when coding. e.g.(multiton) `AppFacade.getInstance('main').retrieveProxy('myModel')`.
 
-  * Note that `$` commands given in the above examples need to be assigned to a function of your own flash. For example: to be able to use `$goto('red31')` command mentioned above, you would have to create a function that accept a string argument and assign that function in console like: `C.store(<function>, "goto");`. Explained how in tutorial below.
+  * Note that `$` commands given in the above examples need to be assigned to a function of your own flash. For example: to be able to use `$goto('red31')` command mentioned above, you would have to create a function that accept a string argument and assign that function in console like: `Cc.store(<function>, "goto");`. Explained how in tutorial below.
 
 === Limitations ===
   * Console can only access/execute public/dynamic properties, methods and static classes/objects. You can not access private/protected properties/methods or perform operations such as for-loop, defining a brand new class, etc, - Command line is designed to debug and help develop, not to create another app within it :)
@@ -23,7 +23,7 @@
 
 == Getting started ==
   * Command line is not enabled in console by default.
-  * To start commandliine: `C.commandline = true` OR `C.commandlineAllowed = true` and then you can press *CL* on console's top menu UI when you need it.
+  * To start commandliine: `Cc.commandline = true` OR `Cc.commandlineAllowed = true` and then you can press *CL* on console's top menu UI when you need it.
   * Command line appear as a text field at the bottom of the console window.
   * It uses the same syntax as actionscript - Except that you can only do 1 simple line of code at a time.
   * The class name of current scope is displayed on the left of command line. 
@@ -135,7 +135,7 @@ this
   * This way, where ever your scope is, you can refer to this clip by typing $bunny.
   * like wise, your base command line scope (Stage in this example) is automatically saved as $base.
   * Storing is not only limited to displays, you can store anything, including class references, functions, etc..
-  * In source code, you can use `C.store(<name>, <object>)` to store variables to Console.
+  * In source code, you can use `Cc.store(<name>, <object>)` to store variables to Console.
   * so typing the 2 line below will get you back to Stage as scope.
 {{{
 $base
@@ -164,19 +164,19 @@ $bunny.stopDrag()
 
 For example, you could generate event logs on MOUSE_MOVE events of the bunny.
 {{{
-$bunny.addEventListener('mouseMove', $C.log)
+$bunny.addEventListener('mouseMove', $Cc.log)
 }}}
 Now if you roll your mouse on the bunny movieClip, you will see lots of mouse event logs. _I am only using the string 'mouseMove' instead of MouseEvent.MOUSE_MOVE because I will be explaining about static classes later in this tutorial._
 To stop:
 {{{
-$bunny.removeEventListener('mouseMove', $C.log)
+$bunny.removeEventListener('mouseMove', $Cc.log)
 }}}
 
 === Static classes/singletons ===
   * To access class singletons, you need to write the full path, as there is no room for 'import' syntax in a single line.
-  * For example, to jump to the scope of com.junkbyte.console.C - class (not instance), simply type:
+  * For example, to jump to the scope of com.junkbyte.console.Cc - class (not instance), simply type:
 {{{
-com.junkbyte.console.C
+com.junkbyte.console.Cc
 }}}
   * Command line should resolve it as a class definition reference and return.
   * If you do `/inspect` on this return, you will see that all of the properties and methods have a prefix [static] in them, because they are...
@@ -193,7 +193,7 @@ flash.ui.Mouse.show()
 
 
 === New instance ===
-  * If you have read the GettingStarted document, you would know that com.junkbyte.console.C is mearly an adaptor/manager for a com.junkbyte.console.Console instance.
+  * If you have read the GettingStarted document, you would know that com.junkbyte.console.Cc is mearly an adaptor/manager for a com.junkbyte.console.Console instance.
   * What about make your own Console instance from inside commandLine and manage it? - for demonstration purposes ofc...
   * Note that you need to use the full class path (because there is no room for 'import' in a single line).
 {{{
@@ -204,7 +204,7 @@ new com.junkbyte.console.Console()
 {{{
 /storestrong myC
 }}}
-  * The reason to use `savestrong` here is because Console (by default) only store outside references as a weak reference to make sure it has minimal impact on the client's environment (unless `C.strongRef` is set).
+  * The reason to use `savestrong` here is because Console (by default) only store outside references as a weak reference to make sure it has minimal impact on the client's environment (unless `Cc.strongRef` is set).
   * Exceptional to this, CommandLine caches your last returned value as strong references to make sure it doesn't get garbage collected before you can do anything with it.
   * This does however mean that your current scope can sometimes get garbage collected while you are still working on it - so do a /savestrong.
 
@@ -215,19 +215,19 @@ $base.addChild($myC)
   * You might see several lines saying Console is moved to top on both consoles. This is because 'alwaysOnTop' is enabled by default and both consoles will fight to be on top until their attempts run out.
   * Move the new console down so that you can see both. Drag it down OR code it here as beloew:
 {{{
-$myC.y = 310
+$myCc.y = 310
 }}}
   * Now that's a nightmare you got not 1 but 2 bloody annoying consoles!
   * Ok, so now this is your own console, managed by you, through another console's command line... Why not try the normal console methods:
 {{{
-$myC.log('Testing one two three');
-$myC.fpsMonitor = true;
-$myC.commandLine = true;
+$myCc.log('Testing one two three');
+$myCc.fpsMonitor = true;
+$myCc.commandLine = true;
 }}}
   * If you are not bored yet, you can even start commandLine from the new console and command the parent console using `C` - backwards!
   * Write in the NEW console's command line:
 {{{
-com.junkbyte.console.C.fatal('STOP CONTROLLING YOUR MINION! :(')
+com.junkbyte.console.Cc.fatal('STOP CONTROLLING YOUR MINION! :(')
 }}}
   * You should see the message back at the main Console...
 
@@ -284,5 +284,5 @@ Examples of security risk:
 How to increase security.
   * It is likely very useful to have Console running during beta or even final deployment. However it is highly recommended that you either have a long password to Console OR disable commandLine (by default it is).
 {{{
-C.commandLineAllowed = false;
+Cc.commandLineAllowed = false;
 }}}

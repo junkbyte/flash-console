@@ -23,14 +23,14 @@
 * 
 */
 package com.junkbyte.console.core {
-	import com.junkbyte.console.utils.Utils;
-	import com.junkbyte.console.vos.WeakObject;
+	import com.junkbyte.console.utils.ShortClassName;
 	import com.junkbyte.console.Console;
-
+	import com.junkbyte.console.vos.WeakObject;
+	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import flash.utils.getQualifiedClassName;
 	import flash.utils.describeType;
+	import flash.utils.getQualifiedClassName;	
 
 	public class CommandTools {
 		
@@ -261,7 +261,7 @@ package com.junkbyte.console.core {
 					list.push(X+":"+explode(obj[X], depth-1, p-1));
 				}
 			}catch(e:Error){}
-			return "<p"+p+">{"+Utils.shortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
+			return "<p"+p+">{"+ShortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
 		}
 		private function makeInheritLine(props:Array, props2:Array, viewAll:Boolean, type:String, breaker:String):void{
 			var str:String = "";

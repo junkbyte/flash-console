@@ -22,15 +22,13 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core {	
-	import com.junkbyte.console.vos.WeakRef;
+package com.junkbyte.console.core {
+	import com.junkbyte.console.utils.ShortClassName;
 	import com.junkbyte.console.vos.MonitorValue;
-
-	import flash.utils.describeType;
-
-	import com.junkbyte.console.utils.Utils;
-
+	import com.junkbyte.console.vos.WeakRef;
+	
 	import flash.events.EventDispatcher;
+	import flash.utils.describeType;	
 
 	public class ObjectsMonitor extends EventDispatcher{
 		
@@ -119,7 +117,7 @@ package com.junkbyte.console.core {
 		}
 		private function getStringOf(v:*):String{
 			var t:String = typeof v;
-			if(t == "object" || t =="xml") return "["+Utils.shortClassName(v)+"]";
+			if(t == "object" || t =="xml") return "["+ShortClassName(v)+"]";
 			t = String(v);
 			t = t.length<50?t:(t.substring(0,48)+"...");
 			return t.replace(/</gm, "&lt;");

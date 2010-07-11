@@ -45,18 +45,20 @@ package com.junkbyte.console.view {
 		
 		//event might be clearer to have it independent...
 		//[Event(name="textLinkEvent", type="flash.events.TextEvent")]
-		public static const TEXT_LINK:String = "textLinkEvent";
+		private static const TEXT_ROLL:String = "TEXT_ROLL";
 		
 		private var _snaps:Array;
 		private var _dragOffset:Point;
+		
 		private var _resizeTxt:TextField;
 		//
 		protected var master:Console;
 		protected var config:ConsoleConfig;
 		protected var bg:Sprite;
 		protected var scaler:Sprite;
-		protected var minimumWidth:int = 18;
-		protected var minimumHeight:int = 18;
+		protected var txtField:TextField;
+		protected var minWidth:int = 18;
+		protected var minHeight:int = 18;
 		
 		public var moveable:Boolean = true;
 		public var snapping:uint = 3;
@@ -99,12 +101,12 @@ package com.junkbyte.console.view {
 		// SIZE
 		//
 		override public function set width(n:Number):void{
-			if(n < minimumWidth) n = minimumWidth;
+			if(n < minWidth) n = minWidth;
 			if(scaler) scaler.x = n;
 			bg.width = n;
 		}
 		override public function set height(n:Number):void{
-			if(n < minimumHeight) n = minimumHeight;
+			if(n < minHeight) n = minHeight;
 			if(scaler) scaler.y = n;
 			bg.height = n;
 		}
@@ -130,10 +132,8 @@ package com.junkbyte.console.view {
 		private function onDraggerMouseDown(e:MouseEvent):void{
 			if(!stage || !moveable) return;
 			//
-			_resizeTxt = new TextField();
-			_resizeTxt.name = "positioningField";
+			_resizeTxt = makeTF("positioningField", false, true);
 			_resizeTxt.autoSize = TextFieldAutoSize.LEFT;
-           	formatText(_resizeTxt);
 			addChild(_resizeTxt);
 			updateDragText();
 			//
@@ -194,12 +194,10 @@ package com.junkbyte.console.view {
 			}
 		}
 		private function onScalerMouseDown(e:Event):void{
-			_resizeTxt = new TextField();
-			_resizeTxt.name = "resizingField";
+			_resizeTxt = makeTF("resizingField", false, true);
 			_resizeTxt.autoSize = TextFieldAutoSize.RIGHT;
 			_resizeTxt.x = -4;
 			_resizeTxt.y = -17;
-           	formatText(_resizeTxt);
 			scaler.addChild(_resizeTxt);
 			updateScaleText();
 			_dragOffset = new Point(scaler.mouseX,scaler.mouseY); // using this way instead of startDrag, so that it can control snapping.
@@ -212,8 +210,8 @@ package com.junkbyte.console.view {
 			var p:Point = returnSnappedFor(x+mouseX-_dragOffset.x, y+mouseY-_dragOffset.x);
 			p.x-=x;
 			p.y-=y;
-			width = p.x<minimumWidth?minimumWidth:p.x;
-			height = p.y<minimumHeight?minimumHeight:p.y;
+			width = p.x<minWidth?minWidth:p.x;
+			height = p.y<minHeight?minHeight:p.y;
 			updateScaleText();
 		}
 		private function updateScaleText():void{
@@ -234,13 +232,20 @@ package com.junkbyte.console.view {
 		}
 		//
 		//
-		//
-		private function formatText(txt:TextField):void{
-            txt.background = true;
-            txt.backgroundColor = config.backgroundColor;
-			txt.styleSheet = master.css;
-			txt.mouseEnabled = false;
+		public function makeTF(n:String, mouse:Boolean = true, back:Boolean = false):TextField
+		{
+			var txt:TextField = new TextField();
+			txt.name = n;
+			txt.styleSheet = config.styleSheet;
+			if(!mouse) txt.mouseEnabled = mouse;
+			if(back){
+          	 	txt.background = true;
+            	txt.backgroundColor = config.backgroundColor;
+			}
+			return txt;
 		}
+		//
+		//
 		private function returnSnappedFor(X:Number,Y:Number):Point{
 			var ex:Number = X+width;
 			var Xs:Array = _snaps[0];
@@ -269,17 +274,18 @@ package com.junkbyte.console.view {
 			return new Point(X,Y);
 		}
 		
-		public static function registerRollOverTextField(field:TextField):void{
+		public function registerTFRoller(field:TextField, overhandle:Function, linkHandler:Function = null):void{
 			field.addEventListener(MouseEvent.MOUSE_MOVE, onTextFieldMouseMove, false, 0, true);
-			field.addEventListener(MouseEvent.ROLL_OUT, onTextFieldMouseMove, false, 0, true);
+			field.addEventListener(MouseEvent.ROLL_OUT, onTextFieldMouseOut, false, 0, true);
+			field.addEventListener(TEXT_ROLL, overhandle, false, 0, true);
+			if(linkHandler != null) field.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
+		}
+		
+		private static function onTextFieldMouseOut(e:MouseEvent):void{
+			TextField(e.currentTarget).dispatchEvent(new TextEvent(TEXT_ROLL));
 		}
 		private static function onTextFieldMouseMove(e:MouseEvent):void{
 			var field:TextField = e.currentTarget as TextField;
-			if(!field.stage || !field.visible || (field.parent && !field.parent.visible)) {
-				// this can happen if you removed it while rolled over and roll out calls on next move	
-				field.dispatchEvent(new TextEvent(TEXT_LINK));
-				return;
-			}
 			var index:int;
 			if(field.scrollH>0){
 				// kinda a hack really :(
@@ -293,19 +299,23 @@ package com.junkbyte.console.view {
 				index = field.getCharIndexAtPoint(field.mouseX, field.mouseY);
 			}
 			var url:String = null;
-			var txt:String = null;
+			//var txt:String = null;
 			if(index>0){
 				// TextField.getXMLText(...) is not documented
-				var X:XML = new XML(field.getXMLText(index,index+1));
-				if(X.hasOwnProperty("textformat")){
-					var txtformat:XML = X["textformat"][0] as XML;
-					if(txtformat){
-						url = txtformat.@url;
-						txt = txtformat.toString();
+				try{
+					var X:XML = new XML(field.getXMLText(index,index+1));
+					if(X.hasOwnProperty("textformat")){
+						var txtformat:XML = X["textformat"][0] as XML;
+						if(txtformat){
+							url = txtformat.@url;
+							//txt = txtformat.toString();
+						}
 					}
+				}catch(err:Error){
+					url = null;
 				}
 			}
-			field.dispatchEvent(new TextEvent(TEXT_LINK,false,false,url));
+			field.dispatchEvent(new TextEvent(TEXT_ROLL,false,false,url));
 		}
 	}
 }

@@ -31,10 +31,12 @@ package com.junkbyte.console.view {
 
 	public class MemoryPanel extends GraphingPanel {
 		//
+		public static const NAME:String = "memoryPanel";
+		
 		public function MemoryPanel(m:Console) {
 			super(m, 80,40);
-			name = Console.PANEL_MEMORY;
-			minimumWidth = 32;
+			name = NAME;
+			minWidth = 32;
 		}
 		public override function update(group:GraphGroup, draw:Boolean = true):void{
 			super.update(group, draw);
@@ -42,11 +44,11 @@ package com.junkbyte.console.view {
 		}
 		public override function updateKeyText():void{
 			if(isNaN(_interest.v)){
-				keyTxt.htmlText = "<r><s>no mem input <menu><a href=\"event:close\">X</a></menu></s></r>";
+				txtField.htmlText = "<r><s>no mem input <menu><a href=\"event:close\">X</a></menu></s></r>";
 			}else{
-				keyTxt.htmlText =  "<r><s>"+_interest.v.toFixed(2)+"mb <menu><a href=\"event:gc\">G</a> <a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
+				txtField.htmlText =  "<r><s>"+_interest.v.toFixed(2)+"mb <menu><a href=\"event:gc\">G</a> <a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
 			}
-			keyTxt.scrollH = keyTxt.maxScrollH;
+			txtField.scrollH = txtField.maxScrollH;
 		}
 		protected override function linkHandler(e:TextEvent):void{
 			if(e.text == "gc"){

@@ -25,7 +25,7 @@
 package {
 	
 	import com.junkbyte.console.ConsoleConfig;
-	import com.junkbyte.console.C;
+	import com.junkbyte.console.Cc;
 
 	import flash.display.*;
 	import flash.events.*;
@@ -43,14 +43,14 @@ package {
 			var config:ConsoleConfig = new ConsoleConfig();
 			config.maxLines = 2000;
 			
-			C.start(this, "", config);
-			C.remote = true;
-			C.commandLine = true;
+			Cc.start(this, "", config);
+			Cc.remote = true;
+			Cc.commandLine = true;
 			
 			//
 			// This is special case for remote to disable scaling and moving
-			C.instance.panels.mainPanel.moveable = false;
-			C.instance.panels.mainPanel.scalable = false;
+			Cc.instance.panels.mainPanel.moveable = false;
+			Cc.instance.panels.mainPanel.scalable = false;
 			//
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -59,8 +59,8 @@ package {
 			onStageResize();
 		}
 		private function onStageResize(e : Event = null) : void {
-			C.width = stage.stageWidth;
-			C.height = stage.stageHeight;
+			Cc.width = stage.stageWidth;
+			Cc.height = stage.stageHeight;
 		}
 	}
 }

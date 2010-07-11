@@ -23,9 +23,6 @@
 * 
 */
 package com.junkbyte.console {
-	import flash.events.ErrorEvent;
-	import flash.display.LoaderInfo;
-	import flash.events.IEventDispatcher;
 	import com.junkbyte.console.core.CommandLine;
 	import com.junkbyte.console.core.CommandTools;
 	import com.junkbyte.console.core.Graphing;
@@ -33,41 +30,37 @@ package com.junkbyte.console {
 	import com.junkbyte.console.core.MemoryMonitor;
 	import com.junkbyte.console.core.ObjectsMonitor;
 	import com.junkbyte.console.core.Remoting;
+	import com.junkbyte.console.utils.ShortClassName;
 	import com.junkbyte.console.core.UserData;
-	import com.junkbyte.console.utils.GetCSSfromStyle;
-	import com.junkbyte.console.utils.Utils;
 	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.view.PanelsManager;
 	import com.junkbyte.console.view.RollerPanel;
 	import com.junkbyte.console.vos.Log;
 	import com.junkbyte.console.vos.Logs;
-
+	
 	import flash.display.DisplayObjectContainer;
+	import flash.display.LoaderInfo;
 	import flash.display.Sprite;
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
+	import flash.events.IEventDispatcher;
 	import flash.events.KeyboardEvent;
 	import flash.geom.Rectangle;
-	import flash.text.StyleSheet;
 	import flash.utils.getQualifiedClassName;
-	import flash.utils.getTimer;
+	import flash.utils.getTimer;	
 
 	/**
 	 * Console is the main class. 
-	 * Please see com.junkbyte.console.C for documentation as it shares the same properties and methods structure.
+	 * Please see com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
 	 * @see http://code.google.com/p/flash-console/
-	 * @see com.junkbyte.console.C
+	 * @see com.junkbyte.console.Cc
 	 */
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.4;
-		public static const VERSION_STAGE:String = "beta";
+		public static const VERSION_STAGE:String = "beta2";
 		//
 		public static const NAME:String = "Console";
-		public static const PANEL_MAIN:String = "mainPanel";
-		public static const PANEL_CHANNELS:String = "channelsPanel";
-		public static const PANEL_FPS:String = "fpsPanel";
-		public static const PANEL_MEMORY:String = "memoryPanel";
-		public static const PANEL_ROLLER:String = "rollerPanel";
 		//
 		public static const LOG_LEVEL:uint = 1;
 		public static const INFO_LEVEL:uint = 3;
@@ -80,10 +73,8 @@ package com.junkbyte.console {
 		//
 		public var quiet:Boolean;
 		public var alwaysOnTop:Boolean = true;
-		public var moveTopAttempts:int = 50;
 		//
 		private var _config:ConsoleConfig;
-		private var _css:StyleSheet;
 		private var _panels:PanelsManager;
 		private var _cl:CommandLine;
 		private var _ud:UserData;
@@ -92,12 +83,13 @@ package com.junkbyte.console {
 		private var _mm:MemoryMonitor;
 		private var _graphing:Graphing;
 		private var _remoter:Remoting;
+		private var _topTries:int = 50;
 		//
 		private var _paused:Boolean;
 		private var _tracing:Boolean;
 		private var _mspf:Number;
 		private var _prevTime:int;
-		private var _rollerCaptureKey:KeyBind;
+		private var _rollerKey:KeyBind;
 		private var _channels:Array;
 		private var _repeating:uint;
 		private var _lines:Logs;
@@ -106,10 +98,10 @@ package com.junkbyte.console {
 		/**
 		 * Console is the main class. However please use C for singleton Console adapter.
 		 * Using Console through C will also make sure you can remove console in a later date
-		 * by simply removing C.start() or C.startOnStage()
+		 * by simply removing Cc.start() or Cc.startOnStage()
 		 * 
 		 * 
-		 * @see com.junkbyte.console.C
+		 * @see com.junkbyte.console.Cc
 		 * @see http://code.google.com/p/flash-console/
 		 */
 		public function Console(pass:String = "", config:ConsoleConfig = null) {
@@ -128,7 +120,7 @@ package com.junkbyte.console {
 			_kb.addEventListener(Event.CONNECT, passwordEnteredHandle, false, 0, true);
 			//
 			// VIEW setup
-			_css = GetCSSfromStyle(_config);
+			_config.updateStyleSheet();
 			var mainPanel:MainPanel = new MainPanel(this, _lines, _channels);
 			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
 			_panels = new PanelsManager(this, mainPanel, _channels);
@@ -184,19 +176,18 @@ package com.junkbyte.console {
 			}
 		}
 		private function uncaughtErrorHandle(e:Event):void{
-			var error:Object = e["error"];
+			var error:Object = e["error"]; // for flash 9 compatibility
 			var str:String;
 			if (error is Error){
-				str = Error(error).message;
+				str = Error(error).getStackTrace();
 			}else if (error is ErrorEvent){
 				str = ErrorEvent(error).text;
-			}else{
-				str = error.toString();
+			}
+			if(!str){
+				str = String(error);
 			}
 			report(str, FATAL_LEVEL, false);
 		}
-		
-		
 		
 		public function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
 			if(obj == null) {
@@ -236,21 +227,21 @@ package com.junkbyte.console {
 			_panels.displayRoller = b;
 		}
 		public function setRollerCaptureKey(char:String, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false):void{
-			if(_rollerCaptureKey){
-				_kb.bindKey(_rollerCaptureKey, null);
-				_rollerCaptureKey = null;
+			if(_rollerKey){
+				_kb.bindKey(_rollerKey, null);
+				_rollerKey = null;
 			}
 			if(char && char.length==1) {
-				_rollerCaptureKey = new KeyBind(char, shift, ctrl, alt);
-				_kb.bindKey(_rollerCaptureKey, onRollerCaptureKey);
+				_rollerKey = new KeyBind(char, shift, ctrl, alt);
+				_kb.bindKey(_rollerKey, onRollerCaptureKey);
 			}
 		}
 		public function get rollerCaptureKey():KeyBind{
-			return _rollerCaptureKey;
+			return _rollerKey;
 		}
 		private function onRollerCaptureKey():void{
 			if(displayRoller){
-				report("Display Roller Capture:<br/>"+RollerPanel(_panels.getPanel(PANEL_ROLLER)).capture(), -1);
+				report("Display Roller Capture:<br/>"+RollerPanel(_panels.getPanel(RollerPanel.NAME)).capture(), -1);
 			}
 		}
 		//
@@ -397,7 +388,7 @@ package com.junkbyte.console {
 				var arr:Array = _mm.update();
 				if(arr.length>0){
 					report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
-					if(!_mm.haveItemsWatching) _mm = null;
+					if(_mm.count == 0) _mm = null;
 				}
 			}
 			var graphsList:Array, om:Object;
@@ -409,10 +400,10 @@ package com.junkbyte.console {
 			
 			// VIEW UPDATES ONLY
 			if(visible && parent!=null){
-				if(alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && moveTopAttempts>0){
-					moveTopAttempts--;
+				if(alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
+					_topTries--;
 					parent.addChild(this);
-					if(!quiet) report("Moved console on top (alwaysOnTop enabled), "+moveTopAttempts+" attempts left.",-1);
+					if(!quiet) report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
 				_panels.mainPanel.update(!_paused && _lineAdded);
 				_panels.update(_paused, _lineAdded);
@@ -511,7 +502,7 @@ package com.junkbyte.console {
 			if(!str) return null;
 			var lines:Array = str.split(/\n\sat\s/);
 			var len:int = lines.length;
-			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(this)+"|"+getQualifiedClassName(C));
+			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(this)+"|"+getQualifiedClassName(Cc));
 			for (var i:int = 2; i < len; i++){
 				if((lines[i].search(reg) != 0)){
 					return lines.slice(i, i+depth);
@@ -554,7 +545,7 @@ package com.junkbyte.console {
 		public function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			var chn:String;
 			if(channel is String) chn = channel as String;
-			else if(channel) chn = Utils.shortClassName(channel);
+			else if(channel) chn = ShortClassName(channel);
 			else chn = _config.defaultChannel;
 			addLine(castString(newLine), priority,chn, isRepeating);
 		}
@@ -646,7 +637,6 @@ package com.junkbyte.console {
 			_panels.updateMenu();
 		}
 		//
-		public function get css():StyleSheet{return _css;}
 		public function get config():ConsoleConfig{return _config;}
 		public function get panels():PanelsManager{return _panels;}
 		public function get cl():CommandLine{return _cl;}

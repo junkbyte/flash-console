@@ -26,11 +26,11 @@ package com.junkbyte.console.view {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
-
+	
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.events.TextEvent;
-	import flash.text.TextField;
+	import flash.text.TextField;		
 
 	public class GraphingPanel extends AbstractPanel {
 		//
@@ -46,39 +46,28 @@ package com.junkbyte.console.view {
 		protected var graph:Shape;
 		protected var lowTxt:TextField;
 		protected var highTxt:TextField;
-		protected var keyTxt:TextField;
 		//
 		public var startOffset:int = 5;
 		//
 		public function GraphingPanel(m:Console, W:int = 0, H:int = 0, resizable:Boolean = true) {
 			super(m);
 			registerDragger(bg);
-			minimumHeight = 26;
+			minHeight = 26;
 			//
-			lowTxt = new TextField();
-			lowTxt.name = "lowestField";
-			lowTxt.mouseEnabled = false;
-			lowTxt.styleSheet = m.css;
+			lowTxt = makeTF("lowestField", false, false);
 			lowTxt.height = master.config.menuFontSize+2;
 			addChild(lowTxt);
-			highTxt = new TextField();
-			highTxt.name = "highestField";
-			highTxt.mouseEnabled = false;
-			highTxt.styleSheet = m.css;
+			highTxt = makeTF("highestField", false, false);
 			highTxt.height = master.config.menuFontSize+2;
 			highTxt.y = master.config.menuFontSize-4;
 			addChild(highTxt);
 			//
-			keyTxt = new TextField();
-			keyTxt.name = "menuField";
-			keyTxt.styleSheet = m.css;
-			keyTxt.height = m.config.menuFontSize+4;
-			keyTxt.y = -3;
-			keyTxt.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-			registerRollOverTextField(keyTxt);
-			keyTxt.addEventListener(AbstractPanel.TEXT_LINK, onMenuRollOver, false, 0, true);
-			registerDragger(keyTxt); // so that we can still drag from textfield
-			addChild(keyTxt);
+			txtField = makeTF("menuField");
+			txtField.height = m.config.menuFontSize+4;
+			txtField.y = -3;
+			registerTFRoller(txtField, onMenuRollOver, linkHandler);
+			registerDragger(txtField); // so that we can still drag from textfield
+			addChild(txtField);
 			//
 			underlay = new Shape();
 			addChild(underlay);
@@ -126,8 +115,8 @@ package com.junkbyte.console.view {
 			super.width = n;
 			lowTxt.width = n;
 			highTxt.width = n;
-			keyTxt.width = n;
-			keyTxt.scrollH = keyTxt.maxScrollH;
+			txtField.width = n;
+			txtField.scrollH = txtField.maxScrollH;
 			_needRedraw = true;
 		}
 		//
@@ -155,7 +144,8 @@ package com.junkbyte.console.view {
 				(group.inv?lowTxt:highTxt).text = isNaN(group.hi)?"":"<s>"+group.hi+"</s>";
 				graph.graphics.clear();
 			}
-			for each(_interest in interests){
+			for each(var interest:GraphInterest in interests){
+				_interest = interest;
 				var n:String = _interest.key;
 				keys[n] = true;
 				var info:InterestInfo = _infoMap[n];
@@ -222,8 +212,8 @@ package com.junkbyte.console.view {
 				str += " <font color='#"+InterestInfo(_infoMap[X]).col.toString(16)+"'>"+X+"</font>";
 			}
 			str +=  " | <menu><a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></s></r>";
-			keyTxt.htmlText = str;
-			keyTxt.scrollH = keyTxt.maxScrollH;
+			txtField.htmlText = str;
+			txtField.scrollH = txtField.maxScrollH;
 		}
 		protected function linkHandler(e:TextEvent):void{
 			TextField(e.currentTarget).setSelection(0, 0);

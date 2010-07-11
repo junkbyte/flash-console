@@ -22,13 +22,11 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core {	
-	import com.junkbyte.console.utils.Utils;
-
+package com.junkbyte.console.core {
 	import flash.events.EventDispatcher;
 	import flash.system.System;
 	import flash.utils.Dictionary;
-	import flash.utils.getTimer;
+	import flash.utils.getTimer;	
 
 	public class MemoryMonitor extends EventDispatcher{
 		
@@ -37,6 +35,7 @@ package com.junkbyte.console.core {
 		
 		private var _namesList:Object;
 		private var _objectsList:Dictionary;
+		private var _count:uint;
 		//private var _notifyGC:Boolean;
 		//
 		//
@@ -50,11 +49,15 @@ package com.junkbyte.console.core {
 					unwatch(_objectsList[obj]);
 				}
 			}
-			if(_namesList[n] && _objectsList[obj] != n){
-				var nn:String = n+"@"+getTimer()+"_"+Math.floor(Math.random()*100);
-				n = nn;
+			if(_namesList[n]){
+				if(_objectsList[obj] == n){
+					_count--;
+				}else{
+					n = n+"@"+getTimer()+"_"+Math.floor(Math.random()*100);
+				}
 			}
 			_namesList[n] = true;
+			_count++;
 			_objectsList[obj] = n;
 			return n;
 		}
@@ -64,7 +67,11 @@ package com.junkbyte.console.core {
 					delete _objectsList[X];
 				}
 			}
-			delete _namesList[n];
+			if(_namesList[n])
+			{
+				delete _namesList[n];
+				_count--;	
+			}
 		}
 		//
 		//
@@ -79,12 +86,14 @@ package com.junkbyte.console.core {
 				if(!o[Y]){
 					arr.push(Y);
 					delete _namesList[Y];
+					_count--;
 				}
 			}
 			return arr;
 		}
-		public function get haveItemsWatching():Boolean{
-			return Utils.HaveItemsInObject(_namesList);
+		
+		public function get count():uint{
+			return _count;
 		}
 		/*private function seedGCDummy():void{
 			if(!_namesList[DUMMY_GARBAGE]){
