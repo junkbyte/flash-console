@@ -27,19 +27,34 @@ package com.junkbyte.console
 	public class KeyBind 
 	{
 		
-		private static const SHIFT:uint = 1;
-		private static const CTRL:uint = 1<<1;
-		private static const ALT:uint = 1<<2;
+		public static const KEYCODE:uint = 1;
+		
+		private static const SHIFT:uint = 1<<1;
+		private static const CTRL:uint = 1<<2;
+		private static const ALT:uint = 1<<3;
 		
 		public var char:String;
 		public var extra:uint;
 		
-		public function KeyBind(character:String, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false)
+		/**
+		 * @param code Pass a single string (e.g. "a") OR pass keyCode (e.g. Keyboard.F1)
+		 * @param shift Set true if shift key needs to be pressed to trigger
+		 * @param ctrl Set true if ctrl key needs to be pressed to trigger
+		 * @param alt Set true if alt key needs to be pressed to trigger
+		 */
+		public function KeyBind(v:*, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false)
 		{
-			if(!character || character.length != 1){
-				throw new Error("KeyBind: character (first char) must be a single character. You gave ["+character+"]");
+			char = String(v).toUpperCase();
+			if(v is uint)
+			{
+				extra |= KEYCODE;
 			}
-			char = character.toUpperCase();
+			else
+			{
+				if(char.length != 1){
+					throw new Error("KeyBind: character (first char) must be a single character. You gave ["+char+"]");
+				}
+			}
 			if(shift) extra |= SHIFT;
 			if(ctrl) extra |= CTRL;
 			if(alt) extra |= ALT;
@@ -47,11 +62,20 @@ package com.junkbyte.console
 		
 		public function get key():String
 		{
-			return char+extra;
+			return char+"+"+extra;
 		}
+		
 		public function toString():String
 		{
-			var str:String = char;
+			var str:String;
+			if(extra & KEYCODE)
+			{
+				str = String(char);
+			}
+			else
+			{
+				str = char;
+			}
 			if(extra & SHIFT) str+="+shift";
 			if(extra & CTRL) str+="+ctrl";
 			if(extra & ALT) str+="+alt";

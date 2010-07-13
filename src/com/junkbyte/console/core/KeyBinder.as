@@ -42,8 +42,7 @@ package com.junkbyte.console.core {
 		}
 		public function keyDownHandler(e:KeyboardEvent):void{
 			var char:String = String.fromCharCode(e.charCode);
-			if(!char) return;
-			if(_password != null && char == _password.substring(_passwordIndex,_passwordIndex+1)){
+			if(_password != null && char && char == _password.substring(_passwordIndex,_passwordIndex+1)){
 				_passwordIndex++;
 				if(_passwordIndex >= _password.length){
 					_passwordIndex = 0;
@@ -53,20 +52,33 @@ package com.junkbyte.console.core {
 			else
 			{
 				_passwordIndex = 0;
-				var keybind:KeyBind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey);
-				if(_keyBinds[keybind.key]){
-					var bind:Array = _keyBinds[keybind.key];
-					(bind[0] as Function).apply(this, bind[1]);
+				var bind:KeyBind = new KeyBind(e.keyCode, e.shiftKey, e.ctrlKey, e.altKey);
+				tryRunKey(bind.key);
+				if(char){
+					bind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey);
+					tryRunKey(bind.key);
 				}
 			}
 		}
-		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
+		private function tryRunKey(key:String):void
+		{
+			var a:Array = _keyBinds[key];
+			if(a){
+				(a[0] as Function).apply(this, a[1]);
+			}
+		}
+		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):Boolean{
+			if(_password && (!(key.extra & KeyBind.KEYCODE) &&  key.char == _password.charAt(0)))
+			{
+				return false;
+			}
 			var keystr:String = key.key;
 			if(fun == null){
 				delete _keyBinds[keystr];
 			}else{
 				_keyBinds[keystr] = [fun, args];
 			}
+			return true;
 		}
 	}
 }

@@ -207,8 +207,10 @@ package com.junkbyte.console {
 		// This should only be used for development purposes only.
 		//
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
-			_kb.bindKey(key, fun, args);
-			if(!quiet) {
+			if(!_kb.bindKey(key, fun, args))
+			{
+				report("Warning: bindKey character ["+key.char+"] is conflicting with Console password.",8);
+			}else if(!quiet) {
 				report((fun ==null?"Unbined":"Bined")+" "+key.toString()+".",-1);
 			}
 		}
