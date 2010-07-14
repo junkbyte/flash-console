@@ -67,7 +67,7 @@
 		<exec executable="${asdoc.exe}" failonerror="true">
             <arg line="-output '${asdoc.target.dir}'" />
 			<arg line="-source-path '${src.path}'" />
-			<arg line="-doc-classes com.junkbyte.console.C com.junkbyte.console.Console com.junkbyte.console.ConsoleConfig com.junkbyte.console.Ch com.junkbyte.console.KeyBind" />
+			<arg line="-doc-classes com.junkbyte.console.Cc com.junkbyte.console.Console com.junkbyte.console.ConsoleConfig com.junkbyte.console.ConsoleChannel com.junkbyte.console.KeyBind" />
 			<arg line="-exclude-dependencies" />
 			<arg line="-main-title 'Flash-Console v${src.version}'" />
             <arg line="-window-title 'Flash-Console v${src.version}'" />

@@ -176,7 +176,7 @@ package com.junkbyte.console {
 		/** Panels backround color */
 		public var backgroundColor:uint;
 		
-		/** Panels backround color */
+		/** Panels background corner rounding */
 		public var roundBorder:int = 10;
 		
 		/** Panels background alpha */

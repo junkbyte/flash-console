@@ -47,7 +47,10 @@ package
 			Cc.startOnStage(this, "`", config); // "`" - change for password. This will start hidden
 			Cc.visible = true; // show console, because having password hides console.
 			Cc.commandLine = true; // enable command line
-			
+			Cc.memoryMonitor = true;
+			Cc.fpsMonitor = true;
+			Cc.displayRoller = true;
+			Cc.setRollerCaptureKey("c");
 			Cc.width = 640;
 			Cc.height = 320;
 			Cc.remotingPassword = null; // Just so that remote don't ask for password
