@@ -85,6 +85,11 @@ package com.junkbyte.console.view {
 		public function reset():void{
 			_infoMap = {};
 			graph.graphics.clear();
+			if(!_group.fixed)
+			{
+				_group.low = NaN;
+				_group.hi = NaN;
+			}
 		}
 		/*public function set showKeyText(b:Boolean):void{
 			keyTxt.visible = b;
