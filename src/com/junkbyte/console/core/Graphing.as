@@ -154,7 +154,6 @@ package com.junkbyte.console.core {
 			var graph:GraphInterest = new GraphInterest("special");
 			if(type == GraphGroup.TYPE_FPS) {
 				graph.col = 0xFF3333;
-				graph.avg = 0;
 			}else{
 				graph.col = 0x5060FF;
 			}

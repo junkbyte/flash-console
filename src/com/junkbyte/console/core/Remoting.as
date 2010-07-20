@@ -46,7 +46,6 @@ package com.junkbyte.console.core {
 		private var _isRemote:Boolean;
 		private var _sharedConnection:LocalConnection;
 		private var _remoteLinesQueue:Array;
-		private var _mspfsForRemote:Array;
 		private var _delayed:int;
 		
 		private var _lastLogin:String = "";
@@ -138,11 +137,9 @@ package com.junkbyte.console.core {
 		}
 		public function set remoting(newV:Boolean):void{
 			_remoteLinesQueue = null;
-			_mspfsForRemote = null;
 			if(newV){
 				_isRemote = false;
 				_delayed = 0;
-				_mspfsForRemote = [30];
 				_remoteLinesQueue = new Array();
 				startSharedConnection();
 				_sharedConnection.addEventListener(StatusEvent.STATUS, onRemotingStatus);

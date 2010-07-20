@@ -857,6 +857,7 @@ package com.junkbyte.console {
 		 * @param (optional) line splitter, default is '\n'
 		 * @return All log lines in console
 		 */
+		[Inspectable(environment="none")]
 		public static function getAllLog(splitter:String = "\n"):String{
 			if(_console)return _console.getAllLog(splitter);
 			else return "";
@@ -868,6 +869,7 @@ package com.junkbyte.console {
 		 * 
 		 * @return Console class instance
 		 */
+		[Inspectable(environment="none")]
 		public static function get instance():Console{
 			return _console;
 		}

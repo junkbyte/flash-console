@@ -46,7 +46,9 @@ package com.junkbyte.console.view {
 		private var _fpsPanel:FPSPanel;
 		private var _memPanel:MemoryPanel;
 		private var _graphsMap:Object = {};
+		private var _graphPlaced:uint = 0;
 		private var _objMonitors:Object = {};
+		private var _monPlaced:uint = 0;
 		
 		private var _tooltipField:TextField;
 		
@@ -121,11 +123,23 @@ package com.junkbyte.console.view {
 					if(!panel){
 						var rect:Rectangle = group.rect;
 						if(rect == null) rect = new Rectangle(NaN,NaN, 0, 0);
-						// TODO: somehow auto place the panel if rect is empty
-						if(isNaN(rect.x))  rect.x = _mainPanel.x+80;
-						if(isNaN(rect.y)) rect.y = _mainPanel.y+20;
-						if(rect.width<=0 || isNaN(rect.width))  rect.width = 100;
-						if(rect.height<=0 || isNaN(rect.height)) rect.height = 100;
+						var size:Number = 100;
+						if(isNaN(rect.x) || isNaN(rect.y))
+						{
+							if(_mainPanel.width < 150)
+							{
+								size = 50;
+							}
+							var maxX:Number = Math.floor(_mainPanel.width/size)-1;
+							if(maxX <=1) maxX = 2;
+							var ix:int = _graphPlaced%maxX;
+							var iy:int = Math.floor(_graphPlaced/maxX);
+							rect.x = _mainPanel.x+size+(ix*size);
+							rect.y = _mainPanel.y+(size*0.6)+(iy*size);
+							_graphPlaced++;
+						}
+						if(rect.width<=0 || isNaN(rect.width))  rect.width = size;
+						if(rect.height<=0 || isNaN(rect.height)) rect.height = size;
 						panel = new GraphingPanel(_master, rect.width,rect.height);
 						panel.x = rect.x;
 						panel.y = rect.y;
@@ -180,11 +194,15 @@ package com.junkbyte.console.view {
 				var panel:ObjMonitorPanel = _objMonitors[X] as ObjMonitorPanel;
 				if(panel == null){
 					panel = new ObjMonitorPanel(_master);
-					//TODO: better placing.
-					panel.x = 200;
+					_monPlaced++;
+					panel.x = _monPlaced*160;
 					panel.y = 200;
 					panel.id = X;
 					panel.name = USER_OBJECTMONITOR_PREFIX+X;
+					if(_monPlaced > 3)
+					{
+						_monPlaced = 0;
+					}
 					_objMonitors[X] = panel;
 					addPanel(panel);
 				}

@@ -163,9 +163,9 @@ package com.junkbyte.console.core {
 				}
 				report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
 			} else if (cmd == "filter" || cmd == "search") {
-				_master.filterText = param;
+				_master.panels.mainPanel.filterText = param;
 			} else if (cmd == "filterexp" || cmd == "searchexp") {
-				_master.filterRegExp = new RegExp(param, "i");
+				_master.panels.mainPanel.filterRegExp = new RegExp(param, "i");
 			} else if (cmd == "inspect" || cmd == "inspectfull") {
 				if (_scope) {
 					var viewAll:Boolean = (cmd == "inspectfull")? true: false;

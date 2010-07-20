@@ -62,7 +62,17 @@
 		}
 		public function setValue(val:Number, averaging:uint = 0):void{
 			v = val;
-			if(averaging>0) avg += ((v-avg)/averaging);
+			if(averaging>0)
+			{
+				if(isNaN(avg))
+				{
+					avg = v;
+				}
+				else
+				{
+					avg += ((v-avg)/averaging);
+				}
+			}
 		}
 		//
 		//

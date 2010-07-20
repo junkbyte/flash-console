@@ -212,22 +212,22 @@ package com.junkbyte.console {
 		//
 		
 		/** Color of log priority level 0.*/
-		public var priority0:uint = 0x336633;
+		public var priority0:uint = 0x3A773A;
 		/** Color of log priority level 1. C.log(...)*/
-		public var priority1:uint = 0x44BB44;
+		public var priority1:uint = 0x449944;
 		/** Color of log priority level 2. */
-		public var priority2:uint = 0x77D077;
+		public var priority2:uint = 0x77BB77;
 		/** Color of info log priority level 3. C.info(...) */
-		public var priority3:uint = 0xA0E0A0;
+		public var priority3:uint = 0xA0D0A0;
 		/** Color of log priority level 4. */
-		public var priority4:uint = 0xD6FFD6;
-		/** Color of debug log priority level 5. C.debug(...) */
+		public var priority4:uint = 0xD6EED6;
+		/** Color of debug log priority level 5. */
 		public var priority5:uint = 0xE9E9E9;
-		/** Color of log priority level 6. */
-		public var priority6:uint = 0xFFD6D6;
-		/** Color of warn log priority level 7. C.warn(...) */
+		/** Color of log priority level 6. C.debug(...) */
+		public var priority6:uint = 0xFFDDDD;
+		/** Color of warn log priority level 7. */
 		public var priority7:uint = 0xFFAAAA;
-		/** Color of log priority level 8. */
+		/** Color of log priority level 8. C.warn(...) */
 		public var priority8:uint = 0xFF7777;
 		/** Color of error log priority level 9. C.error(...) */
 		public var priority9:uint = 0xFF2222;

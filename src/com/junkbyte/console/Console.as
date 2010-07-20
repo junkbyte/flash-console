@@ -58,14 +58,15 @@ package com.junkbyte.console {
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.4;
-		public static const VERSION_STAGE:String = "beta2";
+		public static const VERSION_STAGE:String = "beta3";
+		public static const IS_LITE:Boolean = false;
 		//
 		public static const NAME:String = "Console";
 		//
 		public static const LOG_LEVEL:uint = 1;
 		public static const INFO_LEVEL:uint = 3;
-		public static const DEBUG_LEVEL:uint = 5;
-		public static const WARN_LEVEL:uint = 7;
+		public static const DEBUG_LEVEL:uint = 6;
+		public static const WARN_LEVEL:uint = 8;
 		public static const ERROR_LEVEL:uint = 9;
 		public static const FATAL_LEVEL:uint = 10;
 		//
@@ -87,8 +88,6 @@ package com.junkbyte.console {
 		//
 		private var _paused:Boolean;
 		private var _tracing:Boolean;
-		private var _mspf:Number;
-		private var _prevTime:int;
 		private var _rollerKey:KeyBind;
 		private var _channels:Array;
 		private var _repeating:uint;
@@ -380,13 +379,10 @@ package com.junkbyte.console {
 		//
 		//
 		private function _onEnterFrame(e:Event):void{
-			var time:int = getTimer();
-			_mspf = time-_prevTime;
-			_prevTime = time;
 			
 			if(_repeating > 0) _repeating--;
 			
-			if(_mm!=null){
+			if(_mm){
 				var arr:Array = _mm.update();
 				if(arr.length>0){
 					report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
@@ -407,7 +403,6 @@ package com.junkbyte.console {
 					parent.addChild(this);
 					if(!quiet) report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
-				_panels.mainPanel.update(!_paused && _lineAdded);
 				_panels.update(_paused, _lineAdded);
 				if(!_paused && om != null) _panels.updateObjMonitors(om);
 				if(graphsList != null) _panels.updateGraphs(graphsList, !_paused); 
@@ -480,7 +475,7 @@ package com.junkbyte.console {
 			if(_channels.indexOf(channel) < 0){
 				_channels.push(channel);
 			}
-			var line:Log = new Log(txt,channel,priority, isRepeating);
+			var line:Log = new Log(txt,channel,priority, isRepeating, skipSafe);
 			if(isRepeat){
 				_lines.pop();
 				_lines.push(line);
@@ -597,9 +592,9 @@ package com.junkbyte.console {
 			var str:String = "";
 			var len:int = args.length;
 			for(var i:int = 0; i < len; i++){
-				// need to spifically cast to string to produce correct results
+				// need to specifically cast to string to produce correct results
 				// example arg.join produces null/undefined values to "".
-				str += (i?" ":"")+((args[i] is XML || args[i] is XMLList)?args[i].toXMLString():String(args[i]));
+				str += (i?" ":"")+castString(args[i]);
 			}
 			return str;
 		}
@@ -608,16 +603,6 @@ package com.junkbyte.console {
 		}
 		//
 		//
-		//
-		public function set filterText(str:String):void{
-			_panels.mainPanel.filterText = str;
-		}
-		public function get filterText():String{
-			return _panels.mainPanel.filterText;
-		}
-		public function set filterRegExp(exp:RegExp):void{
-			_panels.mainPanel.filterRegExp = exp;
-		}
 		//
 		public function clear(channel:String = null):void{
 			if(channel){
