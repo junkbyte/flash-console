@@ -368,7 +368,7 @@ package com.junkbyte.console.view {
 				_filterRegExp = null;
 				master.clear(config.filteredChannel);
 				_channels.splice(1,0,config.filteredChannel);
-				master.ch(config.filteredChannel, "Filtering ["+str+"]", 10);
+				master.ch(config.filteredChannel, "Filtering ["+str+"]", -2);
 				viewingChannels = [config.filteredChannel];
 			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == config.filteredChannel){
 				viewingChannels = [config.globalChannel];
@@ -384,7 +384,7 @@ package com.junkbyte.console.view {
 				_filterText = null;
 				master.clear(config.filteredChannel);
 				_channels.splice(1,0,config.filteredChannel);
-				master.ch(config.filteredChannel, "Filtering RegExp ["+exp+"]", 10);
+				master.ch(config.filteredChannel, "Filtering RegExp ["+exp+"]", -2);
 				viewingChannels = [config.filteredChannel];
 			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == config.filteredChannel){
 				viewingChannels = [config.globalChannel];
