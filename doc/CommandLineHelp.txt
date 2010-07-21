@@ -108,7 +108,7 @@ head
 }}} 
   * it should say "Returned sample_fla::bunnyHead_6: [object bunnyHead_6]"
   * Scope should now also be changed to bunnyHead_6 automatically
-}}}
+
   * The head have animation on the timeline, so you can play it.
 {{{
 play()
