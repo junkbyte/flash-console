@@ -36,7 +36,6 @@ package com.junkbyte.console.view {
 	import flash.events.TextEvent;
 	import flash.geom.ColorTransform;
 	import flash.geom.Rectangle;
-	import flash.system.Capabilities;
 	import flash.system.Security;
 	import flash.system.SecurityPanel;
 	import flash.system.System;
@@ -58,7 +57,6 @@ package com.junkbyte.console.view {
 				command:"Command Line",
 				copy:"Copy to clipboard",
 				clear:"Clear log",
-				trace:"Use trace(...)",
 				pause:"Pause updates",
 				resume:"Resume updates",
 				priority:"Toggle priority filter",
@@ -89,7 +87,6 @@ package com.junkbyte.console.view {
 		private var _bottomLine:Shape;
 		private var _isMinimised:Boolean;
 		private var _shift:Boolean;
-		private var _canUseTrace:Boolean;
 		private var _txtscroll:TextScroller;
 		
 		private var _channels:Array;
@@ -109,7 +106,6 @@ package com.junkbyte.console.view {
 		
 		public function MainPanel(m:Console, lines:Logs, channels:Array) {
 			super(m);
-			_canUseTrace = (Capabilities.playerType=="External"||Capabilities.isDebugger);
 			var fsize:int = m.config.menuFontSize;
 			_channels = channels;
 			_viewingChannels = new Array();
@@ -518,9 +514,6 @@ package com.junkbyte.console.view {
 			for each(var link:String in _extraMenuKeys){
 				str += " <a href=\"event:"+link+"\">"+link+"</a>";
 			}
-			if(config.traceCall != null && (_canUseTrace || config.traceCall != trace)){
-				str += doActive(" <a href=\"event:trace\">T</a>", master.tracing);
-			}
 			str += " <a href=\"event:copy\">Cc</a>";
 			str += " <a href=\"event:priority\">P"+_priority+"</a>";
 			str += doActive(" <a href=\"event:pause\">P</a>", master.paused);
@@ -594,13 +587,6 @@ package com.junkbyte.console.view {
 				}else{
 					master.paused = true;
 					master.panels.tooltip(TOOLTIPS["resume"], this);
-				}
-			}else if(e.text == "trace"){
-				master.tracing = !master.tracing;
-				if(master.tracing){
-					master.report("Tracing turned [<b>On</b>]",-1);
-				}else{
-					master.report("Tracing turned [<b>Off</b>]",-1);
 				}
 			}else if(e.text == "close"){
 				master.panels.tooltip();
