@@ -30,7 +30,7 @@ package com.junkbyte.console.core {
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.utils.describeType;
-	import flash.utils.getQualifiedClassName;	
+	import flash.utils.getQualifiedClassName;import com.junkbyte.console.utils.CastToString;	
 
 	public class CommandTools {
 		
@@ -224,13 +224,7 @@ package com.junkbyte.console.core {
 		public static function explode(obj:Object, depth:int = 3, p:int = 9):String{
 			var t:String = typeof obj;
 			if(t != "object" || depth == 0){
-				if(t == "string"){
-					return "<p-2>\""+String(obj)+"\"</p-2>";
-				}else if(t == "xml"){
-					return "<p-2>"+obj.toXMLString()+"</p-2>";
-				}else{
-					return "<p-2>"+obj+"</p-2>";
-				}
+				return CastToString(obj);
 			}else if(obj == null){ 
 				// could be null, undefined, NaN, etc. all should be printed as is
 				return "<p-2>"+obj+"</p-2>";
@@ -242,11 +236,13 @@ package com.junkbyte.console.core {
 			//
 			nodes = V.accessor;
 			for each (var accessorX:XML in nodes) {
+				n = accessorX.@name;
 				if(accessorX.@access!="writeonly"){
-					n = accessorX.@name;
 					try{
 						list.push(n+":"+explode(obj[n], depth-1, p-1));
 					}catch(e:Error){}
+				}else{
+					list.push(n);
 				}
 			}
 			//
@@ -378,7 +374,7 @@ package com.junkbyte.console.core {
 			report("____Command Line Help___",10);
 			report("/filter (text) = filter/search logs for matching text",5);
 			report("/filterexp (expression) = filter/search logs using RegExp search",5);
-			report("/ = set returned to scope",5);
+			report("/ = set returned as scope",5);
 			report("// = return to previous scope",5);
 			report("/save (name) = store current scope to that name (default is weak reference). to call back: $(name)",5);
 			report("/savestrong (name) = store current scope as strong reference",5);

@@ -28,10 +28,11 @@ package com.junkbyte.console {
 	import com.junkbyte.console.core.Graphing;
 	import com.junkbyte.console.core.KeyBinder;
 	import com.junkbyte.console.core.MemoryMonitor;
-	import com.junkbyte.console.core.ObjectsMonitor;
+	//import com.junkbyte.console.core.ObjectsMonitor;
 	import com.junkbyte.console.core.Remoting;
-	import com.junkbyte.console.utils.ShortClassName;
 	import com.junkbyte.console.core.UserData;
+	import com.junkbyte.console.utils.CastToString;
+	import com.junkbyte.console.utils.ShortClassName;
 	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.view.PanelsManager;
 	import com.junkbyte.console.view.RollerPanel;
@@ -58,7 +59,7 @@ package com.junkbyte.console {
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.4;
-		public static const VERSION_STAGE:String = "beta3";
+		public static const VERSION_STAGE:String = "beta4";
 		public static const IS_LITE:Boolean = false;
 		//
 		public static const NAME:String = "Console";
@@ -72,22 +73,18 @@ package com.junkbyte.console {
 		//
 		public static const MAPPING_SPLITTER:String = "|";
 		//
-		public var quiet:Boolean;
-		public var alwaysOnTop:Boolean = true;
-		//
 		private var _config:ConsoleConfig;
 		private var _panels:PanelsManager;
 		private var _cl:CommandLine;
 		private var _ud:UserData;
 		private var _kb:KeyBinder;
-		private var _om:ObjectsMonitor;
+		//private var _om:ObjectsMonitor;
 		private var _mm:MemoryMonitor;
 		private var _graphing:Graphing;
 		private var _remoter:Remoting;
 		private var _topTries:int = 50;
 		//
 		private var _paused:Boolean;
-		private var _tracing:Boolean;
 		private var _rollerKey:KeyBind;
 		private var _channels:Array;
 		private var _repeating:uint;
@@ -111,7 +108,7 @@ package com.junkbyte.console {
 			_channels = [_config.globalChannel, _config.defaultChannel];
 			_lines = new Logs();
 			_ud = new UserData(_config.sharedObjectName, _config.sharedObjectPath);
-			_om = new ObjectsMonitor();
+			//_om = new ObjectsMonitor();
 			_cl = new CommandLine(this);
 			_graphing = new Graphing(report);
 			_remoter = new Remoting(this, pass);
@@ -119,7 +116,7 @@ package com.junkbyte.console {
 			_kb.addEventListener(Event.CONNECT, passwordEnteredHandle, false, 0, true);
 			//
 			// VIEW setup
-			_config.updateStyleSheet();
+			_config.style.updateStyleSheet();
 			var mainPanel:MainPanel = new MainPanel(this, _lines, _channels);
 			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
 			_panels = new PanelsManager(this, mainPanel, _channels);
@@ -178,7 +175,7 @@ package com.junkbyte.console {
 			var error:Object = e["error"]; // for flash 9 compatibility
 			var str:String;
 			if (error is Error){
-				str = Error(error).getStackTrace();
+				str = CastToString(error);
 			}else if (error is ErrorEvent){
 				str = ErrorEvent(error).text;
 			}
@@ -209,7 +206,7 @@ package com.junkbyte.console {
 			if(!_kb.bindKey(key, fun, args))
 			{
 				report("Warning: bindKey character ["+key.char+"] is conflicting with Console password.",8);
-			}else if(!quiet) {
+			}else if(!config.quiet) {
 				report((fun ==null?"Unbined":"Bined")+" "+key.toString()+".",-1);
 			}
 		}
@@ -252,7 +249,7 @@ package com.junkbyte.console {
 		}
 		public function set fpsMonitor(b:Boolean):void{
 			if(_remoter.isRemote){
-				_remoter.send("fps", b);
+				_remoter.send(Remoting.CALL_FPS, b);
 			}else{
 				_graphing.fpsMonitor = b;
 				panels.mainPanel.updateMenu();
@@ -265,7 +262,7 @@ package com.junkbyte.console {
 		}
 		public function set memoryMonitor(b:Boolean):void{
 			if(_remoter.isRemote){
-				_remoter.send("mem", b);
+				_remoter.send(Remoting.CALL_MEM, b);
 			}else{
 				_graphing.memoryMonitor = b;
 				panels.mainPanel.updateMenu();
@@ -278,7 +275,7 @@ package com.junkbyte.console {
 			if(!n) n = className+"@"+getTimer();
 			if(!_mm) _mm = new MemoryMonitor();
 			var nn:String = _mm.watch(o,n);
-			if(!quiet) report("Watching <b>"+className+"</b> as <p5>"+ nn +"</p5>.",-1);
+			if(!config.quiet) report("Watching <b>"+className+"</b> as <p5>"+ nn +"</p5>.",-1);
 			return nn;
 		}
 		public function unwatch(n:String):void{
@@ -288,7 +285,7 @@ package com.junkbyte.console {
 			if(remote){
 				try{
 					report("Sending garbage collection request to client",-1);
-					_remoter.send("gc");
+					_remoter.send(Remoting.CALL_GC);
 				}catch(e:Error){
 					report(e,10);
 				}
@@ -310,7 +307,7 @@ package com.junkbyte.console {
 		public function explode(obj:Object, depth:int = 3):void{
 			report(CommandTools.explode(obj, depth), 1);
 		}
-		public function monitor(obj:Object, n:String = null):void{
+		/*public function monitor(obj:Object, n:String = null):void{
 			if(obj == null || typeof obj != "object"){
 				report("Can not monitor "+getQualifiedClassName(obj)+".", 10);
 				return;
@@ -319,25 +316,25 @@ package com.junkbyte.console {
 		}
 		public function unmonitor(i:String = null):void{
 			if(_remoter.isRemote){
-				_remoter.send("unmonitor", i);
+				_remoter.send(Remoting.CALL_UNMONITOR, i);
 			}else{
 				_om.unmonitor(i);
 			}
 		}
 		public function monitorIn(i:String, n:String):void{
 			if(_remoter.isRemote){
-				_remoter.send("monitorIn", i,n);
+				_remoter.send(Remoting.CALL_MONITORIN, i,n);
 			}else{
 				_om.monitorIn(i,n);
 			}
 		}
 		public function monitorOut(i:String):void{
 			if(_remoter.isRemote){
-				_remoter.send("monitorOut", i);
+				_remoter.send(Remoting.CALL_MONITOROUT, i);
 			}else{
 				_om.monitorOut(i);
 			}
-		}
+		}*/
 		public function get paused():Boolean{
 			return _paused;
 		}
@@ -391,20 +388,20 @@ package com.junkbyte.console {
 			}
 			var graphsList:Array, om:Object;
 			if(!_remoter.isRemote){
-			 	om = _om.update();
+			 	//om = _om.update();
 			 	graphsList = _graphing.update(stage?stage.frameRate:0);
 			}
 			_remoter.update(graphsList, om);
 			
 			// VIEW UPDATES ONLY
 			if(visible && parent!=null){
-				if(alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
+				if(config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
 					_topTries--;
 					parent.addChild(this);
-					if(!quiet) report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
+					if(!config.quiet) report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
 				_panels.update(_paused, _lineAdded);
-				if(!_paused && om != null) _panels.updateObjMonitors(om);
+				//if(!_paused && om != null) _panels.updateObjMonitors(om);
 				if(graphsList != null) _panels.updateGraphs(graphsList, !_paused); 
 				_lineAdded = false;
 			}
@@ -440,25 +437,18 @@ package com.junkbyte.console {
 		public function set viewingChannels(a:Array):void{
 			_panels.mainPanel.viewingChannels = a;
 		}
-		//
-		public function get tracing():Boolean{
-			return _tracing;
-		}
-		public function set tracing(b:Boolean):void{
-			_tracing = b;
-			_panels.mainPanel.updateMenu();
-		}
 		public function report(obj:*, priority:Number = 0, skipSafe:Boolean = true):void{
-			addLine(castString(obj), priority, _config.consoleChannel, false, skipSafe, 0);
+			addLine(obj, priority, _config.consoleChannel, false, skipSafe, 0);
 		}
-		public function addLine(txt:String, priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
+		public function addLine(obj:*, priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
+			var txt:String = CastToString(obj);
 			var isRepeat:Boolean = (isRepeating && _repeating > 0);
 			if(!channel || channel == _config.globalChannel) channel = _config.defaultChannel;
 			if(priority >= _config.autoStackPriority && stacks<0) stacks = _config.defaultStackDepth;
 			if(skipSafe) stacks = -1;
 			var stackArr:Array = stacks>0?getStack(stacks):null;
 			
-			if( _tracing && !isRepeat && _config.traceCall != null){
+			if( _config.tracing && !isRepeat && _config.traceCall != null){
 				_config.traceCall(channel, (stackArr==null?txt:(txt+"\n @ "+stackArr.join("\n @ "))), priority);
 			}
 			if(!skipSafe){
@@ -527,7 +517,7 @@ package com.junkbyte.console {
 			if(_remoter.isRemote){
 				report("Run command at remote: "+line,-2);
 				try{
-					_remoter.send("runCommand", line);
+					_remoter.send(Remoting.CALL_CMD, line);
 				}catch(err:Error){
 					report("Command could not be sent to client: " + err, 10);
 				}
@@ -544,13 +534,13 @@ package com.junkbyte.console {
 			if(channel is String) chn = channel as String;
 			else if(channel) chn = ShortClassName(channel);
 			else chn = _config.defaultChannel;
-			addLine(castString(newLine), priority,chn, isRepeating);
+			addLine(newLine, priority,chn, isRepeating);
 		}
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(castString(newLine), priority, _config.defaultChannel, isRepeating);
+			addLine(newLine, priority, _config.defaultChannel, isRepeating);
 		}
 		public function stack(newLine:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
-			addLine(castString(newLine), priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
+			addLine(newLine, priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		public function log(...args):void{
 			addLine(joinArgs(args), LOG_LEVEL);
@@ -588,18 +578,15 @@ package com.junkbyte.console {
 		public function fatalch(channel:*, ...args):void{
 			ch(channel, joinArgs(args), FATAL_LEVEL);
 		}
+		// Need to specifically cast to string in array to produce correct results
+		// e.g: new Array("str",null,undefined,0).toString() // traces to: str,,,0, SHOULD BE: str,null,undefined,0
 		private function joinArgs(args:Array):String{
 			var str:String = "";
 			var len:int = args.length;
 			for(var i:int = 0; i < len; i++){
-				// need to specifically cast to string to produce correct results
-				// example arg.join produces null/undefined values to "".
-				str += (i?" ":"")+castString(args[i]);
+				str += (i?" ":"")+CastToString(args[i]);
 			}
 			return str;
-		}
-		private function castString(obj:*):String{
-			return (obj is XML || obj is XMLList)?obj.toXMLString():String(obj);
 		}
 		//
 		//
@@ -628,7 +615,7 @@ package com.junkbyte.console {
 		public function get panels():PanelsManager{return _panels;}
 		public function get cl():CommandLine{return _cl;}
 		public function get ud():UserData{return _ud;}
-		public function get om():ObjectsMonitor{return _om;}
+		//public function get om():ObjectsMonitor{return _om;}
 		public function get graphing():Graphing{return _graphing;}
 		//
 		public function getLogsAsObjects():Array{

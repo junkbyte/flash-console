@@ -22,8 +22,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package 
-{
+package {
+	import com.junkbyte.console.vos.RemoteSync;	
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.vos.Log;
@@ -98,7 +98,10 @@ package
 			// in this example it monitors the Console instance, you will see if you move your mouse around
 			// the values mouseX and mouseY will change in the panel - live, you can go into different objects by clicking on the name
 			// Note that this feature still needs work...
-			Cc.monitor(Cc.instance);
+			//Cc.monitor(Cc.instance);
+			
+			Cc.log({o1:{o2:{o3:{}}}, a1:"a1"});
+			Cc.log(new RemoteSync());
 		}
 		private function a():void{
 			b();

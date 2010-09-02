@@ -35,7 +35,7 @@ package com.junkbyte.console.view {
 		
 		
 		private static const USER_GRAPH_PREFIX:String = "graph_";
-		private static const USER_OBJECTMONITOR_PREFIX:String = "objMonitor_";
+		//private static const USER_OBJECTMONITOR_PREFIX:String = "objMonitor_";
 		
 		private var _master:Console;
 		private var _mainPanel:MainPanel;
@@ -47,8 +47,8 @@ package com.junkbyte.console.view {
 		private var _memPanel:MemoryPanel;
 		private var _graphsMap:Object = {};
 		private var _graphPlaced:uint = 0;
-		private var _objMonitors:Object = {};
-		private var _monPlaced:uint = 0;
+		//private var _objMonitors:Object = {};
+		//private var _monPlaced:uint = 0;
 		
 		private var _tooltipField:TextField;
 		
@@ -188,6 +188,7 @@ package com.junkbyte.console.view {
 				_memPanel = null;
 			}
 		}
+		/*
 		public function updateObjMonitors(objs:Object):void{
 			var usedMap:Object = {};
 			for (var X:String in objs){
@@ -215,7 +216,7 @@ package com.junkbyte.console.view {
 					delete _objMonitors[Z];
 				}
 			}
-		}
+		}*/
 		//
 		//
 		//
@@ -333,7 +334,7 @@ package com.junkbyte.console.view {
 		//
 		private function onPanelStartDragScale(e:Event):void{
 			var target:AbstractPanel = e.currentTarget as AbstractPanel;
-			if(target.snapping){
+			if(_master.config.style.panelSnapping) {
 				var X:Array = [0];
 				var Y:Array = [0];
 				if(_master.stage){

@@ -89,9 +89,8 @@ package com.junkbyte.console {
 	 */
 	public class Cc{
 		
-		private static const ERROR_EXISTS:String = "[CONSOLE] already started.";
-		
 		private static var _console:Console;
+		private static var _config:ConsoleConfig;
 		
 		/**
 		 * Do not construct.
@@ -102,8 +101,18 @@ package com.junkbyte.console {
 		 * @see #startOnStage()
 		 */
 		public function Cc() {
-			throw new Error("[CONSOLE] Do not construct. Please use Cc.start() or Cc.startOnStage()");
+			throw new Error("[Cc] Do not construct. Please use Cc.start() or Cc.startOnStage()");
 		}
+		
+		/**
+		 * Returns ConsoleConfig used or to be used - to start console. 
+		 * Creates a new one if it previously does not exist and get passed on the next Cc.start (if a different config instance was not passed into start)
+		 */
+		public static function get config():ConsoleConfig{
+			if(!_config) _config = new ConsoleConfig();
+			return _config;
+		}
+		
 		/**
 		 * Start Console inside given Display.
 		 * <p>
@@ -118,10 +127,9 @@ package com.junkbyte.console {
 		 * 			Must be ASCII chars. Example passwords: ` OR debug. Make sure Controls > Disable Keyboard Shortcuts in Flash.
 		 * @param  Skin preset number to use. 1 = black base, 2 = white base
 		 */
-		public static function start(mc:DisplayObjectContainer, pass:String = "", config:ConsoleConfig = null):void{
-			if(_console){
-				trace(ERROR_EXISTS);
-			}else{
+		public static function start(mc:DisplayObjectContainer, pass:String = "", cfg:ConsoleConfig = null):void{
+			if(!_console){
+				if(cfg) _config = cfg;
 				_console = new Console(pass, config);
 				// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
 				if(mc!=null) mc.addChild(_console);
@@ -143,14 +151,14 @@ package com.junkbyte.console {
 		 * 			
 		 */
 		public static function startOnStage(mc:DisplayObject, pass:String = "", config:ConsoleConfig = null):void{
-			if(_console){
-				trace(ERROR_EXISTS);
-			}else if(mc !=null && mc.stage !=null ){
-				start(mc.stage, pass, config);
-			}else{
-			 	_console = new Console(pass, config);
-			 	// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
-				if(mc!=null) mc.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
+			if(!_console){
+				if(mc !=null && mc.stage !=null ){
+					start(mc.stage, pass, config);
+				}else{
+			 		_console = new Console(pass, config);
+			 		// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
+					if(mc!=null) mc.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
+				}
 			}
 		}
 		//
@@ -165,7 +173,7 @@ package com.junkbyte.console {
 		 */
 		public static function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(_console){
-				_console.add(str,priority, isRepeating);
+				_console.add(str, priority, isRepeating);
 			}
 		}
 		/**
@@ -270,9 +278,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public static function logch(channel:*, ...args):void{
-			if(_console){
-				_console.logch.apply(null, concat(channel, args));
-			}
+			chcall("logch", channel, args);
 		}
 		/**
 		 * Add log line with priority 3 to channel
@@ -282,9 +288,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public static function infoch(channel:*, ...args):void{
-			if(_console){
-				_console.infoch.apply(null, concat(channel, args));
-			}
+			chcall("infoch", channel, args);
 		}
 		/**
 		 * Add log line with priority 5 to channel
@@ -294,9 +298,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public static function debugch(channel:*, ...args):void{
-			if(_console){
-				_console.debugch.apply(null, concat(channel, args));
-			}
+			chcall("debugch", channel, args);
 		}
 		/**
 		 * Add log line with priority 7 to channel
@@ -306,9 +308,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public static function warnch(channel:*, ...args):void{
-			if(_console){
-				_console.warnch.apply(null, concat(channel, args));
-			}
+			chcall("warnch", channel, args);
 		}
 		/**
 		 * Add log line with priority 9 to channel
@@ -318,9 +318,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public static function errorch(channel:*, ...args):void{
-			if(_console){
-				_console.errorch.apply(null, concat(channel, args));
-			}
+			chcall("errorch", channel, args);
 		}
 		/**
 		 * Add log line with priority 10 to channel
@@ -330,12 +328,13 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public static function fatalch(channel:*, ...args):void{
-			if(_console){
-				_console.fatalch.apply(null, concat(channel, args));
-			}
+			chcall("fatalch", channel, args);
 		}
-		private static function concat(o:*, args:Array):Array{
-			return [o].concat(args);
+		private static function chcall(callname:String, ch:String, args:Array):void{
+			if(_console){
+				args.unshift(ch);
+				_console[callname].apply(null, args);
+			}
 		}
 		/**
 		 * Remove console from it's parent display and clean up
@@ -396,21 +395,6 @@ package com.junkbyte.console {
 			setter("viewingChannels",v);
 		}
 
-		/**
-		 * Accessor for using flash's build in (or external) trace().
-		 * <p>
-		 * When turned on, Console will also call trace() for all console logs.
-		 * trace function can be replaced with something of your own (such as Flex's logging).
-		 * default is trace(...);
-		 * </p>
-		 * @see ConsoleConfig -> traceCall
-		 */
-		public static function get tracing():Boolean{
-			return getter("tracing") as Boolean;
-		}
-		public static function set tracing(v:Boolean):void{
-			setter("tracing",v);
-		}
 		//
 		// Panel settings
 		//
@@ -505,43 +489,6 @@ package com.junkbyte.console {
 		public static function set visible(v:Boolean):void{
 			setter("visible",v);
 		}
-		/**
-		 * When set to true, Console will *try* not to trace too much info about it self.
-		 * <p>
-		 * It will stop tracing about start of storing and watching objects - and a few others.
-		 * If not sure, keep it to false.
-		 * Default: false;
-		 * </p>
-		 */
-		public static function get quiet():Boolean{
-			return getter("quiet") as Boolean;
-		}
-		public static function set quiet(v:Boolean):void{
-			setter("quiet",v);
-		}
-		/**
-		 * Accessor for keeping Console on top of display list.
-		 * <p>
-		 * When turned on (by default), console will always try to put it self on top of the parent's display list.
-		 * For example, if console is started in root, when a child display is added in root, console will move it self to the 
-		 * top of root's display list to try to overlay the new child display. - making sure that console don't get covered.
-		 * </p>
-		 * <p>
-		 * However, if Console's parent display (root in example) is covered by another display (example: adding a child directly to stage), 
-		 * console will not be able to pull it self above it as it is in root, not stage.
-		 * If console is added on stage in the first place, there won't be an issue as described above. Use Cc.startOnStage(...).
-		 * </p>
-		 * <p>
-		 * Keeping it turned on may have other side effects if another display is also trying to put it self on top, 
-		 * they could be jumping layers as they fight for the top layer.
-		 * </p>
-		 */
-		public static function get alwaysOnTop():Boolean{
-			return getter("alwaysOnTop") as Boolean;
-		}
-		public static function set alwaysOnTop(v:Boolean):void{
-			setter("alwaysOnTop",v);
-		}
 		//
 		// Remoting
 		//
@@ -610,13 +557,12 @@ package com.junkbyte.console {
 				_console.explode(obj,depth);
 			}
 		}
-		/**
+		/*
 		 * WORK IN PROGRESS... Brings up a panel to monitor values of the object
 		 * 
 		 * @param Object to monitor
 		 * @param name of panel (optional)
 		 * 
-		 */
 		public static function monitor(obj:Object, n:String = null):void {
 			// WORK IN PROGRESS
 			if(_console){
@@ -624,10 +570,10 @@ package com.junkbyte.console {
 				_console.monitor(obj, n);
 			}
 			// WORK IN PROGRESS
-		}
+		}*/
 		/**
 		 * CommandLine UI's visibility.
-		 * When this is set to true, it will also automatically set commandLineAllowed to true.
+		 * When this is set to true, it will also automatically set ConsoleConfig->commandLineAllowed to true.
 		 */
 		public static function get commandLine ():Boolean{
 			return getter("commandLine") as Boolean;
@@ -818,8 +764,7 @@ package com.junkbyte.console {
 		 * 
 		 */
 		public static function get exists():Boolean{
-			var e:Boolean = _console? true: false;
-			return e;
+			return _console? true: false;
 		}
 		//
 		private static function addedToStageHandle(e:Event):void{

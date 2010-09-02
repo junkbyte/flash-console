@@ -23,8 +23,8 @@
 * 
 */
 package {
-	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.view.AbstractPanel;
 	
 	import flash.display.MovieClip;
@@ -34,11 +34,8 @@ package {
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
-	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
 	import flash.filters.GlowFilter;
-	import flash.text.TextField;		
+	import flash.text.TextField;	
 
 	public class ConsoleRemoteAIR extends MovieClip {
 		
@@ -50,7 +47,7 @@ package {
 			
 			var config:ConsoleConfig = new ConsoleConfig();
 			config.maxLines = 2000;
-			config.backgroundAlpha = 0.55;
+			config.style.backgroundAlpha = 0.55;
 			_c = new Console(null, config);
 			addChild(_c);
 			_c.visible = true;
@@ -67,16 +64,20 @@ package {
 			//_c.panels.mainPanel.addEventListener(AbstractPanel.CLOSED, closeHandle);
 			_c.filters = [new GlowFilter(0, 0.7, 5, 5)];
 			//
-			_c.panels.mainPanel.addMenuKey("Sf");
-			_c.panels.mainPanel.topMenuRollOver = onMenuRollOver;
-			_c.panels.mainPanel.topMenuClick = onMenuClick;
+			//_c.panels.mainPanel.addMenuKey("Sf");
+			//_c.panels.mainPanel.topMenuRollOver = onMenuRollOver;
+			//_c.panels.mainPanel.topMenuClick = onMenuClick;
 			//
+			_c.panels.mainPanel.addEventListener(Event.CLOSE, onMainPanelClose);
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			stage.addEventListener(Event.RESIZE, onStageResize);
 			onStageResize();
 		}
-		private function onMenuRollOver(key:String):String{
+		private function onMainPanelClose(e:Event):void{
+			stage.nativeWindow.close();	
+		}
+		/*private function onMenuRollOver(key:String):String{
 			switch (key){
 				case "Sf":
 					return "Save to file";
@@ -122,7 +123,7 @@ package {
 				// maybe read-only , etc
 				_c.report("There was a problem saving the log to "+file.nativePath+"\n"+e, 10);
 			}
-		}
+		}*/
 		private function ondouble(e:Event):void {
 			if(stage.nativeWindow.displayState != NativeWindowDisplayState.MAXIMIZED){
 				stage.nativeWindow.maximize();

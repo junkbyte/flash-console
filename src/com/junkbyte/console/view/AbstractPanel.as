@@ -23,6 +23,7 @@
 * 
 */
 package com.junkbyte.console.view {
+	import com.junkbyte.console.ConsoleStyle;	
 	import com.junkbyte.console.ConsoleConfig;
 
 	import flash.events.TextEvent;
@@ -53,7 +54,6 @@ package com.junkbyte.console.view {
 		private var _resizeTxt:TextField;
 		//
 		protected var master:Console;
-		protected var config:ConsoleConfig;
 		protected var bg:Sprite;
 		protected var scaler:Sprite;
 		protected var txtField:TextField;
@@ -61,15 +61,22 @@ package com.junkbyte.console.view {
 		protected var minHeight:int = 18;
 		
 		public var moveable:Boolean = true;
-		public var snapping:uint = 3;
 		
 		public function AbstractPanel(m:Console) {
 			master = m;
-			config = master.config;
 			bg = new Sprite();
 			bg.name = "background";
 			addChild(bg);
 		}
+		
+		public function get config() : ConsoleConfig {
+			return master.config;
+		}
+		
+		public function get style() : ConsoleStyle {
+			return master.config.style;
+		}
+		
 		protected function drawBG(col:Number = 0, a:Number = 0.6, rounding:int = 10):void{
 			bg.graphics.clear();
 			bg.graphics.beginFill(col, a);
@@ -83,8 +90,8 @@ package com.junkbyte.console.view {
 			}
 		}
 		public function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
-			if(rounding <0 ) rounding = config.roundBorder;
-			drawBG(col>=0?col:config.backgroundColor, a>=0?a:config.backgroundAlpha, rounding);
+			if(rounding <0 ) rounding = style.roundBorder;
+			drawBG(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha, rounding);
 			scalable = resizable;
 			width = w;
 			height = h;
@@ -144,7 +151,7 @@ package com.junkbyte.console.view {
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onDraggerMouseMove, false, 0, true);
 		}
 		private function onDraggerMouseMove(e:MouseEvent = null):void{
-			if(snapping==0) return;
+			if(style.panelSnapping==0) return;
 			// YEE HA, SNAPPING!
 			var p:Point = returnSnappedFor(parent.mouseX-_dragOffset.x, parent.mouseY-_dragOffset.y);
 			x = p.x;
@@ -178,7 +185,7 @@ package com.junkbyte.console.view {
 			if(b && !scaler){
 				scaler = new Sprite();
 				scaler.name = "scaler";
-				scaler.graphics.beginFill(config.controlColor, config.backgroundAlpha);
+				scaler.graphics.beginFill(style.controlColor, style.backgroundAlpha);
 	            scaler.graphics.lineTo(-10, 0);
 	            scaler.graphics.lineTo(0, -10);
 	            scaler.graphics.endFill();
@@ -236,42 +243,28 @@ package com.junkbyte.console.view {
 		{
 			var txt:TextField = new TextField();
 			txt.name = n;
-			txt.styleSheet = config.styleSheet;
+			txt.styleSheet = style.styleSheet;
 			if(!mouse) txt.mouseEnabled = mouse;
 			if(back){
           	 	txt.background = true;
-            	txt.backgroundColor = config.backgroundColor;
+            	txt.backgroundColor = style.backgroundColor;
 			}
 			return txt;
 		}
 		//
 		//
 		private function returnSnappedFor(X:Number,Y:Number):Point{
-			var ex:Number = X+width;
-			var Xs:Array = _snaps[0];
-			for each(var Xi:Number in Xs){
-				if(Math.abs(Xi-X)<snapping){
-					X = Xi;
-					break;
-				}
-				if(Math.abs(Xi-ex)<snapping){
-					X = Xi-width;
-					break;
-				}
+			return new Point(getSnapOf(X, true),getSnapOf(Y, false));
+		}
+		private function getSnapOf(v:Number, isX:Boolean):Number{
+			var end:Number = v+width;
+			var a:Array = _snaps[isX?0:1];
+			var s:int = style.panelSnapping;
+			for each(var ii:Number in a){
+				if(Math.abs(ii-v)<s) return ii;
+				if(Math.abs(ii-end)<s) return ii-width;
 			}
-			var ey:Number = Y+height;
-			var Ys:Array = _snaps[1];
-			for each(var Yi:Number in Ys){
-				if(Math.abs(Yi-Y)<snapping){
-					Y = Yi;
-					break;
-				}
-				if(Math.abs(Yi-ey)<snapping){
-					Y = Yi-height;
-					break;
-				}
-			}
-			return new Point(X,Y);
+			return v;
 		}
 		
 		public function registerTFRoller(field:TextField, overhandle:Function, linkHandler:Function = null):void{

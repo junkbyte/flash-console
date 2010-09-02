@@ -23,6 +23,8 @@
 * 
 */
 package com.junkbyte.console.view {
+	import com.junkbyte.console.ConsoleConfig;	
+	import com.junkbyte.console.ConsoleStyle;	
 	import com.junkbyte.console.Console;
 	
 	import flash.display.BlendMode;
@@ -44,6 +46,8 @@ package com.junkbyte.console.view {
 		private static const POINTER_DISTANCE:int = 12;
 		
 		private var _master:Console;
+		private var _config : ConsoleConfig;
+
 		private var _area:Rectangle;
 		private var _pointer:Shape;
 		
@@ -56,6 +60,7 @@ package com.junkbyte.console.view {
 		}
 		public function start(console:Console):void{
 			_master = console;
+			_config = console.config;
 			buttonMode = true;
 			_points = new Array();
 			_pointer = new Shape();
@@ -63,7 +68,7 @@ package com.junkbyte.console.view {
 			var p:Point = new Point();
 			p = globalToLocal(p);
 			_area = new Rectangle(-stage.stageWidth*1.5+p.x, -stage.stageHeight*1.5+p.y, stage.stageWidth*3, stage.stageHeight*3);
-			graphics.beginFill(console.config.backgroundColor, 0.2);
+			graphics.beginFill(_config.style.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
@@ -74,7 +79,7 @@ package com.junkbyte.console.view {
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
 			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, false, 0, true);
 			onMouseMove();
-			if(_master.config.rulerHidesMouse) Mouse.hide();
+			if(_config.rulerHidesMouse) Mouse.hide();
 			_master.report("<b>Ruler started. Click on two locations to measure.</b>", -1);
 		}
 		private function onMouseMove(e:MouseEvent = null):void{
@@ -99,13 +104,14 @@ package com.junkbyte.console.view {
 		private function onMouseClick(e:MouseEvent):void{
 			e.stopPropagation();
 			var p:Point;
+			var style : ConsoleStyle = _config.style;
 			if(_points.length==0){
 				p = new Point(e.localX, e.localY);
 				graphics.lineStyle(1, 0xFF0000);
 				graphics.drawCircle(p.x, p.y, 3);
 				_points.push(p);
 			}else if(_points.length==1){
-				if(_master.config.rulerHidesMouse) Mouse.show();
+				if(_config.rulerHidesMouse) Mouse.show();
 				removeChild(_pointer);
 				removeChild(_posTxt);
 				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
@@ -113,7 +119,7 @@ package com.junkbyte.console.view {
 				var p2:Point =  new Point(e.localX, e.localY);
 				_points.push(p2);
 				graphics.clear();
-				graphics.beginFill(_master.config.backgroundColor, 0.4);
+				graphics.beginFill(style.backgroundColor, 0.4);
 				graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 				graphics.endFill();
 				graphics.lineStyle(1.5, 0xFF0000);
@@ -141,20 +147,20 @@ package com.junkbyte.console.view {
 				var h:Number = ymax.y-ymin.y;
 				var d:Number = Point.distance(p, p2);
 				//
-				var txt:TextField = makeTxtField(_master.config.highColor);
+				var txt:TextField = makeTxtField(style.highColor);
 				txt.text = round(p.x)+","+ round(p.y);
 				txt.x = p.x;
 				txt.y = p.y-(ymin==p?14:0);
 				addChild(txt);
 				//
-				txt = makeTxtField(_master.config.highColor);
+				txt = makeTxtField(style.highColor);
 				txt.text = round(p2.x)+","+ round(p2.y);
 				txt.x = p2.x;
 				txt.y = p2.y-(ymin==p2?14:0);;
 				addChild(txt);
 				//
 				if(w>40 || h>25){
-					txt = makeTxtField(_master.config.lowColor);
+					txt = makeTxtField(style.lowColor);
 					txt.text = round(mp.x)+","+ round(mp.y);
 					txt.x = mp.x;
 					txt.y = mp.y;
@@ -211,7 +217,7 @@ package com.junkbyte.console.view {
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		private function makeTxtField(col:Number, b:Boolean = true):TextField{
-			var format:TextFormat = new TextFormat(_master.config.menuFont, _master.config.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
+			var format:TextFormat = new TextFormat(_config.style.menuFont, _config.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
 			var txt:TextField = new TextField();
 			txt.autoSize = TextFieldAutoSize.RIGHT;
 			txt.selectable = false;

@@ -55,15 +55,15 @@ package com.junkbyte.console.view {
 			minHeight = 26;
 			//
 			lowTxt = makeTF("lowestField", false, false);
-			lowTxt.height = master.config.menuFontSize+2;
+			lowTxt.height = style.menuFontSize+2;
 			addChild(lowTxt);
 			highTxt = makeTF("highestField", false, false);
-			highTxt.height = master.config.menuFontSize+2;
-			highTxt.y = master.config.menuFontSize-4;
+			highTxt.height = style.menuFontSize+2;
+			highTxt.y = style.menuFontSize-4;
 			addChild(highTxt);
 			//
 			txtField = makeTF("menuField");
-			txtField.height = m.config.menuFontSize+4;
+			txtField.height = style.menuFontSize+4;
 			txtField.y = -3;
 			registerTFRoller(txtField, onMenuRollOver, linkHandler);
 			registerDragger(txtField); // so that we can still drag from textfield
@@ -74,7 +74,7 @@ package com.junkbyte.console.view {
 			//
 			graph = new Shape();
 			graph.name = "graph";
-			graph.y = m.config.menuFontSize;
+			graph.y = style.menuFontSize;
 			addChild(graph);
 			//
 			init(W?W:100,H?H:80,resizable);
@@ -106,12 +106,12 @@ package com.junkbyte.console.view {
 		}*/
 		override public function set height(n:Number):void{
 			super.height = n;
-			lowTxt.y = n-master.config.menuFontSize;
+			lowTxt.y = n-style.menuFontSize;
 			_needRedraw = true;
 			
 			var g:Graphics = underlay.graphics;
 			g.clear();
-			g.lineStyle(1,master.config.controlColor, 0.6);
+			g.lineStyle(1,style.controlColor, 0.6);
 			g.moveTo(0, graph.y);
 			g.lineTo(width-startOffset, graph.y);
 			g.lineTo(width-startOffset, n);

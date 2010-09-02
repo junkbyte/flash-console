@@ -23,7 +23,11 @@
 * 
 */
 package com.junkbyte.console.utils {
-	import flash.utils.getQualifiedClassName;	
+	import flash.utils.getQualifiedClassName;
+	/** 
+	 * Produces class name without package path
+	 * e.g: flash.display.Sprite => Sprite
+	 */	
 	public function ShortClassName(cls:Object):String{
 		var str:String = getQualifiedClassName(cls);
 		var ind:int = str.lastIndexOf("::");

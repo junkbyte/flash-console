@@ -68,7 +68,7 @@ package com.junkbyte.console.core {
 			}
 		}
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):Boolean{
-			if(_password && (!(key.extra & KeyBind.KEYCODE) &&  key.char == _password.charAt(0)))
+			if(_password && (key.useChar &&  key.char == _password.charAt(0)))
 			{
 				return false;
 			}

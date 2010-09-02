@@ -59,15 +59,18 @@ package com.junkbyte.console.core
 			return _scope;
 		}
 		// TEST CASES...
-		// com.junkbyte.console.C.instance.visible
-		// com.junkbyte.console.C.instance.addGraph('test',stage,'mouseX')
+		// com.junkbyte.console.Cc.instance.visible
+		// com.junkbyte.console.Cc.instance.addGraph('test',stage,'mouseX')
 		// trace('simple stuff. what ya think?');
 		// trace('He\'s cool! (not really)','',"yet 'another string', what ya think?");
 		// this.getChildAt(0); 
 		// stage.addChild(root.addChild(this.getChildAt(0)));
 		// getChildByName(new String('Console')).getChildByName('mainPanel').alpha = 0.5
-		// com.junkbyte.console.C.add('Hey how are you?');
-		// third(second(first('console'))).final(0).alpha;
+		// com.junkbyte.console.Cc.add('Hey how are you?');
+		// new Array(11,22,33,44,55,66,77,88,99).1
+		// new Array(11,22,33,44,55,66,77,88,99);/;1
+		// new XML("<t a=\"A\"><b>B</b></t>").attribute("a")
+		// new XML("<t a=\"A\"><b>B</b></t>").b
 		public function exec(s:*, str:String, saved:Object = null, reserved:Array = null):*{
 			if(_running) throw new Error("CommandExec.exec() is already runnnig. Does not support loop backs.");
 			_running = true;
@@ -184,7 +187,7 @@ package com.junkbyte.console.core
 		}
 		private function tempValue(str:String,v:*, indOpen:int, indClose:int):String{
 			//trace("tempValue", VALUE_CONST+_values.length, " = "+str);
-			str = str.substring(0,indOpen)+(VALUE_CONST+_values.length)+str.substring(indClose);
+			str = str.substring(0,indOpen)+VALUE_CONST+_values.length+str.substring(indClose);
 			_values.push(v);
 			return str;
 		}
@@ -294,7 +297,7 @@ package com.junkbyte.console.core
 							reg.lastIndex = 0;
 							result = reg.exec(str);
 						}else{
-							return execValue(str, null);
+							return execValue(str);
 						}
 						break;
 					}catch(e:Error){
@@ -311,7 +314,7 @@ package com.junkbyte.console.core
 				var isFun:Boolean = str.charAt(index)=="(";
 				var basestr:String = ignoreWhite(str.substring(previndex, index));
 				//trace("_scopestr = "+basestr+ " v.base = "+v.value);
-				var newv:ExecuterValue = execValue(basestr, v.value);
+				var newv:ExecuterValue = execValue(basestr, v.value, true);
 				//trace("_scope = "+newv.value+"  isFun:"+isFun);
 				if(isFun){
 					var newbase:* = newv.value;

@@ -24,6 +24,7 @@
 */
 
 package com.junkbyte.console.view {
+
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.Log;
@@ -46,8 +47,6 @@ package com.junkbyte.console.view {
 	import flash.ui.Keyboard;
 
 	public class MainPanel extends AbstractPanel {
-		
-		private static const MAX_MENU_CHANNELS:int = 7;
 		
 		public static const TOOLTIPS:Object = {
 				fps:"Frames Per Second",
@@ -75,11 +74,6 @@ package com.junkbyte.console.view {
 		
 		public static const NAME:String = "mainPanel";
 		
-		// these are used for adding extended functionality such as from RemoteAIR
-		private var _extraMenuKeys:Array = [];
-		public var topMenuClick:Function;
-		public var topMenuRollOver:Function;
-		
 		private var _traceField:TextField;
 		private var _cmdPrefx:TextField;
 		private var _cmdField:TextField;
@@ -106,7 +100,7 @@ package com.junkbyte.console.view {
 		
 		public function MainPanel(m:Console, lines:Logs, channels:Array) {
 			super(m);
-			var fsize:int = m.config.menuFontSize;
+			var fsize:int = style.menuFontSize;
 			_channels = channels;
 			_viewingChannels = new Array();
 			_lines = lines;
@@ -131,12 +125,12 @@ package com.junkbyte.console.view {
 			//
 			_cmdBG = new Shape();
 			_cmdBG.name = "commandBackground";
-			_cmdBG.graphics.beginFill(config.commandLineColor, 0.1);
+			_cmdBG.graphics.beginFill(style.commandLineColor, 0.1);
 			_cmdBG.graphics.drawRoundRect(0, 0, 100, 18,fsize,fsize);
 			_cmdBG.scale9Grid = new Rectangle(9, 9, 80, 1);
 			addChild(_cmdBG);
 			//
-			var tf:TextFormat = new TextFormat(config.menuFont, config.menuFontSize, config.highColor);
+			var tf:TextFormat = new TextFormat(style.menuFont, style.menuFontSize, style.highColor);
 			_cmdField = new TextField();
 			_cmdField.name = "commandField";
 			_cmdField.type  = TextFieldType.INPUT;
@@ -147,7 +141,7 @@ package com.junkbyte.console.view {
 			_cmdField.defaultTextFormat = tf;
 			addChild(_cmdField);
 			
-			tf.color = config.commandLineColor;
+			tf.color = style.commandLineColor;
 			_cmdPrefx = new TextField();
 			_cmdPrefx.name = "commandPrefx";
 			_cmdPrefx.type  = TextFieldType.DYNAMIC;
@@ -166,7 +160,7 @@ package com.junkbyte.console.view {
 			_bottomLine.alpha = 0.2;
 			addChild(_bottomLine);
 			//
-			_txtscroll = new TextScroller(null, config.controlColor);
+			_txtscroll = new TextScroller(null, style.controlColor);
 			_txtscroll.y = fsize+4;
 			_txtscroll.addEventListener(Event.INIT, startedScrollingHandle, false, 0, true);
 			_txtscroll.addEventListener(Event.COMPLETE, stoppedScrollingHandle,  false, 0, true);
@@ -187,10 +181,14 @@ package com.junkbyte.console.view {
 			
 			master.cl.addEventListener(Event.CHANGE, onUpdateCommandLineScope, false, 0, true);
 		}
-		public function addMenuKey(key:String):void{
-			_extraMenuKeys.push(key);
+		/*
+		public function addMenu(key:String, f:Function, rollover:String):void{
+			_extraMenus.push(new ExternalMenu(key, rollover, f));
 			_needUpdateMenu = true;
 		}
+		public function removeMenu(key:String):void{
+			_needUpdateMenu = true;
+		}*/
 
 		private function stageAddedHandle(e:Event=null):void{
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
@@ -224,7 +222,7 @@ package com.junkbyte.console.view {
 				master.report("//", -2);
 				master.report("// <b>Enter remoting password</b> in CommandLine below...", -2);
 				updateCLScope("Password");
-				ct.color = config.controlColor;
+				ct.color = style.controlColor;
 				_cmdBG.transform.colorTransform = ct;
 				_traceField.transform.colorTransform = new ColorTransform(0.7,0.7,0.7);
 			}else{
@@ -298,8 +296,8 @@ package com.junkbyte.console.view {
 		}
 		private function updateBottom():void{
 			var lines:Array = new Array();
-			var linesLeft:int = Math.round(_traceField.height/master.config.traceFontSize);
-			var maxchars:int = Math.round(_traceField.width*5/master.config.traceFontSize);
+			var linesLeft:int = Math.round(_traceField.height/style.traceFontSize);
+			var maxchars:int = Math.round(_traceField.width*5/style.traceFontSize);
 			
 			var line:Log = _lines.last;
 			while(line){
@@ -447,7 +445,7 @@ package com.junkbyte.console.view {
 			_cmdBG.width = n;
 			
 			_bottomLine.graphics.clear();
-			_bottomLine.graphics.lineStyle(1, config.controlColor);
+			_bottomLine.graphics.lineStyle(1, style.controlColor);
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
 			_txtscroll.x = n;
@@ -460,16 +458,14 @@ package com.junkbyte.console.view {
 		override public function set height(n:Number):void{
 			_lockScrollUpdate = true;
 			super.height = n;
-			var minimize:Boolean = false;
-			if(n<(_cmdField.visible?42:24)){
-				minimize = true;
-			}
+			var fsize:int = style.menuFontSize;
+			var msize:Number = fsize+6+style.traceFontSize;
+			var minimize:Boolean = n<(_cmdField.visible?(msize+fsize+4):msize);
 			if(_isMinimised != minimize){
 				registerDragger(txtField, minimize);
 				registerDragger(_traceField, !minimize);
 				_isMinimised = minimize;
 			}
-			var fsize:int = master.config.menuFontSize;
 			txtField.visible = !minimize;
 			_traceField.y = minimize?0:fsize;
 			_traceField.height = n-(_cmdField.visible?(fsize+4):0)-(minimize?0:fsize);
@@ -501,6 +497,14 @@ package com.junkbyte.console.view {
 				str += getChannelsLink(true);
 			}
 			str += "<menu>[ <b>";
+			
+			/*var extras:uint = _extraMenus.length;
+			if(extras){
+				for(var i:uint = 0; i<extras; i++){
+					str += " <a href=\"event:external_"+i+"\">"+_extraMenus[i].key+"</a>";
+				}
+			}*/
+			
 			str += doActive("<a href=\"event:fps\">F</a>", master.fpsMonitor>0);
 			str += doActive(" <a href=\"event:mm\">M</a>", master.memoryMonitor>0);
 			if(config.commandLineAllowed){
@@ -511,9 +515,6 @@ package com.junkbyte.console.view {
 				str += doActive(" <a href=\"event:ruler\">RL</a>", master.panels.rulerActive);
 			}
 			str += " ¦</b>";
-			for each(var link:String in _extraMenuKeys){
-				str += " <a href=\"event:"+link+"\">"+link+"</a>";
-			}
 			str += " <a href=\"event:copy\">Cc</a>";
 			str += " <a href=\"event:priority\">P"+_priority+"</a>";
 			str += doActive(" <a href=\"event:pause\">P</a>", master.paused);
@@ -526,7 +527,7 @@ package com.junkbyte.console.view {
 		public function getChannelsLink(limited:Boolean = false):String{
 			var str:String = "<chs>";
 			var len:int = _channels.length;
-			if(limited && len>MAX_MENU_CHANNELS) len = MAX_MENU_CHANNELS;
+			if(limited && len>style.maxChannelsInMenu) len = style.maxChannelsInMenu;
 			for(var ci:int = 0; ci<len;  ci++){
 				var channel:String = _channels[ci];
 				var channelTxt:String = ((ci == 0 && _viewingChannels.length == 0) || _viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
@@ -545,13 +546,13 @@ package com.junkbyte.console.view {
 		public function onMenuRollOver(e:TextEvent, src:AbstractPanel = null):void{
 			if(src==null) src = this;
 			var txt:String = e.text?e.text.replace("event:",""):"";
-			if(topMenuRollOver!=null) {
+			/*if(topMenuRollOver!=null) {
 				var t:String = topMenuRollOver(txt);
 				if(t) {
 					master.panels.tooltip(t, src);
 					return;
 				}
-			}
+			}*/
 			if(txt == "channel_"+config.globalChannel){
 				txt = TOOLTIPS["viewall"];
 			}else if(txt == "channel_"+config.defaultChannel) {
@@ -579,7 +580,7 @@ package com.junkbyte.console.view {
 		private function linkHandler(e:TextEvent):void{
 			txtField.setSelection(0, 0);
 			stopDrag();
-			if(topMenuClick!=null && topMenuClick(e.text)) return;
+			//if(topMenuClick!=null && topMenuClick(e.text)) return;
 			if(e.text == "pause"){
 				if(master.paused){
 					master.paused = false;
@@ -591,7 +592,7 @@ package com.junkbyte.console.view {
 			}else if(e.text == "close"){
 				master.panels.tooltip();
 				visible = false;
-				//dispatchEvent(new Event(AbstractPanel.CLOSED));
+				dispatchEvent(new Event(Event.CLOSE));
 			}else if(e.text == "channels"){
 				master.panels.channelsPanel = !master.panels.channelsPanel;
 			}else if(e.text == "fps"){
@@ -758,3 +759,15 @@ package com.junkbyte.console.view {
 		}
 	}
 }
+/*
+internal class ExternalMenu{
+	public var key:String;
+	public var rollover:String;
+	public var click:Function;
+	
+	public function ExternalMenu(k:String, rover:String, clk:Function):void{
+		key = k;
+		rollover = rover;
+		click = clk;
+	}
+}*/

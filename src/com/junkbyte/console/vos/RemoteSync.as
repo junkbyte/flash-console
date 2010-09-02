@@ -27,7 +27,6 @@ package com.junkbyte.console.vos {
 	public class RemoteSync {
 		public var lines:Array;
 		public var graphs:Array;
-		public var om:Object;
 		public var cl:String;
 		
 		
@@ -36,7 +35,6 @@ package com.junkbyte.console.vos {
 			vo.lines = o.lines;
 			vo.graphs = o.graphs;
 			vo.cl = o.cl;
-			vo.om = o.om;
 			return vo;
 		}
 	}

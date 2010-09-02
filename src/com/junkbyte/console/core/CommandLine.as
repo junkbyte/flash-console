@@ -31,7 +31,7 @@ package com.junkbyte.console.core {
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.utils.getQualifiedClassName;	
+	import flash.utils.getQualifiedClassName;import com.junkbyte.console.utils.CastToString;	
 
 	public class CommandLine extends EventDispatcher {
 		
@@ -59,7 +59,7 @@ package com.junkbyte.console.core {
 			_scope = m;
 			_prevScope = new WeakRef(m);
 			_saved.set("C", m);
-			_saved.set(MONITORING_OBJ_KEY, m.om.getObject);
+			//_saved.set(MONITORING_OBJ_KEY, m.om.getObject);
 		}
 		public function set base(obj:Object):void {
 			if (base) {
@@ -90,7 +90,7 @@ package com.junkbyte.console.core {
 			}else{
 				_saved.set(n, obj, strong);
 			}
-			if(!_master.quiet){
+			if(!_master.config.quiet){
 				var str:String = strong?"STRONG":"WEAK";
 				report("Stored <p5>$"+n+"</p5> for <b>"+getQualifiedClassName(obj)+"</b> using <b>"+ str +"</b> reference.",-1);
 			}
@@ -180,12 +180,12 @@ package com.junkbyte.console.core {
 				} else {
 					report("Empty", 10);
 				}
-			} else if (cmd == "monitor") {
+			/*} else if (cmd == "monitor") {
 				if (_scope) {
 					_master.monitor(_scope, param);
 				} else {
 					report("Empty", 10);
-				}
+				}*/
 			} else if (cmd == "map") {
 				if (_scope) {
 					map(_scope as DisplayObjectContainer, int(param));
@@ -248,11 +248,7 @@ package com.junkbyte.console.core {
 			}
 		}
 		private function reportError(e:Error):void{
-			// e.getStackTrace() is not supported in non-//debugger players...
-			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():String(e);
-			if(!str){
-				str = String(e);
-			}
+			var str:String = CastToString(e);
 			var lines:Array = str.split(/\n\s*/);
 			var p:int = 10;
 			var internalerrs:int = 0;
