@@ -30,7 +30,7 @@ package {
 	import flash.display.*;
 	import flash.events.*;
 
-	[SWF(width='600',height='420',backgroundColor='0xCCCCCC',frameRate='30')]
+	[SWF(width='600',height='420',backgroundColor='0xCCCCCC',frameRate='60')]
 	// used to compile in flex/fdt
 	// Might want to add compile argument: -use-network=false
 	// To compile in flash, point this class as document class.

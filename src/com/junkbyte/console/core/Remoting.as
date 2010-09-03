@@ -86,7 +86,7 @@ package com.junkbyte.console.core {
 				_queue.splice(0,1);
 			}
 		}
-		public function update(graphs:Array, om:Object):void{
+		public function update(graphs:Array):void{
 			if(remoting){
 				if(!_loggedIn) return;
 				_delayed++;

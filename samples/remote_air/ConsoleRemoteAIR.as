@@ -42,7 +42,7 @@ package {
 		private var _c:Console;
 		
 		public function ConsoleRemoteAIR() {
-			
+			stage.frameRate = 60;
 			stage.nativeWindow.alwaysInFront = true;
 			
 			var config:ConsoleConfig = new ConsoleConfig();

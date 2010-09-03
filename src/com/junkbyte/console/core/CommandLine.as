@@ -35,13 +35,12 @@ package com.junkbyte.console.core {
 
 	public class CommandLine extends EventDispatcher {
 		
-		private static const MAX_INTERNAL_STACK_TRACE:int = 1;
+		private static const INTSTACKS:int = 1; // max number of internal (commandLine) stack traces
 		
-		public static const BASE_KEY:String = "base";
-		public static const MONITORING_OBJ_KEY:String = "monitorObj";
+		public static const BASE:String = "base";
+		//public static const MONITORING_OBJ_KEY:String = "monitorObj";
 		
-		private static const RESERVED_SAVES:Array = [Executer.RETURNED_KEY, BASE_KEY, "C", MONITORING_OBJ_KEY];
-		
+		private static const RESERVED:Array = [Executer.RETURNED, BASE, "C"];
 		
 		private var _saved:WeakObject;
 		
@@ -69,10 +68,10 @@ package com.junkbyte.console.core {
 				_scope = obj;
 				dispatchEvent(new Event(Event.CHANGE));
 			}
-			_saved.set(BASE_KEY, obj);
+			_saved.set(BASE, obj);
 		}
 		public function get base():Object {
-			return _saved.get(BASE_KEY);
+			return _saved.get(BASE);
 		}
 		public function destory():void {
 			_saved = null;
@@ -84,7 +83,7 @@ package com.junkbyte.console.core {
 			// otherwise it fails if the function passed is from a dynamic class/instance
 			strong = (strong || obj is Function);
 			n = n.replace(/[^\w]*/g, "");
-			if(RESERVED_SAVES.indexOf(n)>=0){
+			if(RESERVED.indexOf(n)>=0){
 				report("ERROR: The name ["+n+"] is reserved",10);
 				return;
 			}else{
@@ -111,7 +110,7 @@ package com.junkbyte.console.core {
 				}else{
 					var exe:Executer = new Executer();
 					exe.addEventListener(Event.COMPLETE, onExecLineComplete, false, 0, true);
-					v = exe.exec(_scope, str, _saved, RESERVED_SAVES);
+					v = exe.exec(_scope, str, _saved, RESERVED);
 				}
 			}catch(e:Error){
 				reportError(e);
@@ -199,7 +198,7 @@ package com.junkbyte.console.core {
 				if(_prevScope.reference) setReturned(_prevScope.reference, true);
 				else report("No previous scope",8);
 			} else if (cmd == "" || cmd == "scope") {
-				setReturned(_saved[Executer.RETURNED_KEY], true);
+				setReturned(_saved[Executer.RETURNED], true);
 			} else if (cmd == "autoscope") {
 				_autoScope = !_autoScope;
 				report("Auto-scoping <b>"+(_autoScope?"enabled":"disabled")+"</b>.",10);
@@ -215,7 +214,7 @@ package com.junkbyte.console.core {
 			var change:Boolean = false;
 			if(returned)
 			{
-				_saved.set(Executer.RETURNED_KEY, returned, true);
+				_saved.set(Executer.RETURNED, returned, true);
 				if(returned !== _scope){
 					if(changeScope){
 						change = true;
@@ -254,12 +253,12 @@ package com.junkbyte.console.core {
 			var internalerrs:int = 0;
 			var len:int = lines.length;
 			var parts:Array = [];
-			var reg:RegExp = new RegExp("\\s*at\\s+("+Executer.EXE_CLASSNAMES+")");
+			var reg:RegExp = new RegExp("\\s*at\\s+("+Executer.CLASSES+")");
 			for (var i:int = 0; i < len; i++){
 				var line:String = lines[i];
-				if(MAX_INTERNAL_STACK_TRACE >=0 && (line.search(reg) == 0)){
+				if(INTSTACKS >=0 && (line.search(reg) == 0)){
 					// don't trace too many internal errors :)
-					if(internalerrs>=MAX_INTERNAL_STACK_TRACE && i > 0) {
+					if(internalerrs>=INTSTACKS && i > 0) {
 						break;
 					}
 					internalerrs++;

@@ -38,7 +38,8 @@ http://code.google.com/p/flash-console/issues/
   * Renamed C to Cc so that FlashBuilder pick up as auto complete. Cc stands for Console controller.
   * Renamed source package name to com.junkbyte.console - to be less personal
   * Moved a lot of 'configuration' settings from Cc. to ConsoleConfig (that you pass at start)
-  * Due to security concern, CommandLine is no longer allowed by default. You must do Cc.commandLineAllowed = true OR Cc.commandLine = true (to allow and show)
+  * Moved a lot of 'style' settings from Cc. to ConsoleStyle (that you modify using ConsoleConfig.style)
+  * Due to security concern, CommandLine is no longer allowed by default. You must do ConsoleConfig.commandLineAllowed = true OR Cc.commandLine = true (to allow and show)
   * CommandLine: no longer auto scope to new return. Enter '/' to change scope to last returned object. Turn on auto-scoping by typing /autoscope
   * Very long lines are automatically split before displaying to increase speed
   * Custom graphing is now passed into remote.
@@ -50,6 +51,8 @@ http://code.google.com/p/flash-console/issues/
   * Removed tracingPriorty, prefixChannelNames, tracingChannels
   * Removed Cc.filterText and Cc.filterRegExp - use /filter in interface
   * Removed Cc.gc() - use memoryMonitor - G button in interface.
+  * Fixed bug with not being able to access array indexes.
+  * Fixed bug with not sending too many log lines in remoting.
 
 ===2.35===
   * Removed /strong AND C.strongRef. Must now use /savestrong individually.

@@ -30,8 +30,8 @@ package com.junkbyte.console.core
 
 	public class Executer extends EventDispatcher{
 		
-		public static const RETURNED_KEY:String = "returned";
-		public static const EXE_CLASSNAMES:String = "ExecuterValue|((com.junkbyte.console.core::)?Executer)";
+		public static const RETURNED:String = "returned";
+		public static const CLASSES:String = "ExecuterValue|((com.junkbyte.console.core::)?Executer)";
 		
 		public static function Exec(scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
 			var e:Executer = new Executer();
@@ -39,7 +39,8 @@ package com.junkbyte.console.core
 		}
 		
 		
-		private static const VALUE_CONST:String = "#";
+		private static const VALKEY:String = "#";
+		
 		private var _saved:Object;
 		private var _reserved:Array;
 		private var _values:Array;
@@ -121,8 +122,8 @@ package com.junkbyte.console.core
 			var lineBreaks:Array = str.split(/\s*;\s*/);
 			for each(var line:String in lineBreaks){
 				if(line.length){
-					if(_saved[RETURNED_KEY] && (line == "/" || line == "/scope")){
-						_scope = _saved[RETURNED_KEY];
+					if(_saved[RETURNED] && (line == "/" || line == "/scope")){
+						_scope = _saved[RETURNED];
 						dispatchEvent(new Event(Event.COMPLETE));
 					}else{
 						execNest(line);
@@ -187,7 +188,7 @@ package com.junkbyte.console.core
 		}
 		private function tempValue(str:String,v:*, indOpen:int, indClose:int):String{
 			//trace("tempValue", VALUE_CONST+_values.length, " = "+str);
-			str = str.substring(0,indOpen)+VALUE_CONST+_values.length+str.substring(indClose);
+			str = str.substring(0,indOpen)+VALKEY+_values.length+str.substring(indClose);
 			_values.push(v);
 			return str;
 		}
@@ -398,8 +399,8 @@ package com.junkbyte.console.core
 				v.base = undefined;
 			}else if (!isNaN(Number(str))) {
 				v.base = Number(str);
-			}else if(str.indexOf(VALUE_CONST)==0){
-				var vv:ExecuterValue = _values[str.substring(VALUE_CONST.length)];
+			}else if(str.indexOf(VALKEY)==0){
+				var vv:ExecuterValue = _values[str.substring(VALKEY.length)];
 				v.base = vv.value;
 			}else if(str.charAt(0) == "$"){
 				var key:String = str.substring(1);

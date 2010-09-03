@@ -59,7 +59,7 @@ package com.junkbyte.console {
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.4;
-		public static const VERSION_STAGE:String = "beta4";
+		public static const VERSION_STAGE:String = "beta5";
 		public static const IS_LITE:Boolean = false;
 		//
 		public static const NAME:String = "Console";
@@ -386,12 +386,12 @@ package com.junkbyte.console {
 					if(_mm.count == 0) _mm = null;
 				}
 			}
-			var graphsList:Array, om:Object;
+			var graphsList:Array;
 			if(!_remoter.isRemote){
 			 	//om = _om.update();
 			 	graphsList = _graphing.update(stage?stage.frameRate:0);
 			}
-			_remoter.update(graphsList, om);
+			_remoter.update(graphsList);
 			
 			// VIEW UPDATES ONLY
 			if(visible && parent!=null){
