@@ -37,20 +37,20 @@ package com.junkbyte.console.core {
 
 	public class Remoting extends EventDispatcher{
 		
-		private static const MAX_SEND_SIZE:uint = 32000; // real limit is 40kb
+		private static const MAXSIZE:uint = 32000; // real limit is 40kb
 		
 		private static const RECIEVER:String = "R";
 		private static const SENDER:String = "C";
 		
-		private static const CALL_LOGIN:String = "login";
-		private static const CALL_REQUEST_LOGIN:String = "requestLogin";
-		private static const CALL_LOGIN_FAIL:String = "loginFail";
-		private static const CALL_LOGIN_SUCCESS:String = "loginSuccess";
-		private static const CALL_SYNC:String = "sync";
-		public static const CALL_GC:String = "gc";
-		public static const CALL_FPS:String = "fps";
-		public static const CALL_MEM:String = "mem";
-		public static const CALL_CMD:String = "cmd";
+		private static const LOGIN:String = "login";
+		private static const LOGINREQUEST:String = "requestLogin";
+		private static const LOGINFAIL:String = "loginFail";
+		private static const LOGINSUCCESS:String = "loginSuccess";
+		private static const SYNC:String = "sync";
+		public static const GC:String = "gc";
+		public static const FPS:String = "fps";
+		public static const MEM:String = "mem";
+		public static const CMD:String = "cmd";
 		//public static const CALL_UNMONITOR:String = "unmonitor";
 		//public static const CALL_MONITORIN:String = "monitorIn";
 		//public static const CALL_MONITOROUT:String = "monitorOut";
@@ -62,7 +62,7 @@ package com.junkbyte.console.core {
 		//private var _isRemote:Boolean;
 		private var _connection:LocalConnection;
 		private var _queue:Array;
-		private var _delayed:int;
+		//private var _delayed:int;
 		
 		private var _lastLogin:String = "";
 		private var _password:String;
@@ -89,24 +89,24 @@ package com.junkbyte.console.core {
 		public function update(graphs:Array):void{
 			if(remoting){
 				if(!_loggedIn) return;
-				_delayed++;
-				if(_delayed >= _config.remoteDelay){
-					_delayed = 0;
+				//_delayed++;
+				//if(_delayed >= _config.remoteDelay){
+				//	_delayed = 0;
 					// don't send too many lines at once cause there is 40kb limit with LocalConnection.send					
 					var size:uint = 0;
 					var len:uint = _queue.length;
 					for(var i:uint = 0 ; i<len; i++){
 						var line:Object = _queue[i];
 						size += line.t.length+50; // 50 = extra bytes for channel name, priority num, etc.
-						if(i > 0 && size > MAX_SEND_SIZE){
+						if(i > 0 && size > MAXSIZE){
 							break;
 						}
 					}
 					var newQueue:Array = _queue.splice(i);
 					// to force update next farme if there is still lines left
-					if(newQueue.length){
-						_delayed = _config.remoteDelay;
-					}
+				//	if(newQueue.length){
+				//		_delayed = _config.remoteDelay;
+				//	}
 					//
 					var ga:Array = [];
 					len = graphs.length;
@@ -118,9 +118,9 @@ package com.junkbyte.console.core {
 					vo.graphs = ga;
 					vo.cl = _master.cl.scopeString;
 					//vo.om = om;
-					send(CALL_SYNC, vo);
+					send(SYNC, vo);
 					_queue = newQueue;
-				}
+				//}
 			}else if(!_master.paused){
 				_canDraw = true;
 			}
@@ -164,7 +164,7 @@ package com.junkbyte.console.core {
 			if(newV == remoting) return;
 			_queue = null;
 			if(newV){
-				_delayed = 0;
+				//_delayed = 0;
 				_queue = new Array();
 				if(!startSharedConnection(SENDER)){
 					_master.report("Could not create remoting client service. You will not be able to control this console with remote.", 10);
@@ -174,9 +174,9 @@ package com.junkbyte.console.core {
 				_loggedIn = checkLogin("");
 				if(_loggedIn){
 					_queue = _master.getLogsAsObjects();
-					send(CALL_LOGIN_SUCCESS);
+					send(LOGINSUCCESS);
 				}else{
-					send(CALL_REQUEST_LOGIN);
+					send(LOGINREQUEST);
 				}
 			}else{
 				close();
@@ -236,15 +236,15 @@ package com.junkbyte.console.core {
 			}
 			_connection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError, false, 0, true);
 			var o:Object = new Object();
-			o[CALL_LOGIN] = login;
-			o[CALL_REQUEST_LOGIN] = requestLogin;
-			o[CALL_LOGIN_FAIL] = loginFail;
-			o[CALL_LOGIN_SUCCESS] = loginSuccess;
-			o[CALL_SYNC] = remoteSync;
-			o[CALL_GC] = _master.gc;
-			o[CALL_FPS] = fpsRequest;
-			o[CALL_MEM] = memRequest;
-			o[CALL_CMD] = _master.runCommand;
+			o[LOGIN] = login;
+			o[LOGINREQUEST] = requestLogin;
+			o[LOGINFAIL] = loginFail;
+			o[LOGINSUCCESS] = loginSuccess;
+			o[SYNC] = remoteSync;
+			o[GC] = _master.gc;
+			o[FPS] = fpsRequest;
+			o[MEM] = memRequest;
+			o[CMD] = _master.runCommand;
 			/*o[CALL_UNMONITOR] = _master.unmonitor;
 			o[CALL_MONITORIN] = _master.monitorIn;
 			o[CALL_MONITOROUT] = _master.monitorOut;*/
@@ -283,15 +283,15 @@ package com.junkbyte.console.core {
 			if(isRemote){
 				_lastLogin = pass;
 				_master.report("Attempting to login...", -1);
-				send(CALL_LOGIN, pass);
+				send(LOGIN, pass);
 			}else{
 				// once logged in, next login attempts will always be success
 				if(_loggedIn || checkLogin(pass)){
 					_loggedIn = true;
 					_queue = _master.getLogsAsObjects();
-					send(CALL_LOGIN_SUCCESS);
+					send(LOGINSUCCESS);
 				}else{
-					send(CALL_LOGIN_FAIL);
+					send(LOGINFAIL);
 				}
 			}
 		}

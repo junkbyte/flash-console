@@ -27,8 +27,8 @@ package com.junkbyte.console.vos {
 
 	public class GraphGroup {
 		
-		public static const TYPE_FPS:uint = 1;
-		public static const TYPE_MEM:uint = 2;
+		public static const FPS:uint = 1;
+		public static const MEM:uint = 2;
 	
 		public var type:uint;
 		public var name:String;

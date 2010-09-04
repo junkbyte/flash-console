@@ -141,7 +141,7 @@ package com.junkbyte.console.view {
 				arr.push(mc.name);
 				mc = mc.parent;
 			}
-			return arr.reverse().join(Console.MAPPING_SPLITTER);
+			return arr.reverse().join(Console.REMAPSPLIT);
 		}
 		public override function close():void {
 			cancelCaptureKeySet();

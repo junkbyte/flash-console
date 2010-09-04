@@ -59,8 +59,8 @@ package {
 			var menu:TextField = _c.panels.mainPanel.getChildByName("menuField") as TextField;
 			menu.doubleClickEnabled = true;
 			menu.addEventListener(MouseEvent.DOUBLE_CLICK, ondouble);
-			_c.panels.mainPanel.addEventListener(AbstractPanel.STARTED_DRAGGING, moveHandle);
-			_c.panels.mainPanel.addEventListener(AbstractPanel.STARTED_SCALING, scaleHandle);
+			_c.panels.mainPanel.addEventListener(AbstractPanel.DRAGGING, moveHandle);
+			_c.panels.mainPanel.addEventListener(AbstractPanel.SCALING, scaleHandle);
 			//_c.panels.mainPanel.addEventListener(AbstractPanel.CLOSED, closeHandle);
 			_c.filters = [new GlowFilter(0, 0.7, 5, 5)];
 			//

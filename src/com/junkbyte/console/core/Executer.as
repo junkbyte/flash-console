@@ -63,13 +63,14 @@ package com.junkbyte.console.core
 		// com.junkbyte.console.Cc.instance.visible
 		// com.junkbyte.console.Cc.instance.addGraph('test',stage,'mouseX')
 		// trace('simple stuff. what ya think?');
-		// trace('He\'s cool! (not really)','',"yet 'another string', what ya think?");
+		// $C.error('He\'s cool! (not really)','',"yet 'another string', what ya think?");
 		// this.getChildAt(0); 
 		// stage.addChild(root.addChild(this.getChildAt(0)));
 		// getChildByName(new String('Console')).getChildByName('mainPanel').alpha = 0.5
 		// com.junkbyte.console.Cc.add('Hey how are you?');
-		// new Array(11,22,33,44,55,66,77,88,99).1
-		// new Array(11,22,33,44,55,66,77,88,99);/;1
+		// new Array(11,22,33,44,55,66,77,88,99).1 // should return 22
+		// new Array(11,22,33,44,55,66,77,88,99);/;1 // should be 1
+		// new Array(11,22,33,44,55,66,77,88,99);/;this.1 // should be 22
 		// new XML("<t a=\"A\"><b>B</b></t>").attribute("a")
 		// new XML("<t a=\"A\"><b>B</b></t>").b
 		public function exec(s:*, str:String, saved:Object = null, reserved:Array = null):*{
@@ -280,7 +281,7 @@ package com.junkbyte.console.core
 			var reg:RegExp = /\.|\(/g;
 			var result:Object = reg.exec(str);
 			if(result==null || !isNaN(Number(str))){
-				return execValue(str, _scope, true);
+				return execValue(str, _scope);
 			}
 			//
 			// AUTOMATICALLY detect classes in packages
@@ -315,7 +316,7 @@ package com.junkbyte.console.core
 				var isFun:Boolean = str.charAt(index)=="(";
 				var basestr:String = ignoreWhite(str.substring(previndex, index));
 				//trace("_scopestr = "+basestr+ " v.base = "+v.value);
-				var newv:ExecuterValue = execValue(basestr, v.value, true);
+				var newv:ExecuterValue = previndex==0?execValue(basestr, v.value):new ExecuterValue(v.value, basestr);
 				//trace("_scope = "+newv.value+"  isFun:"+isFun);
 				if(isFun){
 					var newbase:* = newv.value;
@@ -369,20 +370,8 @@ package com.junkbyte.console.core
 		//
 		// single values such as string, int, null, $a, ^1 and Classes without package.
 		//
-		private function execValue(str:String, base:* = null, basePrior:Boolean = false):ExecuterValue{
+		private function execValue(str:String, base:* = null):ExecuterValue{
 			var v:ExecuterValue = new ExecuterValue();
-			if(basePrior && base){
-				try{
-					var testValue:* = base[str];
-					if(testValue != undefined){
-						v.base = base;
-						v.prop = str;
-						return v;
-					}
-				}catch(e:Error){
-					// will carry on trying other methods...
-				}
-			}
 			if (str == "true") {
 				v.base = true;
 			}else if (str == "false") {

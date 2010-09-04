@@ -27,7 +27,7 @@ package com.junkbyte.console.core {
 
 	public class UserData {
 		
-		private static const CMD_HISTORY_KEY:String = "clhistory";
+		private static const HISTORY:String = "clhistory";
 		
 		private var _so:SharedObject;
 		private var _data:Object = {};
@@ -44,16 +44,16 @@ package com.junkbyte.console.core {
 		}
 		
 		public function get commandLineHistory():Array{
-			if(_data[CMD_HISTORY_KEY] is Array){
-				return _data[CMD_HISTORY_KEY];
+			if(_data[HISTORY] is Array){
+				return _data[HISTORY];
 			}else{
 				var a:Array = new Array();
-				_data[CMD_HISTORY_KEY] = a;
+				_data[HISTORY] = a;
 				return a;
 			}
 		}
 		public function commandLineHistoryChanged():void{
-			if(_so) _so.setDirty(CMD_HISTORY_KEY);
+			if(_so) _so.setDirty(HISTORY);
 		}
 	}
 }

@@ -34,7 +34,7 @@ package com.junkbyte.console.view {
 	public class PanelsManager{
 		
 		
-		private static const USER_GRAPH_PREFIX:String = "graph_";
+		private static const USRGRAPH:String = "graph_";
 		//private static const USER_OBJECTMONITOR_PREFIX:String = "objMonitor_";
 		
 		private var _master:Console;
@@ -67,8 +67,8 @@ package com.junkbyte.console.view {
 			}else{
 				_master.addChild(panel);
 			}
-			panel.addEventListener(AbstractPanel.STARTED_DRAGGING, onPanelStartDragScale, false,0, true);
-			panel.addEventListener(AbstractPanel.STARTED_SCALING, onPanelStartDragScale, false,0, true);
+			panel.addEventListener(AbstractPanel.DRAGGING, onPanelStartDragScale, false,0, true);
+			panel.addEventListener(AbstractPanel.SCALING, onPanelStartDragScale, false,0, true);
 		}
 		public function removePanel(n:String):void{
 			var panel:AbstractPanel = _master.getChildByName(n) as AbstractPanel;
@@ -113,9 +113,9 @@ package com.junkbyte.console.view {
 			var fpsGroup:GraphGroup;
 			var memGroup:GraphGroup;
 			for each(var group:GraphGroup in graphs){
-				if(group.type == GraphGroup.TYPE_FPS) {
+				if(group.type == GraphGroup.FPS) {
 					fpsGroup = group;
-				}else if(group.type == GraphGroup.TYPE_MEM) {
+				}else if(group.type == GraphGroup.MEM) {
 					memGroup = group;
 				}else{
 					var n:String = group.name;
@@ -143,7 +143,7 @@ package com.junkbyte.console.view {
 						panel = new GraphingPanel(_master, rect.width,rect.height);
 						panel.x = rect.x;
 						panel.y = rect.y;
-						panel.name = USER_GRAPH_PREFIX+n;
+						panel.name = USRGRAPH+n;
 						_graphsMap[n] = panel;
 						addPanel(panel);
 					}

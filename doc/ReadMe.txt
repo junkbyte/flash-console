@@ -6,7 +6,7 @@
 
 ==Flash Console==
 
-  * Version: 2.4 beta2 (July 2010)
+  * Version: 2.4 (Sept 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -35,12 +35,13 @@ http://code.google.com/p/flash-console/issues/
 
 ===2.4===
 
-  * Renamed C to Cc so that FlashBuilder pick up as auto complete. Cc stands for Console controller.
   * Renamed source package name to com.junkbyte.console - to be less personal
+  * Renamed C to Cc so that FlashBuilder pick up as auto complete. Cc stands for Console controller.
   * Moved a lot of 'configuration' settings from Cc. to ConsoleConfig (that you pass at start)
   * Moved a lot of 'style' settings from Cc. to ConsoleStyle (that you modify using ConsoleConfig.style)
   * Due to security concern, CommandLine is no longer allowed by default. You must do ConsoleConfig.commandLineAllowed = true OR Cc.commandLine = true (to allow and show)
   * CommandLine: no longer auto scope to new return. Enter '/' to change scope to last returned object. Turn on auto-scoping by typing /autoscope
+  * Added Cc.listenUncaughtErrors, which log global errors in flash player 10.1 or above.
   * Very long lines are automatically split before displaying to increase speed
   * Custom graphing is now passed into remote.
   * Added Cc.explode
@@ -51,6 +52,7 @@ http://code.google.com/p/flash-console/issues/
   * Removed tracingPriorty, prefixChannelNames, tracingChannels
   * Removed Cc.filterText and Cc.filterRegExp - use /filter in interface
   * Removed Cc.gc() - use memoryMonitor - G button in interface.
+  * Removed Cc.remoteDelay. it is now always 1.
   * Fixed bug with not being able to access array indexes.
   * Fixed bug with not sending too many log lines in remoting.
 

@@ -53,9 +53,7 @@ package com.junkbyte.console.utils {
 			}
 			return str+"]";
 		}
-		// TODO: auto explode objects ?
-		//if(depth) return CommandTools.explode(obj, depth);
-				
+		// TODO: auto explode objects ?	
 		return String(obj);
 	}
 }

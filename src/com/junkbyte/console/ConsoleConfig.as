@@ -63,7 +63,7 @@ package com.junkbyte.console {
 		 * Auto stack trace logs for this priority and above
 		 * default priortiy = 10; fatal level
 		 */
-		public var autoStackPriority:int = Console.FATAL_LEVEL;
+		public var autoStackPriority:int = Console.FATAL;
 
 		/**
 		 * Default stack trace depth.
@@ -124,11 +124,14 @@ package com.junkbyte.console {
 		 */
 		public var remotingConnectionName:String = "_Console";
 		
+		/*
+		// removed for this version
 		/**
 		 * Accessor for remoter's broadcast interval in frames.
 		 * Default = 1 (sent every frame)
-		 */
+		 *
 		public var remoteDelay:uint = 1;
+		*/
 		
 		/**
 		 * allowDomain and allowInsecureDomain of remoting LocalConnection.

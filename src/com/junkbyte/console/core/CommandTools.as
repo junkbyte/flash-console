@@ -277,7 +277,7 @@ package com.junkbyte.console.core {
 				return;
 			}
 			_mapBases[_mapBaseIndex] = base;
-			var basestr:String = _mapBaseIndex+Console.MAPPING_SPLITTER;
+			var basestr:String = _mapBaseIndex+Console.REMAPSPLIT;
 			
 			var list:Array = new Array();
 			var index:int = 0;
@@ -329,7 +329,7 @@ package com.junkbyte.console.core {
 				}
 				if(maxstep<=0 || steps<=maxstep){
 					wasHiding = false;
-					var n:String = "<a href='event:clip_"+basestr+indexes.join(Console.MAPPING_SPLITTER)+"'>"+mcDO.name+"</a>";
+					var n:String = "<a href='event:clip_"+basestr+indexes.join(Console.REMAPSPLIT)+"'>"+mcDO.name+"</a>";
 					if(mcDO is DisplayObjectContainer){
 						n = "<b>"+n+"</b>";
 					}else{
@@ -348,7 +348,7 @@ package com.junkbyte.console.core {
 			report("Click on the name to return a reference to the child clip. <br/>Note that clip references will be broken when display list is changed",-2);
 		}
 		public function reMap(path:String, mc:DisplayObjectContainer):DisplayObject{
-			var pathArr:Array = path.split(Console.MAPPING_SPLITTER);
+			var pathArr:Array = path.split(Console.REMAPSPLIT);
 			var first:String = pathArr.shift();
 			if(first != "0") mc = _mapBases[first];
 			var child:DisplayObject = mc as DisplayObject;

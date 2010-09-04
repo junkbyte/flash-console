@@ -43,8 +43,7 @@ package com.junkbyte.console {
 			_c = c?c:Cc;
 		}
 		public function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			if(!enabled) return;
-			_c.ch(_name, str, priority, isRepeating);
+			if(enabled) _c.ch(_name, str, priority, isRepeating);
 		}
 		/**
 		 * Add log line with priority 1 to channel
@@ -53,8 +52,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function log(...args):void{
-			if(!enabled) return;
-			_c.logch.apply(null, [_name].concat(args));
+			if(enabled) _c.logch.apply(null, [_name].concat(args));
 		}
 		/**
 		 * Add log line with priority 3 to channel
@@ -63,8 +61,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function info(...args):void{
-			if(!enabled) return;
-			_c.infoch.apply(null, [_name].concat(args));
+			if(enabled) _c.infoch.apply(null, [_name].concat(args));
 		}
 		/**
 		 * Add log line with priority 5 to channel
@@ -73,8 +70,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function debug(...args):void{
-			if(!enabled) return;
-			_c.debugch.apply(null, [_name].concat(args));
+			if(enabled) _c.debugch.apply(null, [_name].concat(args));
 		}
 		/**
 		 * Add log line with priority 7 to channel
@@ -83,8 +79,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function warn(...args):void{
-			if(!enabled) return;
-			_c.warnch.apply(null, [_name].concat(args));
+			if(enabled) _c.warnch.apply(null, [_name].concat(args));
 		}
 		/**
 		 * Add log line with priority 9 to channel
@@ -94,8 +89,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function error(...args):void{
-			if(!enabled) return;
-			_c.errorch.apply(null, [_name].concat(args));
+			if(enabled) _c.errorch.apply(null, [_name].concat(args));
 		}
 		/**
 		 * Add log line with priority 10 to channel
@@ -105,8 +99,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function fatal(...args):void{
-			if(!enabled) return;
-			_c.fatalch.apply(null, [_name].concat(args));
+			if(enabled) _c.fatalch.apply(null, [_name].concat(args));
 		}
 		
 		/**
@@ -145,7 +138,7 @@ package com.junkbyte.console {
 		}*/
 		
 		public function toString():String{
-			return "[Ch "+name+"]";
+			return "[ConsoleChannel "+name+"]";
 		}
 	}
 }

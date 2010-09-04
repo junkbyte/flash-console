@@ -254,6 +254,7 @@ It is not limited to displays, it can access and execute ANY object/class.
 == Notes ==
   * You can do nested calls. such as, $base.getChildByName('root1').mcBunny.getChildByName($bunny.getChildAt(0).name); - etc, etc... 
   * You can execute multiple lines of code in one go by separating with ; - you will need to add '/'s to change scope as well.
+  * To access array indexes, only use dot syntex, e.g. `myArray.1` instead of `myArray[1]` because [...] syntex is not supported.
 
   * `/` = change scope to last returned value
   * `//` = return to previous scope

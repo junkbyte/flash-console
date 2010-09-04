@@ -34,7 +34,7 @@ package com.junkbyte.console.view {
 
 	public class GraphingPanel extends AbstractPanel {
 		//
-		public static const FPS_MAX_LAG_FRAMES:uint = 30;
+		public static const FPSLAG:uint = 30; // maximum 0 fps (lagged) frames.
 		//
 		protected var _group:GraphGroup;
 		protected var _interest:GraphInterest;
@@ -162,9 +162,9 @@ package com.junkbyte.console.view {
 				var history:Array = info.history;
 				if(push == 1) {
 					// special case for FPS, because it needs to fill some frames for lagged 1s...
-					if(group.type == GraphGroup.TYPE_FPS){
+					if(group.type == GraphGroup.FPS){
 						var frames:int = Math.floor(group.hi/_interest.v);
-						if(frames>FPS_MAX_LAG_FRAMES) frames = FPS_MAX_LAG_FRAMES; // Don't add too many
+						if(frames>FPSLAG) frames = FPSLAG; // Don't add too many
 						while(frames>0){
 							history.push(_interest.v);
 							frames--;

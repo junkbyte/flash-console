@@ -119,7 +119,7 @@ package com.junkbyte.console.core {
 		public function set fpsMonitor(b:Boolean):void{
 			if(b != fpsMonitor){
 				if(b) {
-					_fpsGroup = addSpecialGroup(GraphGroup.TYPE_FPS);
+					_fpsGroup = addSpecialGroup(GraphGroup.FPS);
 					_fpsGroup.low = 0;
 					_fpsGroup.fixed = true;
 					_fpsGroup.averaging = 30;
@@ -138,7 +138,7 @@ package com.junkbyte.console.core {
 		public function set memoryMonitor(b:Boolean):void{
 			if(b != memoryMonitor){
 				if(b) {
-					_memGroup = addSpecialGroup(GraphGroup.TYPE_MEM);
+					_memGroup = addSpecialGroup(GraphGroup.MEM);
 					_memGroup.freq = 10;
 				} else{
 					var index:int = _groups.indexOf(_memGroup);
@@ -152,7 +152,7 @@ package com.junkbyte.console.core {
 			group.type = type;
 			_groups.push(group);
 			var graph:GraphInterest = new GraphInterest("special");
-			if(type == GraphGroup.TYPE_FPS) {
+			if(type == GraphGroup.FPS) {
 				graph.col = 0xFF3333;
 			}else{
 				graph.col = 0x5060FF;
@@ -177,7 +177,7 @@ package com.junkbyte.console.core {
 					var typ:uint = group.type;
 					var averaging:uint = group.averaging;
 					var interests:Array = group.interests;
-					if(typ == GraphGroup.TYPE_FPS){
+					if(typ == GraphGroup.FPS){
 						group.hi = fps;
 						interest = interests[0];
 						var time:int = getTimer();
@@ -187,7 +187,7 @@ package com.junkbyte.console.core {
 							interest.setValue(v, averaging);
 						}
 						_previousTime = time;
-					}else if(typ == GraphGroup.TYPE_MEM){
+					}else if(typ == GraphGroup.MEM){
 						interest = interests[0];
 						v = Math.round(System.totalMemory/10485.76)/100;
 						group.updateMinMax(v);

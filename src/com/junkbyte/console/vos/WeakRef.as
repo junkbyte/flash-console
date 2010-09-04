@@ -28,7 +28,7 @@ package com.junkbyte.console.vos {
 	public class WeakRef{
 		
 		private var _val:*;
-		private var _strong:Boolean;
+		private var _strong:Boolean; // strong flag
 		
 		//
 		// There is abilty to use strong reference incase you need to mix - 

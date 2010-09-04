@@ -41,11 +41,10 @@ package com.junkbyte.console.view {
 
 	public class AbstractPanel extends Sprite {
 		
-		public static const STARTED_DRAGGING:String = "startedDragging";
-		public static const STARTED_SCALING:String = "startedScaling";
+		public static const DRAGGING:String = "DRAGGING";
+		public static const SCALING:String = "SCALING";
 		
-		//event might be clearer to have it independent...
-		//[Event(name="textLinkEvent", type="flash.events.TextEvent")]
+		[Event(name="TEXT_ROLL", type="flash.events.TextEvent")]
 		private static const TEXT_ROLL:String = "TEXT_ROLL";
 		
 		private var _snaps:Array;
@@ -146,7 +145,7 @@ package com.junkbyte.console.view {
 			//
 			_dragOffset = new Point(mouseX,mouseY); // using this way instead of startDrag, so that it can control snapping.
 			_snaps = [[],[]];
-			dispatchEvent(new Event(STARTED_DRAGGING));
+			dispatchEvent(new Event(DRAGGING));
 			stage.addEventListener(MouseEvent.MOUSE_UP, onDraggerMouseUp, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onDraggerMouseMove, false, 0, true);
 		}
@@ -211,7 +210,7 @@ package com.junkbyte.console.view {
 			_snaps = [[],[]];
 			scaler.stage.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp, false, 0, true);
 			scaler.stage.addEventListener(MouseEvent.MOUSE_MOVE,updateScale, false, 0, true);
-			dispatchEvent(new Event(STARTED_SCALING));
+			dispatchEvent(new Event(SCALING));
 		}
 		private function updateScale(e:Event = null):void{
 			var p:Point = returnSnappedFor(x+mouseX-_dragOffset.x, y+mouseY-_dragOffset.x);

@@ -43,8 +43,6 @@ package com.junkbyte.console.view {
 
 	public class Ruler extends Sprite{
 		
-		private static const POINTER_DISTANCE:int = 12;
-		
 		private var _master:Console;
 		private var _config : ConsoleConfig;
 
@@ -92,13 +90,15 @@ package com.junkbyte.console.view {
 			_pointer.blendMode = BlendMode.INVERT;
 			_posTxt.text = "<s>"+mouseX+","+mouseY+"</s>";
 			//
-			_posTxt.x = mouseX-_posTxt.width-POINTER_DISTANCE;
-			_posTxt.y = mouseY-_posTxt.height-POINTER_DISTANCE;
+			var d:int = 12;
+			//
+			_posTxt.x = mouseX-_posTxt.width-d;
+			_posTxt.y = mouseY-_posTxt.height-d;
 			if(_posTxt.x < 0){
-				_posTxt.x = mouseX+POINTER_DISTANCE;
+				_posTxt.x = mouseX+d;
 			}
 			if(_posTxt.y < 0){
-				_posTxt.y = mouseY+POINTER_DISTANCE;
+				_posTxt.y = mouseY+d;
 			}
 		}
 		private function onMouseClick(e:MouseEvent):void{

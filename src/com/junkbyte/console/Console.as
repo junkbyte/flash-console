@@ -59,19 +59,19 @@ package com.junkbyte.console {
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.4;
-		public static const VERSION_STAGE:String = "beta5";
-		public static const IS_LITE:Boolean = false;
+		public static const VERSION_STAGE:String = "";
+		public static const LITE:Boolean = false;
 		//
 		public static const NAME:String = "Console";
 		//
-		public static const LOG_LEVEL:uint = 1;
-		public static const INFO_LEVEL:uint = 3;
-		public static const DEBUG_LEVEL:uint = 6;
-		public static const WARN_LEVEL:uint = 8;
-		public static const ERROR_LEVEL:uint = 9;
-		public static const FATAL_LEVEL:uint = 10;
+		public static const LOG:uint = 1;
+		public static const INFO:uint = 3;
+		public static const DEBUG:uint = 6;
+		public static const WARN:uint = 8;
+		public static const ERROR:uint = 9;
+		public static const FATAL:uint = 10;
 		//
-		public static const MAPPING_SPLITTER:String = "|";
+		public static const REMAPSPLIT:String = "|";
 		//
 		private var _config:ConsoleConfig;
 		private var _panels:PanelsManager;
@@ -182,7 +182,7 @@ package com.junkbyte.console {
 			if(!str){
 				str = String(error);
 			}
-			report(str, FATAL_LEVEL, false);
+			report(str, FATAL, false);
 		}
 		
 		public function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
@@ -249,7 +249,7 @@ package com.junkbyte.console {
 		}
 		public function set fpsMonitor(b:Boolean):void{
 			if(_remoter.isRemote){
-				_remoter.send(Remoting.CALL_FPS, b);
+				_remoter.send(Remoting.FPS, b);
 			}else{
 				_graphing.fpsMonitor = b;
 				panels.mainPanel.updateMenu();
@@ -262,7 +262,7 @@ package com.junkbyte.console {
 		}
 		public function set memoryMonitor(b:Boolean):void{
 			if(_remoter.isRemote){
-				_remoter.send(Remoting.CALL_MEM, b);
+				_remoter.send(Remoting.MEM, b);
 			}else{
 				_graphing.memoryMonitor = b;
 				panels.mainPanel.updateMenu();
@@ -285,7 +285,7 @@ package com.junkbyte.console {
 			if(remote){
 				try{
 					report("Sending garbage collection request to client",-1);
-					_remoter.send(Remoting.CALL_GC);
+					_remoter.send(Remoting.GC);
 				}catch(e:Error){
 					report(e,10);
 				}
@@ -517,7 +517,7 @@ package com.junkbyte.console {
 			if(_remoter.isRemote){
 				report("Run command at remote: "+line,-2);
 				try{
-					_remoter.send(Remoting.CALL_CMD, line);
+					_remoter.send(Remoting.CMD, line);
 				}catch(err:Error){
 					report("Command could not be sent to client: " + err, 10);
 				}
@@ -543,40 +543,40 @@ package com.junkbyte.console {
 			addLine(newLine, priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		public function log(...args):void{
-			addLine(joinArgs(args), LOG_LEVEL);
+			addLine(joinArgs(args), LOG);
 		}
 		public function info(...args):void{
-			addLine(joinArgs(args), INFO_LEVEL);
+			addLine(joinArgs(args), INFO);
 		}
 		public function debug(...args):void{
-			addLine(joinArgs(args), DEBUG_LEVEL);
+			addLine(joinArgs(args), DEBUG);
 		}
 		public function warn(...args):void{
-			addLine(joinArgs(args), WARN_LEVEL);
+			addLine(joinArgs(args), WARN);
 		}
 		public function error(...args):void{
-			addLine(joinArgs(args), ERROR_LEVEL);
+			addLine(joinArgs(args), ERROR);
 		}
 		public function fatal(...args):void{
-			addLine(joinArgs(args), FATAL_LEVEL);
+			addLine(joinArgs(args), FATAL);
 		}
 		public function logch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), LOG_LEVEL);
+			ch(channel, joinArgs(args), LOG);
 		}
 		public function infoch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), INFO_LEVEL);
+			ch(channel, joinArgs(args), INFO);
 		}
 		public function debugch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), DEBUG_LEVEL);
+			ch(channel, joinArgs(args), DEBUG);
 		}
 		public function warnch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), WARN_LEVEL);
+			ch(channel, joinArgs(args), WARN);
 		}
 		public function errorch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), ERROR_LEVEL);
+			ch(channel, joinArgs(args), ERROR);
 		}
 		public function fatalch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), FATAL_LEVEL);
+			ch(channel, joinArgs(args), FATAL);
 		}
 		// Need to specifically cast to string in array to produce correct results
 		// e.g: new Array("str",null,undefined,0).toString() // traces to: str,,,0, SHOULD BE: str,null,undefined,0

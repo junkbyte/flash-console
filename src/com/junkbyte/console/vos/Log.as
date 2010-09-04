@@ -25,7 +25,7 @@
 package com.junkbyte.console.vos {
 	
 	public class Log{
-		public var text:String;
+		public var t:String;
 		public var c:String;
 		public var p:int;
 		public var r:Boolean;
@@ -34,21 +34,21 @@ package com.junkbyte.console.vos {
 		public var next:Log;
 		public var prev:Log;
 		//
-		public function Log(t:String, ch:String, pr:int, repeating:Boolean = false, skipSafe:Boolean = false){
-			text = t;
+		public function Log(txt:String, ch:String, pr:int, repeating:Boolean = false, skipSafe:Boolean = false){
+			t = txt;
 			c = ch;
 			p = pr;
 			r = repeating;
 			s = skipSafe;
 		}
 		public function toObject():Object{
-			return {t:text, c:c, p:p, r:r};
+			return {t:t, c:c, p:p, r:r};
 		}
 		public function toString():String{
-			return "["+c+"] " + text;
+			return "["+c+"] " + t;
 		}
 		public function clone():Log{
-			return new Log(text, c, p, r, s);
+			return new Log(t, c, p, r, s);
 		}
 	}
 }

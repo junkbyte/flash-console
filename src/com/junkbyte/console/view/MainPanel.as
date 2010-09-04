@@ -48,30 +48,6 @@ package com.junkbyte.console.view {
 
 	public class MainPanel extends AbstractPanel {
 		
-		public static const TOOLTIPS:Object = {
-				fps:"Frames Per Second",
-				mm:"Memory Monitor",
-				roller:"Display Roller::Map the display list under your mouse",
-				ruler:"Screen Ruler::Measure the distance and angle between two points on screen.",
-				command:"Command Line",
-				copy:"Copy to clipboard",
-				clear:"Clear log",
-				pause:"Pause updates",
-				resume:"Resume updates",
-				priority:"Toggle priority filter",
-				channels:"Expand channels",
-				close:"Close",
-				closemain:"Close::Type password to show again",
-				viewall:"View all channels",
-				defaultch:"Default channel::Logs with no channel",
-				consolech:"Console's channel::Logs generated from Console",
-				filterch:"Filtering channel",
-				channel:"Change channel::Hold shift to select multiple channels",
-				scrollUp:"Scroll up",
-				scrollDown:"Scroll down",
-				scope:"Current scope::(CommandLine)"
-		};
-		
 		public static const NAME:String = "mainPanel";
 		
 		private var _traceField:TextField;
@@ -199,7 +175,7 @@ package com.junkbyte.console.view {
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
 		private function onCmdPrefRollOverOut(e : MouseEvent) : void {
-			master.panels.tooltip(e.type==MouseEvent.MOUSE_MOVE?TOOLTIPS["scope"]:"", this);
+			master.panels.tooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", this);
 		}
 		private function onCmdPrefMouseDown(e : MouseEvent) : void {
 			stage.focus = _cmdField;
@@ -302,12 +278,12 @@ package com.junkbyte.console.view {
 			var line:Log = _lines.last;
 			while(line){
 				if(lineShouldShow(line)){
-					var numlines:int = Math.ceil(line.text.length/ maxchars);
+					var numlines:int = Math.ceil(line.t.length/ maxchars);
 					if(line.s || linesLeft >= numlines ){
 						lines.push(makeLine(line));
 					}else{
 						line = line.clone();
-						line.text = line.text.substring(Math.max(0,line.text.length-(maxchars*linesLeft)));
+						line.t = line.t.substring(Math.max(0,line.t.length-(maxchars*linesLeft)));
 						lines.push(makeLine(line));
 						break;
 					}
@@ -329,8 +305,8 @@ package com.junkbyte.console.view {
 				(
 					_viewingChannels.length == 0
 			 		|| _viewingChannels.indexOf(line.c)>=0 
-			 		|| (_filterText && _viewingChannels.indexOf(config.filteredChannel) >= 0 && line.text.toLowerCase().indexOf(_filterText.toLowerCase())>=0 )
-			 		|| (_filterRegExp && _viewingChannels.indexOf(config.filteredChannel)>=0 && line.text.search(_filterRegExp)>=0 )
+			 		|| (_filterText && _viewingChannels.indexOf(config.filteredChannel) >= 0 && line.t.toLowerCase().indexOf(_filterText.toLowerCase())>=0 )
+			 		|| (_filterRegExp && _viewingChannels.indexOf(config.filteredChannel)>=0 && line.t.search(_filterRegExp)>=0 )
 			 	) 
 			 	&& ( _priority <= 0 || line.p >= _priority)
 			);
@@ -386,7 +362,7 @@ package com.junkbyte.console.view {
 		}
 		private function makeLine(line:Log):String{
 			var str:String = "";
-			var txt:String = line.text;
+			var txt:String = line.t;
 			if(line.c != config.defaultChannel && (_viewingChannels.length == 0 || _viewingChannels.length>1)){
 				txt = "[<a href=\"event:channel_"+line.c+"\">"+line.c+"</a>] "+txt;
 			}
@@ -546,34 +522,38 @@ package com.junkbyte.console.view {
 		public function onMenuRollOver(e:TextEvent, src:AbstractPanel = null):void{
 			if(src==null) src = this;
 			var txt:String = e.text?e.text.replace("event:",""):"";
-			/*if(topMenuRollOver!=null) {
-				var t:String = topMenuRollOver(txt);
-				if(t) {
-					master.panels.tooltip(t, src);
-					return;
-				}
-			}*/
+			
 			if(txt == "channel_"+config.globalChannel){
-				txt = TOOLTIPS["viewall"];
+				txt = "View all channels";
 			}else if(txt == "channel_"+config.defaultChannel) {
-				txt = TOOLTIPS["defaultch"];
+				txt = "Default channel::Logs with no channel";
 			}else if(txt == "channel_"+ config.consoleChannel) {
-				txt = TOOLTIPS["consolech"];
+				txt = "Console's channel::Logs generated from Console";
 			}else if(txt == "channel_"+ config.filteredChannel) {
-				txt = TOOLTIPS["filterch"]+"::*"+filterText+"*";
+				txt = "Filtering channel"+"::*"+filterText+"*";
 			}else if(txt.indexOf("channel_")==0) {
-				txt = TOOLTIPS["channel"];
+				txt = "Change channel::Hold shift to select multiple channels";
 			}else if(txt == "pause"){
 				if(master.paused)
-					txt = TOOLTIPS["resume"];
+					txt = "Resume updates";
 				else
-					txt = TOOLTIPS["pause"];
-			}else if(txt == "copy"){
-				txt = TOOLTIPS["copy"];
+					txt = "Pause updates";
 			}else if(txt == "close" && src == this){
-				txt = TOOLTIPS["closemain"];
+				txt = "Close::Type password to show again";
 			}else{
-				txt = TOOLTIPS[txt];
+				var obj:Object = {
+					fps:"Frames Per Second",
+					mm:"Memory Monitor",
+					roller:"Display Roller::Map the display list under your mouse",
+					ruler:"Screen Ruler::Measure the distance and angle between two points on screen.",
+					command:"Command Line",
+					copy:"Copy to clipboard",
+					clear:"Clear log",
+					priority:"Toggle priority filter",
+					channels:"Expand channels",
+					close:"Close"
+					};
+				txt = obj[txt];
 			}
 			master.panels.tooltip(txt, src);
 		}
@@ -584,11 +564,12 @@ package com.junkbyte.console.view {
 			if(e.text == "pause"){
 				if(master.paused){
 					master.paused = false;
-					master.panels.tooltip(TOOLTIPS["pause"], this);
+					//master.panels.tooltip("Pause updates", this);
 				}else{
 					master.paused = true;
-					master.panels.tooltip(TOOLTIPS["resume"], this);
+					//master.panels.tooltip("Resume updates", this);
 				}
+				master.panels.tooltip(null);
 			}else if(e.text == "close"){
 				master.panels.tooltip();
 				visible = false;
@@ -627,7 +608,7 @@ package com.junkbyte.console.view {
 				master.runCommand(str);
 			}else if(e.text.substring(0,6) == "sclip_"){
 				//var str:String = "/remap 0|"+e.text.substring(6);
-				master.runCommand("/remap 0"+Console.MAPPING_SPLITTER+e.text.substring(6));
+				master.runCommand("/remap 0"+Console.REMAPSPLIT+e.text.substring(6));
 				//master.cl.reMap(e.text.substring(6), stage);
 			}
 			txtField.setSelection(0, 0);
