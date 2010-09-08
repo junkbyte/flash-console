@@ -330,7 +330,7 @@ package com.junkbyte.console {
 		public static function fatalch(channel:*, ...args):void{
 			chcall("fatalch", channel, args);
 		}
-		private static function chcall(callname:String, ch:String, args:Array):void{
+		private static function chcall(callname:String, ch:*, args:Array):void{
 			if(_console){
 				args.unshift(ch);
 				_console[callname].apply(null, args);
