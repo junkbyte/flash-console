@@ -132,7 +132,7 @@ package com.junkbyte.console {
 				if(cfg) _config = cfg;
 				_console = new Console(pass, config);
 				// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
-				if(mc!=null) mc.addChild(_console);
+				if(mc) mc.addChild(_console);
 			}
 		}
 		/**
@@ -152,12 +152,12 @@ package com.junkbyte.console {
 		 */
 		public static function startOnStage(mc:DisplayObject, pass:String = "", config:ConsoleConfig = null):void{
 			if(!_console){
-				if(mc !=null && mc.stage !=null ){
+				if(mc && mc.stage){
 					start(mc.stage, pass, config);
 				}else{
 			 		_console = new Console(pass, config);
 			 		// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
-					if(mc!=null) mc.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
+					if(mc) mc.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
 				}
 			}
 		}
@@ -341,10 +341,9 @@ package com.junkbyte.console {
 		 */
 		public static function remove():void{
 			if(_console){
-				if(_console.parent != null){
+				if(_console.parent){
 					_console.parent.removeChild(_console);
 				}
-				_console.destroy();
 				_console = null;
 			}
 		}

@@ -148,14 +148,16 @@ package com.junkbyte.console.core {
 				_master.report(e);
 			}
 		}
-		public function send(command:String, ...args):void{
+		public function send(command:String, ...args):Boolean{
 			var target:String = _config.remotingConnectionName+(isRemote?SENDER:RECIEVER);
 			args = [target, command].concat(args);
 			try{
 				_connection.send.apply(this, args);
 			}catch(e:Error){
 				// don't care
+				return false;
 			}
+			return true;
 		}
 		public function get remoting():Boolean{
 			return _mode == SENDER;

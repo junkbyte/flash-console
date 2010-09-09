@@ -62,8 +62,8 @@ package com.junkbyte.console.view {
 		private var _channels:Array;
 		private var _viewingChannels:Array;
 		private var _lines:Logs;
-		private var _commandsHistory:Array = [];
-		private var _commandsInd:int = -1;
+		private var _cmdsHistory:Array = [];
+		private var _cmdsInd:int = -1;
 		private var _priority:int;
 		private var _filterText:String;
 		private var _filterRegExp:RegExp;
@@ -80,7 +80,7 @@ package com.junkbyte.console.view {
 			_channels = channels;
 			_viewingChannels = new Array();
 			_lines = lines;
-			_commandsHistory = m.ud.commandLineHistory;
+			_cmdsHistory = m.ud.commandLineHistory;
 			
 			name = NAME;
 			minWidth = 50;
@@ -311,14 +311,6 @@ package com.junkbyte.console.view {
 			 	&& ( _priority <= 0 || line.p >= _priority)
 			);
 		}
-		public function set priority (i:int):void{
-			_priority = i;
-			updateToBottom();
-			updateMenu();
-		}
-		public function get priority ():int{
-			return _priority;
-		}
 		public function get viewingChannels():Array{
 			return _viewingChannels;
 		}
@@ -372,7 +364,7 @@ package com.junkbyte.console.view {
 		}
 		private function onTraceScroll(e:Event = null):void{
 			if(_lockScrollUpdate) return;
-			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV-1;
+			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
 			if(!master.paused && _atBottom !=atbottom){
 				var diff:int = _traceField.maxScrollV-_traceField.scrollV;
 				_atBottom = atbottom;
@@ -436,7 +428,7 @@ package com.junkbyte.console.view {
 			super.height = n;
 			var fsize:int = style.menuFontSize;
 			var msize:Number = fsize+6+style.traceFontSize;
-			var minimize:Boolean = n<(_cmdField.visible?(msize+fsize+4):msize);
+			var minimize:Boolean = style.topMenu?(n < (_cmdField.visible?(msize+fsize+4):msize)):true;
 			if(_isMinimised != minimize){
 				registerDragger(txtField, minimize);
 				registerDragger(_traceField, !minimize);
@@ -451,6 +443,7 @@ package com.junkbyte.console.view {
 			_cmdBG.y = cmdy;
 			_bottomLine.y = _cmdField.visible?cmdy:n;
 			//
+			_txtscroll.y = minimize?6:fsize+4;
 			_txtscroll.height = (_bottomLine.y-(_cmdField.visible?0:10))-_txtscroll.y;
 			//
 			_atBottom = true;
@@ -549,7 +542,7 @@ package com.junkbyte.console.view {
 					command:"Command Line",
 					copy:"Copy to clipboard",
 					clear:"Clear log",
-					priority:"Toggle priority filter",
+					priority:"Toggle priority filter::auto skips unused priorites.\nshift click to reverse",
 					channels:"Expand channels",
 					close:"Close"
 					};
@@ -560,8 +553,9 @@ package com.junkbyte.console.view {
 		private function linkHandler(e:TextEvent):void{
 			txtField.setSelection(0, 0);
 			stopDrag();
+			var t:String = e.text;
 			//if(topMenuClick!=null && topMenuClick(e.text)) return;
-			if(e.text == "pause"){
+			if(t == "pause"){
 				if(master.paused){
 					master.paused = false;
 					//master.panels.tooltip("Pause updates", this);
@@ -570,53 +564,57 @@ package com.junkbyte.console.view {
 					//master.panels.tooltip("Resume updates", this);
 				}
 				master.panels.tooltip(null);
-			}else if(e.text == "close"){
+			}else if(t == "close"){
 				master.panels.tooltip();
 				visible = false;
 				dispatchEvent(new Event(Event.CLOSE));
-			}else if(e.text == "channels"){
+			}else if(t == "channels"){
 				master.panels.channelsPanel = !master.panels.channelsPanel;
-			}else if(e.text == "fps"){
+			}else if(t == "fps"){
 				master.fpsMonitor = !master.fpsMonitor;
-			}else if(e.text == "priority"){
-				if(_priority<10){
-					priority++;
+			}else if(t == "priority"){
+				incPriority(_shift);
+				/*if(_shift){
+					if(_priority>0) _priority--;
+					else _priority = 10;
 				}else{
-					priority = 0;
+					if(_priority<10) _priority++;
+					else _priority = 0;
 				}
-			}else if(e.text == "mm"){
+				setPriority(_priority);*/
+			}else if(t == "mm"){
 				master.memoryMonitor = !master.memoryMonitor;
-			}else if(e.text == "roller"){
+			}else if(t == "roller"){
 				master.displayRoller = !master.displayRoller;
-			}else if(e.text == "ruler"){
+			}else if(t == "ruler"){
 				master.panels.tooltip();
 				master.panels.startRuler();
-			}else if(e.text == "command"){
+			}else if(t == "command"){
 				commandLine = !commandLine;
-			}else if(e.text == "copy") {
+			}else if(t == "copy") {
 				System.setClipboard(master.getAllLog());
 				master.report("Copied log to clipboard.", -1);
-			}else if(e.text == "clear"){
+			}else if(t == "clear"){
 				master.clear();
-			}else if(e.text == "settings"){
+			}else if(t == "settings"){
 				master.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", -1);
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
-			}else if(e.text.substring(0,8) == "channel_"){
-				onChannelPressed(e.text.substring(8));
-			}else if(e.text.substring(0,5) == "clip_"){
-				var str:String = "/remap "+e.text.substring(5);
+			}else if(t.substring(0,8) == "channel_"){
+				onChannelPressed(t.substring(8));
+			}else if(t.substring(0,5) == "clip_"){
+				var str:String = "/remap "+t.substring(5);
 				master.runCommand(str);
-			}else if(e.text.substring(0,6) == "sclip_"){
-				//var str:String = "/remap 0|"+e.text.substring(6);
-				master.runCommand("/remap 0"+Console.REMAPSPLIT+e.text.substring(6));
-				//master.cl.reMap(e.text.substring(6), stage);
+			}else if(t.substring(0,6) == "sclip_"){
+				//var str:String = "/remap 0|"+t.substring(6);
+				master.runCommand("/remap 0"+Console.REMAPSPLIT+t.substring(6));
+				//master.cl.reMap(t.substring(6), stage);
 			}
 			txtField.setSelection(0, 0);
 			e.stopPropagation();
 		}
 		public function onChannelPressed(chn:String):void{
 			var current:Array = _viewingChannels.concat();
-			if(_shift && _viewingChannels.length > 0 && chn != config.globalChannel){
+			if(_shift && chn != config.globalChannel){
 				var ind:int = current.indexOf(chn);
 				if(ind>=0){
 					current.splice(ind,1);
@@ -632,12 +630,39 @@ package com.junkbyte.console.view {
 			}
 		}
 		//
+		private function incPriority(down:Boolean):void{
+			var top:uint = 10;
+			var bottom:uint;
+			var line:Log = _lines.first;
+			var p:int = _priority;
+			_priority = 0;
+			var i:uint = 32000; // just for crash safety, it wont look more than 32000 lines.
+			while(line && i>0){
+				i--;
+				if(lineShouldShow(line)){
+					if(line.p > p && top>line.p) top = line.p;
+					if(line.p < p && bottom<line.p) bottom = line.p;
+				}
+				line = line.next;
+			}
+			if(down){
+				if(bottom == p) p = 10;
+				else p = bottom;
+			}else{
+				if(top == p) p = 0;
+				else p = top;
+			}
+			_priority = p;
+			updateToBottom();
+			updateMenu();
+		}
+		//
 		// COMMAND LINE
 		//
 		public function clearCommandLineHistory():void
 		{
-			_commandsHistory.splice(0);
-			_commandsInd = -1;
+			_cmdsHistory.splice(0);
+			_cmdsInd = -1;
 			master.ud.commandLineHistoryChanged();
 		}
 		private function commandKeyDown(e:KeyboardEvent):void{
@@ -653,16 +678,16 @@ package com.junkbyte.console.view {
 				}else{
 					var txt:String = _cmdField.text;
 					if(txt.length > 2){
-						var i:int = _commandsHistory.indexOf(txt);
+						var i:int = _cmdsHistory.indexOf(txt);
 						while(i>=0){
-							_commandsHistory.splice(i,1);
-							i = _commandsHistory.indexOf(txt);
+							_cmdsHistory.splice(i,1);
+							i = _cmdsHistory.indexOf(txt);
 						}
-						_commandsHistory.unshift(txt);
-						_commandsInd = -1;
+						_cmdsHistory.unshift(txt);
+						_cmdsInd = -1;
 						// maximum 20 commands history
-						if(_commandsHistory.length>20){
-							_commandsHistory.splice(20);
+						if(_cmdsHistory.length>20){
+							_cmdsHistory.splice(20);
 						}
 						master.ud.commandLineHistoryChanged();
 					}
@@ -673,25 +698,25 @@ package com.junkbyte.console.view {
 				if(stage) stage.focus = null;
 			}else if( e.keyCode == Keyboard.UP){
 				// if its back key for first time, store the current key
-				if(_cmdField.text && _commandsInd<0){
-					_commandsHistory.unshift(_cmdField.text);
-					_commandsInd++;
+				if(_cmdField.text && _cmdsInd<0){
+					_cmdsHistory.unshift(_cmdField.text);
+					_cmdsInd++;
 				}
-				if(_commandsInd<(_commandsHistory.length-1)){
-					_commandsInd++;
-					_cmdField.text = _commandsHistory[_commandsInd];
+				if(_cmdsInd<(_cmdsHistory.length-1)){
+					_cmdsInd++;
+					_cmdField.text = _cmdsHistory[_cmdsInd];
 					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
 				}else{
-					_commandsInd = _commandsHistory.length;
+					_cmdsInd = _cmdsHistory.length;
 					_cmdField.text = "";
 				}
 			}else if( e.keyCode == Keyboard.DOWN){
-				if(_commandsInd>0){
-					_commandsInd--;
-					_cmdField.text = _commandsHistory[_commandsInd];
+				if(_cmdsInd>0){
+					_cmdsInd--;
+					_cmdField.text = _cmdsHistory[_cmdsInd];
 					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
 				}else{
-					_commandsInd = -1;
+					_cmdsInd = -1;
 					_cmdField.text = "";
 				}
 			}

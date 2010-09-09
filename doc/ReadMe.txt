@@ -33,6 +33,12 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
+===2.41===
+
+  * Top menu can now be hidden from ConsoleStyle.topMenu = false;
+  * Fixed bug with channel name generation from non-string param in Cc.logch, Cc.warnch, etc...
+  * Remote: to run local command line on remote, prefix string with ~, e.g. `~stage.frameRate=100;`
+
 ===2.4===
 
   * Renamed source package name to com.junkbyte.console - to be less personal

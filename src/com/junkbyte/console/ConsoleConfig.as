@@ -87,8 +87,8 @@ package com.junkbyte.console {
 		/**
 		 * Assign custom trace function.
 		 * <p>
-		 * Strong reference to function. Console will only call this when C.tracing is true.
-		 * Custom function must accept at 3 parameter:
+		 * Strong reference to function. Console will only call this when tracing is set to true.
+		 * Custom function must accept 3 parameters:
 		 * - String channel name.
 		 * - String the log line.
 		 * - int    priority level -2 to 10.
@@ -153,7 +153,7 @@ package com.junkbyte.console {
 		 * CommandLine is a big security hole for your code and flash. It is a very good
 		 * practice to disable it after development phase.
 		 * On the other hand having it on full access will let you debug the code easier.
-		 * This will automatically set to true when you set C.commandLine = true
+		 * This will automatically set to true when you set Cc.commandLine = true
 		 * </p>
 		 */
 		public var commandLineAllowed:Boolean;

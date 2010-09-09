@@ -44,8 +44,8 @@ package
 			// SET UP - only required once
 			//
 			var config:ConsoleConfig = new ConsoleConfig(); // optional.
-			//style.big(); // BIG text
-			//style.whiteBase(); // Black on white
+			//config.style.big(); // BIG text
+			//config.style.whiteBase(); // Black on white
 			
 			Cc.startOnStage(this, "`", config); // "`" - change for password. This will start hidden
 			Cc.visible = true; // show console, because having password hides console.

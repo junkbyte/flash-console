@@ -58,7 +58,7 @@ package com.junkbyte.console {
 	 */
 	public class Console extends Sprite {
 
-		public static const VERSION:Number = 2.4;
+		public static const VERSION:Number = 2.41;
 		public static const VERSION_STAGE:String = "";
 		public static const LITE:Boolean = false;
 		//
@@ -394,7 +394,7 @@ package com.junkbyte.console {
 			_remoter.update(graphsList);
 			
 			// VIEW UPDATES ONLY
-			if(visible && parent!=null){
+			if(visible && parent){
 				if(config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
 					_topTries--;
 					parent.addChild(this);
@@ -402,7 +402,7 @@ package com.junkbyte.console {
 				}
 				_panels.update(_paused, _lineAdded);
 				//if(!_paused && om != null) _panels.updateObjMonitors(om);
-				if(graphsList != null) _panels.updateGraphs(graphsList, !_paused); 
+				if(graphsList) _panels.updateGraphs(graphsList, !_paused); 
 				_lineAdded = false;
 			}
 		}
@@ -455,7 +455,7 @@ package com.junkbyte.console {
 				txt = txt.replace(/</gm, "&lt;");
  				txt = txt.replace(new RegExp(">", "gm"), "&gt;");
 			}
-			if(stackArr != null) {
+			if(stackArr) {
 				var tp:int = priority;
 				for each(var sline:String in stackArr) {
 					txt += "\n<p"+tp+"> @ "+sline+"</p"+tp+">";
@@ -515,11 +515,13 @@ package com.junkbyte.console {
 		}
 		public function runCommand(line:String):*{
 			if(_remoter.isRemote){
-				report("Run command at remote: "+line,-2);
-				try{
-					_remoter.send(Remoting.CMD, line);
-				}catch(err:Error){
-					report("Command could not be sent to client: " + err, 10);
+				if(line && line.charAt(0) == "~"){
+					return _cl.run(line.substring(1));
+				}else{
+					report("Run command at remote: "+line,-2);
+					if(!_remoter.send(Remoting.CMD, line)){
+						report("Command could not be sent to client.", 10);
+					}
 				}
 			}else{
 				return _cl.run(line);
