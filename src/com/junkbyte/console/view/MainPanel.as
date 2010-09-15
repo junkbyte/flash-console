@@ -599,6 +599,8 @@ package com.junkbyte.console.view {
 			}else if(t == "settings"){
 				master.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", -1);
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
+			}else if(t == "remote"){
+				master.remote = true;
 			}else if(t.substring(0,8) == "channel_"){
 				onChannelPressed(t.substring(8));
 			}else if(t.substring(0,5) == "clip_"){

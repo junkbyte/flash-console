@@ -29,7 +29,7 @@ package com.junkbyte.console.utils {
 	/**
 	 * Produces better toString() for Error, XML, XMLList, Array, Vector
 	 */
-	public function CastToString(obj:*, depth:uint = 0):String{
+	public function CastToString(obj:*):String{
 		if(obj is String){
 			return obj;
 		}else if(obj is Error) {

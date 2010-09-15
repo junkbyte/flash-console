@@ -23,6 +23,7 @@
 * 
 */
 package com.junkbyte.console.vos {
+	import flash.utils.ByteArray;
 	import flash.geom.Rectangle;
 
 	public class GraphGroup {
@@ -60,19 +61,32 @@ package com.junkbyte.console.vos {
 		//
 		//
 		//
-		public function toObject():Object{
+		public function toBytes():ByteArray{
+			
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeUTF(name);
+			bytes.writeUnsignedInt(type);
+			bytes.writeUnsignedInt(idle);
+			bytes.writeDouble(low);
+			bytes.writeDouble(hi);
+			bytes.writeBoolean(inv);
+			
+			// TODO: could just join the bytes in...
 			var gis:Array = [];
-			for each(var gi:GraphInterest in interests) gis.push(gi.toObject());
-			return {t:type, n:name, l:low, h:hi, idle:idle, v:inv, i:gis};
+			for each(var gi:GraphInterest in interests) gis.push(gi.toBytes());
+			bytes.writeObject(gis);
+			//
+			return bytes;
 		}
-		public static function FromObject(o:Object):GraphGroup{
-			var g:GraphGroup = new GraphGroup(o.n);
-			g.type = o.t;
-			g.idle = o.idle;
-			g.low = o.l;
-			g.hi = o.h;
-			g.inv = o.v;
-			if(o.i != null) for each(var io:Object in o.i) g.interests.push(GraphInterest.FromObject(io));
+		public static function FromBytes(bytes:ByteArray):GraphGroup{
+			var g:GraphGroup = new GraphGroup(bytes.readUTF());
+			g.type = bytes.readUnsignedInt();
+			g.idle = bytes.readUnsignedInt();
+			g.low = bytes.readDouble();
+			g.hi = bytes.readDouble();
+			g.inv = bytes.readBoolean();
+			var list:Array = bytes.readObject();
+			for each(var io:ByteArray in list) g.interests.push(GraphInterest.FromBytes(io));
 			return g;
 		}
 	}

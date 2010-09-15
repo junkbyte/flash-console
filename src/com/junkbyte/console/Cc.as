@@ -125,7 +125,7 @@ package com.junkbyte.console {
 		 * @param  Display in which console should be added to. Preferably stage or root of your flash document.
 		 * @param  Password sequence to toggle console's visibility. If password is set, console will start hidden. Set Cc.visible = ture to unhide at start.
 		 * 			Must be ASCII chars. Example passwords: ` OR debug. Make sure Controls > Disable Keyboard Shortcuts in Flash.
-		 * @param  Skin preset number to use. 1 = black base, 2 = white base
+		 * @param  ConsoleConfig to use. if passed null it will generate a default one or use the one thats already set by Cc.config.
 		 */
 		public static function start(mc:DisplayObjectContainer, pass:String = "", cfg:ConsoleConfig = null):void{
 			if(!_console){
@@ -147,7 +147,7 @@ package com.junkbyte.console {
 		 * @param  Display which is Stage or will be added to Stage.
 		 * @param  Password sequence to toggle console's visibility. If password is set, console will start hidden. Set Cc.visible = ture to unhide at start.
 		 * 			Must be ASCII chars. Example passwords: ` OR debug. Make sure Controls > Disable Keyboard Shortcuts in Flash.
-		 * @param  Skin preset number to use. 1 = black base, 2 = white base
+		 * @param  ConsoleConfig to use. if passed null it will generate a default one or use the one thats already set by Cc.config.
 		 * 			
 		 */
 		public static function startOnStage(mc:DisplayObject, pass:String = "", config:ConsoleConfig = null):void{
@@ -182,17 +182,30 @@ package com.junkbyte.console {
 		 * @param  String to add
 		 * @param  The depth of stack trace
 		 * @param  Priority of line. 0-10 (optional, default: 5)
-		 * @param  Name of channel (optional)
 		 * 
 		 */
-		public static function stack(str:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
+		public static function stack(str:*, depth:int = -1, priority:Number = 5):void{
 			if(_console){
-				_console.stack(str,depth,priority, ch);
+				_console.stack(str,depth,priority);
+			}
+		}
+		/**
+		 * Stack log to channel
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param  String to add
+		 * @param  The depth of stack trace
+		 * @param  Priority of line. 0-10 (optional, default: 5)
+		 * 
+		 */
+		public static function stackch(ch:String, str:*, depth:int = -1, priority:Number = 5):void{
+			if(_console){
+				_console.stackch(ch, str, depth, priority);
 			}
 		}
 		/**
 		 * Add log line to channel.
-		 * If channel name doesn't exists it creates one.
+		 * If channel name doesn't exist it creates one.
 		 *
 		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
 		 * @param  String to add, any type can be passed and will be converted to string
@@ -605,6 +618,28 @@ package com.junkbyte.console {
 			}
 		}
 		/**
+		 * Add custom slash command
+		 * WARNING: It will hard reference the function. 
+		 * 
+		 * Example 1: 
+		 * Cc.addSlashCommand("test", function():void{ Cc.log("Do the test!");} );
+		 * When user type "/test" in commandLine, it will call function with no params.
+		 * 
+		 * Example 2:
+		 * Cc.addSlashCommand("test2", function(param:String):void{Cc.log("Do the test2 with param string:", param);} );
+		 * user type "/test2 abc 123" in commandLine to call function with param "abc 123".
+		 * 
+		 * If you need multiple params or non-string type, you will need to do the conversion inside your call back function.
+		 * 
+		 * @param  name of command
+		 * @param  Function to call on trigger. pass null to remove previous.
+		 */
+		public static function addSlashCommand(n:String, callback:Function):void{
+			if(_console ){
+				_console.addSlashCommand(n, callback);
+			}
+		}
+		/**
 		 * Print the display list map
 		 * (same as /map in commandLine)
 		 * 
@@ -673,11 +708,11 @@ package com.junkbyte.console {
 		 *
 		 * @param  Name of graph, if same name already exist, graph line will be added to it.
 		 * @param  Object of interest.
-		 * @param  Property name of interest belonging to obj.
+		 * @param  Property name of interest belonging to obj. If you wish to call a method, you can end it with (), example: "getValue()"; or it you could be any commandline supported syntex such as "Math.random()". Stored commandLine variables will not be available.
 		 * @param  (optional) Color of graph line (If not passed it will randomally generate).
 		 * @param  (optional) Key string to use as identifier (If not passed, it will use string from 'prop' param).
 		 * @param  (optional) Rectangle area for size and position of graph.
-		 * @param  (optional) If set it will invert the graph, meaning the highest value at the bottom and lowest at the top.
+		 * @param  (optional) invert the graph, meaning the highest value at the bottom and lowest at the top.
 		 * 
 		 */
 		public static function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{

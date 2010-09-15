@@ -101,6 +101,16 @@ package com.junkbyte.console {
 		public function fatal(...args):void{
 			if(enabled) _c.fatalch.apply(null, [_name].concat(args));
 		}
+		/**
+		 * Add log line with priority 10 to channel
+		 * Allows multiple arguments for convenience use.
+		 *
+		 * @param  Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param String to be logged, any type can be passed and will be converted to string
+		 */
+		public function stack(str:*, depth:int = -1, priority:Number = 5):void{
+			if(enabled) _c.stackch(name, str,depth,priority);
+		}
 		
 		/**
 		 * Get channel name

@@ -50,12 +50,14 @@ package com.junkbyte.console.core {
 		private var _master:Console;
 		private var _tools:CommandTools;
 		private var _autoScope:Boolean;
+		private var _slashCmds:Object;
 		
 		public function CommandLine(m:Console) {
 			_master = m;
 			_tools = new CommandTools(report);
 			_saved = new WeakObject();
 			_scope = m;
+			_slashCmds = new Object();
 			_prevScope = new WeakRef(m);
 			_saved.set("C", m);
 			//_saved.set(MONITORING_OBJ_KEY, m.om.getObject);
@@ -97,6 +99,10 @@ package com.junkbyte.console.core {
 		public function get scopeString():String{
 			return ShortClassName(_scope);
 		}
+		public function addSlashCommand(n:String, callback:Function):void{
+			if(callback == null) delete _slashCmds[n];
+			else _slashCmds[n] = callback;
+		}
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
 			if(!_master.config.commandLineAllowed) {
@@ -131,7 +137,17 @@ package com.junkbyte.console.core {
 			var cmd:String = str.substring(1, brk>0?brk:str.length);
 			var param:String = brk>0?str.substring(brk+1):"";
 			//debug("execSlashCommand: "+ cmd+(param?(": "+param):""));
-			if (cmd == "help") {
+			if(_slashCmds[cmd] != null){
+				try{
+					if(param.length == 0){
+						_slashCmds[cmd]();
+					}else{
+						_slashCmds[cmd](param);
+					}
+				}catch(err:Error){
+					report("ERROR slash command: "+CastToString(err), 10);
+				}
+			} else if (cmd == "help") {
 				_tools.printHelp();
 			} else if (cmd == "remap") {
 				// this is a special case... no user will be able to do this command

@@ -59,6 +59,9 @@ package
 			// End of setup
 			//
 			
+			Cc.addSlashCommand("test", function():void{ Cc.log("Do the test!");} );
+			Cc.addSlashCommand("test2", function(param:String):void{Cc.log("Do the test 2 with param string:", param);} );
+			
 			// Make sure you have remote open as well so that you can see the changes you do also reflect on the other side.
 			
 			//

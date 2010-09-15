@@ -59,7 +59,7 @@ package com.junkbyte.console {
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.41;
-		public static const VERSION_STAGE:String = "";
+		public static const VERSION_STAGE:String = "WIP";
 		public static const LITE:Boolean = false;
 		//
 		public static const NAME:String = "Console";
@@ -528,6 +528,9 @@ package com.junkbyte.console {
 			}
 			return null;
 		}
+		public function addSlashCommand(n:String, callback:Function):void{
+			_cl.addSlashCommand(n, callback);
+		}
 		//
 		// LOGGING
 		//
@@ -541,7 +544,10 @@ package com.junkbyte.console {
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			addLine(newLine, priority, _config.defaultChannel, isRepeating);
 		}
-		public function stack(newLine:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
+		public function stack(newLine:*, depth:int = -1, priority:Number = 5):void{
+			addLine(newLine, priority, _config.defaultChannel, false, false, depth>=0?depth:_config.defaultStackDepth);
+		}
+		public function stackch(ch:String, newLine:*, depth:int = -1, priority:Number = 5):void{
 			addLine(newLine, priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		public function log(...args):void{
@@ -620,11 +626,11 @@ package com.junkbyte.console {
 		//public function get om():ObjectsMonitor{return _om;}
 		public function get graphing():Graphing{return _graphing;}
 		//
-		public function getLogsAsObjects():Array{
+		public function getLogsAsBytes():Array{
 			var a:Array = [];
 			var line:Log = _lines.first;
 			while(line){
-				a.push(line.toObject());
+				a.push(line.toBytes());
 				line = line.next;
 			}
 			return a;

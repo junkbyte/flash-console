@@ -22,22 +22,24 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core {
+package com.junkbyte.console.core 
+{
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
-	import com.junkbyte.console.vos.RemoteSync;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.Log;
-	import com.junkbyte.console.Console;
 
+	import flash.events.AsyncErrorEvent;
 	import flash.events.EventDispatcher;
 	import flash.events.SecurityErrorEvent;
 	import flash.events.StatusEvent;
 	import flash.net.LocalConnection;
 	import flash.system.Security;
+	import flash.utils.ByteArray;
 
 	public class Remoting extends EventDispatcher{
 		
-		private static const MAXSIZE:uint = 32000; // real limit is 40kb
+		private static const MAXSIZE:uint = 30000; // real limit is 40kb
 		
 		private static const RECIEVER:String = "R";
 		private static const SENDER:String = "C";
@@ -80,7 +82,7 @@ package com.junkbyte.console.core {
 		}
 		public function addLineQueue(line:Log):void{
 			if(!(remoting && _loggedIn)) return;
-			_queue.push(line.toObject());
+			_queue.push(line.toBytes());
 			var maxlines:int = _config.maxLines;
 			if(_queue.length > maxlines && maxlines > 0 ){
 				_queue.splice(0,1);
@@ -96,52 +98,57 @@ package com.junkbyte.console.core {
 					var size:uint = 0;
 					var len:uint = _queue.length;
 					for(var i:uint = 0 ; i<len; i++){
-						var line:Object = _queue[i];
-						size += line.t.length+50; // 50 = extra bytes for channel name, priority num, etc.
+						var line:ByteArray = _queue[i];
+						size += line.length;
 						if(i > 0 && size > MAXSIZE){
 							break;
 						}
 					}
 					var newQueue:Array = _queue.splice(i);
 					// to force update next farme if there is still lines left
-				//	if(newQueue.length){
-				//		_delayed = _config.remoteDelay;
-				//	}
+					//	if(newQueue.length){
+					//		_delayed = _config.remoteDelay;
+					//	}
 					//
 					var ga:Array = [];
 					len = graphs.length;
 					for(i = 0; i<len; i++){
-						ga.push(GraphGroup(graphs[i]).toObject());
+						ga.push(GraphGroup(graphs[i]).toBytes());
 					}
-					var vo:RemoteSync = new RemoteSync();
-					vo.lines = _queue;
-					vo.graphs = ga;
-					vo.cl = _master.cl.scopeString;
-					//vo.om = om;
-					send(SYNC, vo);
+					var bytes:ByteArray = new ByteArray();
+					bytes.writeObject(_queue);
+					bytes.writeObject(ga);
+					//bytes.writeObject(om);
+					bytes.writeUTF(_master.cl.scopeString);
+					send(SYNC, bytes);
 					_queue = newQueue;
 				//}
 			}else if(!_master.paused){
 				_canDraw = true;
 			}
 		}
-		private function remoteSync(obj:Object):void{
-			if(!isRemote || !obj) return;
-			//_master.clear();
-			//_master.explode(obj, -1);
-			var vo:RemoteSync = RemoteSync.FromObject(obj);
-			for each( var line:Object in vo.lines){
-				if(line) _master.addLine(line.t,line.p,line.c,line.r, true);
+		private function remoteSync(bytes:ByteArray):void{
+			if(!isRemote || !bytes) return;
+			bytes.position = 0;
+			for each( var l:ByteArray in bytes.readObject()){
+				if(l)
+				{
+					var t:String = l.readUTF();
+					var c:String = l.readUTF();
+					var p:int = l.readInt();
+					var r:Boolean = l.readBoolean();
+					_master.addLine(t,p,c,r, true);
+				}
 			}
 			try{
 				var a:Array = [];
-				for each(var o:Object in vo.graphs){
-					a.push(GraphGroup.FromObject(o));
+				for each(var o:ByteArray in bytes.readObject()){
+					a.push(GraphGroup.FromBytes(o));
 				}
 				_master.panels.updateGraphs(a, _canDraw);
 				if(_canDraw) {
 					//_master.panels.updateObjMonitors(vo.om);
-					_master.panels.mainPanel.updateCLScope(vo.cl);
+					_master.panels.mainPanel.updateCLScope(bytes.readUTF());
 					_canDraw = false;
 				}
 			}catch(e:Error){
@@ -154,7 +161,6 @@ package com.junkbyte.console.core {
 			try{
 				_connection.send.apply(this, args);
 			}catch(e:Error){
-				// don't care
 				return false;
 			}
 			return true;
@@ -175,7 +181,7 @@ package com.junkbyte.console.core {
 				_master.report("<b>Remoting started.</b> "+getInfo(),-1);
 				_loggedIn = checkLogin("");
 				if(_loggedIn){
-					_queue = _master.getLogsAsObjects();
+					_queue = _master.getLogsAsBytes();
 					send(LOGINSUCCESS);
 				}else{
 					send(LOGINREQUEST);
@@ -185,7 +191,9 @@ package com.junkbyte.console.core {
 			}
 		}
 		private function onRemotingStatus(e:StatusEvent):void{
-			if(e.level == "error") _loggedIn = false;
+			if(e.level == "error") {
+				_loggedIn = false;
+			}
 		}
 		private function onRemotingSecurityError(e:SecurityErrorEvent):void{
 			_master.report("Remoting security error.", 9);
@@ -198,6 +206,7 @@ package com.junkbyte.console.core {
 			if(newV == isRemote) return;
 			if(newV){
 				if(startSharedConnection(RECIEVER)){
+					_connection.addEventListener(AsyncErrorEvent.ASYNC_ERROR , onRemoteAsyncError, false, 0, true);
 					_connection.addEventListener(StatusEvent.STATUS, onRemoteStatus, false, 0, true);
 					_master.report("<b>Remote started.</b> "+getInfo(),-1);
 					var sdt:String = Security.sandboxType;
@@ -212,6 +221,10 @@ package com.junkbyte.console.core {
 			}else {
 				close();
 			}
+		}
+		private function onRemoteAsyncError(e:AsyncErrorEvent):void{
+			_master.report("Problem with remote sync. [<a href='event:remote'>Click here</a>] to restart.", 10);
+			isRemote = false;
 		}
 		private function onRemoteStatus(e:StatusEvent):void{
 			if(isRemote && e.level=="error"){
@@ -265,15 +278,15 @@ package com.junkbyte.console.core {
 		private function memRequest(b:Boolean):void{
 			_master.memoryMonitor = b;
 		}
-		public function loginFail():void{
+		private function loginFail():void{
 			if(!isRemote) return;
 			_master.report("Login Failed", 10);
 			_master.panels.mainPanel.requestLogin();
 		}
-		public function loginSuccess():void{
+		private function loginSuccess():void{
 			_master.report("Login Successful", -1);
 		}
-		public function requestLogin():void{
+		private function requestLogin():void{
 			if(!isRemote) return;
 			if(_lastLogin){
 				login(_lastLogin);
@@ -290,7 +303,7 @@ package com.junkbyte.console.core {
 				// once logged in, next login attempts will always be success
 				if(_loggedIn || checkLogin(pass)){
 					_loggedIn = true;
-					_queue = _master.getLogsAsObjects();
+					_queue = _master.getLogsAsBytes();
 					send(LOGINSUCCESS);
 				}else{
 					send(LOGINFAIL);

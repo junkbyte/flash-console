@@ -23,6 +23,7 @@
 * 
 */
 package com.junkbyte.console.vos {
+	import flash.utils.ByteArray;
 	
 	public class Log{
 		public var t:String;
@@ -41,8 +42,13 @@ package com.junkbyte.console.vos {
 			r = repeating;
 			s = skipSafe;
 		}
-		public function toObject():Object{
-			return {t:t, c:c, p:p, r:r};
+		public function toBytes():ByteArray{
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeUTF(t);
+			bytes.writeUTF(c);
+			bytes.writeInt(p);
+			bytes.writeBoolean(r);
+			return bytes;
 		}
 		public function toString():String{
 			return "["+c+"] " + t;
