@@ -1,0 +1,130 @@
+<project name="Console" basedir=".">
+
+	<property file="local.properties"/>
+	
+	<property name="src.version" value="2.41"/>
+	<property name="src.path" value="${basedir}/src"/>
+	<property name="asdoc.target.dir" value="${basedir}/asdoc"/>
+	<property name="doc.dir" value="${basedir}/doc"/>
+	<property name="asdoc.exe" value="${FLEX_HOME}/bin/asdoc.exe"/>
+	<property name="wiki.dir" value="./../wiki"/>
+	<property name="temp.dir" value="${basedir}/temp"/>
+
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+
+	<target name="BuildAll" description="Compile all">
+		<antcall target="swf">
+			<param name="file" value="${basedir}/samples/flash/SampleAdvanced.as" />
+			<param name="output" value="${basedir}/bin/sampleAdvanced.swf" />
+			<param name="config" value="flex" />
+		</antcall>
+		<antcall target="swf">
+			<param name="file" value="${basedir}/samples/flash/SampleStyle.as" />
+			<param name="output" value="${basedir}/bin/sampleStyle.swf" />
+			<param name="config" value="flex" />
+		</antcall>
+		<antcall target="swf">
+			<param name="file" value="${basedir}/samples/flash/ConsoleRemote.as" />
+			<param name="output" value="${basedir}/bin/consoleRemote.swf" />
+			<param name="config" value="flex" />
+		</antcall>
+		<antcall target="swc">
+			<param name="output" value="${basedir}/bin/Console${src.version}.swc" />
+			<param name="class" value="com.junkbyte.console.Cc" />
+		</antcall>
+		<antcall target="air"/>
+		<target name="compile">
+			<exec executable="${flash}">
+				<arg line="'${test.jsfl}'" />
+			</exec>
+		</target>
+	</target>
+	
+	<!-- Parameters: file, output -->
+	<target name="air">
+		<antcall target="swf">
+			<param name="file" value="${basedir}/samples/remote_air/ConsoleRemoteAIR.as" />
+			<param name="output" value="${basedir}/samples/remote_air/ConsoleRemoteAIR.swf" />
+			<param name="config" value="air" />
+		</antcall>
+		<exec executable="${FLEX_HOME}/bin/adt.bat" failonerror="true">
+			<arg line="-package"/>
+			<arg line="-storetype pkcs12"/>
+			<arg line="-keystore ${basedir}/ConsoleRemote.p12"/>
+			<arg line="-storepass ${AIR_CERT_PASS}" />
+			<arg line="${basedir}/bin/ConsoleRemote.air"/>
+			<arg line="${basedir}/samples/remote_air/ConsoleRemoteAIR-app.xml"/>
+            <arg line="-C ${basedir}/samples/remote_air ConsoleRemoteAIR.swf"/>
+            <arg line="-C ${basedir}/doc/icons icon16.png"/>
+            <arg line="-C ${basedir}/doc/icons icon32.png"/>
+            <arg line="-C ${basedir}/doc/icons icon48.png"/>
+            <arg line="-C ${basedir}/doc/icons icon128.png"/>
+		</exec>
+	</target>	
+
+	<!-- Parameters: file, output, config -->
+	<target name="swf">
+		<echo message="Compiling SWF: ${file} to ${output}" />
+	    <mxmlc file="${file}" output="${output}" keep-generated-actionscript="false"
+	    	>
+	        <load-config filename="${FLEX_HOME}/frameworks/${config}-config.xml"/>
+            <source-path path-element="${FLEX_HOME}/frameworks"/>
+			<compiler.source-path path-element="${src.path}"/>
+		    <default-size width="640" height="480" />
+	    </mxmlc>
+	</target>
+	
+	<target name="swc">
+		<echo message="Compiling SWC: ${class} to ${output}" />
+	    <compc
+	    	output="${output}" 
+	    	include-classes="com.junkbyte.console.Cc"
+	    	locale="en_US"
+	    	>
+	        <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
+			<compiler.source-path path-element="${src.path}"/>
+	    </compc>
+	</target>
+	
+	<!--
+		- svn export trunk to temp/
+		- delete temp/build.xml
+		- delete temp/local.properties
+		- zip temp/
+		- delete temp/ and temp2/
+	-->
+	<target name="zip">
+		<delete dir="${temp.dir}"/>
+		<svn>
+			<export srcPath="${basedir}" destPath="${temp.dir}"/>
+		</svn>
+		<delete file="${temp.dir}/build.xml"/>
+		<delete file="${temp.dir}/local.properties"/>
+		<zip destfile="console${src.version}.zip">
+			<fileset dir="${temp.dir}"/>
+		</zip>
+		<delete dir="${temp.dir}"/>
+	</target>
+	
+	<target name="updateWikiFromTxt">
+		<copy todir="${wiki.dir}" includeemptydirs="false">
+    		<fileset dir="${doc.dir}"/>
+			<mapper type="glob" from="*.txt" to="*.wiki"/>
+		</copy>
+	</target>
+	
+	
+	<target name="compileASDoc" description="Generate ASdoc">
+        <delete dir="${asdoc.target.dir}" failOnError="false" includeEmptyDirs="true" />
+        <mkdir dir="${asdoc.target.dir}" />
+		<exec executable="${asdoc.exe}" failonerror="true">
+            <arg line="-output '${asdoc.target.dir}'" />
+			<arg line="-source-path '${src.path}'" />
+			<arg line="-doc-classes com.junkbyte.console.Cc com.junkbyte.console.Console com.junkbyte.console.ConsoleConfig com.junkbyte.console.ConsoleStyle com.junkbyte.console.ConsoleChannel com.junkbyte.console.KeyBind" />
+			<arg line="-exclude-dependencies" />
+			<arg line="-main-title 'Flash-Console v${src.version}'" />
+            <arg line="-window-title 'Flash-Console v${src.version}'" />
+            <arg line="-footer 'Flash-Console v${src.version}'" />
+		</exec>
+	</target>
+</project>

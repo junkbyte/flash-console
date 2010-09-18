@@ -1,0 +1,3 @@
+svnant.path		=	D:/Program Files (x86)/eclipse/svnant/lib/
+FLEX_HOME		=	D:/Program Files (x86)/flex_sdk_4.1
+AIR_CERT_PASS	=   Console
