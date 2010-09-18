@@ -1,9 +1,10 @@
-<project name="Console" basedir=".">
+<project name="Console" basedir="..">
 
-	<property file="local.properties"/>
+	<property file="build/local.properties"/>
+	<property file="build/build.properties"/>
 	
-	<property name="src.version" value="2.41"/>
 	<property name="src.path" value="${basedir}/src"/>
+	<property name="src.ver.path" value="${src.path}/com/junkbyte/console/Console.as"/>
 	<property name="asdoc.target.dir" value="${basedir}/asdoc"/>
 	<property name="doc.dir" value="${basedir}/doc"/>
 	<property name="asdoc.exe" value="${FLEX_HOME}/bin/asdoc.exe"/>
@@ -12,7 +13,7 @@
 
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
 
-	<target name="BuildAll" description="Compile all">
+	<target name="BuildAll" description="Compile all" depends="updateVersion">
 		<antcall target="swf">
 			<param name="file" value="${basedir}/samples/flash/SampleAdvanced.as" />
 			<param name="output" value="${basedir}/bin/sampleAdvanced.swf" />
@@ -28,39 +29,22 @@
 			<param name="output" value="${basedir}/bin/consoleRemote.swf" />
 			<param name="config" value="flex" />
 		</antcall>
-		<antcall target="swc">
-			<param name="output" value="${basedir}/bin/Console${src.version}.swc" />
-			<param name="class" value="com.junkbyte.console.Cc" />
-		</antcall>
 		<antcall target="air"/>
-		<target name="compile">
-			<exec executable="${flash}">
-				<arg line="'${test.jsfl}'" />
-			</exec>
-		</target>
+		<exec executable="${FLASH}">
+			<arg line="'${basedir}/build/exportswc.jsfl'" />
+		</exec>
 	</target>
 	
-	<!-- Parameters: file, output -->
-	<target name="air">
-		<antcall target="swf">
-			<param name="file" value="${basedir}/samples/remote_air/ConsoleRemoteAIR.as" />
-			<param name="output" value="${basedir}/samples/remote_air/ConsoleRemoteAIR.swf" />
-			<param name="config" value="air" />
-		</antcall>
-		<exec executable="${FLEX_HOME}/bin/adt.bat" failonerror="true">
-			<arg line="-package"/>
-			<arg line="-storetype pkcs12"/>
-			<arg line="-keystore ${basedir}/ConsoleRemote.p12"/>
-			<arg line="-storepass ${AIR_CERT_PASS}" />
-			<arg line="${basedir}/bin/ConsoleRemote.air"/>
-			<arg line="${basedir}/samples/remote_air/ConsoleRemoteAIR-app.xml"/>
-            <arg line="-C ${basedir}/samples/remote_air ConsoleRemoteAIR.swf"/>
-            <arg line="-C ${basedir}/doc/icons icon16.png"/>
-            <arg line="-C ${basedir}/doc/icons icon32.png"/>
-            <arg line="-C ${basedir}/doc/icons icon48.png"/>
-            <arg line="-C ${basedir}/doc/icons icon128.png"/>
-		</exec>
-	</target>	
+	<target name="updateVersion">
+		<propertyfile file="${basedir}/build/build.properties">
+			<entry key="build.number" type="int" operation="+" value="1"/>
+		</propertyfile>
+		<echo>"Version ${build.version} ${build.stage}. build ${build.number}"</echo>
+		<replaceregexp file="${src.ver.path}" match="(VERSION:Number\s*=\s*).+;" replace="\1${build.version};"/>
+		<replaceregexp file="${src.ver.path}" match="(VERSION_STAGE:String\s*=\s*).+;" replace='\1"${build.stage}";'/>
+		<replaceregexp file="${src.ver.path}" match="(BUILD:int\s*=\s*).+;" replace="\1${build.number};"/>
+	</target>
+		
 
 	<!-- Parameters: file, output, config -->
 	<target name="swf">
@@ -73,17 +57,38 @@
 		    <default-size width="640" height="480" />
 	    </mxmlc>
 	</target>
-	
+
+	<!-- Parameters: class, output -->
 	<target name="swc">
 		<echo message="Compiling SWC: ${class} to ${output}" />
 	    <compc
 	    	output="${output}" 
-	    	include-classes="com.junkbyte.console.Cc"
-	    	locale="en_US"
+	    	include-classes="${class}"
 	    	>
 	        <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
 			<compiler.source-path path-element="${src.path}"/>
 	    </compc>
+	</target>
+	
+	<target name="air">
+		<antcall target="swf">
+			<param name="file" value="${basedir}/samples/remote_air/ConsoleRemoteAIR.as" />
+			<param name="output" value="${basedir}/samples/remote_air/ConsoleRemoteAIR.swf" />
+			<param name="config" value="air" />
+		</antcall>
+		<exec executable="${FLEX_HOME}/bin/adt.bat" failonerror="true">
+			<arg line="-package"/>
+			<arg line="-storetype pkcs12"/>
+			<arg line="-keystore build/ConsoleRemote.p12"/>
+			<arg line="-storepass ${AIR_CERT_PASS}" />
+			<arg line="${basedir}/bin/ConsoleRemote.air"/>
+			<arg line="${basedir}/samples/remote_air/ConsoleRemoteAIR-app.xml"/>
+            <arg line="-C ${basedir}/samples/remote_air ConsoleRemoteAIR.swf"/>
+            <arg line="-C ${basedir}/doc/icons icon16.png"/>
+            <arg line="-C ${basedir}/doc/icons icon32.png"/>
+            <arg line="-C ${basedir}/doc/icons icon48.png"/>
+            <arg line="-C ${basedir}/doc/icons icon128.png"/>
+		</exec>
 	</target>
 	
 	<!--
@@ -100,7 +105,7 @@
 		</svn>
 		<delete file="${temp.dir}/build.xml"/>
 		<delete file="${temp.dir}/local.properties"/>
-		<zip destfile="console${src.version}.zip">
+		<zip destfile="console${build.version}.zip">
 			<fileset dir="${temp.dir}"/>
 		</zip>
 		<delete dir="${temp.dir}"/>
@@ -122,9 +127,9 @@
 			<arg line="-source-path '${src.path}'" />
 			<arg line="-doc-classes com.junkbyte.console.Cc com.junkbyte.console.Console com.junkbyte.console.ConsoleConfig com.junkbyte.console.ConsoleStyle com.junkbyte.console.ConsoleChannel com.junkbyte.console.KeyBind" />
 			<arg line="-exclude-dependencies" />
-			<arg line="-main-title 'Flash-Console v${src.version}'" />
-            <arg line="-window-title 'Flash-Console v${src.version}'" />
-            <arg line="-footer 'Flash-Console v${src.version}'" />
+			<arg line="-main-title 'Flash-Console v${build.version}'" />
+            <arg line="-window-title 'Flash-Console v${build.version}'" />
+            <arg line="-footer 'Flash-Console v${build.version}'" />
 		</exec>
 	</target>
 </project>
