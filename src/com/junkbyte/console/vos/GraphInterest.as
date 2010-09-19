@@ -87,7 +87,6 @@
 			return bytes;
 		}
 		public static function FromBytes(bytes:ByteArray):GraphInterest{
-			bytes.position = 0;
 			var interest:GraphInterest = new GraphInterest(bytes.readUTF(), bytes.readUnsignedInt());
 			interest.v = bytes.readDouble();
 			interest.avg = bytes.readDouble();

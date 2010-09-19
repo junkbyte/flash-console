@@ -60,7 +60,8 @@ package com.junkbyte.console {
 
 		public static const VERSION:Number = 2.41;
 		public static const VERSION_STAGE:String = "WIP";
-		public static const BUILD:int = 501;
+		public static const BUILD:int = 504;
+		public static const BUILD_DATE:String = "2010/09/19 20:53";
 		
 		public static const LITE:Boolean = false;
 		//
@@ -123,7 +124,7 @@ package com.junkbyte.console {
 			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
 			_panels = new PanelsManager(this, mainPanel, _channels);
 			//
-			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+" build "+BUILD+". Happy coding!</b>", -2);
+			report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			if(pass) visible = false;
 			// must have enterFrame here because user can start without a parent display and use remoting.

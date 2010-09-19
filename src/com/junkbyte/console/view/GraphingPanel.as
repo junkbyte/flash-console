@@ -122,6 +122,7 @@ package com.junkbyte.console.view {
 			highTxt.width = n;
 			txtField.width = n;
 			txtField.scrollH = txtField.maxScrollH;
+			graph.graphics.clear();
 			_needRedraw = true;
 		}
 		//

@@ -62,7 +62,6 @@ package com.junkbyte.console.vos {
 		//
 		//
 		public function toBytes():ByteArray{
-			
 			var bytes:ByteArray = new ByteArray();
 			bytes.writeUTF(name);
 			bytes.writeUnsignedInt(type);
@@ -70,12 +69,9 @@ package com.junkbyte.console.vos {
 			bytes.writeDouble(low);
 			bytes.writeDouble(hi);
 			bytes.writeBoolean(inv);
-			
-			// TODO: could just join the bytes in...
-			var gis:Array = [];
-			for each(var gi:GraphInterest in interests) gis.push(gi.toBytes());
-			bytes.writeObject(gis);
-			//
+			var list:ByteArray = new ByteArray();
+			for each(var gi:GraphInterest in interests) list.writeBytes(gi.toBytes());
+			bytes.writeObject(list);
 			return bytes;
 		}
 		public static function FromBytes(bytes:ByteArray):GraphGroup{
@@ -85,8 +81,11 @@ package com.junkbyte.console.vos {
 			g.low = bytes.readDouble();
 			g.hi = bytes.readDouble();
 			g.inv = bytes.readBoolean();
-			var list:Array = bytes.readObject();
-			for each(var io:ByteArray in list) g.interests.push(GraphInterest.FromBytes(io));
+			var list:ByteArray = bytes.readObject();
+			list.position = 0;
+			while(list.bytesAvailable){
+				g.interests.push(GraphInterest.FromBytes(list));
+			}
 			return g;
 		}
 	}
