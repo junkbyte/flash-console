@@ -1,17 +1,17 @@
 <project name="Console" basedir="..">
 
-	<property file="build/local.properties" />
-	<property file="build/build.properties" />
 
-	<property name="src.path" value="${basedir}/src" />
+	<property name="src.dir" value="${basedir}/src" />
 	<property name="src.ver.file" value="${src.dir}/com/junkbyte/console/Console.as" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="asdoc.dir" value="${basedir}/asdoc" />
-	<property name="bin.dir" value="${bin.dir}" />
+	<property name="bin.dir" value="${basedir}/bin" />
 	<property name="doc.dir" value="${basedir}/doc" />
-	<property name="samples.dir" value="${samples.dir}" />
+	<property name="samples.dir" value="${basedir}/samples" />
 	<property name="wiki.dir" value="./../wiki" />
 	<property name="temp.dir" value="${basedir}/temp" />
+	
+	<property file="${build.dir}/local.properties" />
 
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
 	<path id="svnant.classpath">
@@ -43,17 +43,19 @@
 		</exec>
 		<antcall target="compileASDoc" />
 	</target>
-
+	
 	<target name="updateVersion">
 		<propertyfile file="${build.dir}/build.properties">
 			<entry key="build.number" type="int" operation="+" value="1" />
+			<entry key="build.date" type="date" value="now"/>
 		</propertyfile>
-		<echo>"Version ${build.version}${build.stage}. build ${build.number}"</echo>
+		<property file="${build.dir}/build.properties"/>
+		<echo>"Version ${build.version}${build.stage}. build ${build.number} @ ${build.date}"</echo>
 		<replaceregexp file="${src.ver.file}" match="(VERSION:Number\s*=\s*).+;" replace="\1${build.version};" />
 		<replaceregexp file="${src.ver.file}" match="(VERSION_STAGE:String\s*=\s*).+;" replace='\1"${build.stage}";' />
 		<replaceregexp file="${src.ver.file}" match="(BUILD:int\s*=\s*).+;" replace="\1${build.number};" />
+		<replaceregexp file="${src.ver.file}" match="(BUILD_DATE:String\s*=\s*).+;" replace='\1"${build.date}";' />
 	</target>
-
 
 	<!-- Parameters: file, output, config -->
 	<target name="swf">
@@ -97,6 +99,7 @@
 	</target>
 
 	<target name="zip" description="Package to ZIP">
+		<property file="${build.dir}/build.properties"/>
 		<echo>"Packaging to Zip. Make sure you have commited new files to SVN as it will only package versioned files."</echo>
 		<delete dir="${temp.dir}" />
 		<svn>
@@ -128,6 +131,7 @@
 	<target name="compileASDoc">
 		<delete dir="${asdoc.dir}" failOnError="false" includeEmptyDirs="true" />
 		<mkdir dir="${asdoc.dir}" />
+		<property file="${build.dir}/build.properties"/>
 		<exec executable="${FLEX_HOME}/bin/asdoc.exe" failonerror="true">
 			<arg line="-output '${asdoc.dir}'" />
 			<arg line="-source-path '${src.dir}'" />

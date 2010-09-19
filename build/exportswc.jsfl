@@ -68,6 +68,5 @@ fl.trace("Published!");
 
 if(isnew)
 {
-	fl.saveDocument(document);
 	fl.quit();
 }
