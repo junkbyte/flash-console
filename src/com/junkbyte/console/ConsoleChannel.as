@@ -126,27 +126,6 @@ package com.junkbyte.console {
 			_c.clear(_name);
 		}
 		
-		
-		/* Not worth using...
-		public function set tracing(v:Boolean):void{
-			var chs:Array = _c.tracingChannels;
-			var i:int = chs.indexOf(name);
-			if(v){
-				_c.tracing = true;
-				if(i<0){
-					chs.push(name);
-				}
-			}else if(i>=0){
-				chs.splice(i,1);
-			}
-		}
-		public function get tracing():Boolean{
-			if(!_c.tracing) return false;
-			var chs:Array = _c.tracingChannels;
-			var i:int = chs.indexOf(name);
-			return i>=0;
-		}*/
-		
 		public function toString():String{
 			return "[ConsoleChannel "+name+"]";
 		}

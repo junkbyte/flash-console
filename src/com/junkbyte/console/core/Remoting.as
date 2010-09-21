@@ -60,11 +60,8 @@ package com.junkbyte.console.core
 		private var _c:Console;
 		private var _cfg:ConsoleConfig;
 		private var _mode:String;
-		//private var _isRemoting:Boolean;
-		//private var _isRemote:Boolean;
 		private var _connection:LocalConnection;
 		private var _queue:Array;
-		//private var _delayed:int;
 		
 		private var _lastLogin:String = "";
 		private var _password:String;

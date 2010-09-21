@@ -60,8 +60,8 @@ package com.junkbyte.console {
 
 		public static const VERSION:Number = 2.41;
 		public static const VERSION_STAGE:String = "WIP";
-		public static const BUILD:int = 504;
-		public static const BUILD_DATE:String = "2010/09/19 20:53";
+		public static const BUILD:int = 505;
+		public static const BUILD_DATE:String = "2010/09/21 00:36";
 		
 		public static const LITE:Boolean = false;
 		//

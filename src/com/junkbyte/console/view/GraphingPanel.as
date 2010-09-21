@@ -34,7 +34,7 @@ package com.junkbyte.console.view {
 
 	public class GraphingPanel extends AbstractPanel {
 		//
-		public static const FPSLAG:uint = 30; // maximum 0 fps (lagged) frames.
+		private static const FPSLAG:uint = 30; // maximum 0 fps (lagged) frames.
 		//
 		protected var _group:GraphGroup;
 		protected var _interest:GraphInterest;

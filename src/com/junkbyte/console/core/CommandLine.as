@@ -99,9 +99,15 @@ package com.junkbyte.console.core {
 		public function get scopeString():String{
 			return ShortClassName(_scope);
 		}
-		public function addSlashCommand(n:String, callback:Function):void{
+		public function addSlashCommand(n:String, callback:Function, desc:String = ""):void{
+			if(_slashCmds[n] != null){
+				var prev:SlashCommand = _slashCmds[n];
+				if(!prev.custom) {
+					throw new Error("Can not alter build-in slash command ["+n+"]");
+				}
+			}
 			if(callback == null) delete _slashCmds[n];
-			else _slashCmds[n] = callback;
+			else _slashCmds[n] = new SlashCommand(callback, desc, true);
 		}
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
@@ -139,10 +145,11 @@ package com.junkbyte.console.core {
 			//debug("execSlashCommand: "+ cmd+(param?(": "+param):""));
 			if(_slashCmds[cmd] != null){
 				try{
+					var slashcmd:SlashCommand = _slashCmds[cmd];
 					if(param.length == 0){
-						_slashCmds[cmd]();
+						slashcmd.f();
 					}else{
-						_slashCmds[cmd](param);
+						slashcmd.f(param);
 					}
 				}catch(err:Error){
 					report("ERROR slash command: "+CastToString(err), 10);
@@ -177,7 +184,11 @@ package com.junkbyte.console.core {
 					report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
 				}
 				report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
-			} else if (cmd == "filter" || cmd == "search") {
+			} else if (cmd == "commands" || cmd == "cmds") {
+				for(var xx:String in _slashCmds){
+					report("<b>/"+xx+"</b>", -2);
+				}
+			}else if (cmd == "filter" || cmd == "search") {
 				_master.panels.mainPanel.filterText = param;
 			} else if (cmd == "filterexp" || cmd == "searchexp") {
 				_master.panels.mainPanel.filterRegExp = new RegExp(param, "i");
@@ -309,5 +320,15 @@ internal class FakeFunction{
 	public function exec(...args):*
 	{
 		return run(line);
+	}
+}
+internal class SlashCommand{
+	public var f:Function;
+	public var desc:String;
+	public var custom:Boolean;
+	public function SlashCommand(ff:Function, d:String = "", cus:Boolean = true){
+		f = ff;
+		desc = d;
+		custom = cus;
 	}
 }

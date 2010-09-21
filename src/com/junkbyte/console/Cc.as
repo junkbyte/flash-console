@@ -413,7 +413,7 @@ package com.junkbyte.console {
 		/**
 		 * Set panel position and size.
 		 * <p>
-		 * See panel names in Console.PANEL_MAIN, Console.PANEL_FPS, etc...
+		 * See panel names in Console.NAME, FPSPanel.NAME, MemoryPanel.NAME, RollerPanel.NAME, RollerPanel.NAME, etc...
 		 * No effect if panel of that name doesn't exist.
 		 * </p>
 		 * @param	Name of panel to set
