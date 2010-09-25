@@ -159,6 +159,14 @@ package com.junkbyte.console {
 		public var commandLineAllowed:Boolean;
 		
 		/**
+		 * Command line autoscoping
+		 * <p>
+		 * When turned on, it will autoscope to objects returned without the need to call "/" command.
+		 * </p>
+		 */
+		public var commandLineAutoScope:Boolean;
+		
+		/**
 		 * Determine if Console should hide the mouse cursor when using Ruler tool.
 		 * <p>
 		 * You may want to turn it off if your app/game don't use system mouse.

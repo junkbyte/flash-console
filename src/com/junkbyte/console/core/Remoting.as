@@ -50,6 +50,7 @@ package com.junkbyte.console.core
 		private static const LOGINSUCCESS:String = "loginSuccess";
 		private static const SYNC:String = "sync";
 		public static const GC:String = "gc";
+		public static const RMAP:String = "remap";
 		public static const FPS:String = "fps";
 		public static const MEM:String = "mem";
 		public static const CMD:String = "cmd";
@@ -67,6 +68,9 @@ package com.junkbyte.console.core
 		private var _password:String;
 		private var _loggedIn:Boolean;
 		private var _canDraw:Boolean;
+		
+		private var _prevG:Boolean;
+		private var _prevScope:String;
 		
 		public function Remoting(m:Console, pass:String) {
 			_c = m;
@@ -112,7 +116,12 @@ package com.junkbyte.console.core
 				bytes.writeObject(logs);
 				bytes.writeObject(ga);
 				bytes.writeUTF(_c.cl.scopeString);
-				send(SYNC, bytes);
+				if(size>0 || _prevScope!=_c.cl.scopeString || _prevG)
+				{
+					_prevG = ga.length?true:false;
+					_prevScope = _c.cl.scopeString;
+					send(SYNC, bytes);
+				}
 			}else if(!_c.paused){
 				_canDraw = true;
 			}
@@ -247,6 +256,7 @@ package com.junkbyte.console.core
 			o[LOGINFAIL] = loginFail;
 			o[LOGINSUCCESS] = loginSuccess;
 			o[SYNC] = remoteSync;
+			o[RMAP] = _c.reMap;
 			o[GC] = _c.gc;
 			o[FPS] = fpsRequest;
 			o[MEM] = memRequest;

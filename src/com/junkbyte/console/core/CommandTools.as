@@ -46,6 +46,10 @@ package com.junkbyte.console.core {
 			_report(obj, priority, skipSafe);
 		}
 		public function inspect(obj:Object, viewAll:Boolean= true):void {
+			if(!obj){
+				report(str+"<br/>", -2);
+				return;
+			}
 			//
 			// Class extends... extendsClass
 			// Class implements... implementsInterface
@@ -222,6 +226,7 @@ package com.junkbyte.console.core {
 			}
 		}
 		public static function explode(obj:Object, depth:int = 3, p:int = 9):String{
+			if(!obj) return "explode() target is empty.";
 			var t:String = typeof obj;
 			if(t != "object" || depth == 0){
 				return CastToString(obj);
@@ -373,18 +378,8 @@ package com.junkbyte.console.core {
 		public function printHelp():void {
 			report("____Command Line Help___",10);
 			report("/filter (text) = filter/search logs for matching text",5);
-			report("/filterexp (expression) = filter/search logs using RegExp search",5);
-			report("/ = set returned as scope",5);
-			report("// = return to previous scope",5);
-			report("/save (name) = store current scope to that name (default is weak reference). to call back: $(name)",5);
-			report("/savestrong (name) = store current scope as strong reference",5);
-			report("/stored = list all stored variables",5);
-			report("/inspect = get info of your current scope.",5);
-			report("/inspectfull = get more detailed info of your current scope.",5);
-			report("/explode = get properties and values of current scope.",5);
-			report("/map = get the display list map starting from your current scope",5);
-			report("/string = return the param of this command as a string. This is useful if you want to paste a block of text to use in commandline.",5);
-			report("Press up/down arrow keys to recall previous commands",2);
+			report("/commands to see all slash commands",5);
+			report("Press up/down arrow keys to recall previous line",2);
 			report("__Examples:",10);
 			report("<b>stage.stageWidth</b>",5);
 			report("<b>stage.scaleMode = flash.display.StageScaleMode.NO_SCALE</b>",5);

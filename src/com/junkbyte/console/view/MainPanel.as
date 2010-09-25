@@ -604,12 +604,9 @@ package com.junkbyte.console.view {
 			}else if(t.substring(0,8) == "channel_"){
 				onChannelPressed(t.substring(8));
 			}else if(t.substring(0,5) == "clip_"){
-				var str:String = "/remap "+t.substring(5);
-				master.runCommand(str);
+				master.reMap(t.substring(5));
 			}else if(t.substring(0,6) == "sclip_"){
-				//var str:String = "/remap 0|"+t.substring(6);
-				master.runCommand("/remap 0"+Console.REMAPSPLIT+t.substring(6));
-				//master.cl.reMap(t.substring(6), stage);
+				master.reMap("0"+Console.REMAPSPLIT+t.substring(6));
 			}
 			txtField.setSelection(0, 0);
 			e.stopPropagation();

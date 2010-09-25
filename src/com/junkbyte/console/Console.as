@@ -60,8 +60,8 @@ package com.junkbyte.console {
 
 		public static const VERSION:Number = 2.41;
 		public static const VERSION_STAGE:String = "WIP";
-		public static const BUILD:int = 505;
-		public static const BUILD_DATE:String = "2010/09/21 00:36";
+		public static const BUILD:int = 506;
+		public static const BUILD_DATE:String = "2010/09/25 16:16";
 		
 		public static const LITE:Boolean = false;
 		//
@@ -304,40 +304,20 @@ package com.junkbyte.console {
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
 			_cl.map(base, maxstep);
 		}
+		public function reMap(path:String):void
+		{
+			if(remote){
+				_remoter.send(Remoting.RMAP, path);
+			}else{
+				_cl.reMap(path);
+			}
+		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			_cl.inspect(obj,detail);
 		}
 		public function explode(obj:Object, depth:int = 3):void{
 			report(CommandTools.explode(obj, depth), 1);
 		}
-		/*public function monitor(obj:Object, n:String = null):void{
-			if(obj == null || typeof obj != "object"){
-				report("Can not monitor "+getQualifiedClassName(obj)+".", 10);
-				return;
-			}
-			_om.monitor(obj, n);
-		}
-		public function unmonitor(i:String = null):void{
-			if(_remoter.isRemote){
-				_remoter.send(Remoting.CALL_UNMONITOR, i);
-			}else{
-				_om.unmonitor(i);
-			}
-		}
-		public function monitorIn(i:String, n:String):void{
-			if(_remoter.isRemote){
-				_remoter.send(Remoting.CALL_MONITORIN, i,n);
-			}else{
-				_om.monitorIn(i,n);
-			}
-		}
-		public function monitorOut(i:String):void{
-			if(_remoter.isRemote){
-				_remoter.send(Remoting.CALL_MONITOROUT, i);
-			}else{
-				_om.monitorOut(i);
-			}
-		}*/
 		public function get paused():Boolean{
 			return _paused;
 		}

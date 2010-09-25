@@ -49,7 +49,6 @@ package com.junkbyte.console.core {
 		
 		private var _master:Console;
 		private var _tools:CommandTools;
-		private var _autoScope:Boolean;
 		private var _slashCmds:Object;
 		
 		public function CommandLine(m:Console) {
@@ -60,8 +59,26 @@ package com.junkbyte.console.core {
 			_slashCmds = new Object();
 			_prevScope = new WeakRef(m);
 			_saved.set("C", m);
-			//_saved.set(MONITORING_OBJ_KEY, m.om.getObject);
+			
+			addCLCmd("help", _tools.printHelp, "How to use command line");
+			addCLCmd("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
+			addCLCmd("savestrong|storestrong", saveStrongCmd, "Save current scope as strong reference");
+			addCLCmd("saved|stored", savedCmd, "Show a list of all saved references");
+			addCLCmd("string", stringCmd, "Create String, useful to paste complex strings without worrying about \" or \'");
+			addCLCmd("commands", cmdsCmd, "Show a list of all slash commands");
+			addCLCmd("filter", filterCmd, "Filter console logs to matching string. When done, click on the * (global channel) at top.");
+			addCLCmd("filterexp", filterexpCmd, "Filter console logs to matching regular expression");
+			addCLCmd("inspect", inspectCmd, "Inspect current scope");
+			addCLCmd("inspectfull", inspectfullCmd, "Inspect current scope in detail");
+			addCLCmd("explode", explodeCmd, "Explode current scope to its properties and values (similar to JSON)");
+			addCLCmd("map", mapCmd, "Get display list map starting from current scope");
+			addCLCmd("function", funCmd, "Create function. param is the commandline string to create as function. (experimental)");
+			addCLCmd("autoscope", autoscopeCmd, "Toggle autoscoping.");
+			addCLCmd("clearhistory", clearhisCmd, "Clear history of commands you have entered.");
+			addCLCmd("base", baseCmd, "Return to base scope");
+			
 		}
+		
 		public function set base(obj:Object):void {
 			if (base) {
 				report("Set new commandLine base from "+base+ " to "+ obj, 10);
@@ -83,6 +100,10 @@ package com.junkbyte.console.core {
 		public function store(n:String, obj:Object, strong:Boolean = false):void {
 			// if it is a function it needs to be strong reference atm, 
 			// otherwise it fails if the function passed is from a dynamic class/instance
+			if(!n) {
+				report("ERROR: Give a name to save.",10);
+				return;
+			}
 			strong = (strong || obj is Function);
 			n = n.replace(/[^\w]*/g, "");
 			if(RESERVED.indexOf(n)>=0){
@@ -99,15 +120,23 @@ package com.junkbyte.console.core {
 		public function get scopeString():String{
 			return ShortClassName(_scope);
 		}
+		private function addCLCmd(n:String, callback:Function, desc:String):void{
+			var split:Array = n.split("|");
+			for(var i:int = 0; i<split.length; i++){
+				n = split[i];
+				_slashCmds[n] = new SlashCommand(n, callback, desc, false);
+				if(i>0) _slashCmds.setPropertyIsEnumerable(n, false);
+			}
+		}
 		public function addSlashCommand(n:String, callback:Function, desc:String = ""):void{
 			if(_slashCmds[n] != null){
 				var prev:SlashCommand = _slashCmds[n];
-				if(!prev.custom) {
+				if(!prev.c) {
 					throw new Error("Can not alter build-in slash command ["+n+"]");
 				}
 			}
 			if(callback == null) delete _slashCmds[n];
-			else _slashCmds[n] = new SlashCommand(callback, desc, true);
+			else _slashCmds[n] = new SlashCommand(n, callback, desc);
 		}
 		public function run(str:String):* {
 			report("&gt; "+str,5, false);
@@ -142,7 +171,6 @@ package com.junkbyte.console.core {
 			var brk:int = str.indexOf(" ");
 			var cmd:String = str.substring(1, brk>0?brk:str.length);
 			var param:String = brk>0?str.substring(brk+1):"";
-			//debug("execSlashCommand: "+ cmd+(param?(": "+param):""));
 			if(_slashCmds[cmd] != null){
 				try{
 					var slashcmd:SlashCommand = _slashCmds[cmd];
@@ -154,87 +182,8 @@ package com.junkbyte.console.core {
 				}catch(err:Error){
 					report("ERROR slash command: "+CastToString(err), 10);
 				}
-			} else if (cmd == "help") {
-				_tools.printHelp();
-			} else if (cmd == "remap") {
-				// this is a special case... no user will be able to do this command
-				setReturned(_tools.reMap(param, _master.stage), true);
-			} else if (cmd == "save" || cmd == "store" || cmd == "savestrong" || cmd == "storestrong") {
-				if (_scope) {
-					param = param.replace(/[^\w]/g, "");
-					if(!param){
-						report("ERROR: Give a name to save.",10);
-					}else{
-						store(param, _scope, (cmd == "savestrong" || cmd == "storestrong"));
-					}
-				} else {
-					report("Nothing to save", 10);
-				}
-			} else if (cmd == "string") {
-				report("String with "+param.length+" chars entered. Use /save <i>(name)</i> to save.", -2);
-				setReturned(param, true);
-			} else if (cmd == "saved" || cmd == "stored") {
-				report("Saved vars: ", -1);
-				var sii:uint = 0;
-				var sii2:uint = 0;
-				for(var X:String in _saved){
-					var sao:* = _saved[X];
-					sii++;
-					if(sao==null) sii2++;
-					report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
-				}
-				report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
-			} else if (cmd == "commands" || cmd == "cmds") {
-				for(var xx:String in _slashCmds){
-					report("<b>/"+xx+"</b>", -2);
-				}
-			}else if (cmd == "filter" || cmd == "search") {
-				_master.panels.mainPanel.filterText = param;
-			} else if (cmd == "filterexp" || cmd == "searchexp") {
-				_master.panels.mainPanel.filterRegExp = new RegExp(param, "i");
-			} else if (cmd == "inspect" || cmd == "inspectfull") {
-				if (_scope) {
-					var viewAll:Boolean = (cmd == "inspectfull")? true: false;
-					inspect(_scope, viewAll);
-				} else {
-					report("Empty", 10);
-				}
-			} else if (cmd == "explode") {
-				if (_scope) {
-					var depth:int = Number(param);
-					_master.explode(_scope, depth<=0?3:depth);
-				} else {
-					report("Empty", 10);
-				}
-			/*} else if (cmd == "monitor") {
-				if (_scope) {
-					_master.monitor(_scope, param);
-				} else {
-					report("Empty", 10);
-				}*/
-			} else if (cmd == "map") {
-				if (_scope) {
-					map(_scope as DisplayObjectContainer, int(param));
-				} else {
-					report("Empty", 10);
-				}
-			} else if (cmd == "function") {
-				var fakeFunction:FakeFunction = new FakeFunction(run, param);
-				setReturned(fakeFunction.exec);
-			} else if (cmd == "/") {
-				if(_prevScope.reference) setReturned(_prevScope.reference, true);
-				else report("No previous scope",8);
-			} else if (cmd == "" || cmd == "scope") {
-				setReturned(_saved[Executer.RETURNED], true);
-			} else if (cmd == "autoscope") {
-				_autoScope = !_autoScope;
-				report("Auto-scoping <b>"+(_autoScope?"enabled":"disabled")+"</b>.",10);
-			} else if (cmd == "clearhistory") {
-				_master.panels.mainPanel.clearCommandLineHistory();
-			} else if (cmd == "base") {
-				setReturned(base, true);
 			} else{
-				report("Undefined command <b>/help</b> for info.",10);
+				report("Undefined command <b>/cmds</b> for list of all commands.",10);
 			}
 		}
 		private function setReturned(returned:*, changeScope:Boolean = false):void{
@@ -245,7 +194,7 @@ package com.junkbyte.console.core {
 				if(returned !== _scope){
 					if(changeScope){
 						change = true;
-					}else if(_autoScope){
+					}else if(_master.config.commandLineAutoScope){
 						var typ:String = typeof(returned);
 						if(typ == "object" || typ=="xml"){
 							change = true;
@@ -298,6 +247,9 @@ package com.junkbyte.console.core {
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
 			_tools.map(base, maxstep);
 		}
+		public function reMap(param:String):void {
+			setReturned(_tools.reMap(param, _master.stage), true);
+		}
 		public function inspect(obj:Object, viewAll:Boolean= true):void {
 			_tools.inspect(obj, viewAll);
 		}
@@ -307,6 +259,83 @@ package com.junkbyte.console.core {
 		//private function debug(...args):void{
 		//	_master.report(_master.joinArgs(args), 2, false);
 		//}
+		private function saveCmd(param:String = null):void{
+			store(param, _scope, false);
+		}
+		private function saveStrongCmd(param:String = null):void{
+			store(param, _scope, true);
+		}
+		private function savedCmd(...args:Array):void{
+			report("Saved vars: ", -1);
+			var sii:uint = 0;
+			var sii2:uint = 0;
+			for(var X:String in _saved){
+				var sao:* = _saved[X];
+				sii++;
+				if(sao==null) sii2++;
+				report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
+			}
+			report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
+		}
+		private function stringCmd(param:String):void{
+			report("String with "+param.length+" chars entered. Use /save <i>(name)</i> to save.", -2);
+			setReturned(param, true);
+		}
+		private function cmdsCmd(...args:Array):void{
+			var buildin:Array = [];
+			var custom:Array = [];
+			for each(var cmd:SlashCommand in _slashCmds){
+				if(cmd.c) custom.push(cmd);
+				else buildin.push(cmd);
+			}
+			buildin = buildin.sortOn("n");
+			report("build-in commands:", 4);
+			for each(cmd in buildin){
+				report("<b>/"+cmd.n+"</b> <p-1>" + cmd.d+"</p-1>", -2);
+			}
+			if(custom.length){
+				custom = custom.sortOn("n");
+				report("User commands:", 4);
+				for each(cmd in custom){
+					report("<b>/"+cmd.n+"</b> <p-1>" + cmd.d+"</p-1>", -2);
+				}
+			}
+		}
+		private function filterCmd(param:String):void{
+			_master.panels.mainPanel.filterText = param;
+		}
+		private function filterexpCmd(param:String):void{
+			_master.panels.mainPanel.filterRegExp = new RegExp(param, "i");
+		}
+		private function inspectCmd(...args:Array):void{
+			inspect(_scope, false);
+		}
+		private function inspectfullCmd(...args:Array):void{
+			inspect(_scope, true);
+		}
+		private function explodeCmd(param:String):void{
+			var depth:int = int(param);
+			_master.explode(_scope, depth<=0?3:depth);
+		}
+		private function mapCmd(param:String):void{
+			map(_scope as DisplayObjectContainer, int(param));
+		}
+		private function funCmd(param:String):void{
+			var fakeFunction:FakeFunction = new FakeFunction(run, param);
+			setReturned(fakeFunction.exec);
+		}
+		private function autoscopeCmd(...args:Array):void{
+			_master.config.commandLineAutoScope = !_master.config.commandLineAutoScope;
+			report("Auto-scoping <b>"+(_master.config.commandLineAutoScope?"enabled":"disabled")+"</b>.",10);
+		}
+		private function baseCmd(...args:Array):void
+		{
+			setReturned(base, true);
+		}
+		private function clearhisCmd(...args:Array):void
+		{
+			_master.panels.mainPanel.clearCommandLineHistory();
+		}
 	}
 }
 internal class FakeFunction{
@@ -323,12 +352,14 @@ internal class FakeFunction{
 	}
 }
 internal class SlashCommand{
+	public var n:String;
 	public var f:Function;
-	public var desc:String;
-	public var custom:Boolean;
-	public function SlashCommand(ff:Function, d:String = "", cus:Boolean = true){
+	public var d:String;
+	public var c:Boolean;
+	public function SlashCommand(nn:String, ff:Function, dd:String = "", cus:Boolean = true){
+		n = nn;
 		f = ff;
-		desc = d;
-		custom = cus;
+		d = dd?dd:"";
+		c = cus;
 	}
 }
