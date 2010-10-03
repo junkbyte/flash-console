@@ -37,7 +37,7 @@ package com.junkbyte.console.view {
 		private static const USRGRAPH:String = "graph_";
 		//private static const USER_OBJECTMONITOR_PREFIX:String = "objMonitor_";
 		
-		private var _c:Console;
+		private var _master:Console;
 		private var _mainPanel:MainPanel;
 		private var _ruler:Ruler;
 		private var _channels:Array;
@@ -53,7 +53,7 @@ package com.junkbyte.console.view {
 		private var _tooltipField:TextField;
 		
 		public function PanelsManager(master:Console, mp:MainPanel, channels:Array) {
-			_c = master;
+			_master = master;
 			_mainPanel = mp;
 			_channels = channels;
 			_tooltipField = mainPanel.makeTF("tooltip", false, true);
@@ -62,29 +62,29 @@ package com.junkbyte.console.view {
 			addPanel(_mainPanel);
 		}
 		public function addPanel(panel:AbstractPanel):void{
-			if(_c.contains(_tooltipField)){
-				_c.addChildAt(panel, _c.getChildIndex(_tooltipField));
+			if(_master.contains(_tooltipField)){
+				_master.addChildAt(panel, _master.getChildIndex(_tooltipField));
 			}else{
-				_c.addChild(panel);
+				_master.addChild(panel);
 			}
 			panel.addEventListener(AbstractPanel.DRAGGING, onPanelStartDragScale, false,0, true);
 			panel.addEventListener(AbstractPanel.SCALING, onPanelStartDragScale, false,0, true);
 		}
 		public function removePanel(n:String):void{
-			var panel:AbstractPanel = _c.getChildByName(n) as AbstractPanel;
+			var panel:AbstractPanel = _master.getChildByName(n) as AbstractPanel;
 			if(panel){
 				// this removes it self from parent. this way each individual panel can clean up before closing.  
 				panel.close();
 			}
 		}
 		public function getPanel(n:String):AbstractPanel{
-			return _c.getChildByName(n) as AbstractPanel;
+			return _master.getChildByName(n) as AbstractPanel;
 		}
 		public function get mainPanel():MainPanel{
 			return _mainPanel;
 		}
 		public function panelExists(n:String):Boolean{
-			return (_c.getChildByName(n) as AbstractPanel)?true:false;
+			return (_master.getChildByName(n) as AbstractPanel)?true:false;
 		}
 		public function setPanelArea(panelname:String, rect:Rectangle):void{
 			var panel:AbstractPanel = getPanel(panelname);
@@ -140,7 +140,7 @@ package com.junkbyte.console.view {
 						}
 						if(rect.width<=0 || isNaN(rect.width))  rect.width = size;
 						if(rect.height<=0 || isNaN(rect.height)) rect.height = size;
-						panel = new GraphingPanel(_c, rect.width,rect.height);
+						panel = new GraphingPanel(_master, rect.width,rect.height);
 						panel.x = rect.x;
 						panel.y = rect.y;
 						panel.name = USRGRAPH+n;
@@ -161,7 +161,7 @@ package com.junkbyte.console.view {
 			//
 			if(fpsGroup != null){
 				if(_fpsPanel == null){
-					_fpsPanel = new FPSPanel(_c);
+					_fpsPanel = new FPSPanel(_master);
 					_fpsPanel.x = _mainPanel.x+_mainPanel.width-160;
 					_fpsPanel.y = _mainPanel.y+15;
 					addPanel(_fpsPanel);
@@ -176,7 +176,7 @@ package com.junkbyte.console.view {
 			//
 			if(memGroup != null){
 				if(_memPanel == null){
-					_memPanel = new MemoryPanel(_c);
+					_memPanel = new MemoryPanel(_master);
 					_memPanel.x = _mainPanel.x+_mainPanel.width-80;
 					_memPanel.y = _mainPanel.y+15;
 					addPanel(_memPanel);
@@ -226,11 +226,11 @@ package com.junkbyte.console.view {
 		public function set displayRoller(n:Boolean):void{
 			if(displayRoller != n){
 				if(n){
-					var roller:RollerPanel = new RollerPanel(_c);
+					var roller:RollerPanel = new RollerPanel(_master);
 					roller.x = _mainPanel.x+_mainPanel.width-180;
 					roller.y = _mainPanel.y+55;
 					addPanel(roller);
-					roller.start(_c);
+					roller.start(_master);
 				}else{
 					removePanel(RollerPanel.NAME);
 				}
@@ -246,7 +246,7 @@ package com.junkbyte.console.view {
 		public function set channelsPanel(b:Boolean):void{
 			if(channelsPanel != b){
 				if(b){
-					_chsPanel = new ChannelsPanel(_c);
+					_chsPanel = new ChannelsPanel(_master);
 					_chsPanel.x = _mainPanel.x+_mainPanel.width-332;
 					_chsPanel.y = _mainPanel.y-2;
 					addPanel(_chsPanel);
@@ -274,24 +274,24 @@ package com.junkbyte.console.view {
 		public function tooltip(str:String = null, panel:AbstractPanel = null):void{
 			if(str && !rulerActive){
 				str = str.replace(/\:\:(.*)/, "<br/><s>$1</s>");
-				_c.addChild(_tooltipField);
+				_master.addChild(_tooltipField);
 				_tooltipField.wordWrap = false;
 				_tooltipField.htmlText = "<tt>"+str+"</tt>";
 				if(_tooltipField.width>120){
 					_tooltipField.width = 120;
 					_tooltipField.wordWrap = true;
 				}
-				_tooltipField.x = _c.mouseX-(_tooltipField.width/2);
-				_tooltipField.y = _c.mouseY+20;
+				_tooltipField.x = _master.mouseX-(_tooltipField.width/2);
+				_tooltipField.y = _master.mouseY+20;
 				if(panel){
-					var txtRect:Rectangle = _tooltipField.getBounds(_c);
+					var txtRect:Rectangle = _tooltipField.getBounds(_master);
 					var panRect:Rectangle = new Rectangle(panel.x,panel.y,panel.width,panel.height);
 					var doff:Number = txtRect.bottom - panRect.bottom;
 					if(doff>0){
-						if((_tooltipField.y - doff)>(_c.mouseY+15)){
+						if((_tooltipField.y - doff)>(_master.mouseY+15)){
 							_tooltipField.y -= doff;
-						}else if(panRect.y<(_c.mouseY-24) && txtRect.y>panRect.bottom){
-							_tooltipField.y = _c.mouseY-_tooltipField.height-15;
+						}else if(panRect.y<(_master.mouseY-24) && txtRect.y>panRect.bottom){
+							_tooltipField.y = _master.mouseY-_tooltipField.height-15;
 						}
 					}
 					var loff:Number = txtRect.left - panRect.left;
@@ -302,8 +302,8 @@ package com.junkbyte.console.view {
 						_tooltipField.x -= roff;
 					}
 				}
-			}else if(_c.contains(_tooltipField)){
-				_c.removeChild(_tooltipField);
+			}else if(_master.contains(_tooltipField)){
+				_master.removeChild(_tooltipField);
 			}
 		}
 		//
@@ -315,16 +315,16 @@ package com.junkbyte.console.view {
 			}
 			_ruler = new Ruler();
 			_ruler.addEventListener(Event.COMPLETE, onRulerExit, false, 0, true);
-			_c.addChild(_ruler);
-			_ruler.start(_c);
+			_master.addChild(_ruler);
+			_ruler.start(_master);
 			_mainPanel.updateMenu();
 		}
 		public function get rulerActive():Boolean{
-			return (_ruler && _c.contains(_ruler))?true:false;
+			return (_ruler && _master.contains(_ruler))?true:false;
 		}
 		private function onRulerExit(e:Event):void{
-			if(_ruler && _c.contains(_ruler)){
-				_c.removeChild(_ruler);
+			if(_ruler && _master.contains(_ruler)){
+				_master.removeChild(_ruler);
 			}
 			_ruler = null;
 			_mainPanel.updateMenu();
@@ -334,17 +334,17 @@ package com.junkbyte.console.view {
 		//
 		private function onPanelStartDragScale(e:Event):void{
 			var target:AbstractPanel = e.currentTarget as AbstractPanel;
-			if(_c.config.style.panelSnapping) {
+			if(_master.config.style.panelSnapping) {
 				var X:Array = [0];
 				var Y:Array = [0];
-				if(_c.stage){
+				if(_master.stage){
 					// this will only work if stage size is not changed or top left aligned
-					X.push(_c.stage.stageWidth);
-					Y.push(_c.stage.stageHeight);
+					X.push(_master.stage.stageWidth);
+					Y.push(_master.stage.stageHeight);
 				}
-				var numchildren:int = _c.numChildren;
+				var numchildren:int = _master.numChildren;
 				for(var i:int = 0;i<numchildren;i++){
-					var panel:AbstractPanel = _c.getChildAt(i) as AbstractPanel;
+					var panel:AbstractPanel = _master.getChildAt(i) as AbstractPanel;
 					if(panel && panel.visible){
 						X.push(panel.x);
 						X.push(panel.x+panel.width);

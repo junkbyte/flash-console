@@ -22,7 +22,6 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */package com.junkbyte.console.vos {
-	import flash.utils.ByteArray;
 	import com.junkbyte.console.core.Executer;
 	import com.junkbyte.console.vos.WeakRef;
 
@@ -78,18 +77,13 @@
 		//
 		//
 		//
-		public function toBytes():ByteArray{
-			var bytes:ByteArray = new ByteArray();
-			bytes.writeUTF(key);
-			bytes.writeUnsignedInt(col);
-			bytes.writeDouble(v);
-			bytes.writeDouble(avg);
-			return bytes;
+		public function toObject():Object{
+			return {key:key, col:col, v:v, avg:avg};
 		}
-		public static function FromBytes(bytes:ByteArray):GraphInterest{
-			var interest:GraphInterest = new GraphInterest(bytes.readUTF(), bytes.readUnsignedInt());
-			interest.v = bytes.readDouble();
-			interest.avg = bytes.readDouble();
+		public static function FromObject(o:Object):GraphInterest{
+			var interest:GraphInterest = new GraphInterest(o.key, o.col);
+			interest.v = o.v;
+			interest.avg = o.avg;
 			return interest;
 		}
 	}

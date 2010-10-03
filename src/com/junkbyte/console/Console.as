@@ -58,11 +58,8 @@ package com.junkbyte.console {
 	 */
 	public class Console extends Sprite {
 
-		public static const VERSION:Number = 2.41;
-		public static const VERSION_STAGE:String = "WIP";
-		public static const BUILD:int = 506;
-		public static const BUILD_DATE:String = "2010/09/25 16:16";
-		
+		public static const VERSION:Number = 2.4;
+		public static const VERSION_STAGE:String = "";
 		public static const LITE:Boolean = false;
 		//
 		public static const NAME:String = "Console";
@@ -124,7 +121,7 @@ package com.junkbyte.console {
 			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
 			_panels = new PanelsManager(this, mainPanel, _channels);
 			//
-			report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
+			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy coding!</b>", -2);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			if(pass) visible = false;
 			// must have enterFrame here because user can start without a parent display and use remoting.
@@ -304,20 +301,40 @@ package com.junkbyte.console {
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
 			_cl.map(base, maxstep);
 		}
-		public function reMap(path:String):void
-		{
-			if(remote){
-				_remoter.send(Remoting.RMAP, path);
-			}else{
-				_cl.reMap(path);
-			}
-		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			_cl.inspect(obj,detail);
 		}
 		public function explode(obj:Object, depth:int = 3):void{
 			report(CommandTools.explode(obj, depth), 1);
 		}
+		/*public function monitor(obj:Object, n:String = null):void{
+			if(obj == null || typeof obj != "object"){
+				report("Can not monitor "+getQualifiedClassName(obj)+".", 10);
+				return;
+			}
+			_om.monitor(obj, n);
+		}
+		public function unmonitor(i:String = null):void{
+			if(_remoter.isRemote){
+				_remoter.send(Remoting.CALL_UNMONITOR, i);
+			}else{
+				_om.unmonitor(i);
+			}
+		}
+		public function monitorIn(i:String, n:String):void{
+			if(_remoter.isRemote){
+				_remoter.send(Remoting.CALL_MONITORIN, i,n);
+			}else{
+				_om.monitorIn(i,n);
+			}
+		}
+		public function monitorOut(i:String):void{
+			if(_remoter.isRemote){
+				_remoter.send(Remoting.CALL_MONITOROUT, i);
+			}else{
+				_om.monitorOut(i);
+			}
+		}*/
 		public function get paused():Boolean{
 			return _paused;
 		}
@@ -377,7 +394,7 @@ package com.junkbyte.console {
 			_remoter.update(graphsList);
 			
 			// VIEW UPDATES ONLY
-			if(visible && parent){
+			if(visible && parent!=null){
 				if(config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
 					_topTries--;
 					parent.addChild(this);
@@ -385,7 +402,7 @@ package com.junkbyte.console {
 				}
 				_panels.update(_paused, _lineAdded);
 				//if(!_paused && om != null) _panels.updateObjMonitors(om);
-				if(graphsList) _panels.updateGraphs(graphsList, !_paused); 
+				if(graphsList != null) _panels.updateGraphs(graphsList, !_paused); 
 				_lineAdded = false;
 			}
 		}
@@ -438,7 +455,7 @@ package com.junkbyte.console {
 				txt = txt.replace(/</gm, "&lt;");
  				txt = txt.replace(new RegExp(">", "gm"), "&gt;");
 			}
-			if(stackArr) {
+			if(stackArr != null) {
 				var tp:int = priority;
 				for each(var sline:String in stackArr) {
 					txt += "\n<p"+tp+"> @ "+sline+"</p"+tp+">";
@@ -498,21 +515,16 @@ package com.junkbyte.console {
 		}
 		public function runCommand(line:String):*{
 			if(_remoter.isRemote){
-				if(line && line.charAt(0) == "~"){
-					return _cl.run(line.substring(1));
-				}else{
-					report("Run command at remote: "+line,-2);
-					if(!_remoter.send(Remoting.CMD, line)){
-						report("Command could not be sent to client.", 10);
-					}
+				report("Run command at remote: "+line,-2);
+				try{
+					_remoter.send(Remoting.CMD, line);
+				}catch(err:Error){
+					report("Command could not be sent to client: " + err, 10);
 				}
 			}else{
 				return _cl.run(line);
 			}
 			return null;
-		}
-		public function addSlashCommand(n:String, callback:Function):void{
-			_cl.addSlashCommand(n, callback);
 		}
 		//
 		// LOGGING
@@ -527,10 +539,7 @@ package com.junkbyte.console {
 		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			addLine(newLine, priority, _config.defaultChannel, isRepeating);
 		}
-		public function stack(newLine:*, depth:int = -1, priority:Number = 5):void{
-			addLine(newLine, priority, _config.defaultChannel, false, false, depth>=0?depth:_config.defaultStackDepth);
-		}
-		public function stackch(ch:String, newLine:*, depth:int = -1, priority:Number = 5):void{
+		public function stack(newLine:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
 			addLine(newLine, priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		public function log(...args):void{
@@ -609,11 +618,11 @@ package com.junkbyte.console {
 		//public function get om():ObjectsMonitor{return _om;}
 		public function get graphing():Graphing{return _graphing;}
 		//
-		public function getLogsAsBytes():Array{
+		public function getLogsAsObjects():Array{
 			var a:Array = [];
 			var line:Log = _lines.first;
 			while(line){
-				a.push(line.toBytes());
+				a.push(line.toObject());
 				line = line.next;
 			}
 			return a;

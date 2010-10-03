@@ -26,18 +26,29 @@ package com.junkbyte.console {
 	import flash.text.StyleSheet;	
 	
 	public class ConsoleStyle {
-		
+				
 		/** Font for menus and almost all others */
 		public var menuFont:String = "Arial";
 		
 		/** Default font size */
 		public var menuFontSize:int = 12;
 		
+		/** Maximum number of channels to display on top menu */
+		public var maxChannelsInMenu:int = 7;
+		
 		/** Font for trace field */
 		public var traceFont:String = "Verdana";
 		
 		/** Font size for trace field */
 		public var traceFontSize:int = 11;
+		
+		
+		
+		/** Panel snapping radius during drag move. default:3, set to 0 to disable*/
+		public var panelSnapping:int = 3;
+		
+		/** Panels background corner rounding */
+		public var roundBorder:int = 10;
 		
 		/** Panels backround color */
 		public var backgroundColor:uint;
@@ -100,20 +111,6 @@ package com.junkbyte.console {
 		public var priorityC1:uint = 0x0099CC;
 		/** Color of console event log.*/
 		public var priorityC2:uint = 0xFF8800;
-		
-		
-		/** Show top menu */
-		public var topMenu:Boolean = true;
-		
-		/** Maximum number of channels to display on top menu */
-		public var maxChannelsInMenu:int = 7;
-		
-		/** Panel snapping radius during drag move. default:3, set to 0 to disable*/
-		public var panelSnapping:int = 3;
-		
-		/** Panels background corner rounding */
-		public var roundBorder:int = 10;
-		
 		
 		/** Use white base pre configuration */
 		public function whiteBase():void{

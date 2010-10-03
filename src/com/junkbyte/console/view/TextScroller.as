@@ -38,7 +38,7 @@ package com.junkbyte.console.view {
 		private var _h:Number = 100;
 		private var _scrolling:Boolean;
 		
-		private var _color:Number;
+		private var _color:Number = 0xFF0000;
 		
 		public var targetIncrement:Number;
 		

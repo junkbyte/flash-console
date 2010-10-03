@@ -33,16 +33,8 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.41===
-  * added ability to add custom slash commands. using Cc.addSlashCommand();
-  * commandLine autoScoping can be set from Cc.config.commandLineAutoScope.
-  * Cc.stack() no longer accept channel name. use Cc.stackch() for channel.
-  * Top menu can now be hidden from ConsoleStyle.topMenu = false;
-  * Fixed bug with channel name generation from non-string param in Cc.logch, Cc.warnch, etc...
-  * Remote: to run local command line on remote, prefix string with ~, e.g. `~stage.frameRate=100;`
-  * Remoting now use ByteArray data format which will break with older clients.
-  
 ===2.4===
+
   * Renamed source package name to com.junkbyte.console - to be less personal
   * Renamed C to Cc so that FlashBuilder pick up as auto complete. Cc stands for Console controller.
   * Moved a lot of 'configuration' settings from Cc. to ConsoleConfig (that you pass at start)
@@ -56,12 +48,12 @@ http://code.google.com/p/flash-console/issues/
   * Added Cc.stack
   * Added Cc.autoStackPriority and defaultStackDepth in ConsoleConfig
   * Cc.fatal will get auto stack trace by default.
-  * External trace call will have channel name as first param, log text as second param and priority as third
+  * External trace call will have channel name as first param, log line as second param and priority as third
   * Removed tracingPriorty, prefixChannelNames, tracingChannels
   * Removed Cc.filterText and Cc.filterRegExp - use /filter in interface
   * Removed Cc.gc() - use memoryMonitor - G button in interface.
   * Removed Cc.remoteDelay. it is now always 1.
-  * Fixed bug with not being able to access array indexes in commandLine.
+  * Fixed bug with not being able to access array indexes.
   * Fixed bug with not sending too many log lines in remoting.
 
 ===2.35===

@@ -24,31 +24,18 @@
 */
 package com.junkbyte.console.vos {
 	
-	public class Log{
-		public var t:String;
-		public var c:String;
-		public var p:int;
-		public var r:Boolean;
-		public var s:Boolean;
-		//
-		public var next:Log;
-		public var prev:Log;
-		//
-		public function Log(txt:String, ch:String, pr:int, repeating:Boolean = false, skipSafe:Boolean = false){
-			t = txt;
-			c = ch;
-			p = pr;
-			r = repeating;
-			s = skipSafe;
-		}
-		public function toObject():Object{
-			return {t:t, c:c, p:p, r:r};
-		}
-		public function toString():String{
-			return "["+c+"] " + t;
-		}
-		public function clone():Log{
-			return new Log(t, c, p, r, s);
+	public class RemoteSync {
+		public var lines:Array;
+		public var graphs:Array;
+		public var cl:String;
+		
+		
+		public static function FromObject(o:Object):RemoteSync{
+			var vo:RemoteSync = new RemoteSync();
+			vo.lines = o.lines;
+			vo.graphs = o.graphs;
+			vo.cl = o.cl;
+			return vo;
 		}
 	}
 }

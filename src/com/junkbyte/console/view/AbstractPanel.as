@@ -76,20 +76,21 @@ package com.junkbyte.console.view {
 			return master.config.style;
 		}
 		
-		public function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
-			
+		protected function drawBG(col:Number = 0, a:Number = 0.6, rounding:int = 10):void{
 			bg.graphics.clear();
-			bg.graphics.beginFill(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha);
+			bg.graphics.beginFill(col, a);
 			var size:int = 100;
-			if(rounding <0 ) rounding = style.roundBorder;
-			var roundSize:int = size-(rounding*2);
+			var roundSize:int = 100-(rounding*2);
 			if(rounding<=0) bg.graphics.drawRect(0, 0, size, size);
 			else {
 				bg.graphics.drawRoundRect(0, 0, size, size,rounding,rounding);
 				var grid:Rectangle = new Rectangle(rounding, rounding, roundSize, roundSize);
 				bg.scale9Grid = grid;
 			}
-			
+		}
+		public function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
+			if(rounding <0 ) rounding = style.roundBorder;
+			drawBG(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha, rounding);
 			scalable = resizable;
 			width = w;
 			height = h;
@@ -100,6 +101,7 @@ package com.junkbyte.console.view {
 			if(parent){
 				parent.removeChild(this);
 			}
+			//dispatchEvent(new Event(CLOSED));
 		}
 		//
 		// SIZE
