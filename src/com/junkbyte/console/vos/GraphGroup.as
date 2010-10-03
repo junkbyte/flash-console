@@ -23,7 +23,6 @@
 * 
 */
 package com.junkbyte.console.vos {
-	import flash.utils.ByteArray;
 	import flash.geom.Rectangle;
 
 	public class GraphGroup {
@@ -61,31 +60,19 @@ package com.junkbyte.console.vos {
 		//
 		//
 		//
-		public function toBytes():ByteArray{
-			var bytes:ByteArray = new ByteArray();
-			bytes.writeUTF(name);
-			bytes.writeUnsignedInt(type);
-			bytes.writeUnsignedInt(idle);
-			bytes.writeDouble(low);
-			bytes.writeDouble(hi);
-			bytes.writeBoolean(inv);
-			var list:ByteArray = new ByteArray();
-			for each(var gi:GraphInterest in interests) list.writeBytes(gi.toBytes());
-			bytes.writeObject(list);
-			return bytes;
+		public function toObject():Object{
+			var gis:Array = [];
+			for each(var gi:GraphInterest in interests) gis.push(gi.toObject());
+			return {t:type, n:name, l:low, h:hi, idle:idle, v:inv, i:gis};
 		}
-		public static function FromBytes(bytes:ByteArray):GraphGroup{
-			var g:GraphGroup = new GraphGroup(bytes.readUTF());
-			g.type = bytes.readUnsignedInt();
-			g.idle = bytes.readUnsignedInt();
-			g.low = bytes.readDouble();
-			g.hi = bytes.readDouble();
-			g.inv = bytes.readBoolean();
-			var list:ByteArray = bytes.readObject();
-			list.position = 0;
-			while(list.bytesAvailable){
-				g.interests.push(GraphInterest.FromBytes(list));
-			}
+		public static function FromObject(o:Object):GraphGroup{
+			var g:GraphGroup = new GraphGroup(o.n);
+			g.type = o.t;
+			g.idle = o.idle;
+			g.low = o.l;
+			g.hi = o.h;
+			g.inv = o.v;
+			if(o.i != null) for each(var io:Object in o.i) g.interests.push(GraphInterest.FromObject(io));
 			return g;
 		}
 	}

@@ -34,7 +34,7 @@ package com.junkbyte.console.view {
 
 	public class GraphingPanel extends AbstractPanel {
 		//
-		private static const FPSLAG:uint = 30; // maximum 0 fps (lagged) frames.
+		public static const FPSLAG:uint = 30; // maximum 0 fps (lagged) frames.
 		//
 		protected var _group:GraphGroup;
 		protected var _interest:GraphInterest;
@@ -122,7 +122,6 @@ package com.junkbyte.console.view {
 			highTxt.width = n;
 			txtField.width = n;
 			txtField.scrollH = txtField.maxScrollH;
-			graph.graphics.clear();
 			_needRedraw = true;
 		}
 		//
