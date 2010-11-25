@@ -57,6 +57,7 @@ http://code.google.com/p/flash-console/issues/
    * Remote: to run local command line on remote, prefix string with ~, e.g. `~stage.frameRate=100;`
    * Classes now get a `*` around the name to signify that its a class and not an instance of a class. eg. `*Sprite*`
    * Added `Cc.explodech()` to explode to channel
+   * Added `Cc.config.keyBindsEnabled` - to be able to disable all keybinds
    * Pressing Enter while console is visible will auto focus to commandLine
    * added /commands command to list all slash commands
    * added /keybinds command to list all used key binds

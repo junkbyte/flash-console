@@ -207,7 +207,6 @@ package com.junkbyte.console.view
 					roller.x = _mainPanel.x+_mainPanel.width-180;
 					roller.y = _mainPanel.y+55;
 					addPanel(roller);
-					roller.start();
 				}else{
 					removePanel(RollerPanel.NAME);
 				}
@@ -291,10 +290,9 @@ package com.junkbyte.console.view
 			if(rulerActive){
 				return;
 			}
-			_ruler = new Ruler();
+			_ruler = new Ruler(console);
 			_ruler.addEventListener(Event.COMPLETE, onRulerExit, false, 0, true);
 			console.addChild(_ruler);
-			_ruler.start(console);
 			_mainPanel.updateMenu();
 		}
 		public function get rulerActive():Boolean{

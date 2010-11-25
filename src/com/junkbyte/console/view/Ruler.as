@@ -57,10 +57,7 @@ package com.junkbyte.console.view {
 		
 		private var _points:Array;
 		
-		public function Ruler() {
-			
-		}
-		public function start(console:Console):void{
+		public function Ruler(console:Console) {
 			_master = console;
 			_config = console.config;
 			buttonMode = true;
@@ -69,7 +66,7 @@ package com.junkbyte.console.view {
 			addChild(_pointer);
 			var p:Point = new Point();
 			p = globalToLocal(p);
-			_area = new Rectangle(-stage.stageWidth*1.5+p.x, -stage.stageHeight*1.5+p.y, stage.stageWidth*3, stage.stageHeight*3);
+			_area = new Rectangle(-console.stage.stageWidth*1.5+p.x, -console.stage.stageHeight*1.5+p.y, console.stage.stageWidth*3, console.stage.stageHeight*3);
 			graphics.beginFill(_config.style.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();

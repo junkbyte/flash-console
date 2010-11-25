@@ -55,8 +55,6 @@ package com.junkbyte.console.view
 			registerTFRoller(txtField, onMenuRollOver, linkHandler);
 			registerDragger(txtField);
 			addChild(txtField);
-		}
-		public function start():void{
 			addEventListener(Event.ENTER_FRAME, _onFrame);
 			addEventListener(Event.REMOVED_FROM_STAGE, removeListeners);
 		}

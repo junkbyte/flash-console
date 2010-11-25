@@ -24,6 +24,7 @@
 */
 package 
 {
+	import flash.utils.setInterval;
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.vos.Log;
 
@@ -104,7 +105,9 @@ package
 			// but if you have debugger version of flash player installed,
 			// you can open memory monitor (M) and then press G in that panel to force garbage collect
 			// You will see "[C] GARBAGE COLLECTED 1 item(s): aSprite"
-			
+
+			Cc.config.objectHardReferenceTimer = 10;
+			Cc.log("This is a temp object:", new Object());
 			
 			//
 			// Test of Cc.stack,  If you have debugger version installed you will see a stack trace like:
@@ -128,6 +131,13 @@ package
 		}
 		private function e():void{
 			Cc.stack("Hello from stack trace.");
+		}
+		
+		private function addRandom():void
+		{
+			var sprite:Sprite = new Sprite();
+			Cc.watch(sprite);
+			Cc.log("sprite", sprite);
 		}
 	}
 }

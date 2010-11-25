@@ -170,10 +170,19 @@ package com.junkbyte.console {
 		/**
 		 * Command line autoscoping
 		 * <p>
-		 * When turned on, it will autoscope to objects returned without the need to call "/" command.
+		 * When turned on, it will autoscope to objects returned without the need to call the command "/".
 		 * </p>
 		 */
 		public var commandLineAutoScope:Boolean;
+		
+		
+		/**
+		 * Key binding availability
+		 * <p>
+		 * While turned off, you can still bind keys. Just that it will not trigger so long as the keyBindsEnabled is set to false.
+		 * </p>
+		 */
+		public var keyBindsEnabled:Boolean = true;
 		
 		/**
 		 * Determine if Console should hide the mouse cursor when using Ruler tool.

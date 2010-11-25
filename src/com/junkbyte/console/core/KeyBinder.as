@@ -58,7 +58,7 @@ package com.junkbyte.console.core
 				if(!config.quiet) report("Unbined key "+key.key+".", -1);
 			}else{
 				_binds[key.key] = [fun, args];
-				if(!config.quiet) report("Bined key "+key.key+" to a function.", -1);
+				if(!config.quiet) report("Bined key "+key.key+" to a function."+(config.keyBindsEnabled?"":" (will not trigger while key binding is disabled in config)"), -1);
 			}
 		}
 		public function keyDownHandler(e:KeyboardEvent):void{
@@ -103,7 +103,7 @@ package com.junkbyte.console.core
 		private function tryRunKey(key:String):void
 		{
 			var a:Array = _binds[key];
-			if(a){
+			if(config.keyBindsEnabled && a){
 				if(canTrigger()){
 					(a[0] as Function).apply(null, a[1]);
 				}else if(_warns < 3){
