@@ -34,7 +34,6 @@ package com.junkbyte.console.view {
 
 	public class GraphingPanel extends AbstractPanel {
 		//
-		public static const FPSLAG:uint = 30; // maximum 0 fps (lagged) frames.
 		//
 		protected var _group:GraphGroup;
 		protected var _interest:GraphInterest;
@@ -54,10 +53,12 @@ package com.junkbyte.console.view {
 			registerDragger(bg);
 			minHeight = 26;
 			//
-			lowTxt = makeTF("lowestField", false, false);
+			lowTxt = makeTF("lowestField", false);
+			lowTxt.mouseEnabled = false;
 			lowTxt.height = style.menuFontSize+2;
 			addChild(lowTxt);
-			highTxt = makeTF("highestField", false, false);
+			highTxt = makeTF("highestField", false);
+			highTxt.mouseEnabled = false;
 			highTxt.height = style.menuFontSize+2;
 			highTxt.y = style.menuFontSize-4;
 			addChild(highTxt);
@@ -80,7 +81,7 @@ package com.junkbyte.console.view {
 			init(W?W:100,H?H:80,resizable);
 		}
 		private function stop():void {
-			if(_group) master.graphing.remove(_group.name);
+			if(_group) console.graphing.remove(_group.name);
 		}
 		public function reset():void{
 			_infoMap = {};
@@ -122,6 +123,7 @@ package com.junkbyte.console.view {
 			highTxt.width = n;
 			txtField.width = n;
 			txtField.scrollH = txtField.maxScrollH;
+			graph.graphics.clear();
 			_needRedraw = true;
 		}
 		//
@@ -164,7 +166,7 @@ package com.junkbyte.console.view {
 					// special case for FPS, because it needs to fill some frames for lagged 1s...
 					if(group.type == GraphGroup.FPS){
 						var frames:int = Math.floor(group.hi/_interest.v);
-						if(frames>FPSLAG) frames = FPSLAG; // Don't add too many
+						if(frames>30) frames = 30; // Don't add too many lagged frames
 						while(frames>0){
 							history.push(_interest.v);
 							frames--;
@@ -230,7 +232,7 @@ package com.junkbyte.console.view {
 			e.stopPropagation();
 		}
 		protected function onMenuRollOver(e:TextEvent):void{
-			master.panels.tooltip(e.text?e.text.replace("event:",""):null, this);
+			console.panels.tooltip(e.text?e.text.replace("event:",""):null, this);
 		}
 	}
 }

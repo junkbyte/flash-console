@@ -22,10 +22,10 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package {
-	
-	import com.junkbyte.console.ConsoleConfig;
+package 
+{
 	import com.junkbyte.console.Cc;
+	import com.junkbyte.console.core.Remoting;
 
 	import flash.display.*;
 	import flash.events.*;
@@ -40,15 +40,15 @@ package {
 
 		public function ConsoleRemote() {
 			
-			var config:ConsoleConfig = new ConsoleConfig();
-			config.maxLines = 2000;
-			
-			Cc.start(this, "", config);
-			Cc.remote = true;
+			Cc.start(this);
 			Cc.commandLine = true;
+			Cc.config.maxLines = 2000;
+			Cc.config.maxRepeats = 200;
+			Cc.config.commandLineAllowed = true;
 			
-			//
-			// This is special case for remote to disable scaling and moving
+			// Start remote service.
+			Cc.instance.remoter.remoting = Remoting.RECIEVER;
+			// Disable scaling and moving
 			Cc.instance.panels.mainPanel.moveable = false;
 			Cc.instance.panels.mainPanel.scalable = false;
 			//

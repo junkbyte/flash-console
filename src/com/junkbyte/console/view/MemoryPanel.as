@@ -52,9 +52,9 @@ package com.junkbyte.console.view {
 		}
 		protected override function linkHandler(e:TextEvent):void{
 			if(e.text == "gc"){
-				master.gc();
+				console.gc();
 			}else if(e.text == "close"){
-				master.memoryMonitor = false;
+				console.memoryMonitor = false;
 			}else{
 				super.linkHandler(e);
 			}
@@ -64,7 +64,7 @@ package com.junkbyte.console.view {
 			if(txt == "gc"){
 				txt = "Garbage collect::Requires debugger version of flash player";
 			}
-			master.panels.tooltip(txt, this);
+			console.panels.tooltip(txt, this);
 		}
 	}
 }

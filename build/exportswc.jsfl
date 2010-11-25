@@ -59,6 +59,7 @@ for each (var item in library.items)
 		}
 		item.exportSWC(swcPath);
 		fl.trace("Exported!");
+		break;
 	}
 }
 

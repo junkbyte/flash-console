@@ -22,28 +22,33 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core {
-	import flash.events.EventDispatcher;
+package com.junkbyte.console.core 
+{
+	import com.junkbyte.console.Console;
+
 	import flash.system.System;
 	import flash.utils.Dictionary;
-	import flash.utils.getTimer;	
+	import flash.utils.getQualifiedClassName;
+	import flash.utils.getTimer;
 
-	public class MemoryMonitor extends EventDispatcher{
-		
-		//public static const GARBAGE_COLLECTED:String = "garbageCollected";
-		//private static const DUMMY_GARBAGE:String = "_memoryMonitor_dummy_garbage";
+	public class MemoryMonitor extends ConsoleCore{
 		
 		private var _namesList:Object;
 		private var _objectsList:Dictionary;
 		private var _count:uint;
-		//private var _notifyGC:Boolean;
 		//
 		//
-		public function MemoryMonitor() {
+		public function MemoryMonitor(m:Console) {
+			super(m);
 			_namesList = new Object();
 			_objectsList = new Dictionary(true);
+			
+			console.remoter.registerClient("gc", gc);
 		}
 		public function watch(obj:Object, n:String):String{
+			var className:String = getQualifiedClassName(obj);
+			if(!n) n = className+"@"+getTimer();
+			
 			if(_objectsList[obj]){
 				if(_namesList[_objectsList[obj]]){
 					unwatch(_objectsList[obj]);
@@ -59,6 +64,7 @@ package com.junkbyte.console.core {
 			_namesList[n] = true;
 			_count++;
 			_objectsList[obj] = n;
+			if(!config.quiet) report("Watching <b>"+className+"</b> as <p5>"+ n +"</p5>.",-1);
 			return n;
 		}
 		public function unwatch(n:String):void{
@@ -76,7 +82,8 @@ package com.junkbyte.console.core {
 		//
 		//
 		//
-		public function update():Array {
+		public function update():void {
+			if(_count == 0) return;
 			var arr:Array = new Array();
 			var o:Object = new Object();
 			for (var X:Object in _objectsList) {
@@ -89,43 +96,34 @@ package com.junkbyte.console.core {
 					_count--;
 				}
 			}
-			return arr;
+			if(arr.length) report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
 		}
 		
 		public function get count():uint{
 			return _count;
 		}
-		/*private function seedGCDummy():void{
-			if(!_namesList[DUMMY_GARBAGE]){
-				// using MovieClip as dummy garbate as it doenst get collected straight away like others
-				watch(new MovieClip(), DUMMY_GARBAGE);
-			}
-		}
-		public function set notifyGC(b:Boolean):void{
-			if(_notifyGC != b){
-				_notifyGC = b;
-				if(b){
-					seedGCDummy();
-				}else if(!b){
-					unwatch(DUMMY_GARBAGE);
+		
+		public function gc():void {
+			if(remoter.remoting == Remoting.RECIEVER){
+				try{
+					report("Sending garbage collection request to client",-1);
+					remoter.send("gc");
+				}catch(e:Error){
+					report(e,10);
 				}
+			}else{
+				var ok:Boolean;
+				try{
+					// have to put in brackes cause some compilers will complain.
+					if(System["gc"] != null){
+						System["gc"]();
+						ok = true;
+					}
+				}catch(e:Error){ }
+				
+				var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
+				report(str,(ok?-1:10));
 			}
-		}
-		public function get notifyGC():Boolean{
-			return _notifyGC;
-		}*/
-		//
-		// only works in debugger player version
-		//
-		public static function Gc():Boolean {
-			try{
-				// have to put in brackes cause some compilers will complain.
-				if(System["gc"] != null){
-					System["gc"]();
-					return true;
-				}
-			}catch(e:Error){ }
-			return false;
 		}
 	}
 }

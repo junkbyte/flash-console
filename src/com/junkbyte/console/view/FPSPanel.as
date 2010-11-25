@@ -41,7 +41,7 @@ package com.junkbyte.console.view {
 		}
 		protected override function linkHandler(e:TextEvent):void{
 			if(e.text == "close"){
-				master.fpsMonitor = false;
+				console.fpsMonitor = false;
 			}else{
 				super.linkHandler(e);
 			}

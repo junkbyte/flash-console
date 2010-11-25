@@ -32,18 +32,6 @@ package com.junkbyte.console {
 		//                  //
 		//////////////////////
 		
-		/** Global channel name (where it prints all logs) */
-		public var globalChannel:String = " * ";
-		
-		/** Default channel name (logs without channel name) */
-		public var defaultChannel:String = "-";
-		
-		/** Console's channel name */
-		public var consoleChannel:String = "C";
-		
-		/** Filtered channel name */
-		public var filteredChannel:String = "~";
-		
 		/**
 		 * Maximum number of logs Console should remember.
 		 * 0 = unlimited. Setting to very high will take up more memory and potentially slow down.
@@ -69,8 +57,13 @@ package com.junkbyte.console {
 		 * Default stack trace depth.
 		 * default depth = 3;
 		 */
-		public var defaultStackDepth:int = 3;
+		public var defaultStackDepth:int = 2;
 		
+		/** 
+		 * Object linking allows you click on individual objects you have logged to inspect the detials in a specific view.
+		 * The down side is that it will take a little more memory to keep a WEAK reference to all objects pass for logging.
+		 */
+		public var useObjectLinking:Boolean = true;
 		
 		/**
 		 * Use flash's build in (or external) trace().
@@ -87,10 +80,10 @@ package com.junkbyte.console {
 		/**
 		 * Assign custom trace function.
 		 * <p>
-		 * Strong reference to function. Console will only call this when C.tracing is true.
-		 * Custom function must accept at 3 parameter:
-		 * - String channel name.
-		 * - String the log line.
+		 * Strong reference to function. Console will only call this when tracing is set to true.<br/>
+		 * Custom function must accept 3 parameters:<br/>
+		 * - String channel name.<br/>
+		 * - String the log line.<br/>
 		 * - int    priority level -2 to 10.
 		 * </p>
 		 * <p>
@@ -100,7 +93,7 @@ package com.junkbyte.console {
 		 * 	  trace("["+ch+"] "+line);
 		 * }
 		 * </p>
-		 * @see C.tracing
+		 * @see tracing
 		 */
 		public var traceCall:Function = defaultTrace;
 		
@@ -148,15 +141,22 @@ package com.junkbyte.console {
 		
 		
 		/**
-		 * Command line usage allowance.
+		 * Full Command line features usage allowance.
 		 * <p>
-		 * CommandLine is a big security hole for your code and flash. It is a very good
-		 * practice to disable it after development phase.
+		 * CommandLine is a big security risk for your code and flash. 
+		 * It is a very good practice to disable it after development phase.
 		 * On the other hand having it on full access will let you debug the code easier.
-		 * This will automatically set to true when you set C.commandLine = true
 		 * </p>
 		 */
 		public var commandLineAllowed:Boolean;
+		
+		/**
+		 * Command line autoscoping
+		 * <p>
+		 * When turned on, it will autoscope to objects returned without the need to call "/" command.
+		 * </p>
+		 */
+		public var commandLineAutoScope:Boolean;
 		
 		/**
 		 * Determine if Console should hide the mouse cursor when using Ruler tool.

@@ -26,86 +26,93 @@ package
 {
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.ConsoleChannel;
-	import com.junkbyte.console.ConsoleConfig;
 
 	import flash.display.*;
-	import flash.events.MouseEvent;
+	import flash.events.*;
 	import flash.text.*;
 	import flash.utils.*;
 
 	public dynamic class Sample extends MovieClip{
 		
 		private var _spamcount:int;
-		
-		private var _ch:ConsoleChannel = new ConsoleChannel('myCh');
-		
+		//
+		// This class is to be compiled from sample.fla
+		// If you rather compile else where, look SampleAdvanced.as 
+		// (though you will miss out on some basic feature demos)
+		//
 		public function Sample() {
 			//
 			// SET UP - only required once
 			//
-			var config:ConsoleConfig = new ConsoleConfig(); // optional.
-			//config.style.big(); // BIG text
-			//config.style.whiteBase(); // Black on white
+			Cc.startOnStage(this, "`"); // "`" - change for password. This will start hidden
+			Cc.visible = true; // Show console, because having password hides console.
 			
-			Cc.startOnStage(this, "`", config); // "`" - change for password. This will start hidden
-			Cc.visible = true; // show console, because having password hides console.
-			//C.tracing = true; // trace on flash's normal trace
-			Cc.commandLine = true; // enable command line
+			Cc.config.commandLineAllowed = true; // enable advanced (but security risk) features.
+			Cc.config.tracing = true; // Also trace on flash's normal trace
 			
-			Cc.height = 220;
 			Cc.remotingPassword = null; // Just so that remote don't ask for password
-			Cc.remoting = true;
+			Cc.remoting = true; // Start sending logs to remote (using LocalConnection)
+			
+			Cc.commandLine = true; // Show command line
+			
+			Cc.height = 220; // change height. You can set x y width height to position/size the main panel
 			//
 			// End of setup
 			//
 			
-			// BASICS
-			//
-			Cc.info("Hello world.");
-			Cc.log("A log message for console.", "optionally there", "can be", "multiple arguments.");
-			Cc.debug("A debug level log.");
-			Cc.warn("This is a warning log.");
-			Cc.error("This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
-			Cc.fatal("This is a fatal error log.", "with high visibility");
-			//
-			// basic channel logging
-			//
-			Cc.infoch("myChannel", "Hello myChannel.");
-			Cc.logch("myChannel", "A log message at myChannel.", "optionally there", "can be", "multiple arguments.");
-			//Cc.debugch("myChannel", "A debug level log.");
-			//Cc.warnch("myChannel", "This is a warning log.");
-			//Cc.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
-			//
-			// instanced channel
-			//
-			// var _ch:Ch = new Ch('myCh'); // already declared above.
-			_ch.log("Hello instanced channel.");
-			_ch.info("Works just like other logging methods","but this way you keep the channel name as a class instance");
-			//
-			// advanced logging
-			//
-			Cc.add("My advanced log in priority 7.", 7);
-			Cc.add("My advanced log in priority 2, 1 (no repeats)", 2, true);
-			Cc.add("My advanced log in priority 2, 2 (no repeats)", 2, true);
-			Cc.add("My advanced log in priority 2, 3 (no repeats)", 2, true);
-			// When 'no repeat' (3rd param) is set to true, it will not generate new lines for each log.
-			// It will keep replacing the previous line until a certain count is passed.
-			// For example, if you are tracing download progress and you don't want to flood console with it.
-			//
-			// Advanced channel logging
-			//
-			Cc.ch("chn", "Advanced log in priority 7.", 7);
-			Cc.ch("chn", "Advanced log in priority 3, 1 (no repeats)", 3, true);
-			Cc.ch("chn", "Advanced log in priority 3, 2 (no repeats)", 3, true);
-			Cc.ch("chn", "Advanced log in priority 3, 3 (no repeats)", 3, true);
+			// show the demo logging stuff there...
+			demoBasics();
 			
-			
-			
-			//
-			// End of demo code
-			//
 			setupUI();
 		}
+		
+		private function demoBasics():void
+		{
+			Cc.log("Hello world.");
+			Cc.info("An info message.", "Optionally there", "can be", "multiple arguments.");
+			Cc.debug("A debug level log.", "You can also pass an object and it'll become a link to inspect:", this);
+			Cc.warn("This is a warning log.", "Lets try the object linking again:", stage, " <- click it! (press 'exit' when done)");
+			Cc.error("This is an error log.", "This link might not work because it can get garbage collected:", new Sprite());
+			Cc.fatal("This is a fatal error log with high visibility.", "Also gets a stack trace on debug player...");
+			//
+			// Basic channel logging
+			//
+			Cc.infoch("myChannel", "Hello myChannel.");
+			Cc.debugch("myChannel", "A debug level log.", "There is also Cc.errorch() and Cc.fatalch(). Skipping that for demo.");
+			//
+			// Instanced channel
+			//
+			var ch:ConsoleChannel = new ConsoleChannel('myCh');
+			ch.info("Hello!", "Works just like other logging methods but this way you keep the channel as an instance.");
+			
+			//
+			// Stack tracing
+			//
+			Cc.stack("Stack trace called from... (need debug player)");
+			/* //If you have debug player, it'll show up in console as:
+			   Stack trace called from... (need debug player)
+			    @ Sample/demoBasics()
+			    @ Sample()
+			*/
+			// Use Cc.stackch(...) to have channel name.
+
+			//
+			// Advanced logging
+			//
+			Cc.add("My advanced log in priority 2, 1st call", 2, true);
+			Cc.add("My advanced log in priority 2, 2nd call", 2, true);
+			Cc.add("My advanced log in priority 2, 3rd call", 2, true);
+			Cc.add("My advanced log in priority 2, 4th call", 2, true);
+			Cc.add("My advanced log in priority 2, 5th call", 2, true);
+			// When 'no repeat' (3rd param) is set to true, it will not generate new lines for each log.
+			// It will keep replacing the previous line with repeat turned on until a certain count is passed.
+			// For example, if you are tracing download progress and you don't want to flood console with it.
+			// If you want to specify the channel, use:
+			// Use Cc.ch(channel:*, str:*, priority:int, isRepeating:Boolean)
+		}
+		//
+		//
+		//
 		private function setupUI():void{
 			TextField(txtPriority).restrict = "0-9";
 			TextField(txtPriority2).restrict = "0-9";
@@ -140,7 +147,7 @@ package
 						_interval = 0;
 						btnInterval.txt.text = "Start Interval";
 					}else{
-						_interval = setInterval(onIntervalEvent,100);
+						_interval = setInterval(onIntervalEvent, 50);
 						btnInterval.txt.text = "Stop Interval";
 					}
 				break;
@@ -150,7 +157,7 @@ package
 			}
 		}
 		private function onIntervalEvent():void{
-			Cc.add("Repeative log _ " + getTimer(), 5,true);
+			Cc.ch("test", "Repeative log _ " + getTimer(), 5,true);
 		}
 		private function spam():void{
 			for(var i:int = 0;i<100;i++){
@@ -168,7 +175,7 @@ package
 					str = "voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis";
 				}
 				_spamcount++;
-				Cc.ch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*10));
+				Cc.ch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*4));
 			}
 		}
 		

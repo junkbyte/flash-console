@@ -26,7 +26,7 @@ package com.junkbyte.console.vos {
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
-	public class WeakObject extends Proxy{
+	public dynamic class WeakObject extends Proxy{
 		
 		private var _item:Array;
 		private var _dir:Object;
@@ -39,8 +39,11 @@ package com.junkbyte.console.vos {
 			else _dir[n] = new WeakRef(obj, strong);
 		}
 		public function get(n:String):*{
-			if(_dir[n] is WeakRef) return WeakRef(_dir[n]).reference;
-			return undefined;
+			var ref:WeakRef = getWeakRef(n);
+			return ref?ref.reference:undefined;
+		}
+		public function getWeakRef(n:String):WeakRef{
+			return _dir[n] as WeakRef;
 		}
 		//
 		// PROXY

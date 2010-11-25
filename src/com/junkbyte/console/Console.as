@@ -22,23 +22,21 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console {
+package com.junkbyte.console 
+{
 	import com.junkbyte.console.core.CommandLine;
-	import com.junkbyte.console.core.CommandTools;
+	import com.junkbyte.console.core.DisplayMapper;
 	import com.junkbyte.console.core.Graphing;
 	import com.junkbyte.console.core.KeyBinder;
+	import com.junkbyte.console.core.LogReferences;
+	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.MemoryMonitor;
-	//import com.junkbyte.console.core.ObjectsMonitor;
 	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.core.UserData;
-	import com.junkbyte.console.utils.CastToString;
-	import com.junkbyte.console.utils.ShortClassName;
-	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.view.PanelsManager;
 	import com.junkbyte.console.view.RollerPanel;
 	import com.junkbyte.console.vos.Log;
-	import com.junkbyte.console.vos.Logs;
-	
+
 	import flash.display.DisplayObjectContainer;
 	import flash.display.LoaderInfo;
 	import flash.display.Sprite;
@@ -48,7 +46,9 @@ package com.junkbyte.console {
 	import flash.events.KeyboardEvent;
 	import flash.geom.Rectangle;
 	import flash.utils.getQualifiedClassName;
-	import flash.utils.getTimer;	
+
+	//import com.junkbyte.console.core.ObjectsMonitor;
+	
 
 	/**
 	 * Console is the main class. 
@@ -58,11 +58,10 @@ package com.junkbyte.console {
 	 */
 	public class Console extends Sprite {
 
-		public static const VERSION:Number = 2.4;
-		public static const VERSION_STAGE:String = "";
-		public static const LITE:Boolean = false;
-		//
-		public static const NAME:String = "Console";
+		public static const VERSION:Number = 2.5;
+		public static const VERSION_STAGE:String = "beta2";
+		public static const BUILD:int = 551;
+		public static const BUILD_DATE:String = "2010/11/24 23:39";
 		//
 		public static const LOG:uint = 1;
 		public static const INFO:uint = 3;
@@ -71,24 +70,26 @@ package com.junkbyte.console {
 		public static const ERROR:uint = 9;
 		public static const FATAL:uint = 10;
 		//
-		public static const REMAPSPLIT:String = "|";
+		public static const GLOBAL_CHANNEL:String = " * ";
+		public static const DEFAULT_CHANNEL:String = "-";
+		public static const CONSOLE_CHANNEL:String = "C";
+		public static const FILTER_CHANNEL:String = "~";
 		//
 		private var _config:ConsoleConfig;
 		private var _panels:PanelsManager;
 		private var _cl:CommandLine;
 		private var _ud:UserData;
 		private var _kb:KeyBinder;
-		//private var _om:ObjectsMonitor;
+		private var _links:LogReferences;
 		private var _mm:MemoryMonitor;
 		private var _graphing:Graphing;
 		private var _remoter:Remoting;
-		private var _topTries:int = 50;
+		private var _mapper:DisplayMapper;
 		//
+		private var _topTries:int = 50;
 		private var _paused:Boolean;
 		private var _rollerKey:KeyBind;
-		private var _channels:Array;
-		private var _repeating:uint;
-		private var _lines:Logs;
+		private var _logs:Logs;
 		private var _lineAdded:Boolean;
 		
 		/**
@@ -101,27 +102,24 @@ package com.junkbyte.console {
 		 * @see http://code.google.com/p/flash-console/
 		 */
 		public function Console(pass:String = "", config:ConsoleConfig = null) {
-			name = NAME;
+			name = "Console";
 			tabChildren = false; // Tabbing is not supported
 			_config = config?config:new ConsoleConfig();
 			//
-			_channels = [_config.globalChannel, _config.defaultChannel];
-			_lines = new Logs();
-			_ud = new UserData(_config.sharedObjectName, _config.sharedObjectPath);
-			//_om = new ObjectsMonitor();
-			_cl = new CommandLine(this);
-			_graphing = new Graphing(report);
 			_remoter = new Remoting(this, pass);
-			_kb = new KeyBinder(pass);
-			_kb.addEventListener(Event.CONNECT, passwordEnteredHandle, false, 0, true);
-			//
-			// VIEW setup
+			_logs = new Logs(this);
+			_ud = new UserData(this);
+			_links = new LogReferences(this);
+			_cl = new CommandLine(this);
+			_mapper =  new DisplayMapper(this);
+			_graphing = new Graphing(this);
+			_mm = new MemoryMonitor(this);
+			_kb = new KeyBinder(this, pass);
+			
 			_config.style.updateStyleSheet();
-			var mainPanel:MainPanel = new MainPanel(this, _lines, _channels);
-			mainPanel.addEventListener(Event.CONNECT, onMainPanelConnectRequest, false, 0, true);
-			_panels = new PanelsManager(this, mainPanel, _channels);
-			//
-			report("<b>Console v"+VERSION+(VERSION_STAGE?(" "+VERSION_STAGE):"")+", Happy coding!</b>", -2);
+			_panels = new PanelsManager(this);
+			
+			report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			if(pass) visible = false;
 			// must have enterFrame here because user can start without a parent display and use remoting.
@@ -147,19 +145,6 @@ package com.junkbyte.console {
 		private function onStageMouseLeave(e:Event):void{
 			_panels.tooltip(null);
 		}
-		private function passwordEnteredHandle(e:Event):void{
-			if(visible && !_panels.mainPanel.visible){
-				_panels.mainPanel.visible = true;
-			}else visible = !visible;
-		}
-		public function destroy():void{
-			_remoter.close();
-			removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
-			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			_cl.destory();
-		}
-		
 		// requires flash player target to be 10.1
 		public function listenUncaughtErrors(loaderinfo:LoaderInfo):void {
 			try{
@@ -172,10 +157,10 @@ package com.junkbyte.console {
 			}
 		}
 		private function uncaughtErrorHandle(e:Event):void{
-			var error:Object = e["error"]; // for flash 9 compatibility
+			var error:* = e.hasOwnProperty("error")?e["error"]:e; // for flash 9 compatibility
 			var str:String;
 			if (error is Error){
-				str = CastToString(error);
+				str = _links.makeString(error);
 			}else if (error is ErrorEvent){
 				str = ErrorEvent(error).text;
 			}
@@ -199,24 +184,21 @@ package com.junkbyte.console {
 			_graphing.remove(n, obj, prop);
 		}
 		//
-		// WARNING: key binding hard references the function. 
+		// WARNING: key binding hard references the functoin and arguments.
 		// This should only be used for development purposes only.
 		//
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
-			if(!_kb.bindKey(key, fun, args))
-			{
-				report("Warning: bindKey character ["+key.char+"] is conflicting with Console password.",8);
-			}else if(!config.quiet) {
-				report((fun ==null?"Unbined":"Bined")+" "+key.toString()+".",-1);
-			}
+			if(key) _kb.bindKey(key, fun, args);
+		}
+		//
+		// WARNING: Add menu hard references the functoin and arguments.
+		//
+		public function addMenu(key:String, f:Function, args:Array = null, rollover:String = null):void{
+			panels.mainPanel.addMenu(key, f, args, rollover);
 		}
 		//
 		// Panel settings
 		// basically passing through to panels manager to save lines
-		//
-		public function setPanelArea(panelname:String, rect:Rectangle):void{
-			_panels.setPanelArea(panelname, rect);
-		}
 		//
 		public function get displayRoller():Boolean{
 			return _panels.displayRoller;
@@ -226,12 +208,12 @@ package com.junkbyte.console {
 		}
 		public function setRollerCaptureKey(char:String, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false):void{
 			if(_rollerKey){
-				_kb.bindKey(_rollerKey, null);
+				bindKey(_rollerKey, null);
 				_rollerKey = null;
 			}
 			if(char && char.length==1) {
 				_rollerKey = new KeyBind(char, shift, ctrl, alt);
-				_kb.bindKey(_rollerKey, onRollerCaptureKey);
+				bindKey(_rollerKey, onRollerCaptureKey);
 			}
 		}
 		public function get rollerCaptureKey():KeyBind{
@@ -239,102 +221,46 @@ package com.junkbyte.console {
 		}
 		private function onRollerCaptureKey():void{
 			if(displayRoller){
-				report("Display Roller Capture:<br/>"+RollerPanel(_panels.getPanel(RollerPanel.NAME)).capture(), -1);
+				report("Display Roller Capture:<br/>"+RollerPanel(_panels.getPanel(RollerPanel.NAME)).getMapString(true), -1);
 			}
 		}
 		//
 		public function get fpsMonitor():Boolean{
-			if(_remoter.isRemote) return panels.fpsMonitor;
 			return _graphing.fpsMonitor;
 		}
 		public function set fpsMonitor(b:Boolean):void{
-			if(_remoter.isRemote){
-				_remoter.send(Remoting.FPS, b);
-			}else{
-				_graphing.fpsMonitor = b;
-				panels.mainPanel.updateMenu();
-			}
+			_graphing.fpsMonitor = b;
 		}
 		//
 		public function get memoryMonitor():Boolean{
-			if(_remoter.isRemote) return panels.memoryMonitor;
 			return _graphing.memoryMonitor;
 		}
 		public function set memoryMonitor(b:Boolean):void{
-			if(_remoter.isRemote){
-				_remoter.send(Remoting.MEM, b);
-			}else{
-				_graphing.memoryMonitor = b;
-				panels.mainPanel.updateMenu();
-			}
+			_graphing.memoryMonitor = b;
 		}
 		
 		//
 		public function watch(o:Object,n:String = null):String{
-			var className:String = getQualifiedClassName(o);
-			if(!n) n = className+"@"+getTimer();
-			if(!_mm) _mm = new MemoryMonitor();
-			var nn:String = _mm.watch(o,n);
-			if(!config.quiet) report("Watching <b>"+className+"</b> as <p5>"+ nn +"</p5>.",-1);
-			return nn;
+			return _mm.watch(o,n);
 		}
 		public function unwatch(n:String):void{
-			if(_mm) _mm.unwatch(n);
+			_mm.unwatch(n);
 		}
 		public function gc():void{
-			if(remote){
-				try{
-					report("Sending garbage collection request to client",-1);
-					_remoter.send(Remoting.GC);
-				}catch(e:Error){
-					report(e,10);
-				}
-			}else{
-				var ok:Boolean = MemoryMonitor.Gc();
-				var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
-				report(str,(ok?-1:10));
-			}
+			_mm.gc();
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void{
 			_cl.store(n, obj, strong);
 		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
-			_cl.map(base, maxstep);
+			_mapper.map(base, maxstep);
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
-			_cl.inspect(obj,detail);
+			_links.inspect(obj,detail);
 		}
 		public function explode(obj:Object, depth:int = 3):void{
-			report(CommandTools.explode(obj, depth), 1);
+			report(_links.explode(obj, depth), 1);
 		}
-		/*public function monitor(obj:Object, n:String = null):void{
-			if(obj == null || typeof obj != "object"){
-				report("Can not monitor "+getQualifiedClassName(obj)+".", 10);
-				return;
-			}
-			_om.monitor(obj, n);
-		}
-		public function unmonitor(i:String = null):void{
-			if(_remoter.isRemote){
-				_remoter.send(Remoting.CALL_UNMONITOR, i);
-			}else{
-				_om.unmonitor(i);
-			}
-		}
-		public function monitorIn(i:String, n:String):void{
-			if(_remoter.isRemote){
-				_remoter.send(Remoting.CALL_MONITORIN, i,n);
-			}else{
-				_om.monitorIn(i,n);
-			}
-		}
-		public function monitorOut(i:String):void{
-			if(_remoter.isRemote){
-				_remoter.send(Remoting.CALL_MONITOROUT, i);
-			}else{
-				_om.monitorOut(i);
-			}
-		}*/
 		public function get paused():Boolean{
 			return _paused;
 		}
@@ -376,33 +302,25 @@ package com.junkbyte.console {
 		//
 		//
 		private function _onEnterFrame(e:Event):void{
-			
-			if(_repeating > 0) _repeating--;
-			
-			if(_mm){
-				var arr:Array = _mm.update();
-				if(arr.length>0){
-					report("<b>GARBAGE COLLECTED "+arr.length+" item(s): </b>"+arr.join(", "),-2);
-					if(_mm.count == 0) _mm = null;
-				}
-			}
+			_logs.tick();
+			_mm.update();
 			var graphsList:Array;
-			if(!_remoter.isRemote){
-			 	//om = _om.update();
+			if(remoter.remoting != Remoting.RECIEVER)
+			{
+				//om = _om.update();
 			 	graphsList = _graphing.update(stage?stage.frameRate:0);
 			}
 			_remoter.update(graphsList);
 			
 			// VIEW UPDATES ONLY
-			if(visible && parent!=null){
+			if(visible && parent){
 				if(config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
 					_topTries--;
 					parent.addChild(this);
 					if(!config.quiet) report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
 				_panels.update(_paused, _lineAdded);
-				//if(!_paused && om != null) _panels.updateObjMonitors(om);
-				if(graphsList != null) _panels.updateGraphs(graphsList, !_paused); 
+				if(graphsList) _panels.updateGraphs(graphsList, !_paused); 
 				_lineAdded = false;
 			}
 		}
@@ -410,23 +328,13 @@ package com.junkbyte.console {
 		// REMOTING
 		//
 		public function get remoting():Boolean{
-			return _remoter.remoting;
+			return _remoter.remoting == Remoting.SENDER;
 		}
-		public function set remoting(newV:Boolean):void{
-			_remoter.remoting = newV;
-		}
-		public function get remote():Boolean{
-			return _remoter.isRemote;
-		}
-		public function set remote(newV:Boolean):void{
-			_remoter.isRemote = newV;
-			_panels.updateMenu();
+		public function set remoting(b:Boolean):void{
+			_remoter.remoting = b?Remoting.SENDER:Remoting.NONE;
 		}
 		public function set remotingPassword(str:String):void{
 			_remoter.remotingPassword = str;
-		}
-		private function onMainPanelConnectRequest(e:Event) : void {
-			_remoter.login(MainPanel(e.currentTarget).commandLineText);
 		}
 		//
 		//
@@ -434,207 +342,155 @@ package com.junkbyte.console {
 		public function get viewingChannels():Array{
 			return _panels.mainPanel.viewingChannels;
 		}
-		public function set viewingChannels(a:Array):void{
+		public function setViewingChannels(...args:Array):void{
+			var a:Array = new Array();
+			for each(var item:Object in args) a.push(makeChannelName(item));
 			_panels.mainPanel.viewingChannels = a;
 		}
-		public function report(obj:*, priority:Number = 0, skipSafe:Boolean = true):void{
-			addLine(obj, priority, _config.consoleChannel, false, skipSafe, 0);
+		public function report(obj:*, priority:int = 0, skipSafe:Boolean = true):void{
+			var cn:String = viewingChannels.length == 1?viewingChannels[0]:Console.CONSOLE_CHANNEL;
+			addLine([obj], priority, cn, false, skipSafe);
 		}
-		public function addLine(obj:*, priority:Number = 0,channel:String = null,isRepeating:Boolean = false, skipSafe:Boolean = false, stacks:int = -1):void{
-			var txt:String = CastToString(obj);
-			var isRepeat:Boolean = (isRepeating && _repeating > 0);
-			if(!channel || channel == _config.globalChannel) channel = _config.defaultChannel;
+		public function addLine(lineParts:Array, priority:int = 0,channel:String = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
+			var txt:String = "";
+			var len:int = lineParts.length;
+			for(var i:int = 0; i < len; i++){
+				txt += (i?" ":"")+_links.makeString(lineParts[i], null, html);
+			}
+			
 			if(priority >= _config.autoStackPriority && stacks<0) stacks = _config.defaultStackDepth;
-			if(skipSafe) stacks = -1;
-			var stackArr:Array = stacks>0?getStack(stacks):null;
 			
-			if( _config.tracing && !isRepeat && _config.traceCall != null){
-				_config.traceCall(channel, (stackArr==null?txt:(txt+"\n @ "+stackArr.join("\n @ "))), priority);
+			if(!channel || channel == GLOBAL_CHANNEL) channel = Console.DEFAULT_CHANNEL;
+
+			if(!html && stacks>0){
+				txt += getStack(stacks, priority);
 			}
-			if(!skipSafe){
-				txt = txt.replace(/</gm, "&lt;");
- 				txt = txt.replace(new RegExp(">", "gm"), "&gt;");
+			var line:Log = new Log(txt, channel, priority, isRepeating, html);
+			
+			var cantrace:Boolean = _logs.add(line, isRepeating);
+			if( _config.tracing && cantrace && _config.traceCall != null){
+				_config.traceCall(channel, line.plainText(), priority);
 			}
-			if(stackArr != null) {
-				var tp:int = priority;
-				for each(var sline:String in stackArr) {
-					txt += "\n<p"+tp+"> @ "+sline+"</p"+tp+">";
-					if(tp>0) tp--;
-				}
-			}
-			if(_channels.indexOf(channel) < 0){
-				_channels.push(channel);
-			}
-			var line:Log = new Log(txt,channel,priority, isRepeating, skipSafe);
-			if(isRepeat){
-				_lines.pop();
-				_lines.push(line);
-			}else{
-				_repeating = isRepeating?_config.maxRepeats:0;
-				_lines.push(line);
-				if(_config.maxLines > 0 ){
-					var off:int = _lines.length - _config.maxLines;
-					if(off > 0){
-						_lines.shift(off);
-					}
-				}
-			}
+			
 			_lineAdded = true;
-			
-			_remoter.addLineQueue(line);
+			_remoter.queueLog(line);
 		}
-		private function getStack(depth:int):Array{
+		private function getStack(depth:int, priority:int):String{
 			var e:Error = new Error();
 			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
-			if(!str) return null;
+			if(!str) return "";
+			var txt:String = "";
 			var lines:Array = str.split(/\n\sat\s/);
 			var len:int = lines.length;
 			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(this)+"|"+getQualifiedClassName(Cc));
+			var found:Boolean = false;
 			for (var i:int = 2; i < len; i++){
-				if((lines[i].search(reg) != 0)){
-					return lines.slice(i, i+depth);
+				if(!found && (lines[i].search(reg) != 0)){
+					found = true;
+				}
+				if(found){
+					txt += "\n<p"+priority+"> @ "+lines[i]+"</p"+priority+">";
+					if(priority>0) priority--;
+					depth--;
+					if(depth<=0){
+						break;
+					}
 				}
 			}
-			return null;
+			return txt;
 		}
 		//
 		// COMMAND LINE
 		//
 		public function set commandLine(b:Boolean):void{
-			if(b) _config.commandLineAllowed = true;
 			_panels.mainPanel.commandLine = b;
 		}
 		public function get commandLine ():Boolean{
 			return _panels.mainPanel.commandLine;
 		}
-		public function set commandBase (v:Object):void{
-			if(v) _cl.base = v;
-		}
-		public function get commandBase ():Object{
-			return _cl.base;
-		}
-		public function runCommand(line:String):*{
-			if(_remoter.isRemote){
-				report("Run command at remote: "+line,-2);
-				try{
-					_remoter.send(Remoting.CMD, line);
-				}catch(err:Error){
-					report("Command could not be sent to client: " + err, 10);
-				}
-			}else{
-				return _cl.run(line);
-			}
-			return null;
+		public function addSlashCommand(n:String, callback:Function, desc:String = "", allow:Boolean = true):void{
+			_cl.addSlashCommand(n, callback, desc, allow);
 		}
 		//
 		// LOGGING
 		//
-		public function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			var chn:String;
-			if(channel is String) chn = channel as String;
-			else if(channel) chn = ShortClassName(channel);
-			else chn = _config.defaultChannel;
-			addLine(newLine, priority,chn, isRepeating);
+		public function add(newLine:*, priority:int = 2, isRepeating:Boolean = false):void{
+			addLine(new Array(newLine), priority, DEFAULT_CHANNEL, isRepeating);
 		}
-		public function add(newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(newLine, priority, _config.defaultChannel, isRepeating);
+		public function stack(newLine:*, depth:int = -1, priority:int = 5):void{
+			addLine(new Array(newLine), priority, DEFAULT_CHANNEL, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
-		public function stack(newLine:*, depth:int = -1, priority:Number = 5, ch:String = null):void{
-			addLine(newLine, priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
+		public function stackch(ch:String, newLine:*, depth:int = -1, priority:int = 5):void{
+			addLine(new Array(newLine), priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		public function log(...args):void{
-			addLine(joinArgs(args), LOG);
+			addLine(args, LOG);
 		}
 		public function info(...args):void{
-			addLine(joinArgs(args), INFO);
+			addLine(args, INFO);
 		}
 		public function debug(...args):void{
-			addLine(joinArgs(args), DEBUG);
+			addLine(args, DEBUG);
 		}
 		public function warn(...args):void{
-			addLine(joinArgs(args), WARN);
+			addLine(args, WARN);
 		}
 		public function error(...args):void{
-			addLine(joinArgs(args), ERROR);
+			addLine(args, ERROR);
 		}
 		public function fatal(...args):void{
-			addLine(joinArgs(args), FATAL);
+			addLine(args, FATAL);
+		}
+		public function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
+			addLine(new Array(newLine), priority, makeChannelName(channel), isRepeating);
 		}
 		public function logch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), LOG);
+			addLine(args, LOG, makeChannelName(channel));
 		}
 		public function infoch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), INFO);
+			addLine(args, INFO, makeChannelName(channel));
 		}
 		public function debugch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), DEBUG);
+			addLine(args, DEBUG, makeChannelName(channel));
 		}
 		public function warnch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), WARN);
+			addLine(args, WARN, makeChannelName(channel));
 		}
 		public function errorch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), ERROR);
+			addLine(args, ERROR, makeChannelName(channel));
 		}
 		public function fatalch(channel:*, ...args):void{
-			ch(channel, joinArgs(args), FATAL);
+			addLine(args, FATAL, makeChannelName(channel));
 		}
-		// Need to specifically cast to string in array to produce correct results
-		// e.g: new Array("str",null,undefined,0).toString() // traces to: str,,,0, SHOULD BE: str,null,undefined,0
-		private function joinArgs(args:Array):String{
-			var str:String = "";
-			var len:int = args.length;
-			for(var i:int = 0; i < len; i++){
-				str += (i?" ":"")+CastToString(args[i]);
-			}
-			return str;
+		public function addCh(channel:*, lineParts:Array, priority:int = 2, isRepeating:Boolean = false):void{
+			addLine(lineParts, priority, makeChannelName(channel), isRepeating);
+		}
+		private function makeChannelName(obj:*):String{
+			if(obj is String) return obj as String;
+			else if(obj is ConsoleChannel) return ConsoleChannel(obj).name;
+			else if(obj) return LogReferences.ShortClassName(obj);
+			else return DEFAULT_CHANNEL;
 		}
 		//
 		//
 		//
 		public function clear(channel:String = null):void{
-			if(channel){
-				var line:Log = _lines.first;
-				while(line){
-					if(line.c == channel){
-						_lines.remove(line);
-					}
-					line = line.next;
-				}
-				var ind:int = _channels.indexOf(channel);
-				if(ind>=0) _channels.splice(ind,1);
-			}else{
-				_lines.clear();
-				_channels.splice(0);
-				_channels.push(_config.globalChannel, _config.defaultChannel);
-			}
+			_logs.clear(channel);
 			if(!_paused) _panels.mainPanel.updateToBottom();
 			_panels.updateMenu();
+		}
+		public function getAllLog(splitter:String = "\r\n"):String{
+			return _logs.getLogsAsString(splitter);
 		}
 		//
 		public function get config():ConsoleConfig{return _config;}
 		public function get panels():PanelsManager{return _panels;}
 		public function get cl():CommandLine{return _cl;}
 		public function get ud():UserData{return _ud;}
-		//public function get om():ObjectsMonitor{return _om;}
+		public function get remoter():Remoting{return _remoter;}
 		public function get graphing():Graphing{return _graphing;}
-		//
-		public function getLogsAsObjects():Array{
-			var a:Array = [];
-			var line:Log = _lines.first;
-			while(line){
-				a.push(line.toObject());
-				line = line.next;
-			}
-			return a;
-		}
-		public function getAllLog(splitter:String = "\n"):String{
-			var str:String = "";
-			var line:Log = _lines.first;
-			while(line){
-				str += (line.toString()+(line.next?splitter:""));
-				line = line.next;
-			}
-			return str;
-		}
+		public function get links():LogReferences{return _links;}
+		public function get logs():Logs{return _logs;}
+		public function get mapper():DisplayMapper{return _mapper;}
 	}
 }

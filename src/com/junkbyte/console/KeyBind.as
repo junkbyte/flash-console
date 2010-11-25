@@ -27,14 +27,8 @@ package com.junkbyte.console
 	public class KeyBind 
 	{
 		
-		private static const KEYCODE:uint = 1;
-		private static const SHIFT:uint = 2; //1<<1
-		private static const CTRL:uint = 4; // 1<<2
-		private static const ALT:uint = 8; //1<<3
-		
-		private var extra:uint;
-		
-		public var char:String;
+		private var _code:Boolean;
+		private var _key:String;
 		
 		/**
 		 * @param code Pass a single string (e.g. "a") OR pass keyCode (e.g. Keyboard.F1)
@@ -44,36 +38,27 @@ package com.junkbyte.console
 		 */
 		public function KeyBind(v:*, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false)
 		{
-			char = String(v).toUpperCase();
+			_key = String(v).toUpperCase();
 			if(v is uint){
-				extra |= KEYCODE;
+				_code = true;
+			}else if(!v || _key.length != 1) {
+				throw new Error("KeyBind: character (first char) must be a single character. You gave ["+v+"]");
 			}
-			else if(char.length != 1) {
-				throw new Error("KeyBind: character (first char) must be a single character. You gave ["+char+"]");
-			}
-			if(shift) extra |= SHIFT;
-			if(ctrl) extra |= CTRL;
-			if(alt) extra |= ALT;
+			
+			if(_code) _key = "keycode:"+_key;
+			if(shift) _key+="+shift";
+			if(ctrl) _key+="+ctrl";
+			if(alt) _key+="+alt";
+			
 		}
 		
+		public function get useKeyCode():Boolean
+		{
+			return _code;
+		}
 		public function get key():String
 		{
-			return char+"+"+extra;
-		}
-		
-		public function get useChar():Boolean
-		{
-			return (extra & KEYCODE)==0;
-		}
-		
-		public function toString():String
-		{
-			var str:String = (extra & KEYCODE)?String(char):char;
-			
-			if(extra & SHIFT) str+="+shift";
-			if(extra & CTRL) str+="+ctrl";
-			if(extra & ALT) str+="+alt";
-			return str;
+			return _key;
 		}
 	}
 }

@@ -23,15 +23,17 @@
 * 
 */
 
-package com.junkbyte.console.view {
-
-	import com.junkbyte.console.ConsoleChannel;
+package com.junkbyte.console.view 
+{
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.core.LogReferences;
+	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.vos.Log;
-	import com.junkbyte.console.vos.Logs;
 
 	import flash.display.Shape;
+	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.events.TextEvent;
@@ -53,17 +55,24 @@ package com.junkbyte.console.view {
 		private var _traceField:TextField;
 		private var _cmdPrefx:TextField;
 		private var _cmdField:TextField;
+		private var _hintField:TextField;
 		private var _cmdBG:Shape;
 		private var _bottomLine:Shape;
-		private var _isMinimised:Boolean;
+		private var _mini:Boolean;
 		private var _shift:Boolean;
-		private var _txtscroll:TextScroller;
 		
-		private var _channels:Array;
+		private var _scroll:Sprite;
+		private var _scroller:Sprite;
+		private var _scrolldelay:uint;
+		private var _scrolldir:int;
+		private var _scrolling:Boolean;
+		private var _scrollHeight:Number;
+		private var _selectionStart:int;
+		private var _selectionEnd:int;
+		
 		private var _viewingChannels:Array;
-		private var _lines:Logs;
-		private var _commandsHistory:Array = [];
-		private var _commandsInd:int = -1;
+		private var _extraMenus:Object = new Object();
+		private var _cmdsInd:int = -1;
 		private var _priority:int;
 		private var _filterText:String;
 		private var _filterRegExp:RegExp;
@@ -74,14 +83,17 @@ package com.junkbyte.console.view {
 		private var _atBottom:Boolean = true;
 		private var _enteringLogin:Boolean;
 		
-		public function MainPanel(m:Console, lines:Logs, channels:Array) {
+		private var _hint:String;
+		
+		public function MainPanel(m:Console) {
 			super(m);
 			var fsize:int = style.menuFontSize;
-			_channels = channels;
 			_viewingChannels = new Array();
-			_lines = lines;
-			_commandsHistory = m.ud.commandLineHistory;
 			
+			console.cl.addCLCmd("filter", setFilterText, "Filter console logs to matching string. When done, click on the * (global channel) at top.", true);
+			console.cl.addCLCmd("filterexp", setFilterRegExp, "Filter console logs to matching regular expression", true);
+			console.cl.addCLCmd("clearhistory", clearCommandLineHistory, "Clear history of commands you have entered.", true);
+
 			name = NAME;
 			minWidth = 50;
 			minHeight = 18;
@@ -90,7 +102,7 @@ package com.junkbyte.console.view {
 			_traceField.wordWrap = true;
 			_traceField.multiline = true;
 			_traceField.y = fsize;
-			_traceField.addEventListener(Event.SCROLL, onTraceScroll, false, 0, true);
+			_traceField.addEventListener(Event.SCROLL, onTraceScroll);
 			addChild(_traceField);
 			//
 			txtField = makeTF("menuField");
@@ -112,10 +124,24 @@ package com.junkbyte.console.view {
 			_cmdField.type  = TextFieldType.INPUT;
 			_cmdField.x = 40;
 			_cmdField.height = fsize+6;
-			_cmdField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown, false, 0, true);
-			_cmdField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp, false, 0, true);
+			_cmdField.addEventListener(KeyboardEvent.KEY_DOWN, commandKeyDown);
+			_cmdField.addEventListener(KeyboardEvent.KEY_UP, commandKeyUp);
+			_cmdField.addEventListener(FocusEvent.FOCUS_IN, updateCmdHint);
+			_cmdField.addEventListener(FocusEvent.FOCUS_OUT, onCmdFocusOut);
 			_cmdField.defaultTextFormat = tf;
 			addChild(_cmdField);
+			
+			_hintField = new TextField();
+			_hintField.name = "commandField";
+			_hintField.mouseEnabled = false;
+			_hintField.background = true;
+            _hintField.backgroundColor = style.backgroundColor;
+			_hintField.defaultTextFormat = new TextFormat(style.menuFont, style.menuFontSize-1, style.lowColor);
+			_hintField.x = _cmdField.x;
+			_hintField.width = 300;
+			_hintField.autoSize = TextFieldAutoSize.LEFT;
+			addChild(_hintField);
+			setHints();
 			
 			tf.color = style.commandLineColor;
 			_cmdPrefx = new TextField();
@@ -126,9 +152,9 @@ package com.junkbyte.console.view {
 			_cmdPrefx.selectable = false;
 			_cmdPrefx.defaultTextFormat = tf;
 			_cmdPrefx.text = " ";
-			_cmdPrefx.addEventListener(MouseEvent.MOUSE_DOWN, onCmdPrefMouseDown, false, 0, true);
-			_cmdPrefx.addEventListener(MouseEvent.MOUSE_MOVE, onCmdPrefRollOverOut, false, 0, true);
-			_cmdPrefx.addEventListener(MouseEvent.ROLL_OUT, onCmdPrefRollOverOut, false, 0, true);
+			_cmdPrefx.addEventListener(MouseEvent.MOUSE_DOWN, onCmdPrefMouseDown);
+			_cmdPrefx.addEventListener(MouseEvent.MOUSE_MOVE, onCmdPrefRollOverOut);
+			_cmdPrefx.addEventListener(MouseEvent.ROLL_OUT, onCmdPrefRollOverOut);
 			addChild(_cmdPrefx);
 			//
 			_bottomLine = new Shape();
@@ -136,13 +162,22 @@ package com.junkbyte.console.view {
 			_bottomLine.alpha = 0.2;
 			addChild(_bottomLine);
 			//
-			_txtscroll = new TextScroller(null, style.controlColor);
-			_txtscroll.y = fsize+4;
-			_txtscroll.addEventListener(Event.INIT, startedScrollingHandle, false, 0, true);
-			_txtscroll.addEventListener(Event.COMPLETE, stoppedScrollingHandle,  false, 0, true);
-			_txtscroll.addEventListener(Event.SCROLL, onScrolledHandle,  false, 0, true);
-			_txtscroll.addEventListener(Event.CHANGE, onScrollIncHandle,  false, 0, true);
-			addChild(_txtscroll);
+			_scroll = new Sprite();
+			_scroll.y = fsize+4;
+			_scroll.name = "scroller";
+			_scroll.buttonMode = true;
+			_scroll.addEventListener(MouseEvent.MOUSE_DOWN, onScrollbarDown, false, 0, true);
+			_scroller = new Sprite();
+			_scroller.name = "scrollbar";
+			_scroller.y = 5;
+			_scroller.graphics.beginFill(style.controlColor, 1);
+			_scroller.graphics.drawRect(-5, 0, 5, 30);
+			_scroller.graphics.beginFill(0, 0);
+			_scroller.graphics.drawRect(-10, 0, 10, 30);
+			_scroller.graphics.endFill();
+			_scroller.addEventListener(MouseEvent.MOUSE_DOWN, onScrollerDown, false, 0, true);
+			_scroll.addChild(_scroller);
+			addChild(_scroll);
 			//
 			_cmdField.visible = false;
 			_cmdPrefx.visible = false;
@@ -154,18 +189,19 @@ package com.junkbyte.console.view {
 			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
-			
-			master.cl.addEventListener(Event.CHANGE, onUpdateCommandLineScope, false, 0, true);
 		}
-		/*
-		public function addMenu(key:String, f:Function, rollover:String):void{
-			_extraMenus.push(new ExternalMenu(key, rollover, f));
-			_needUpdateMenu = true;
+		public function addMenu(key:String, f:Function, args:Array, rollover:String):void{
+			if(key){
+				key = key.replace(/[^\w]*/g, "");
+				if(f == null){
+					delete _extraMenus[key];
+				}else{
+					// used to use ExternalMenu Class, but that adds extra 0.3kb.
+					_extraMenus[key] = new Array(f, args, rollover);
+				}
+				_needUpdateMenu = true;
+			}else console.report("ERROR: Invalid add menu params.", 9);
 		}
-		public function removeMenu(key:String):void{
-			_needUpdateMenu = true;
-		}*/
-
 		private function stageAddedHandle(e:Event=null):void{
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
@@ -175,11 +211,13 @@ package com.junkbyte.console.view {
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
 		private function onCmdPrefRollOverOut(e : MouseEvent) : void {
-			master.panels.tooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", this);
+			console.panels.tooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", this);
 		}
 		private function onCmdPrefMouseDown(e : MouseEvent) : void {
-			stage.focus = _cmdField;
-			_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
+			try{
+				stage.focus = _cmdField;
+				_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
+			} catch(err:Error) {}
 		}
 		private function keyDownHandler(e:KeyboardEvent):void{
 			if(e.keyCode == Keyboard.SHIFT){
@@ -189,14 +227,20 @@ package com.junkbyte.console.view {
 		private function keyUpHandler(e:KeyboardEvent):void{
 			if(e.keyCode == Keyboard.SHIFT){
 				_shift = false;
+			}else if(e.keyCode == Keyboard.ENTER && parent.visible && visible && _cmdField.visible){
+				try{
+					stage.focus = _cmdField;
+					_cmdField.setSelection(0, _cmdField.text.length);
+				} catch(err:Error) {}
 			}
 		}
+		
 		public function requestLogin(on:Boolean = true):void{
 			var ct:ColorTransform = new ColorTransform();
 			if(on){
-				master.commandLine = true;
-				master.report("//", -2);
-				master.report("// <b>Enter remoting password</b> in CommandLine below...", -2);
+				console.commandLine = true;
+				console.report("//", -2);
+				console.report("// <b>Enter remoting password</b> in CommandLine below...", -2);
 				updateCLScope("Password");
 				ct.color = style.controlColor;
 				_cmdBG.transform.colorTransform = ct;
@@ -231,28 +275,30 @@ package com.junkbyte.console.view {
 			_atBottom = true;
 			_needUpdateTrace = true;
 		}
-		public function updateTraces(instant:Boolean = false):void{
-			if(instant){
-				_updateTraces();
-			}else{
-				_needUpdateTrace = true;
-			}
-		}
 		private function _updateTraces(onlyBottom:Boolean = false):void{
 			if(_atBottom) {
 				updateBottom(); 
 			}else if(!onlyBottom){
 				updateFull();
 			}
+			if(_selectionStart != _selectionEnd){
+				if(_atBottom){
+					_traceField.setSelection(_traceField.text.length-_selectionStart, _traceField.text.length-_selectionEnd);
+				}else{
+					_traceField.setSelection(_traceField.text.length-_selectionEnd, _traceField.text.length-_selectionStart);
+				}
+				_selectionEnd = -1;
+				_selectionStart = -1;
+			}
 		}
 		private function updateFull():void{
 			var str:String = "";
-			var line:Log = _lines.first;
+			var line:Log = console.logs.last;
 			while(line){
 				if(lineShouldShow(line)){
-					str += makeLine(line);
+					str = makeLine(line)+str;
 				}
-				line = line.next;
+				line = line.prev;
 			}
 			_lockScrollUpdate = true;
 			_traceField.htmlText = str;
@@ -262,7 +308,7 @@ package com.junkbyte.console.view {
 		public function setPaused(b:Boolean):void{
 			if(b && _atBottom){
 				_atBottom = false;
-				updateTraces(true);
+				_updateTraces();
 				_traceField.scrollV = _traceField.maxScrollV;
 			}else if(!b){
 				_atBottom = true;
@@ -275,15 +321,15 @@ package com.junkbyte.console.view {
 			var linesLeft:int = Math.round(_traceField.height/style.traceFontSize);
 			var maxchars:int = Math.round(_traceField.width*5/style.traceFontSize);
 			
-			var line:Log = _lines.last;
+			var line:Log = console.logs.last;
 			while(line){
 				if(lineShouldShow(line)){
-					var numlines:int = Math.ceil(line.t.length/ maxchars);
-					if(line.s || linesLeft >= numlines ){
+					var numlines:int = Math.ceil(line.text.length/ maxchars);
+					if(line.html || linesLeft >= numlines ){
 						lines.push(makeLine(line));
 					}else{
 						line = line.clone();
-						line.t = line.t.substring(Math.max(0,line.t.length-(maxchars*linesLeft)));
+						line.text = line.text.substring(Math.max(0,line.text.length-(maxchars*linesLeft)));
 						lines.push(makeLine(line));
 						break;
 					}
@@ -304,77 +350,103 @@ package com.junkbyte.console.view {
 			return (
 				(
 					_viewingChannels.length == 0
-			 		|| _viewingChannels.indexOf(line.c)>=0 
-			 		|| (_filterText && _viewingChannels.indexOf(config.filteredChannel) >= 0 && line.t.toLowerCase().indexOf(_filterText.toLowerCase())>=0 )
-			 		|| (_filterRegExp && _viewingChannels.indexOf(config.filteredChannel)>=0 && line.t.search(_filterRegExp)>=0 )
+			 		|| _viewingChannels.indexOf(line.ch)>=0 
+			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTER_CHANNEL) >= 0 && line.text.toLowerCase().indexOf(_filterText)>=0 )
+			 		|| (_filterRegExp && _viewingChannels.indexOf(Console.FILTER_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )
 			 	) 
-			 	&& ( _priority <= 0 || line.p >= _priority)
+			 	&& ( _priority <= 0 || line.priority >= _priority)
 			);
-		}
-		public function set priority (i:int):void{
-			_priority = i;
-			updateToBottom();
-			updateMenu();
-		}
-		public function get priority ():int{
-			return _priority;
 		}
 		public function get viewingChannels():Array{
 			return _viewingChannels;
 		}
 		public function set viewingChannels(a:Array):void{
+			if(_viewingChannels[0] == LogReferences.INSPECTING_CHANNEL && (!a || a[0] != _viewingChannels[0])){
+				console.links.exitFocus();
+			}
 			_viewingChannels.splice(0);
-			if(a && a.length) {
-				if(a.indexOf(config.globalChannel) >= 0) a = [];
-				for each(var item:Object in a) _viewingChannels.push(item is ConsoleChannel?(ConsoleChannel(item).name):String(item));
+			if(a.indexOf(Console.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
+				for each(var ch:String in a) _viewingChannels.push(ch);
 			}
 			updateToBottom();
-			master.panels.updateMenu();
+			console.panels.updateMenu();
 		}
 		//
-		public function set filterText(str:String):void{
-			_filterText = str;
+		private function setFilterText(str:String = ""):void{
 			if(str){
 				_filterRegExp = null;
-				master.clear(config.filteredChannel);
-				_channels.splice(1,0,config.filteredChannel);
-				master.ch(config.filteredChannel, "Filtering ["+str+"]", -2);
-				viewingChannels = [config.filteredChannel];
-			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == config.filteredChannel){
-				viewingChannels = [config.globalChannel];
+				_filterText = LogReferences.EscHTML(str.toLowerCase());
+				startFilter();
+			}else{
+				endFilter();
 			}
 		}
-		public function get filterText():String{
-			return _filterText?_filterText:(_filterRegExp?String(_filterRegExp):null);
-		}
-		//
-		public function set filterRegExp(exp:RegExp):void{
-			_filterRegExp = exp;
-			if(exp){
+		private function setFilterRegExp(expstr:String = ""):void{
+			if(expstr){
 				_filterText = null;
-				master.clear(config.filteredChannel);
-				_channels.splice(1,0,config.filteredChannel);
-				master.ch(config.filteredChannel, "Filtering RegExp ["+exp+"]", -2);
-				viewingChannels = [config.filteredChannel];
-			}else if(_viewingChannels.length == 1 && _viewingChannels[0] == config.filteredChannel){
-				viewingChannels = [config.globalChannel];
+				_filterRegExp = new RegExp(LogReferences.EscHTML(expstr), "gi");
+				startFilter();
+			}else{
+				endFilter();
+			}
+		}
+		private function startFilter():void{
+			console.clear(Console.FILTER_CHANNEL);
+			console.logs.addChannel(Console.FILTER_CHANNEL);
+			viewingChannels = [Console.FILTER_CHANNEL];
+		}
+		private function endFilter():void{
+			_filterRegExp = null;
+			_filterText = null;
+			if(_viewingChannels.length == 1 && _viewingChannels[0] == Console.FILTER_CHANNEL){
+				viewingChannels = [Console.GLOBAL_CHANNEL];
 			}
 		}
 		private function makeLine(line:Log):String{
 			var str:String = "";
-			var txt:String = line.t;
-			if(line.c != config.defaultChannel && (_viewingChannels.length == 0 || _viewingChannels.length>1)){
-				txt = "[<a href=\"event:channel_"+line.c+"\">"+line.c+"</a>] "+txt;
+			var txt:String = line.text;
+			if(line.ch != Console.DEFAULT_CHANNEL && (_viewingChannels.length == 0 || _viewingChannels.length>1)){
+				txt = "[<a href=\"event:channel_"+line.ch+"\">"+line.ch+"</a>] "+txt;
 			}
-			var ptag:String = "p"+line.p;
+			var index:int;
+			if(_filterRegExp){
+				// need to look into every match to make sure there no half way HTML tags and not inside the HTML tags it self in the match.
+				_filterRegExp.lastIndex = 0;
+				var result:Object = _filterRegExp.exec(txt);
+				while (result != null) {
+					index = result.index;
+					var match:String = result[0];
+					if(match.search("<|>")>=0){
+						_filterRegExp.lastIndex -= match.length-match.search("<|>");
+					}else if(txt.lastIndexOf("<", index)<=txt.lastIndexOf(">", index)){
+						txt = txt.substring(0, index)+"<u>"+txt.substring(index, index+match.length)+"</u>"+txt.substring(index+match.length);
+						_filterRegExp.lastIndex+=7; // need to add to satisfy the fact that we added <u> and </u>
+					}
+					result = _filterRegExp.exec(txt);
+				}
+			}else if(_filterText){
+				// could have been simple if txt.replace replaces every match.
+				var lowercase:String = txt.toLowerCase();
+				index = lowercase.lastIndexOf(_filterText);
+				while(index>=0){
+					txt = txt.substring(0, index)+"<u>"+txt.substring(index, index+_filterText.length)+"</u>"+txt.substring(index+_filterText.length);
+					index = lowercase.lastIndexOf(_filterText, index-2);
+				}
+			}
+			var ptag:String = "p"+line.priority;
 			str += "<p><"+ptag+">" + txt + "</"+ptag+"></p>";
 			return str;
 		}
+		//
+		// START OF SCROLL BAR STUFF
+		//
 		private function onTraceScroll(e:Event = null):void{
 			if(_lockScrollUpdate) return;
-			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV-1;
-			if(!master.paused && _atBottom !=atbottom){
+			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
+			if(!console.paused && _atBottom !=atbottom){
 				var diff:int = _traceField.maxScrollV-_traceField.scrollV;
+				_selectionStart = _traceField.text.length-_traceField.selectionBeginIndex;
+				_selectionEnd = _traceField.text.length-_traceField.selectionEndIndex;
 				_atBottom = atbottom;
 				_updateTraces();
 				_traceField.scrollV = _traceField.maxScrollV-diff;
@@ -383,40 +455,83 @@ package com.junkbyte.console.view {
 		}
 		private function updateScroller():void{
 			if(_traceField.maxScrollV <= 1){
-				_txtscroll.visible = false;
+				_scroll.visible = false;
 			}else{
-				_txtscroll.visible = true;
+				_scroll.visible = true;
 				if(_atBottom) {
-					_txtscroll.scrollPercent = 1;
+					scrollPercent = 1;
 				}else{
-					_txtscroll.scrollPercent = (_traceField.scrollV-1)/(_traceField.maxScrollV-1);
+					scrollPercent = (_traceField.scrollV-1)/(_traceField.maxScrollV-1);
 				}
 			}
 		}
-		private function startedScrollingHandle(e:Event):void{
-			if(!master.paused){
-				_atBottom = false;
-				var p:Number = _txtscroll.scrollPercent;
-				_updateTraces();
-				_txtscroll.scrollPercent = p;
+		private function onScrollbarDown(e:MouseEvent):void{
+			if((_scroller.visible && _scroller.mouseY>0) || (!_scroller.visible && _scroll.mouseY>_scrollHeight/2)) {
+				_scrolldir = 3;
+			}else {
+				_scrolldir = -3;
+			}
+			_traceField.scrollV += _scrolldir;
+			_scrolldelay = 0;
+			addEventListener(Event.ENTER_FRAME, onScrollBarFrame, false, 0, true);
+			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollBarUp, false, 0, true);
+		}
+		private function onScrollBarFrame(e:Event):void{
+			_scrolldelay++;
+			if(_scrolldelay>10){
+				_scrolldelay = 9;
+				if((_scrolldir<0 && _scroller.y>_scroll.mouseY)||(_scrolldir>0 && _scroller.y+_scroller.height<_scroll.mouseY)){
+					_traceField.scrollV += _scrolldir;
+				}
 			}
 		}
-		private function onScrolledHandle(e:Event):void{
+		private function onScrollBarUp(e:Event):void{
+			removeEventListener(Event.ENTER_FRAME, onScrollBarFrame);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, onScrollBarUp);
+		}
+		//
+		//
+		private function get scrollPercent():Number{
+			return (_scroller.y-5)/(_scrollHeight-40);
+		}
+		private function set scrollPercent(per:Number):void{
+			_scroller.y = 5+((_scrollHeight-40)*per);
+		}
+		private function onScrollerDown(e:MouseEvent):void{
+			_scrolling = true;
+			
+			if(!console.paused && _atBottom){
+				_atBottom = false;
+				var p:Number = scrollPercent;
+				_updateTraces();
+				scrollPercent = p;
+			}
+			
+			_scroller.startDrag(false, new Rectangle(0,5, 0, (_scrollHeight-40)));
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove, false, 0, true);
+			stage.addEventListener(MouseEvent.MOUSE_UP, onScrollerUp, false, 0, true);
+			e.stopPropagation();
+		}
+		private function onScrollerMove(e:MouseEvent):void{
 			_lockScrollUpdate = true;
-			_traceField.scrollV = Math.round((_txtscroll.scrollPercent*(_traceField.maxScrollV-1))+1);
+			_traceField.scrollV = Math.round((scrollPercent*(_traceField.maxScrollV-1))+1);
 			_lockScrollUpdate = false;
 		}
-		private function onScrollIncHandle(e:Event):void{
-			_traceField.scrollV += _txtscroll.targetIncrement;
-		}
-		private function stoppedScrollingHandle(e:Event):void{
+		private function onScrollerUp(e:MouseEvent):void{
+			_scroller.stopDrag();
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, onScrollerMove);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, onScrollerUp);
+			_scrolling = false;
 			onTraceScroll();
 		}
+		//
+		// END OF SCROLL BAR STUFF
+		//
 		override public function set width(n:Number):void{
 			_lockScrollUpdate = true;
 			super.width = n;
 			_traceField.width = n-4;
-			txtField.width = n;
+			txtField.width = n-4;
 			_cmdField.width = width-15-_cmdField.x;
 			_cmdBG.width = n;
 			
@@ -424,8 +539,8 @@ package com.junkbyte.console.view {
 			_bottomLine.graphics.lineStyle(1, style.controlColor);
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
-			_txtscroll.x = n;
-			onUpdateCommandLineScope();
+			_scroll.x = n;
+			if(console.remoter.remoting != Remoting.RECIEVER) updateCLScope(console.cl.scopeString);
 			_atBottom = true;
 			_needUpdateMenu = true;
 			_needUpdateTrace = true;
@@ -433,25 +548,37 @@ package com.junkbyte.console.view {
 		}
 		override public function set height(n:Number):void{
 			_lockScrollUpdate = true;
-			super.height = n;
 			var fsize:int = style.menuFontSize;
 			var msize:Number = fsize+6+style.traceFontSize;
-			var minimize:Boolean = n<(_cmdField.visible?(msize+fsize+4):msize);
-			if(_isMinimised != minimize){
-				registerDragger(txtField, minimize);
-				registerDragger(_traceField, !minimize);
-				_isMinimised = minimize;
+			if(super.height != n)
+			{
+				_mini = n < (_cmdField.visible?(msize+fsize+4):msize);
 			}
-			txtField.visible = !minimize;
-			_traceField.y = minimize?0:fsize;
-			_traceField.height = n-(_cmdField.visible?(fsize+4):0)-(minimize?0:fsize);
+			super.height = n;
+			var mini:Boolean = _mini || !style.topMenu;
+			_traceField.y = mini?0:fsize;
+			_traceField.height = n-(_cmdField.visible?(fsize+4):0)-(mini?0:fsize);
 			var cmdy:Number = n-(fsize+6);
 			_cmdField.y = cmdy;
 			_cmdPrefx.y = cmdy;
+			_hintField.y = _cmdField.y-_hintField.height;
 			_cmdBG.y = cmdy;
 			_bottomLine.y = _cmdField.visible?cmdy:n;
 			//
-			_txtscroll.height = (_bottomLine.y-(_cmdField.visible?0:10))-_txtscroll.y;
+			_scroll.y = mini?6:fsize+4;
+			_scrollHeight = (_bottomLine.y-(_cmdField.visible?0:10))-_scroll.y;
+			_scroller.visible = _scrollHeight>40;
+			_scroll.graphics.clear();
+			if(_scrollHeight>=10){
+				_scroll.graphics.beginFill(style.controlColor, 0.7);
+				_scroll.graphics.drawRect(-5, 0, 5, 5);
+				_scroll.graphics.drawRect(-5, _scrollHeight-5, 5, 5);
+				_scroll.graphics.beginFill(style.controlColor, 0.25);
+				_scroll.graphics.drawRect(-5, 5, 5, _scrollHeight-10);
+				_scroll.graphics.beginFill(0, 0);
+				_scroll.graphics.drawRect(-10, 10, 10, _scrollHeight-10);
+				_scroll.graphics.endFill();
+			}
 			//
 			_atBottom = true;
 			_needUpdateTrace = true;
@@ -469,48 +596,52 @@ package com.junkbyte.console.view {
 		}
 		private function _updateMenu():void{
 			var str:String = "<r><w>";
-			if(!master.panels.channelsPanel){
-				str += getChannelsLink(true);
-			}
-			str += "<menu>[ <b>";
-			
-			/*var extras:uint = _extraMenus.length;
-			if(extras){
-				for(var i:uint = 0; i<extras; i++){
-					str += " <a href=\"event:external_"+i+"\">"+_extraMenus[i].key+"</a>";
+			if(_mini || !style.topMenu){
+				str += "<menu><b> <a href=\"event:show\">‹</a> </b></menu>";
+			}else {
+				if(!console.panels.channelsPanel){
+					str += getChannelsLink(true);
 				}
-			}*/
-			
-			str += doActive("<a href=\"event:fps\">F</a>", master.fpsMonitor>0);
-			str += doActive(" <a href=\"event:mm\">M</a>", master.memoryMonitor>0);
-			if(config.commandLineAllowed){
+				str += "<menu> <b>";
+				
+				var extra:Boolean;
+				for (var X:String in _extraMenus){
+					str += "<a href=\"event:external_"+X+"\">"+X+"</a> ";
+					extra = true;
+				}
+				if(extra) str += "¦ ";
+				
+				str += doActive("<a href=\"event:fps\">F</a>", console.fpsMonitor>0);
+				str += doActive(" <a href=\"event:mm\">M</a>", console.memoryMonitor>0);
+				
 				str += doActive(" <a href=\"event:command\">CL</a>", commandLine);
+				
+				if(console.remoter.remoting != Remoting.RECIEVER){
+					str += doActive(" <a href=\"event:roller\">Ro</a>", console.displayRoller);
+					str += doActive(" <a href=\"event:ruler\">RL</a>", console.panels.rulerActive);
+				}
+				str += " ¦</b>";
+				str += " <a href=\"event:copy\">Cc</a>";
+				str += " <a href=\"event:priority\">P"+_priority+"</a>";
+				str += doActive(" <a href=\"event:pause\">P</a>", console.paused);
+				str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a> <a href=\"event:hide\">›</a> </b></menu>";
 			}
-			if(!master.remote){
-				str += doActive(" <a href=\"event:roller\">Ro</a>", master.displayRoller);
-				str += doActive(" <a href=\"event:ruler\">RL</a>", master.panels.rulerActive);
-			}
-			str += " ¦</b>";
-			str += " <a href=\"event:copy\">Cc</a>";
-			str += " <a href=\"event:priority\">P"+_priority+"</a>";
-			str += doActive(" <a href=\"event:pause\">P</a>", master.paused);
-			str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a>";
-			
-			str += " ]</menu> </w></r>";
+			str += "</w></r>";
 			txtField.htmlText = str;
 			txtField.scrollH = txtField.maxScrollH;
 		}
 		public function getChannelsLink(limited:Boolean = false):String{
 			var str:String = "<chs>";
-			var len:int = _channels.length;
+			var channels:Array = console.logs.getChannels();
+			var len:int = channels.length;
 			if(limited && len>style.maxChannelsInMenu) len = style.maxChannelsInMenu;
-			for(var ci:int = 0; ci<len;  ci++){
-				var channel:String = _channels[ci];
-				var channelTxt:String = ((ci == 0 && _viewingChannels.length == 0) || _viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
+			for(var i:int = 0; i<len;  i++){
+				var channel:String = channels[i];
+				var channelTxt:String = ((i == 0 && _viewingChannels.length == 0) || _viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
 				str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
 			}
 			if(limited){
-				str += "<ch><a href=\"event:channels\"><b>"+(_channels.length>len?"...":"")+"</b>^^ </a></ch>";
+				str += "<ch><a href=\"event:channels\"><b>"+(channels.length>len?"...":"")+"</b>^^ </a></ch>";
 			}
 			str += "</chs> ";
 			return str;
@@ -522,24 +653,27 @@ package com.junkbyte.console.view {
 		public function onMenuRollOver(e:TextEvent, src:AbstractPanel = null):void{
 			if(src==null) src = this;
 			var txt:String = e.text?e.text.replace("event:",""):"";
-			
-			if(txt == "channel_"+config.globalChannel){
+			if(txt == "channel_"+Console.GLOBAL_CHANNEL){
 				txt = "View all channels";
-			}else if(txt == "channel_"+config.defaultChannel) {
+			}else if(txt == "channel_"+Console.DEFAULT_CHANNEL) {
 				txt = "Default channel::Logs with no channel";
-			}else if(txt == "channel_"+ config.consoleChannel) {
+			}else if(txt == "channel_"+ Console.CONSOLE_CHANNEL) {
 				txt = "Console's channel::Logs generated from Console";
-			}else if(txt == "channel_"+ config.filteredChannel) {
-				txt = "Filtering channel"+"::*"+filterText+"*";
+			}else if(txt == "channel_"+ Console.FILTER_CHANNEL) {
+				txt = _filterRegExp?String(_filterRegExp):_filterText;
+				txt = "Filtering channel"+"::*"+txt+"*";
+			}else if(txt == "channel_"+LogReferences.INSPECTING_CHANNEL) {
+				txt = "Inspecting channel";
 			}else if(txt.indexOf("channel_")==0) {
 				txt = "Change channel::Hold shift to select multiple channels";
 			}else if(txt == "pause"){
-				if(master.paused)
-					txt = "Resume updates";
-				else
-					txt = "Pause updates";
+				if(console.paused) txt = "Resume updates";
+				else txt = "Pause updates";
 			}else if(txt == "close" && src == this){
 				txt = "Close::Type password to show again";
+			}else if(txt.indexOf("external_")==0){
+				var menu:Array = _extraMenus[txt.substring(9)];
+				if(menu) txt = menu[2];
 			}else{
 				var obj:Object = {
 					fps:"Frames Per Second",
@@ -549,162 +683,242 @@ package com.junkbyte.console.view {
 					command:"Command Line",
 					copy:"Copy to clipboard",
 					clear:"Clear log",
-					priority:"Toggle priority filter",
+					priority:"Toggle priority filter::auto skips unused priorites.\nshift click to reverse",
 					channels:"Expand channels",
 					close:"Close"
 					};
 				txt = obj[txt];
 			}
-			master.panels.tooltip(txt, src);
+			console.panels.tooltip(txt, src);
 		}
 		private function linkHandler(e:TextEvent):void{
 			txtField.setSelection(0, 0);
 			stopDrag();
-			//if(topMenuClick!=null && topMenuClick(e.text)) return;
-			if(e.text == "pause"){
-				if(master.paused){
-					master.paused = false;
-					//master.panels.tooltip("Pause updates", this);
+			var t:String = e.text;
+			if(t == "pause"){
+				if(console.paused){
+					console.paused = false;
 				}else{
-					master.paused = true;
-					//master.panels.tooltip("Resume updates", this);
+					console.paused = true;
 				}
-				master.panels.tooltip(null);
-			}else if(e.text == "close"){
-				master.panels.tooltip();
+				console.panels.tooltip(null);
+			}else if(t == "hide"){
+				console.panels.tooltip();
+				_mini = true;
+				console.config.style.topMenu = false;
+				height = height;
+				updateMenu();
+			}else if(t == "show"){
+				console.panels.tooltip();
+				_mini = false;
+				console.config.style.topMenu = true;
+				height = height;
+				updateMenu();
+			}else if(t == "close"){
+				console.panels.tooltip();
 				visible = false;
 				dispatchEvent(new Event(Event.CLOSE));
-			}else if(e.text == "channels"){
-				master.panels.channelsPanel = !master.panels.channelsPanel;
-			}else if(e.text == "fps"){
-				master.fpsMonitor = !master.fpsMonitor;
-			}else if(e.text == "priority"){
-				if(_priority<10){
-					priority++;
-				}else{
-					priority = 0;
-				}
-			}else if(e.text == "mm"){
-				master.memoryMonitor = !master.memoryMonitor;
-			}else if(e.text == "roller"){
-				master.displayRoller = !master.displayRoller;
-			}else if(e.text == "ruler"){
-				master.panels.tooltip();
-				master.panels.startRuler();
-			}else if(e.text == "command"){
+			}else if(t == "channels"){
+				console.panels.channelsPanel = !console.panels.channelsPanel;
+			}else if(t == "fps"){
+				console.fpsMonitor = !console.fpsMonitor;
+			}else if(t == "priority"){
+				incPriority(_shift);
+			}else if(t == "mm"){
+				console.memoryMonitor = !console.memoryMonitor;
+			}else if(t == "roller"){
+				console.displayRoller = !console.displayRoller;
+			}else if(t == "ruler"){
+				console.panels.tooltip();
+				console.panels.startRuler();
+			}else if(t == "command"){
 				commandLine = !commandLine;
-			}else if(e.text == "copy") {
-				System.setClipboard(master.getAllLog());
-				master.report("Copied log to clipboard.", -1);
-			}else if(e.text == "clear"){
-				master.clear();
-			}else if(e.text == "settings"){
-				master.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", -1);
+			}else if(t == "copy") {
+				System.setClipboard(console.getAllLog());
+				console.report("Copied log to clipboard.", -1);
+			}else if(t == "clear"){
+				console.clear();
+			}else if(t == "settings"){
+				console.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", -1);
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
-			}else if(e.text.substring(0,8) == "channel_"){
-				onChannelPressed(e.text.substring(8));
-			}else if(e.text.substring(0,5) == "clip_"){
-				var str:String = "/remap "+e.text.substring(5);
-				master.runCommand(str);
-			}else if(e.text.substring(0,6) == "sclip_"){
-				//var str:String = "/remap 0|"+e.text.substring(6);
-				master.runCommand("/remap 0"+Console.REMAPSPLIT+e.text.substring(6));
-				//master.cl.reMap(e.text.substring(6), stage);
+			}else if(t == "remote"){
+				console.remoter.remoting = Remoting.RECIEVER;
+			}else if(t.indexOf("ref")==0){
+				console.links.handleRefEvent(t);
+			}else if(t.indexOf("channel_")==0){
+				onChannelPressed(t.substring(8));
+			}else if(t.indexOf("cl_")==0){
+				var ind:int = t.indexOf("_", 3);
+				console.cl.handleScopeEvent(uint(t.substring(3, ind<0?t.length:ind)));
+				if(ind>=0){
+					_cmdField.text = t.substring(ind+1);
+				}
+			}else if(t.indexOf("external_")==0){
+				var menu:Array = _extraMenus[t.substring(9)];
+				if(menu) menu[0].apply(null, menu[1]);
 			}
 			txtField.setSelection(0, 0);
 			e.stopPropagation();
 		}
 		public function onChannelPressed(chn:String):void{
 			var current:Array = _viewingChannels.concat();
-			if(_shift && _viewingChannels.length > 0 && chn != config.globalChannel){
+			if(_shift && chn != Console.GLOBAL_CHANNEL && current[0] != LogReferences.INSPECTING_CHANNEL){
 				var ind:int = current.indexOf(chn);
 				if(ind>=0){
 					current.splice(ind,1);
 					if(current.length == 0){
-						current.push(config.globalChannel);
+						current.push(Console.GLOBAL_CHANNEL);
 					}
 				}else{
 					current.push(chn);
 				}
 				viewingChannels = current;
 			}else{
-				viewingChannels = [chn];
+				console.setViewingChannels(chn);
 			}
+		}
+		public function set priority(p:int):void{
+			_priority = p;
+			updateToBottom();
+			updateMenu();
+		}
+		public function get priority():int{
+			return _priority;
+		}
+		//
+		private function incPriority(down:Boolean):void{
+			var top:uint = 10;
+			var bottom:uint;
+			var line:Log = console.logs.last;
+			var p:int = _priority;
+			_priority = 0;
+			var i:uint = 32000; // just for crash safety, it wont look more than 32000 lines.
+			while(line && i>0){
+				i--;
+				if(lineShouldShow(line)){
+					if(line.priority > p && top>line.priority) top = line.priority;
+					if(line.priority < p && bottom<line.priority) bottom = line.priority;
+				}
+				line = line.prev;
+			}
+			if(down){
+				if(bottom == p) p = 10;
+				else p = bottom;
+			}else{
+				if(top == p) p = 0;
+				else p = top;
+			}
+			priority = p;
 		}
 		//
 		// COMMAND LINE
 		//
-		public function clearCommandLineHistory():void
+		private function clearCommandLineHistory(...args:Array):void
 		{
-			_commandsHistory.splice(0);
-			_commandsInd = -1;
-			master.ud.commandLineHistoryChanged();
+			console.ud.commandLineHistory.splice(0);
+			_cmdsInd = -1;
+			console.ud.commandLineHistoryChanged();
 		}
 		private function commandKeyDown(e:KeyboardEvent):void{
 			e.stopPropagation();
 		}
 		private function commandKeyUp(e:KeyboardEvent):void{
+			var cmdshistory:Array = console.ud.commandLineHistory;
 			if( e.keyCode == Keyboard.ENTER){
 				updateToBottom();
+				setHints();
 				if(_enteringLogin){
-					dispatchEvent(new Event(Event.CONNECT));
+					console.remoter.login(_cmdField.text);
 					_cmdField.text = "";
 					requestLogin(false);
 				}else{
 					var txt:String = _cmdField.text;
 					if(txt.length > 2){
-						var i:int = _commandsHistory.indexOf(txt);
+						var i:int = cmdshistory.indexOf(txt);
 						while(i>=0){
-							_commandsHistory.splice(i,1);
-							i = _commandsHistory.indexOf(txt);
+							cmdshistory.splice(i,1);
+							i = cmdshistory.indexOf(txt);
 						}
-						_commandsHistory.unshift(txt);
-						_commandsInd = -1;
+						cmdshistory.unshift(txt);
+						_cmdsInd = -1;
 						// maximum 20 commands history
-						if(_commandsHistory.length>20){
-							_commandsHistory.splice(20);
+						if(cmdshistory.length>20){
+							cmdshistory.splice(20);
 						}
-						master.ud.commandLineHistoryChanged();
+						console.ud.commandLineHistoryChanged();
 					}
 					_cmdField.text = "";
-					master.runCommand(txt);
+					console.cl.run(txt);
 				}
-			}if( e.keyCode == Keyboard.ESCAPE){
+			}else if( e.keyCode == Keyboard.ESCAPE){
 				if(stage) stage.focus = null;
 			}else if( e.keyCode == Keyboard.UP){
+				setHints();
 				// if its back key for first time, store the current key
-				if(_cmdField.text && _commandsInd<0){
-					_commandsHistory.unshift(_cmdField.text);
-					_commandsInd++;
+				if(_cmdField.text && _cmdsInd<0){
+					cmdshistory.unshift(_cmdField.text);
+					_cmdsInd++;
 				}
-				if(_commandsInd<(_commandsHistory.length-1)){
-					_commandsInd++;
-					_cmdField.text = _commandsHistory[_commandsInd];
+				if(_cmdsInd<(cmdshistory.length-1)){
+					_cmdsInd++;
+					_cmdField.text = cmdshistory[_cmdsInd];
 					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
 				}else{
-					_commandsInd = _commandsHistory.length;
+					_cmdsInd = cmdshistory.length;
 					_cmdField.text = "";
 				}
 			}else if( e.keyCode == Keyboard.DOWN){
-				if(_commandsInd>0){
-					_commandsInd--;
-					_cmdField.text = _commandsHistory[_commandsInd];
+				setHints();
+				if(_cmdsInd>0){
+					_cmdsInd--;
+					_cmdField.text = cmdshistory[_cmdsInd];
 					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
 				}else{
-					_commandsInd = -1;
+					_cmdsInd = -1;
 					_cmdField.text = "";
 				}
 			}
+			else if(e.keyCode == Keyboard.SPACE){
+				if(_hint) 
+				{
+					_cmdField.text = _hint;
+					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
+					setHints();
+				}
+			}
+			else if(!_enteringLogin) updateCmdHint();
 			e.stopPropagation();
 		}
-		private function onUpdateCommandLineScope(e:Event=null):void{
-			if(!master.remote) updateCLScope(master.cl.scopeString);
+		private function updateCmdHint(e:Event = null):void{
+			var hints:Array;
+			var str:String = _cmdField.text;
+			if(str && console.remoter.remoting != Remoting.RECIEVER){
+				hints = console.cl.getHintsFor(str);
+				if(hints.length>3){
+					hints.splice(3);
+					hints.push("...");
+				}
+			}
+			setHints(hints);
 		}
-		public function get commandLineText():String{
-			return _cmdField.text;
+		private function onCmdFocusOut(e:Event):void{
+			setHints();
 		}
-		public function set  commandLineText(str:String):void{
-			_cmdField.text = str?str:"";
+		private function setHints(a:Array = null):void{
+			if(a && a.length)
+			{
+				_hint = a[0];
+				a = a.reverse();
+				_hintField.text = a.join("\n");
+				_hintField.visible = true;
+				var r:Rectangle = _cmdField.getCharBoundaries(_cmdField.text.length-1);
+				if(!r) r = new Rectangle();
+				_hintField.x = _cmdField.x + r.x + r.width+20;
+				_hintField.y = height-_hintField.height;
+			}else{
+				_hintField.visible = false;
+				_hint = null;
+			}
 		}
 		public function updateCLScope(str:String):void{
 			if(_enteringLogin) {
@@ -721,9 +935,10 @@ package com.junkbyte.console.view {
 			}
 			_cmdField.x = _cmdPrefx.width+2;
 			_cmdField.width = width-15-_cmdField.x;
+			_hintField.x = _cmdField.x;
 		}
-		public function set commandLine (b:Boolean):void{
-			if(b && config.commandLineAllowed){
+		public function set commandLine(b:Boolean):void{
+			if(b){
 				_cmdField.visible = true;
 				_cmdPrefx.visible = true;
 				_cmdBG.visible = true;
@@ -735,20 +950,8 @@ package com.junkbyte.console.view {
 			_needUpdateMenu = true;
 			this.height = height;
 		}
-		public function get commandLine ():Boolean{
+		public function get commandLine():Boolean{
 			return _cmdField.visible;
 		}
 	}
 }
-/*
-internal class ExternalMenu{
-	public var key:String;
-	public var rollover:String;
-	public var click:Function;
-	
-	public function ExternalMenu(k:String, rover:String, clk:Function):void{
-		key = k;
-		rollover = rover;
-		click = clk;
-	}
-}*/

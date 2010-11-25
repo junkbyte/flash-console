@@ -23,6 +23,9 @@
 * 
 */
 package com.junkbyte.console.view {
+	import flash.geom.Matrix;
+	import flash.display.BitmapData;
+	import flash.display.Bitmap;
 	import com.junkbyte.console.ConsoleConfig;	
 	import com.junkbyte.console.ConsoleStyle;	
 	import com.junkbyte.console.Console;
@@ -50,6 +53,7 @@ package com.junkbyte.console.view {
 		private var _pointer:Shape;
 		
 		private var _posTxt:TextField;
+		private var _zoom:Bitmap;
 		
 		private var _points:Array;
 		
@@ -70,9 +74,13 @@ package com.junkbyte.console.view {
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
-			_posTxt = _master.panels.mainPanel.makeTF("positionText", false, true);
+			_posTxt = _master.panels.mainPanel.makeTF("positionText", true);
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
 			addChild(_posTxt);
+			//
+			_zoom = new Bitmap();
+			_zoom.scaleY = _zoom.scaleX = 2;
+			addChild(_zoom);
 			//
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
 			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, false, 0, true);
@@ -90,15 +98,29 @@ package com.junkbyte.console.view {
 			_pointer.blendMode = BlendMode.INVERT;
 			_posTxt.text = "<s>"+mouseX+","+mouseY+"</s>";
 			//
-			var d:int = 12;
+			var bmd:BitmapData = new BitmapData(30, 30);
+			try{
+				var m:Matrix = new Matrix();
+				m.tx = -stage.mouseX+15;
+				m.ty = -stage.mouseY+15;
+				bmd.draw(stage, m);
+			}catch(err:Error){
+				bmd = null;
+			}
+			_zoom.bitmapData = bmd;
 			//
+			var d:int = 10;
 			_posTxt.x = mouseX-_posTxt.width-d;
 			_posTxt.y = mouseY-_posTxt.height-d;
-			if(_posTxt.x < 0){
+			_zoom.x = _posTxt.x+_posTxt.width-_zoom.width;
+			_zoom.y = _posTxt.y-_zoom.height;
+			if(_posTxt.x < 16){
 				_posTxt.x = mouseX+d;
+				_zoom.x = _posTxt.x;
 			}
-			if(_posTxt.y < 0){
+			if(_posTxt.y < 38){
 				_posTxt.y = mouseY+d;
+				_zoom.y = _posTxt.y+_posTxt.height;
 			}
 		}
 		private function onMouseClick(e:MouseEvent):void{
@@ -111,6 +133,7 @@ package com.junkbyte.console.view {
 				graphics.drawCircle(p.x, p.y, 3);
 				_points.push(p);
 			}else if(_points.length==1){
+				_zoom.bitmapData = null;
 				if(_config.rulerHidesMouse) Mouse.show();
 				removeChild(_pointer);
 				removeChild(_posTxt);
@@ -165,19 +188,6 @@ package com.junkbyte.console.view {
 					txt.x = mp.x;
 					txt.y = mp.y;
 					addChild(txt);
-					/*
-					txt = makeTxtField(0x00AA00, false);
-					txt.text = xmin.x+","+ ymin.y;
-					txt.x = xmin.x;
-					txt.y = (xmin.y==ymin.y)?ymax.y:(ymin.y-14);
-					addChild(txt);
-					//
-					txt = makeTxtField(0x00AA00, false);
-					txt.text = xmax.x+","+ ymax.y;
-					txt.x = xmax.x;
-					txt.y = (xmax.y==ymax.y)?(ymin.y-14):ymax.y;
-					addChild(txt);
-					*/
 				}
 				//
 				graphics.lineStyle(1, 0xAACC00, 0.5);
@@ -212,7 +222,6 @@ package com.junkbyte.console.view {
 			}
 		}
 		public function exit():void{
-			_points = null;
 			_master = null;
 			dispatchEvent(new Event(Event.COMPLETE));
 		}

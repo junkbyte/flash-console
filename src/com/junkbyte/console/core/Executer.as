@@ -24,6 +24,8 @@
 */
 package com.junkbyte.console.core 
 {
+	import com.junkbyte.console.vos.WeakObject;
+
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getDefinitionByName;
@@ -31,34 +33,40 @@ package com.junkbyte.console.core
 	public class Executer extends EventDispatcher{
 		
 		public static const RETURNED:String = "returned";
-		public static const CLASSES:String = "ExecuterValue|((com.junkbyte.console.core::)?Executer)";
+		public static const CLASSES:String = "ExeValue|((com.junkbyte.console.core::)?Executer)";
 		
-		public static function Exec(scope:Object, str:String, saved:Object = null, reserved:Array = null):*{
+		public static function Exec(scope:Object, str:String, saved:Object = null):*{
 			var e:Executer = new Executer();
-			return e.exec(scope, str, saved, reserved);
+			e.setStored(saved);
+			return e.exec(scope, str);
 		}
 		
 		
 		private static const VALKEY:String = "#";
 		
-		private var _saved:Object;
-		private var _reserved:Array;
 		private var _values:Array;
 		private var _running:Boolean;
 		private var _scope:*;
 		private var _returned:*;
 		
-		public function Executer(){
-			
-		}
-		public function get returned():*
-		{
+		private var _saved:Object;
+		private var _reserved:Array;
+		
+		public var autoScope:Boolean;
+		
+		public function get returned():*{
 			return _returned;
 		}
-		public function get scope():*
-		{
+		public function get scope():*{
 			return _scope;
 		}
+		public function setStored(o:Object):void{
+			_saved = o;
+		}
+		public function setReserved(a:Array):void{
+			_reserved = a;
+		}
+		
 		// TEST CASES...
 		// com.junkbyte.console.Cc.instance.visible
 		// com.junkbyte.console.Cc.instance.addGraph('test',stage,'mouseX')
@@ -73,15 +81,13 @@ package com.junkbyte.console.core
 		// new Array(11,22,33,44,55,66,77,88,99);/;this.1 // should be 22
 		// new XML("<t a=\"A\"><b>B</b></t>").attribute("a")
 		// new XML("<t a=\"A\"><b>B</b></t>").b
-		public function exec(s:*, str:String, saved:Object = null, reserved:Array = null):*{
+		public function exec(s:*, str:String):*{
 			if(_running) throw new Error("CommandExec.exec() is already runnnig. Does not support loop backs.");
 			_running = true;
 			_scope = s;
-			_saved = saved;
 			_values = [];
 			if(!_saved) _saved = new Object();
-			_reserved = reserved;
-			if(!_reserved) _reserved = [];
+			if(!_reserved) _reserved = new Array();
 			try{
 				_exec(str);
 			}catch (e:Error){
@@ -109,7 +115,7 @@ package com.junkbyte.console.core
 				var end:int = match.lastIndexOf(quote);
 				var string:String = match.substring(start+1,end).replace(/\\(.)/g, "$1");
 				//trace(VALUE_CONST+_values.length+" = "+string);
-				str = tempValue(str,new ExecuterValue(string), result.index+start, result.index+end+1);
+				str = tempValue(str,new ExeValue(string), result.index+start, result.index+end+1);
 				//trace(str);
 				result = strReg.exec(str);
 			}
@@ -123,8 +129,9 @@ package com.junkbyte.console.core
 			var lineBreaks:Array = str.split(/\s*;\s*/);
 			for each(var line:String in lineBreaks){
 				if(line.length){
-					if(_saved[RETURNED] && (line == "/" || line == "/scope")){
-						_scope = _saved[RETURNED];
+					var returned:* = _saved[RETURNED];
+					if(returned && line == "/"){
+						_scope = returned;
 						dispatchEvent(new Event(Event.COMPLETE));
 					}else{
 						execNest(line);
@@ -168,12 +175,12 @@ package com.junkbyte.console.core
 					if(isfun){
 						var params:Array = inside.split(",");
 						//trace("#"+_values.length+" stores function params ["+params+"]");
-						line = tempValue(line,new ExecuterValue(params), indOpen+1, indClose);
+						line = tempValue(line,new ExeValue(params), indOpen+1, indClose);
 						for(var X:String in params){
 							params[X] = execOperations(ignoreWhite(params[X])).value;
 						}
 					}else{
-						var groupv:ExecuterValue = new ExecuterValue(groupv);
+						var groupv:ExeValue = new ExeValue(groupv);
 						//trace("#"+_values.length+" stores group value for "+inside);
 						line = tempValue(line,groupv, indOpen, indClose+1);
 						groupv.setValue(execOperations(ignoreWhite(inside)).value);
@@ -184,6 +191,12 @@ package com.junkbyte.console.core
 				indOpen = line.lastIndexOf("(", indOpen-1);
 			}
 			_returned = execOperations(line).value;
+			if(_returned && autoScope){
+				var typ:String = typeof(_returned);
+				if(typ == "object" || typ=="xml"){
+					_scope = _returned;
+				}
+			}
 			dispatchEvent(new Event(Event.COMPLETE));
 			return _returned;
 		}
@@ -197,7 +210,7 @@ package com.junkbyte.console.core
 		// Simple strip with operations.
 		// aaa.bbb.ccc(1/2,3).ddd += fff+$g.hhh();
 		//
-		private function execOperations(str:String):ExecuterValue{
+		private function execOperations(str:String):ExeValue{
 			var reg:RegExp = /\s*(((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^]|\=\=?|\!\=|\>\>?\>?|\<\<?)\=?)|=|\~|\sis\s|typeof\s)\s*/g;
 			var result:Object = reg.exec(str);
 			var seq:Array = [];
@@ -211,11 +224,11 @@ package com.junkbyte.console.core
 					result = reg.exec(str);
 					if(result==null){
 						seq.push(str.substring(lastindex, index));
-						seq.push(operation.replace(/\s/g, ""));
+						seq.push(ignoreWhite(operation));
 						seq.push(str.substring(index+operation.length));
 					}else{
 						seq.push(str.substring(lastindex, index));
-						seq.push(operation.replace(/\s/g, ""));
+						seq.push(ignoreWhite(operation));
 						lastindex = index+operation.length;
 					}
 				}
@@ -235,7 +248,7 @@ package com.junkbyte.console.core
 				if(op.replace(setter,"")!=""){
 					res = operate(seq[i-1], op, seq[i+1]);
 					//debug("operate: "+seq[i-1].value, op, seq[i+1].value, "=", res);
-					var sv:ExecuterValue = ExecuterValue(seq[i-1]);
+					var sv:ExeValue = ExeValue(seq[i-1]);
 					sv.setValue(res);
 					seq.splice(i,2);
 					i-=2;
@@ -244,12 +257,12 @@ package com.junkbyte.console.core
 			}
 			// EXEC setter operations after reversing the sequence
 			seq.reverse();
-			var v:ExecuterValue = seq[0];
+			var v:ExeValue = seq[0];
 			for(i = 1;i<len;i+=2){
 				op = seq[i];
 				if(op.replace(setter,"")==""){
 					v = seq[i-1];
-					var subject:ExecuterValue = seq[i+1];
+					var subject:ExeValue = seq[i+1];
 					if(op.length>1) op = op.substring(0,op.length-1);
 					res = operate(subject, op, v);
 					subject.setValue(res);
@@ -262,8 +275,8 @@ package com.junkbyte.console.core
 		// aaa.bbb.ccc(0.5,3).ddd
 		// includes class path detection and 'new' operation
 		//
-		private function execSimple(str:String):ExecuterValue{
-			var v:ExecuterValue = new ExecuterValue(_scope);
+		private function execSimple(str:String):ExeValue{
+			var v:ExeValue = new ExeValue(_scope);
 			//debug('execStrip: '+str);
 			//
 			// if it is 'new' operation
@@ -274,7 +287,7 @@ package com.junkbyte.console.core
 					newstr = str.substring(0, defclose+1);
 				}
 				var newobj:* = makeNew(newstr.substring(4));
-				str = tempValue(str, new ExecuterValue(newobj), 0, newstr.length);
+				str = tempValue(str, new ExeValue(newobj), 0, newstr.length);
 			}
 			//
 			//
@@ -293,7 +306,7 @@ package com.junkbyte.console.core
 						var def:* = getDefinitionByName(ignoreWhite(classstr));
 						var havemore:Boolean = str.length>classstr.length;
 						//trace(classstr+" is a definition:", def);
-						str = tempValue(str, new ExecuterValue(def), 0, classstr.length);
+						str = tempValue(str, new ExeValue(def), 0, classstr.length);
 						//trace(str);
 						if(havemore){
 							reg.lastIndex = 0;
@@ -316,13 +329,13 @@ package com.junkbyte.console.core
 				var isFun:Boolean = str.charAt(index)=="(";
 				var basestr:String = ignoreWhite(str.substring(previndex, index));
 				//trace("_scopestr = "+basestr+ " v.base = "+v.value);
-				var newv:ExecuterValue = previndex==0?execValue(basestr, v.value):new ExecuterValue(v.value, basestr);
+				var newv:ExeValue = previndex==0?execValue(basestr, v.value):new ExeValue(v.value, basestr);
 				//trace("_scope = "+newv.value+"  isFun:"+isFun);
 				if(isFun){
 					var newbase:* = newv.value;
 					var closeindex:int = str.indexOf(")", index);
 					var paramstr:String = str.substring(index+1, closeindex);
-					paramstr = paramstr.replace(/\s/g,"");
+					paramstr = ignoreWhite(paramstr);
 					var params:Array = [];
 					if(paramstr){
 						params = execValue(paramstr).value;
@@ -333,7 +346,7 @@ package com.junkbyte.console.core
 						try{
 							var nss:Array = [AS3];
 							for each(var ns:Namespace in nss){
-								var nsv:* = v.base.ns::[basestr];
+								var nsv:* = v.obj.ns::[basestr];
 								if(nsv is Function){
 									newbase = nsv;
 									break;
@@ -347,7 +360,7 @@ package com.junkbyte.console.core
 						}
 					}
 					//trace("Apply function:", newbase, v.base, params);
-					v.base = (newbase as Function).apply(v.value, params);
+					v.obj = (newbase as Function).apply(v.value, params);
 					v.prop = null;
 					//trace("Function return:", v.base);
 					index = closeindex+1;
@@ -370,40 +383,42 @@ package com.junkbyte.console.core
 		//
 		// single values such as string, int, null, $a, ^1 and Classes without package.
 		//
-		private function execValue(str:String, base:* = null):ExecuterValue{
-			var v:ExecuterValue = new ExecuterValue();
+		private function execValue(str:String, base:* = null):ExeValue{
+			var v:ExeValue = new ExeValue();
 			if (str == "true") {
-				v.base = true;
+				v.obj = true;
 			}else if (str == "false") {
-				v.base = false;
+				v.obj = false;
 			}else if (str == "this") {
-				v.base = _scope;
+				v.obj = _scope;
 			}else if (str == "null") {
-				v.base = null;
+				v.obj = null;
 			}else if (str == "NaN") {
-				v.base = NaN;
+				v.obj = NaN;
 			}else if (str == "Infinity") {
-				v.base = Infinity;
+				v.obj = Infinity;
 			}else if (str == "undefined") {
-				v.base = undefined;
+				v.obj = undefined;
 			}else if (!isNaN(Number(str))) {
-				v.base = Number(str);
+				v.obj = Number(str);
 			}else if(str.indexOf(VALKEY)==0){
-				var vv:ExecuterValue = _values[str.substring(VALKEY.length)];
-				v.base = vv.value;
+				var vv:ExeValue = _values[str.substring(VALKEY.length)];
+				v.obj = vv.value;
 			}else if(str.charAt(0) == "$"){
 				var key:String = str.substring(1);
 				if(_reserved.indexOf(key)<0){
-					v.base = _saved;
+					v.obj = _saved;
 					v.prop = key;
-				}else{
-					v.base = _saved[key];
+				}else if(_saved is WeakObject){
+					v.obj = WeakObject(_saved).get(key);
+				}else {
+					v.obj = _saved[key];
 				}
 			}else{
 				try{
-					v.base = getDefinitionByName(str);
+					v.obj = getDefinitionByName(str);
 				}catch(e:Error){
-					v.base = base;
+					v.obj = base;
 					v.prop = str;
 				}
 			}
@@ -411,7 +426,7 @@ package com.junkbyte.console.core
 			return v;
 		}
 		// * typed cause it could be String +  OR comparison such as || or &&
-		private function operate(v1:ExecuterValue, op:String, v2:ExecuterValue):*{
+		private function operate(v1:ExeValue, op:String, v2:ExeValue):*{
 			switch (op){
 				case "=":
 					return v2.value;
@@ -479,7 +494,7 @@ package com.junkbyte.console.core
 			if(openindex>0){
 				var closeindex:int = str.indexOf(")", openindex);
 				var paramstr:String = str.substring(openindex+1, closeindex);
-				paramstr = paramstr.replace(/\s/g,"");
+				paramstr = ignoreWhite(paramstr);
 				var p:Array = [];
 				if(paramstr){
 					p = execValue(paramstr).value;
@@ -528,25 +543,21 @@ package com.junkbyte.console.core
 			}
 			return str;
 		}
-		//private function debug(...args):void{
-		//	master.report(_master.joinArgs(args), 2, false);
-		//}
 	}
 }
-internal class ExecuterValue{
-	public var base:*;
+internal class ExeValue{
+	public var obj:*;
 	public var prop:String;
 	
-	public function ExecuterValue(b:Object = null, p:String = null):void{
-		base = b;
+	public function ExeValue(b:Object = null, p:String = null):void{
+		obj = b;
 		prop = p;
-		//value = v;
 	}
 	public function get value():*{
-		return prop?base[prop]:base;
+		return prop?obj[prop]:obj;
 	}
 	public function setValue(v:*):void{
-		if(prop) base[prop] = v;
-		else base = v;
+		if(prop) obj[prop] = v;
+		else obj = v;
 	}
 }

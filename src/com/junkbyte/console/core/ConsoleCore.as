@@ -22,20 +22,23 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.vos {
-	
-	public class RemoteSync {
-		public var lines:Array;
-		public var graphs:Array;
-		public var cl:String;
-		
-		
-		public static function FromObject(o:Object):RemoteSync{
-			var vo:RemoteSync = new RemoteSync();
-			vo.lines = o.lines;
-			vo.graphs = o.graphs;
-			vo.cl = o.cl;
-			return vo;
+package com.junkbyte.console.core 
+{
+	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.Console;
+	public class ConsoleCore 
+	{
+		protected var console:Console;
+		protected var config:ConsoleConfig;
+		public function ConsoleCore(c:Console){
+			console = c;
+			config = console.config;
+		}
+		protected function get remoter():Remoting{
+			return console.remoter;
+		}
+		protected function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true):void{
+			console.report(obj, priority, skipSafe);
 		}
 	}
 }

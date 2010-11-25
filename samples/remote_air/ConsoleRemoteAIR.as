@@ -23,6 +23,7 @@
 * 
 */
 package {
+	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.view.AbstractPanel;
@@ -48,14 +49,15 @@ package {
 			var config:ConsoleConfig = new ConsoleConfig();
 			config.maxLines = 2000;
 			config.style.backgroundAlpha = 0.55;
+			config.commandLineAllowed = true;
 			_c = new Console(null, config);
 			addChild(_c);
 			_c.visible = true;
-			_c.remote = true;
+			_c.remoter.remoting = Remoting.RECIEVER;
 			_c.commandLine = true;
 			_c.x = 10;
 			_c.y = 10;
-			
+			_c.addMenu("top", toggleOnTop, null, "Toggle always in front");
 			var menu:TextField = _c.panels.mainPanel.getChildByName("menuField") as TextField;
 			menu.doubleClickEnabled = true;
 			menu.addEventListener(MouseEvent.DOUBLE_CLICK, ondouble);
@@ -73,6 +75,10 @@ package {
 			stage.align = StageAlign.TOP_LEFT;
 			stage.addEventListener(Event.RESIZE, onStageResize);
 			onStageResize();
+		}
+		private function toggleOnTop():void {
+			stage.nativeWindow.alwaysInFront = !stage.nativeWindow.alwaysInFront;
+			_c.report("Always in front "+(stage.nativeWindow.alwaysInFront?"enabled.":"disabled"),-1);
 		}
 		private function onMainPanelClose(e:Event):void{
 			stage.nativeWindow.close();	

@@ -2,7 +2,6 @@
 
 
 	<property name="src.dir" value="${basedir}/src" />
-	<property name="src.ver.file" value="${src.dir}/com/junkbyte/console/Console.as" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="asdoc.dir" value="${basedir}/asdoc" />
 	<property name="bin.dir" value="${basedir}/bin" />
@@ -10,6 +9,8 @@
 	<property name="samples.dir" value="${basedir}/samples" />
 	<property name="wiki.dir" value="./../wiki" />
 	<property name="temp.dir" value="${basedir}/temp" />
+	<property name="src.ver.file" value="${src.dir}/com/junkbyte/console/Console.as" />
+	<property name="src.air.config.file" value="${samples.dir}/remote_air/ConsoleRemoteAIR-app.xml" />
 	
 	<property file="${build.dir}/local.properties" />
 
@@ -55,6 +56,7 @@
 		<replaceregexp file="${src.ver.file}" match="(VERSION_STAGE:String\s*=\s*).+;" replace='\1"${build.stage}";' />
 		<replaceregexp file="${src.ver.file}" match="(BUILD:int\s*=\s*).+;" replace="\1${build.number};" />
 		<replaceregexp file="${src.ver.file}" match="(BUILD_DATE:String\s*=\s*).+;" replace='\1"${build.date}";' />
+		<replaceregexp file="${src.air.config.file}" match="(&lt;version&gt;)\d+\.\d+(&lt;/version&gt;)" replace='\1${build.version}\2' />
 	</target>
 
 	<!-- Parameters: file, output, config -->
@@ -127,7 +129,7 @@
 		</copy>
 	</target>
 
-
+	<!-- http://livedocs.adobe.com/flex/3/html/help.html?content=asdoc_9.html#142061 -->
 	<target name="compileASDoc">
 		<delete dir="${asdoc.dir}" failOnError="false" includeEmptyDirs="true" />
 		<mkdir dir="${asdoc.dir}" />

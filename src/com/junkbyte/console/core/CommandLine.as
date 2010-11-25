@@ -22,43 +22,54 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core {
-	import com.junkbyte.console.utils.ShortClassName;
+package com.junkbyte.console.core 
+{
+	import flash.utils.getQualifiedClassName;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
-	
+
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.utils.getQualifiedClassName;import com.junkbyte.console.utils.CastToString;	
 
-	public class CommandLine extends EventDispatcher {
+	public class CommandLine extends ConsoleCore{
 		
-		private static const INTSTACKS:int = 1; // max number of internal (commandLine) stack traces
+		private static const DISABLED:String = "<b>Advanced CommandLine is disabled.</b>\nEnable by setting `Cc.config.commandLineAllowed = true;´\nType <b>/commands</b> for permitted commands.";
 		
-		public static const BASE:String = "base";
-		//public static const MONITORING_OBJ_KEY:String = "monitorObj";
-		
-		private static const RESERVED:Array = [Executer.RETURNED, BASE, "C"];
+		private static const RESERVED:Array = [Executer.RETURNED, "base", "C"];
 		
 		private var _saved:WeakObject;
 		
 		private var _scope:*;
 		private var _prevScope:WeakRef;
 		
-		private var _master:Console;
-		private var _tools:CommandTools;
-		private var _autoScope:Boolean;
+		private var _slashCmds:Object;
 		
 		public function CommandLine(m:Console) {
-			_master = m;
-			_tools = new CommandTools(report);
+			super(m);
 			_saved = new WeakObject();
 			_scope = m;
+			_slashCmds = new Object();
 			_prevScope = new WeakRef(m);
 			_saved.set("C", m);
-			//_saved.set(MONITORING_OBJ_KEY, m.om.getObject);
+			
+			console.remoter.registerClient("cmd", run);
+			console.remoter.registerClient("scope", handleScopeEvent);
+			
+			addCLCmd("help", printHelp, "How to use command line");
+			addCLCmd("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
+			addCLCmd("savestrong|storestrong", saveStrongCmd, "Save current scope as strong reference");
+			addCLCmd("saved|stored", savedCmd, "Show a list of all saved references");
+			addCLCmd("string", stringCmd, "Create String, useful to paste complex strings without worrying about \" or \'");
+			addCLCmd("commands", cmdsCmd, "Show a list of all slash commands", true);
+			addCLCmd("inspect", inspectCmd, "Inspect current scope");
+			addCLCmd("explode", explodeCmd, "Explode current scope to its properties and values (similar to JSON)");
+			addCLCmd("map", mapCmd, "Get display list map starting from current scope");
+			addCLCmd("function", funCmd, "Create function. param is the commandline string to create as function. (experimental)");
+			addCLCmd("autoscope", autoscopeCmd, "Toggle autoscoping.");
+			addCLCmd("base", baseCmd, "Return to base scope");
+			addCLCmd("/", prevCmd, "Return to previous scope");
+			
 		}
 		public function set base(obj:Object):void {
 			if (base) {
@@ -66,22 +77,34 @@ package com.junkbyte.console.core {
 			}else{
 				_prevScope.reference = _scope;
 				_scope = obj;
-				dispatchEvent(new Event(Event.CHANGE));
+				console.panels.mainPanel.updateCLScope(scopeString);
 			}
-			_saved.set(BASE, obj);
+			_saved.set("base", obj);
 		}
 		public function get base():Object {
-			return _saved.get(BASE);
+			return _saved.get("base");
 		}
 		public function destory():void {
 			_saved = null;
-			_master = null;
-			_tools = null;
+			_scope = null;
+		}
+		public function handleScopeEvent(id:uint):void{
+			if(remoter.remoting == Remoting.RECIEVER){
+				remoter.send("scope", id);
+			}else{
+				var v:* = console.links.getRefById(id);
+				if(v) console.cl.setReturned(v, true, false);
+				else console.report("Reference no longer exist.", -2);
+			}
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void {
+			if(!n) {
+				report("ERROR: Give a name to save.",10);
+				return;
+			}
 			// if it is a function it needs to be strong reference atm, 
 			// otherwise it fails if the function passed is from a dynamic class/instance
-			strong = (strong || obj is Function);
+			if(obj is Function) strong = true;
 			n = n.replace(/[^\w]*/g, "");
 			if(RESERVED.indexOf(n)>=0){
 				report("ERROR: The name ["+n+"] is reserved",10);
@@ -89,28 +112,87 @@ package com.junkbyte.console.core {
 			}else{
 				_saved.set(n, obj, strong);
 			}
-			if(!_master.config.quiet){
+			if(!config.quiet){
 				var str:String = strong?"STRONG":"WEAK";
-				report("Stored <p5>$"+n+"</p5> for <b>"+getQualifiedClassName(obj)+"</b> using <b>"+ str +"</b> reference.",-1);
+				report("Stored <p5>$"+n+"</p5> for <b>"+console.links.makeRefTyped(obj)+"</b> using <b>"+ str +"</b> reference.",-1);
 			}
+		}
+		public function getHintsFor(str:String):Array{
+			var all:Array = new Array();
+			for (var X:String in _slashCmds){
+				all.push("/"+X+" ");
+			}
+			for (var Y:String in _saved){
+				all.push("$"+Y);
+			}
+			if(_scope){
+				all.push("this");
+				all = all.concat(console.links.getPossibleCalls(_scope));
+			}
+			str = str.toLowerCase();
+			var hints:Array = new Array();
+			for each(var canadate:String in all){
+				if(canadate.toLowerCase().indexOf(str) == 0)
+				{
+					hints.push(canadate);
+				}
+			}
+			hints = hints.sort(function(a:String, b:String):int{
+				if(a.length < b.length) return -1;
+				if(a.length > b.length) return 1;
+				return 0;
+			});
+			return hints;
 		}
 		public function get scopeString():String{
-			return ShortClassName(_scope);
+			return LogReferences.ShortClassName(_scope, false);
+		}
+		public function addCLCmd(n:String, callback:Function, desc:String, allow:Boolean = false):void{
+			var split:Array = n.split("|");
+			for(var i:int = 0; i<split.length; i++){
+				n = split[i];
+				_slashCmds[n] = new SlashCommand(n, callback, desc, false, allow);
+				if(i>0) _slashCmds.setPropertyIsEnumerable(n, false);
+			}
+		}
+		public function addSlashCommand(n:String, callback:Function, desc:String = "", allow:Boolean = true):void{
+			if(_slashCmds[n] != null){
+				var prev:SlashCommand = _slashCmds[n];
+				if(!prev.user) {
+					throw new Error("Can not alter build-in slash command ["+n+"]");
+				}
+			}
+			if(callback == null) delete _slashCmds[n];
+			else _slashCmds[n] = new SlashCommand(n, callback, desc, true, allow);
 		}
 		public function run(str:String):* {
-			report("&gt; "+str,5, false);
-			if(!_master.config.commandLineAllowed) {
-				report("CommandLine is disabled.",10);
-				return null;
+			if(remoter.remoting == Remoting.RECIEVER){
+				if(str && str.charAt(0) == "~"){
+					str = str.substring(1);
+				}else{
+					report("Run command at remote: "+str,-2);
+					if(!console.remoter.send("cmd", str)){
+						report("Command could not be sent to client.", 10);
+					}
+					return null;
+				}
 			}
+			report("&gt; "+str, 4, false);
 			var v:* = null;
 			try{
 				if(str.charAt(0) == "/"){
 					execCommand(str);
 				}else{
+					if(!config.commandLineAllowed) {
+						report(DISABLED, 9);
+						return null;
+					}
 					var exe:Executer = new Executer();
 					exe.addEventListener(Event.COMPLETE, onExecLineComplete, false, 0, true);
-					v = exe.exec(_scope, str, _saved, RESERVED);
+					exe.setStored(_saved);
+					exe.setReserved(RESERVED);
+					exe.autoScope = config.commandLineAutoScope;
+					v = exe.exec(_scope, str);
 				}
 			}catch(e:Error){
 				reportError(e);
@@ -129,136 +211,65 @@ package com.junkbyte.console.core {
 		private function execCommand(str:String):void{
 			var brk:int = str.indexOf(" ");
 			var cmd:String = str.substring(1, brk>0?brk:str.length);
+			if(cmd == "")
+			{
+				setReturned(_saved.get(Executer.RETURNED), true);
+				return;
+			}
 			var param:String = brk>0?str.substring(brk+1):"";
-			//debug("execSlashCommand: "+ cmd+(param?(": "+param):""));
-			if (cmd == "help") {
-				_tools.printHelp();
-			} else if (cmd == "remap") {
-				// this is a special case... no user will be able to do this command
-				setReturned(_tools.reMap(param, _master.stage), true);
-			} else if (cmd == "save" || cmd == "store" || cmd == "savestrong" || cmd == "storestrong") {
-				if (_scope) {
-					param = param.replace(/[^\w]/g, "");
-					if(!param){
-						report("ERROR: Give a name to save.",10);
-					}else{
-						store(param, _scope, (cmd == "savestrong" || cmd == "storestrong"));
+			if(_slashCmds[cmd] != null){
+				try{
+					var slashcmd:SlashCommand = _slashCmds[cmd];
+					if(!config.commandLineAllowed && !slashcmd.allow)
+					{
+						report(DISABLED, 9);
+						return;
 					}
-				} else {
-					report("Nothing to save", 10);
+					if(param.length == 0){
+						slashcmd.f();
+					}else{
+						slashcmd.f(param);
+					}
+				}catch(err:Error){
+					reportError(err);
 				}
-			} else if (cmd == "string") {
-				report("String with "+param.length+" chars entered. Use /save <i>(name)</i> to save.", -2);
-				setReturned(param, true);
-			} else if (cmd == "saved" || cmd == "stored") {
-				report("Saved vars: ", -1);
-				var sii:uint = 0;
-				var sii2:uint = 0;
-				for(var X:String in _saved){
-					var sao:* = _saved[X];
-					sii++;
-					if(sao==null) sii2++;
-					report("<b>$"+X+"</b> = "+(sao==null?"null":getQualifiedClassName(sao)), -2);
-				}
-				report("Found "+sii+" item(s), "+sii2+" empty (or garbage collected).", -1);
-			} else if (cmd == "filter" || cmd == "search") {
-				_master.panels.mainPanel.filterText = param;
-			} else if (cmd == "filterexp" || cmd == "searchexp") {
-				_master.panels.mainPanel.filterRegExp = new RegExp(param, "i");
-			} else if (cmd == "inspect" || cmd == "inspectfull") {
-				if (_scope) {
-					var viewAll:Boolean = (cmd == "inspectfull")? true: false;
-					inspect(_scope, viewAll);
-				} else {
-					report("Empty", 10);
-				}
-			} else if (cmd == "explode") {
-				if (_scope) {
-					var depth:int = Number(param);
-					_master.explode(_scope, depth<=0?3:depth);
-				} else {
-					report("Empty", 10);
-				}
-			/*} else if (cmd == "monitor") {
-				if (_scope) {
-					_master.monitor(_scope, param);
-				} else {
-					report("Empty", 10);
-				}*/
-			} else if (cmd == "map") {
-				if (_scope) {
-					map(_scope as DisplayObjectContainer, int(param));
-				} else {
-					report("Empty", 10);
-				}
-			} else if (cmd == "function") {
-				var fakeFunction:FakeFunction = new FakeFunction(run, param);
-				setReturned(fakeFunction.exec);
-			} else if (cmd == "/") {
-				if(_prevScope.reference) setReturned(_prevScope.reference, true);
-				else report("No previous scope",8);
-			} else if (cmd == "" || cmd == "scope") {
-				setReturned(_saved[Executer.RETURNED], true);
-			} else if (cmd == "autoscope") {
-				_autoScope = !_autoScope;
-				report("Auto-scoping <b>"+(_autoScope?"enabled":"disabled")+"</b>.",10);
-			} else if (cmd == "clearhistory") {
-				_master.panels.mainPanel.clearCommandLineHistory();
-			} else if (cmd == "base") {
-				setReturned(base, true);
 			} else{
-				report("Undefined command <b>/help</b> for info.",10);
+				report("Undefined command <b>/commands</b> for list of all commands.",10);
 			}
 		}
-		private function setReturned(returned:*, changeScope:Boolean = false):void{
-			var change:Boolean = false;
-			if(returned)
+		public function setReturned(returned:*, changeScope:Boolean = false, say:Boolean = true):void{
+			if(!config.commandLineAllowed) {
+				report(DISABLED, 9);
+				return;
+			}
+			if(returned !== undefined)
 			{
 				_saved.set(Executer.RETURNED, returned, true);
-				if(returned !== _scope){
-					if(changeScope){
-						change = true;
-					}else if(_autoScope){
-						var typ:String = typeof(returned);
-						if(typ == "object" || typ=="xml"){
-							change = true;
-						}
-					}
-					if(change){
-						_prevScope.reference = _scope;
-						_scope = returned;
-						dispatchEvent(new Event(Event.CHANGE));
-					}
+				if(changeScope && returned !== _scope){
+					_prevScope.reference = _scope;
+					_scope = returned;
+					report("Changed to "+console.links.makeRefTyped(returned), -1);
+					console.panels.mainPanel.updateCLScope(scopeString);
+				}else{
+					if(say) report("Returned "+console.links.makeString(returned), -1);
 				}
-				
-			}
-			if(returned !== undefined){
-				var rtext:String = String(returned);
-				// this is incase its something like XML, need to keep the <> tags...
-				rtext = rtext.replace(new RegExp("<", "gm"), "&lt;");
- 				//rtext = rtext.replace(new RegExp(">", "gm"), "&gt;");
- 				if(change){
-					report("Changed to "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -1);
- 				}else{
-					report("Returned "+ getQualifiedClassName(returned) +": <b>"+rtext+"</b>", -2);
- 				}
 			}else{
-				report("Exec successful, undefined return.", -2);
+				if(say) report("Exec successful, undefined return.", -1);
 			}
 		}
 		private function reportError(e:Error):void{
-			var str:String = CastToString(e);
+			var str:String = console.links.makeString(e);
 			var lines:Array = str.split(/\n\s*/);
 			var p:int = 10;
 			var internalerrs:int = 0;
 			var len:int = lines.length;
 			var parts:Array = [];
-			var reg:RegExp = new RegExp("\\s*at\\s+("+Executer.CLASSES+")");
+			var reg:RegExp = new RegExp("\\s*at\\s+("+Executer.CLASSES+"|"+getQualifiedClassName(this)+")");
 			for (var i:int = 0; i < len; i++){
 				var line:String = lines[i];
-				if(INTSTACKS >=0 && (line.search(reg) == 0)){
-					// don't trace too many internal errors :)
-					if(internalerrs>=INTSTACKS && i > 0) {
+				if(line.search(reg) == 0){
+					// don't trace more than one internal errors :)
+					if(internalerrs>0 && i > 0) {
 						break;
 					}
 					internalerrs++;
@@ -268,18 +279,87 @@ package com.junkbyte.console.core {
 			}
 			report(parts.join("\n"), 9);
 		}
-		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
-			_tools.map(base, maxstep);
+		private function saveCmd(param:String = null):void{
+			store(param, _scope, false);
 		}
-		public function inspect(obj:Object, viewAll:Boolean= true):void {
-			_tools.inspect(obj, viewAll);
+		private function saveStrongCmd(param:String = null):void{
+			store(param, _scope, true);
 		}
-		public function report(obj:*,priority:Number = 1, skipSafe:Boolean = true):void{
-			_master.report(obj, priority, skipSafe);
+		private function savedCmd(...args:Array):void{
+			report("Saved vars: ", -1);
+			var sii:uint = 0;
+			var sii2:uint = 0;
+			for(var X:String in _saved){
+				var ref:WeakRef = _saved.getWeakRef(X);
+				sii++;
+				if(ref.reference==null) sii2++;
+				report((ref.strong?"strong":"weak")+" <b>$"+X+"</b> = "+console.links.makeString(ref.reference), -2);
+			}
+			report("Found "+sii+" item(s), "+sii2+" empty.", -1);
 		}
-		//private function debug(...args):void{
-		//	_master.report(_master.joinArgs(args), 2, false);
-		//}
+		private function stringCmd(param:String):void{
+			report("String with "+param.length+" chars entered. Use /save <i>(name)</i> to save.", -2);
+			setReturned(param, true);
+		}
+		private function cmdsCmd(...args:Array):void{
+			var buildin:Array = [];
+			var custom:Array = [];
+			for each(var cmd:SlashCommand in _slashCmds){
+				if(config.commandLineAllowed || cmd.allow){
+					if(cmd.user) custom.push(cmd);
+					else buildin.push(cmd);
+				}
+			}
+			buildin = buildin.sortOn("n");
+			report("Build-in commands:"+(!config.commandLineAllowed?" (limited permission)":""), 4);
+			for each(cmd in buildin){
+				report("<b>/"+cmd.n+"</b> <p-1>" + cmd.d+"</p-1>", -2);
+			}
+			if(custom.length){
+				custom = custom.sortOn("n");
+				report("User commands:", 4);
+				for each(cmd in custom){
+					report("<b>/"+cmd.n+"</b> <p-1>" + cmd.d+"</p-1>", -2);
+				}
+			}
+		}
+		private function inspectCmd(...args:Array):void{
+			console.links.focus(_scope);
+		}
+		private function explodeCmd(param:String = "0"):void{
+			var depth:int = int(param);
+			console.explode(_scope, depth<=0?3:depth);
+		}
+		private function mapCmd(param:String = "0"):void{
+			console.map(_scope as DisplayObjectContainer, int(param));
+		}
+		private function funCmd(param:String = ""):void{
+			var fakeFunction:FakeFunction = new FakeFunction(run, param);
+			setReturned(fakeFunction.exec);
+		}
+		private function autoscopeCmd(...args:Array):void{
+			config.commandLineAutoScope = !config.commandLineAutoScope;
+			report("Auto-scoping <b>"+(config.commandLineAutoScope?"enabled":"disabled")+"</b>.",10);
+		}
+		private function baseCmd(...args:Array):void
+		{
+			setReturned(base, true);
+		}
+		private function prevCmd(...args:Array):void
+		{
+			setReturned(_prevScope.reference, true);
+		}
+		private function printHelp():void {
+			report("____Command Line Help___",10);
+			report("/filter (text) = filter/search logs for matching text",5);
+			report("/commands to see all slash commands",5);
+			report("Press up/down arrow keys to recall previous line",2);
+			report("__Examples:",10);
+			report("<b>stage.stageWidth</b>",5);
+			report("<b>stage.scaleMode = flash.display.StageScaleMode.NO_SCALE</b>",5);
+			report("<b>stage.frameRate = 12</b>",5);
+			report("__________",10);
+		}
 	}
 }
 internal class FakeFunction{
@@ -293,5 +373,19 @@ internal class FakeFunction{
 	public function exec(...args):*
 	{
 		return run(line);
+	}
+}
+internal class SlashCommand{
+	public var n:String;
+	public var f:Function;
+	public var d:String;
+	public var user:Boolean;
+	public var allow:Boolean;
+	public function SlashCommand(nn:String, ff:Function, dd:String = "", cus:Boolean = true, permit:Boolean = false){
+		n = nn;
+		f = ff;
+		d = dd?dd:"";
+		user = cus;
+		allow = permit;
 	}
 }

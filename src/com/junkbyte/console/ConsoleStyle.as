@@ -26,15 +26,12 @@ package com.junkbyte.console {
 	import flash.text.StyleSheet;	
 	
 	public class ConsoleStyle {
-				
+		
 		/** Font for menus and almost all others */
 		public var menuFont:String = "Arial";
 		
 		/** Default font size */
 		public var menuFontSize:int = 12;
-		
-		/** Maximum number of channels to display on top menu */
-		public var maxChannelsInMenu:int = 7;
 		
 		/** Font for trace field */
 		public var traceFont:String = "Verdana";
@@ -42,15 +39,7 @@ package com.junkbyte.console {
 		/** Font size for trace field */
 		public var traceFontSize:int = 11;
 		
-		
-		
-		/** Panel snapping radius during drag move. default:3, set to 0 to disable*/
-		public var panelSnapping:int = 3;
-		
-		/** Panels background corner rounding */
-		public var roundBorder:int = 10;
-		
-		/** Panels backround color */
+		/** Panels background color */
 		public var backgroundColor:uint;
 		
 		/** Panels background alpha */
@@ -80,8 +69,6 @@ package com.junkbyte.console {
 		/** Font color for current channel name */
 		public var channelColor:uint = 0x0099CC;
 		
-		/** Font color for tool tips */
-		public var tooltipColor:uint = 0xDD5500;
 		//
 		
 		/** Color of log priority level 0.*/
@@ -112,6 +99,20 @@ package com.junkbyte.console {
 		/** Color of console event log.*/
 		public var priorityC2:uint = 0xFF8800;
 		
+		
+		/** Show top menu */
+		public var topMenu:Boolean = true;
+		
+		/** Maximum number of channels to display on top menu */
+		public var maxChannelsInMenu:int = 7;
+		
+		/** Panel snapping radius during drag move. default:3, set to 0 to disable*/
+		public var panelSnapping:int = 3;
+		
+		/** Panels background corner rounding */
+		public var roundBorder:int = 10;
+		
+		
 		/** Use white base pre configuration */
 		public function whiteBase():void{
 			backgroundColor = 0xFFFFFF;
@@ -124,7 +125,6 @@ package com.junkbyte.console {
 			menuHighlightColor = 0x881100;
 			channelsColor = 0x000000;
 			channelColor = 0x0066AA;
-			tooltipColor = 0xAA3300;
 			//
 			priority0 = 0x44A044;
 			priority1 = 0x339033;
@@ -145,27 +145,6 @@ package com.junkbyte.console {
 			traceFontSize = 12;
 			menuFontSize = 14;
 		}
-		/** Use opaque background */
-		public function opaque():void{
-			backgroundAlpha = 1;
-		}
-		/** Use black and white traces */
-		public function blackAndWhiteTrace():void{
-			priority0 = 0x808080;
-			priority1 = 0x888888;
-			priority2 = 0x999999;
-			priority3 = 0x9F9F9F;
-			priority4 = 0xAAAAAA;
-			priority5 = 0xAAAAAA;
-			priority6 = 0xCCCCCC;
-			priority7 = 0xCCCCCC;
-			priority8 = 0xDDDDDD;
-			priority9 = 0xFFFFFF;
-			priority10 = 0xFFFFFF;
-			priorityC1 = 0xBBC0CC;
-			priorityC2 = 0xFFEEDD;
-		}
-		
 		
 		/////////////////////
 		//                 //
@@ -187,8 +166,7 @@ package com.junkbyte.console {
 		 * If you ever changed the style settings after console have already started, 
 		 * calling this method have a good chance of updating console style on the fly as well - not guarantee tho.
 		 */
-		public function updateStyleSheet():void
-		{
+		public function updateStyleSheet():void {
 			_css.setStyle("r",{textAlign:'right', display:'inline'});
 			_css.setStyle("w",{color:hesh(highColor), fontFamily:menuFont, fontSize:menuFontSize, display:'inline'});
 			_css.setStyle("s",{color:hesh(lowColor), fontFamily:menuFont, fontSize:menuFontSize-2, display:'inline'});
@@ -196,7 +174,7 @@ package com.junkbyte.console {
 			_css.setStyle("menu",{color:hesh(menuColor), display:'inline'});
 			_css.setStyle("chs",{color:hesh(channelsColor), fontSize:menuFontSize, leading:'2', display:'inline'});
 			_css.setStyle("ch",{color:hesh(channelColor), display:'inline'});
-			_css.setStyle("tt",{color:hesh(tooltipColor),fontFamily:menuFont,fontSize:menuFontSize, textAlign:'center'});
+			_css.setStyle("tt",{color:hesh(menuColor),fontFamily:menuFont,fontSize:menuFontSize, textAlign:'center'});
 			_css.setStyle("p",{fontFamily:traceFont, fontSize:traceFontSize});
 			_css.setStyle("p0",{color:hesh(priority0), display:'inline'});
 			_css.setStyle("p1",{color:hesh(priority1), display:'inline'});
@@ -211,6 +189,7 @@ package com.junkbyte.console {
 			_css.setStyle("p10",{color:hesh(priority10), fontWeight:'bold', display:'inline'});
 			_css.setStyle("p-1",{color:hesh(priorityC1), display:'inline'});
 			_css.setStyle("p-2",{color:hesh(priorityC2), display:'inline'});
+			_css.setStyle("l",{color:hesh(menuColor), display:'inline'});
 		}
 		public function get styleSheet():StyleSheet	{
 			return _css;

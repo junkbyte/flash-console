@@ -23,19 +23,21 @@
 * 
 */
 package com.junkbyte.console.core {
+	import com.junkbyte.console.Console;
 	import flash.net.SharedObject;
 
-	public class UserData {
+	public class UserData extends ConsoleCore{
 		
 		private static const HISTORY:String = "clhistory";
 		
 		private var _so:SharedObject;
 		private var _data:Object = {};
 		
-		public function UserData(name:String, localPath:String = null){
-			if(name){
+		public function UserData(console:Console){
+			super(console);
+			if(config.sharedObjectName){
 				try{
-					_so = SharedObject.getLocal(name, localPath);
+					_so = SharedObject.getLocal(config.sharedObjectName, config.sharedObjectPath);
 					_data = _so.data;
 				}catch(e:Error){
 					

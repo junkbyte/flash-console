@@ -44,7 +44,7 @@ package com.junkbyte.console.view {
 		public static const DRAGGING:String = "DRAGGING";
 		public static const SCALING:String = "SCALING";
 		
-		[Event(name="TEXT_ROLL", type="flash.events.TextEvent")]
+		//[Event(name="TEXT_ROLL", type="flash.events.TextEvent")]
 		private static const TEXT_ROLL:String = "TEXT_ROLL";
 		
 		private var _snaps:Array;
@@ -52,56 +52,55 @@ package com.junkbyte.console.view {
 		
 		private var _resizeTxt:TextField;
 		//
-		protected var master:Console;
+		protected var console:Console;
 		protected var bg:Sprite;
 		protected var scaler:Sprite;
 		protected var txtField:TextField;
 		protected var minWidth:int = 18;
 		protected var minHeight:int = 18;
 		
+		private var _movedFrom:Point;
 		public var moveable:Boolean = true;
 		
 		public function AbstractPanel(m:Console) {
-			master = m;
+			console = m;
 			bg = new Sprite();
 			bg.name = "background";
 			addChild(bg);
 		}
 		
-		public function get config() : ConsoleConfig {
-			return master.config;
+		protected function get config() : ConsoleConfig {
+			return console.config;
 		}
 		
-		public function get style() : ConsoleStyle {
-			return master.config.style;
+		protected function get style() : ConsoleStyle {
+			return console.config.style;
 		}
 		
-		protected function drawBG(col:Number = 0, a:Number = 0.6, rounding:int = 10):void{
+		protected function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
+			
 			bg.graphics.clear();
-			bg.graphics.beginFill(col, a);
+			bg.graphics.beginFill(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha);
 			var size:int = 100;
-			var roundSize:int = 100-(rounding*2);
+			if(rounding <0 ) rounding = style.roundBorder;
+			var roundSize:int = size-(rounding*2);
 			if(rounding<=0) bg.graphics.drawRect(0, 0, size, size);
 			else {
 				bg.graphics.drawRoundRect(0, 0, size, size,rounding,rounding);
 				var grid:Rectangle = new Rectangle(rounding, rounding, roundSize, roundSize);
 				bg.scale9Grid = grid;
 			}
-		}
-		public function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
-			if(rounding <0 ) rounding = style.roundBorder;
-			drawBG(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha, rounding);
+			
 			scalable = resizable;
 			width = w;
 			height = h;
 		}
 		public function close():void {
 			stopDragging();
-			master.panels.tooltip();
+			console.panels.tooltip();
 			if(parent){
 				parent.removeChild(this);
 			}
-			//dispatchEvent(new Event(CLOSED));
 		}
 		//
 		// SIZE
@@ -128,7 +127,7 @@ package com.junkbyte.console.view {
 		public function registerSnaps(X:Array, Y:Array):void{
 			_snaps = [X,Y];
 		}
-		public function registerDragger(mc:DisplayObject, dereg:Boolean = false):void{
+		protected function registerDragger(mc:DisplayObject, dereg:Boolean = false):void{
 			if(dereg){
 				mc.removeEventListener(MouseEvent.MOUSE_DOWN, onDraggerMouseDown);
 			}else{
@@ -138,11 +137,13 @@ package com.junkbyte.console.view {
 		private function onDraggerMouseDown(e:MouseEvent):void{
 			if(!stage || !moveable) return;
 			//
-			_resizeTxt = makeTF("positioningField", false, true);
+			_resizeTxt = makeTF("positioningField", true);
+			_resizeTxt.mouseEnabled = false;
 			_resizeTxt.autoSize = TextFieldAutoSize.LEFT;
 			addChild(_resizeTxt);
 			updateDragText();
 			//
+			_movedFrom = new Point(x, y);
 			_dragOffset = new Point(mouseX,mouseY); // using this way instead of startDrag, so that it can control snapping.
 			_snaps = [[],[]];
 			dispatchEvent(new Event(DRAGGING));
@@ -174,6 +175,16 @@ package com.junkbyte.console.view {
 			}
 			_resizeTxt = null;
 		}
+		public function moveBackSafePosition():void{
+			if(_movedFrom != null){
+				// This will only work if stage size is not altered OR stage.align is top left
+				if(x+width<10 || (stage && stage.stageWidth<x+10) || y+height<10 || (stage && stage.stageHeight<y+20)) {
+					x = _movedFrom.x;
+					y = _movedFrom.y;
+				}
+				_movedFrom = null;
+			}
+		}
 		//
 		// SCALING
 		//
@@ -184,7 +195,11 @@ package com.junkbyte.console.view {
 			if(b && !scaler){
 				scaler = new Sprite();
 				scaler.name = "scaler";
+				scaler.graphics.beginFill(0, 0);
+				scaler.graphics.drawRect(-15, -15, 15, 15);
+	            scaler.graphics.endFill();
 				scaler.graphics.beginFill(style.controlColor, style.backgroundAlpha);
+	            scaler.graphics.moveTo(0, 0);
 	            scaler.graphics.lineTo(-10, 0);
 	            scaler.graphics.lineTo(0, -10);
 	            scaler.graphics.endFill();
@@ -200,7 +215,8 @@ package com.junkbyte.console.view {
 			}
 		}
 		private function onScalerMouseDown(e:Event):void{
-			_resizeTxt = makeTF("resizingField", false, true);
+			_resizeTxt = makeTF("resizingField", true);
+			_resizeTxt.mouseEnabled = false;
 			_resizeTxt.autoSize = TextFieldAutoSize.RIGHT;
 			_resizeTxt.x = -4;
 			_resizeTxt.y = -17;
@@ -238,12 +254,11 @@ package com.junkbyte.console.view {
 		}
 		//
 		//
-		public function makeTF(n:String, mouse:Boolean = true, back:Boolean = false):TextField
+		public function makeTF(n:String, back:Boolean = false):TextField
 		{
 			var txt:TextField = new TextField();
 			txt.name = n;
 			txt.styleSheet = style.styleSheet;
-			if(!mouse) txt.mouseEnabled = mouse;
 			if(back){
           	 	txt.background = true;
             	txt.backgroundColor = style.backgroundColor;
@@ -266,7 +281,7 @@ package com.junkbyte.console.view {
 			return v;
 		}
 		
-		public function registerTFRoller(field:TextField, overhandle:Function, linkHandler:Function = null):void{
+		protected function registerTFRoller(field:TextField, overhandle:Function, linkHandler:Function = null):void{
 			field.addEventListener(MouseEvent.MOUSE_MOVE, onTextFieldMouseMove, false, 0, true);
 			field.addEventListener(MouseEvent.ROLL_OUT, onTextFieldMouseOut, false, 0, true);
 			field.addEventListener(TEXT_ROLL, overhandle, false, 0, true);
