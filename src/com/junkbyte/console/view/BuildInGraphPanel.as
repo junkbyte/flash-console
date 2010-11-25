@@ -1,4 +1,4 @@
-﻿/*
+/*
 * 
 * Copyright (c) 2008-2010 Lu Aye Oo
 * 
@@ -22,39 +22,37 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-
 package com.junkbyte.console.view {
-	import com.junkbyte.console.Console;
-	import com.junkbyte.console.vos.GraphGroup;
-
 	import flash.events.TextEvent;
 
-	public class MemoryPanel extends GraphingPanel {
+	import com.junkbyte.console.Console;
+	import com.junkbyte.console.view.GraphingPanel;
+	import com.junkbyte.console.vos.GraphGroup;
+
+	public class BuildInGraphPanel extends GraphingPanel {
 		//
-		public static const NAME:String = "memoryPanel";
+		public static const FPS:String = "fpsPanel";
+		public static const MEM:String = "memoryPanel";
 		
-		public function MemoryPanel(m:Console) {
-			super(m, 80,40);
-			name = NAME;
+		private var _type:String; /// just same as name, but this is private so its more secure
+		
+		public function BuildInGraphPanel(console:Console, type:String) {
+			name = type;
+			_type = type;
+			super(console, 80,40);
 			minWidth = 32;
+			// 
 		}
 		public override function update(group:GraphGroup, draw:Boolean = true):void{
 			super.update(group, draw);
 			updateKeyText();
 		}
-		public override function updateKeyText():void{
-			if(isNaN(_interest.v)){
-				txtField.htmlText = "<r><s>no mem input <menu><a href=\"event:close\">X</a></menu></s></r>";
-			}else{
-				txtField.htmlText =  "<r><s>"+_interest.v.toFixed(2)+"mb <menu><a href=\"event:gc\">G</a> <a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
-			}
-			txtField.scrollH = txtField.maxScrollH;
-		}
 		protected override function linkHandler(e:TextEvent):void{
 			if(e.text == "gc"){
 				console.gc();
 			}else if(e.text == "close"){
-				console.memoryMonitor = false;
+				if(_type == FPS) console.fpsMonitor = false;
+				else console.memoryMonitor = false;
 			}else{
 				super.linkHandler(e);
 			}
@@ -65,6 +63,17 @@ package com.junkbyte.console.view {
 				txt = "Garbage collect::Requires debugger version of flash player";
 			}
 			console.panels.tooltip(txt, this);
+		}
+		
+		public override function updateKeyText():void{
+			if(isNaN(_interest.v)){
+				txtField.htmlText = "<r><s>no input <menu><a href=\"event:close\">X</a></menu></s></r>";
+			}else if(_type == FPS){
+				txtField.htmlText = "<r><s>"+_interest.v.toFixed(1)+" | "+_interest.avg.toFixed(1)+" <menu><a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
+			}else{
+				txtField.htmlText =  "<r><s>"+_interest.v.toFixed(2)+"mb <menu><a href=\"event:gc\">G</a> <a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></r></s>";
+			}
+			txtField.scrollH = txtField.maxScrollH;
 		}
 	}
 }

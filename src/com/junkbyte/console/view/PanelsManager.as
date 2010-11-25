@@ -39,8 +39,8 @@ package com.junkbyte.console.view
 		private var _ruler:Ruler;
 		
 		private var _chsPanel:ChannelsPanel;
-		private var _fpsPanel:FPSPanel;
-		private var _memPanel:MemoryPanel;
+		private var _fpsPanel:BuildInGraphPanel;
+		private var _memPanel:BuildInGraphPanel;
 		private var _graphsMap:Object = {};
 		private var _graphPlaced:uint = 0;
 		//private var _objMonitors:Object = {};
@@ -166,8 +166,8 @@ package com.junkbyte.console.view
 			//
 			//
 			if(fpsGroup != null){
-				if(_fpsPanel == null){
-					_fpsPanel = new FPSPanel(console);
+				if (_fpsPanel == null) {
+					_fpsPanel = new BuildInGraphPanel(console, BuildInGraphPanel.FPS);
 					_fpsPanel.x = _mainPanel.x+_mainPanel.width-160;
 					_fpsPanel.y = _mainPanel.y+15;
 					addPanel(_fpsPanel);
@@ -175,14 +175,14 @@ package com.junkbyte.console.view
 				}
 				_fpsPanel.update(fpsGroup);
 			}else if(_fpsPanel!=null){
-				removePanel(FPSPanel.NAME);
+				removePanel(BuildInGraphPanel.FPS);
 				_fpsPanel = null;
 			}
 			//
 			//
 			if(memGroup != null){
 				if(_memPanel == null){
-					_memPanel = new MemoryPanel(console);
+					_memPanel = new BuildInGraphPanel(console, BuildInGraphPanel.MEM);
 					_memPanel.x = _mainPanel.x+_mainPanel.width-80;
 					_memPanel.y = _mainPanel.y+15;
 					addPanel(_memPanel);
@@ -190,7 +190,7 @@ package com.junkbyte.console.view
 				}
 				_memPanel.update(memGroup);
 			}else if(_memPanel!=null){
-				removePanel(MemoryPanel.NAME);
+				removePanel(BuildInGraphPanel.MEM);
 				_memPanel = null;
 			}
 		}
