@@ -66,6 +66,25 @@ package com.junkbyte.console {
 		public var useObjectLinking:Boolean = true;
 		
 		/**
+		 * Seconds in which object links should be hard referenced.
+		 * If you logged a temp object (object that is not referenced anywhere else), it will become a link in console. 
+		 * However it will get garbage collected almost straight away which prevents you from clicking on the object link. 
+		 * (You will normally get this message: "Reference no longer exists")
+		 * This feature allow you to set how many seconds console should hard reference object logs.
+		 * Example, if you set 120, you will get 2 mins guaranteed time that any object link will work since it first appeared.
+		 * Default is 0, meaning everything is weak linked.
+		 * Recommend not to use too high numbers. possibly 120 (2 minutes) is max you should set.
+		 * 
+		 * Example:
+		 * <code>
+		 * Cc.log("This is a temp object:", new Object());
+		 * // if you click this link in run time, it'll most likely say 'no longer exist'.
+		 * // However if you set objectHardReferenceTimer to 60, you will get AT LEAST 60 seconds before it become unavailable.
+		 * </code>
+		 */
+		public var objectHardReferenceTimer:uint = 0;
+		
+		/**
 		 * Use flash's build in (or external) trace().
 		 * <p>
 		 * When turned on, Console will also call trace() for all console logs.

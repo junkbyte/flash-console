@@ -306,6 +306,7 @@ package com.junkbyte.console
 		//
 		private function _onEnterFrame(e:Event):void{
 			_logs.tick();
+			_links.tick();
 			_mm.update();
 			var graphsList:Array;
 			if(remoter.remoting != Remoting.RECIEVER)

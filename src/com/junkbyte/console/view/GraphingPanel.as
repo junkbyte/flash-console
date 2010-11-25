@@ -155,13 +155,14 @@ package com.junkbyte.console.view {
 				_interest = interest;
 				var n:String = _interest.key;
 				keys[n] = true;
-				var info:InterestInfo = _infoMap[n];
+				var info:Array = _infoMap[n];
 				if(info == null){
 					listchanged = true;
-					info = new InterestInfo(_interest.col);
+					// used to use InterestInfo
+					info = new Array(_interest.col.toString(16), new Array());
 					_infoMap[n] = info;
 				}
-				var history:Array = info.history;
+				var history:Array = info[1];
 				if(push == 1) {
 					// special case for FPS, because it needs to fill some frames for lagged 1s...
 					if(group.type == GraphGroup.FPS){
@@ -216,7 +217,7 @@ package com.junkbyte.console.view {
 		public function updateKeyText():void{
 			var str:String = "<r><s>";
 			for(var X:String in _infoMap){
-				str += " <font color='#"+InterestInfo(_infoMap[X]).col.toString(16)+"'>"+X+"</font>";
+				str += " <font color='#"+_infoMap[X][0]+"'>"+X+"</font>";
 			}
 			str +=  " | <menu><a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></s></r>";
 			txtField.htmlText = str;
@@ -236,10 +237,12 @@ package com.junkbyte.console.view {
 		}
 	}
 }
+/*
+Stopped using this to save 0.5kb! - wow
 class InterestInfo{
 	public var col:Number;
 	public var history:Array = [];
 	public function InterestInfo(c:Number){
 		col = c;
 	}
-}
+}*/

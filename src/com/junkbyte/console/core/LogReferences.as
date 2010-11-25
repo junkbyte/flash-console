@@ -25,6 +25,7 @@
 
 package com.junkbyte.console.core 
 {
+	import flash.utils.getTimer;
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -45,8 +46,8 @@ package com.junkbyte.console.core
 		
 		public static const INSPECTING_CHANNEL:String = "⌂";
 		
-		private var _refMap:WeakObject;
-		private var _refRev:Dictionary;
+		private var _refMap:WeakObject = new WeakObject();
+		private var _refRev:Dictionary = new Dictionary(true);
 		private var _refIndex:uint = 1;
 		
 		private var _dofull:Boolean;
@@ -55,14 +56,25 @@ package com.junkbyte.console.core
 		private var _history:Array;
 		private var _hisIndex:uint;
 		
+		private var _prevBank:Array = new Array();
+		private var _currentBank:Array = new Array();
+		private var _lastWithdraw:uint;
+		
 		public function LogReferences(console:Console) {
 			super(console);
 			
-			_refMap = new WeakObject();
-			_refRev = new Dictionary(true);
-			
 			remoter.registerClient("ref", handleString);
 			remoter.registerClient("focus", handleFocused);
+		}
+		public function tick():void{
+			if(_currentBank.length || _prevBank.length){
+				var time:int = getTimer();
+				if( time > _lastWithdraw+config.objectHardReferenceTimer*1000){
+					_prevBank = _currentBank;
+					_currentBank = new Array();
+					_lastWithdraw = time;
+				}
+			}
 		}
 		public function setLogRef(o:*):uint{
 			if(!config.useObjectLinking) return 0;
@@ -71,6 +83,10 @@ package com.junkbyte.console.core
 				ind = _refIndex;
 				_refMap[ind] = o;
 				_refRev[o] = ind;
+				if(config.objectHardReferenceTimer)
+				{
+					_currentBank.push(o);
+				}
 				_refIndex++;
 				// Look through every 20th older _refMap ids and delete empty ones
 				// 50s rather than all to be faster.
