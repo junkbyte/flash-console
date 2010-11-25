@@ -295,6 +295,16 @@ package com.junkbyte.console {
 			if(_console) _console.explode(obj,depth);
 		}
 		/**
+		 * Expand object values and print in channel - similar to JSON encode
+		 * 
+		 * @param channel	Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param obj	Object to explode
+		 * @param depth	Depth of explosion, -1 = unlimited
+		 */
+		public static function explodech(channel:*, obj:Object, depth:int = 3):void {
+			if(_console) _console.explodech(channel, obj, depth);
+		}
+		/**
 		 * Print the display list map
 		 * (same as /map in commandLine)
 		 * 

@@ -95,12 +95,10 @@ package com.junkbyte.console {
 		 * </p>
 		 * @see tracing
 		 */
-		public var traceCall:Function = defaultTrace;
-		
-		private static function defaultTrace(ch:String, line:String, ...args):void
+		public var traceCall:Function = function (ch:String, line:String, ...args):void
 		{
 			trace("["+ch+"] "+line);
-		}
+		};
 		
 		///////////////////////
 		//                   //

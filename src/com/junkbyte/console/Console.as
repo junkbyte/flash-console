@@ -261,6 +261,9 @@ package com.junkbyte.console
 		public function explode(obj:Object, depth:int = 3):void{
 			report(_links.explode(obj, depth), 1);
 		}
+		public function explodech(channel:*, obj:Object, depth:int = 3):void{
+			addLine(new Array(_links.explode(obj, depth)), 1, makeChannelName(channel), false, true);
+		}
 		public function get paused():Boolean{
 			return _paused;
 		}
@@ -307,7 +310,6 @@ package com.junkbyte.console
 			var graphsList:Array;
 			if(remoter.remoting != Remoting.RECIEVER)
 			{
-				//om = _om.update();
 			 	graphsList = _graphing.update(stage?stage.frameRate:0);
 			}
 			_remoter.update(graphsList);
@@ -339,16 +341,13 @@ package com.junkbyte.console
 		//
 		//
 		//
-		public function get viewingChannels():Array{
-			return _panels.mainPanel.viewingChannels;
-		}
 		public function setViewingChannels(...args:Array):void{
 			var a:Array = new Array();
 			for each(var item:Object in args) a.push(makeChannelName(item));
 			_panels.mainPanel.viewingChannels = a;
 		}
 		public function report(obj:*, priority:int = 0, skipSafe:Boolean = true):void{
-			var cn:String = viewingChannels.length == 1?viewingChannels[0]:Console.CONSOLE_CHANNEL;
+			var cn:String = _panels.mainPanel.viewingChannels.length == 1?_panels.mainPanel.viewingChannels[0]:Console.CONSOLE_CHANNEL;
 			addLine([obj], priority, cn, false, skipSafe);
 		}
 		public function addLine(lineParts:Array, priority:int = 0,channel:String = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{

@@ -120,14 +120,17 @@ package com.junkbyte.console.core
 		public function getHintsFor(str:String):Array{
 			var all:Array = new Array();
 			for (var X:String in _slashCmds){
+				if(config.commandLineAllowed || _slashCmds[X].allow)
 				all.push("/"+X+" ");
 			}
-			for (var Y:String in _saved){
-				all.push("$"+Y);
-			}
-			if(_scope){
-				all.push("this");
-				all = all.concat(console.links.getPossibleCalls(_scope));
+			if(config.commandLineAllowed){
+				for (var Y:String in _saved){
+					all.push("$"+Y);
+				}
+				if(_scope){
+					all.push("this");
+					all = all.concat(console.links.getPossibleCalls(_scope));
+				}
 			}
 			str = str.toLowerCase();
 			var hints:Array = new Array();

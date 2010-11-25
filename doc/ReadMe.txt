@@ -56,6 +56,7 @@ http://code.google.com/p/flash-console/issues/
    * Top menu can now be hidden from UI OR Cc.config.style.topMenu = false;
    * Remote: to run local command line on remote, prefix string with ~, e.g. `~stage.frameRate=100;`
    * Classes now get a `*` around the name to signify that its a class and not an instance of a class. eg. `*Sprite*`
+   * Added `Cc.explodech()` to explode to channel
    * Pressing Enter while console is visible will auto focus to commandLine
    * added /commands command to list all slash commands
    * added /keybinds command to list all used key binds
