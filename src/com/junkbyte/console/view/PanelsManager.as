@@ -39,8 +39,8 @@ package com.junkbyte.console.view
 		private var _ruler:Ruler;
 		
 		private var _chsPanel:ChannelsPanel;
-		private var _fpsPanel:BuildInGraphPanel;
-		private var _memPanel:BuildInGraphPanel;
+		private var _fpsPanel:GraphingPanel;
+		private var _memPanel:GraphingPanel;
 		private var _graphsMap:Object = {};
 		private var _graphPlaced:uint = 0;
 		//private var _objMonitors:Object = {};
@@ -95,8 +95,8 @@ package com.junkbyte.console.view
 		public function setPanelArea(panelname:String, rect:Rectangle):void{
 			var panel:AbstractPanel = getPanel(panelname);
 			if(panel){
-				if(rect.x) panel.x = rect.x;
-				if(rect.y) panel.y = rect.y;
+				panel.x = rect.x;
+				panel.y = rect.y;
 				if(rect.width) panel.width = rect.width;
 				if(rect.height) panel.height = rect.height;
 			}
@@ -167,7 +167,8 @@ package com.junkbyte.console.view
 			//
 			if(fpsGroup != null){
 				if (_fpsPanel == null) {
-					_fpsPanel = new BuildInGraphPanel(console, BuildInGraphPanel.FPS);
+					_fpsPanel = new GraphingPanel(console, 80 ,40, GraphingPanel.FPS);
+					_fpsPanel.name = GraphingPanel.FPS;
 					_fpsPanel.x = _mainPanel.x+_mainPanel.width-160;
 					_fpsPanel.y = _mainPanel.y+15;
 					addPanel(_fpsPanel);
@@ -175,14 +176,15 @@ package com.junkbyte.console.view
 				}
 				_fpsPanel.update(fpsGroup);
 			}else if(_fpsPanel!=null){
-				removePanel(BuildInGraphPanel.FPS);
+				removePanel(GraphingPanel.FPS);
 				_fpsPanel = null;
 			}
 			//
 			//
 			if(memGroup != null){
 				if(_memPanel == null){
-					_memPanel = new BuildInGraphPanel(console, BuildInGraphPanel.MEM);
+					_memPanel = new GraphingPanel(console, 80 ,40, GraphingPanel.MEM);
+					_memPanel.name = GraphingPanel.MEM;
 					_memPanel.x = _mainPanel.x+_mainPanel.width-80;
 					_memPanel.y = _mainPanel.y+15;
 					addPanel(_memPanel);
@@ -190,7 +192,7 @@ package com.junkbyte.console.view
 				}
 				_memPanel.update(memGroup);
 			}else if(_memPanel!=null){
-				removePanel(BuildInGraphPanel.MEM);
+				removePanel(GraphingPanel.MEM);
 				_memPanel = null;
 			}
 		}
@@ -203,10 +205,14 @@ package com.junkbyte.console.view
 		public function set displayRoller(n:Boolean):void{
 			if(displayRoller != n){
 				if(n){
-					var roller:RollerPanel = new RollerPanel(console);
-					roller.x = _mainPanel.x+_mainPanel.width-180;
-					roller.y = _mainPanel.y+55;
-					addPanel(roller);
+					if(console.config.displayRollerEnabled){
+						var roller:RollerPanel = new RollerPanel(console);
+						roller.x = _mainPanel.x+_mainPanel.width-180;
+						roller.y = _mainPanel.y+55;
+						addPanel(roller);
+					}else{
+						console.report("Display roller is disabled in config.", 9);
+					}
 				}else{
 					removePanel(RollerPanel.NAME);
 				}
@@ -322,10 +328,8 @@ package com.junkbyte.console.view
 				for(var i:int = 0;i<numchildren;i++){
 					var panel:AbstractPanel = console.getChildAt(i) as AbstractPanel;
 					if(panel && panel.visible){
-						X.push(panel.x);
-						X.push(panel.x+panel.width);
-						Y.push(panel.y);
-						Y.push(panel.y+panel.height);
+						X.push(panel.x, panel.x+panel.width);
+						Y.push(panel.y, panel.y+panel.height);
 					}
 				}
 				target.registerSnaps(X, Y);

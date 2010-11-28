@@ -52,7 +52,7 @@ package com.junkbyte.console.vos {
 		}
 		
 		public function plainText():String{
-			return text.replace(/<.*?>/g, "");
+			return text.replace(/<.*?>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 		}
 		public function toString():String{
 			return "["+ch+"] " + plainText();

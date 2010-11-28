@@ -45,7 +45,7 @@ package com.junkbyte.console {
 		 * Default = 75;
 		 * </p>
 		 */
-		public var maxRepeats:uint = 75;
+		public var maxRepeats:int = 75;
 		
 		/**
 		 * Auto stack trace logs for this priority and above
@@ -66,7 +66,7 @@ package com.junkbyte.console {
 		public var useObjectLinking:Boolean = true;
 		
 		/**
-		 * Seconds in which object links should be hard referenced.
+		 * Seconds in which object links should be hard referenced for.
 		 * If you logged a temp object (object that is not referenced anywhere else), it will become a link in console. 
 		 * However it will get garbage collected almost straight away which prevents you from clicking on the object link. 
 		 * (You will normally get this message: "Reference no longer exists")
@@ -175,7 +175,6 @@ package com.junkbyte.console {
 		 */
 		public var commandLineAutoScope:Boolean;
 		
-		
 		/**
 		 * Key binding availability
 		 * <p>
@@ -183,6 +182,14 @@ package com.junkbyte.console {
 		 * </p>
 		 */
 		public var keyBindsEnabled:Boolean = true;
+		
+		/**
+		 *Display Roller availability
+		 * <p>
+		 * You are able to turn it off incase you need better security.
+		 * </p>
+		 */
+		public var displayRollerEnabled:Boolean = true;
 		
 		/**
 		 * Determine if Console should hide the mouse cursor when using Ruler tool.

@@ -46,6 +46,7 @@ package com.junkbyte.console.core {
 			super(m);
 			remoter.registerClient("fps", fpsRequest);
 			remoter.registerClient("mem", memRequest);
+			remoter.registerClient("removeGroup", removeGroup);
 		}
 		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
 			var group:GraphGroup = _map[n];
@@ -54,9 +55,12 @@ package com.junkbyte.console.core {
 				newGroup = true;
 				group = new GraphGroup(n);
 			}
-			if(isNaN(col) || col<0) col = Math.random()*0xFFFFFF;
-			if(key == null) key = prop;
 			var interests:Array = group.interests;
+			if (isNaN(col) || col < 0) {
+				if (interests.length <= 5) col = config.style["priority"+ (10-interests.length*2)];
+				else col = Math.random()*0xFFFFFF;
+			}
+			if(key == null) key = prop;
 			for each(var i:GraphInterest in interests){
 				if(i.key == key){
 					report("Graph with key ["+key+"] already exists in ["+n+"]", 10);
@@ -92,12 +96,10 @@ package com.junkbyte.console.core {
 			group.fixed = !(isNaN(low)||isNaN(high));
 		}
 		public function remove(n:String, obj:Object = null, prop:String = null):void{
-			var group:GraphGroup = _map[n];
-			if(!group) return;
 			if(obj==null&&prop==null){	
 				removeGroup(n);
-			}else{
-				var interests:Array = group.interests;
+			}else if(_map[n]){
+				var interests:Array = _map[n].interests;
 				for(var i:int = interests.length-1;i>=0;i--){
 					var interest:GraphInterest = interests[i];
 					if((obj == null || interest.obj == obj) && (prop == null || interest.prop == prop)){
@@ -110,10 +112,14 @@ package com.junkbyte.console.core {
 			}
 		}
 		private function removeGroup(n:String):void{
-			var g:GraphGroup = _map[n];
-			var index:int = _groups.indexOf(g);
-			if(index>=0) _groups.splice(index, 1);
-			delete _map[n];
+			if(remoter.remoting == Remoting.RECIEVER) {
+				remoter.send("removeGroup", n);
+			}else{
+				var g:GraphGroup = _map[n];
+				var index:int = _groups.indexOf(g);
+				if(index>=0) _groups.splice(index, 1);
+				delete _map[n];
+			}
 		}
 		public function get fpsMonitor():Boolean{
 			if(remoter.remoting == Remoting.RECIEVER) return console.panels.fpsMonitor;

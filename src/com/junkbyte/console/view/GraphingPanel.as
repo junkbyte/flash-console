@@ -34,23 +34,29 @@ package com.junkbyte.console.view {
 
 	public class GraphingPanel extends AbstractPanel {
 		//
+		public static const FPS:String = "fpsPanel";
+		public static const MEM:String = "memoryPanel";
 		//
-		protected var _group:GraphGroup;
-		protected var _interest:GraphInterest;
-		protected var _infoMap:Object = new Object();
+		private var _group:GraphGroup;
+		private var _interest:GraphInterest;
+		private var _infoMap:Object = new Object();
+		//
+		private var _type:String;
 		//
 		private var _needRedraw:Boolean;
 		//
-		protected var underlay:Shape;
-		protected var graph:Shape;
-		protected var lowTxt:TextField;
-		protected var highTxt:TextField;
+		private var underlay:Shape;
+		private var graph:Shape;
+		private var lowTxt:TextField;
+		private var highTxt:TextField;
 		//
 		public var startOffset:int = 5;
 		//
-		public function GraphingPanel(m:Console, W:int = 0, H:int = 0, resizable:Boolean = true) {
+		public function GraphingPanel(m:Console, W:int, H:int, type:String = null) {
 			super(m);
+			_type = type;
 			registerDragger(bg);
+			minWidth = 32;
 			minHeight = 26;
 			//
 			lowTxt = makeTF("lowestField", false);
@@ -78,7 +84,7 @@ package com.junkbyte.console.view {
 			graph.y = style.menuFontSize;
 			addChild(graph);
 			//
-			init(W?W:100,H?H:80,resizable);
+			init(W,H,true);
 		}
 		private function stop():void {
 			if(_group) console.graphing.remove(_group.name);
@@ -212,14 +218,25 @@ package com.junkbyte.console.view {
 					delete _infoMap[X];
 				}
 			}
-			if(listchanged) updateKeyText();
+			if(listchanged || _type) updateKeyText();
 		}
 		public function updateKeyText():void{
 			var str:String = "<r><s>";
-			for(var X:String in _infoMap){
-				str += " <font color='#"+_infoMap[X][0]+"'>"+X+"</font>";
+			if(_type){
+				if(isNaN(_interest.v)){
+					str += "no input<menu>";
+				}else if(_type == FPS){
+					str += _interest.v.toFixed(1)+" | "+_interest.avg.toFixed(1)+" <menu><a href=\"event:reset\">R</a>";
+				}else{
+					str += _interest.v.toFixed(2)+"mb <menu><a href=\"event:gc\">G</a> <a href=\"event:reset\">R</a>";
+				}
+			}else{
+				for(var X:String in _infoMap){
+					str += " <font color='#"+_infoMap[X][0]+"'>"+X+"</font>";
+				}
+				str += " | <menu><a href=\"event:reset\">R</a>";
 			}
-			str +=  " | <menu><a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></s></r>";
+			str += " <a href=\"event:close\">X</a></menu></s></r>";
 			txtField.htmlText = str;
 			txtField.scrollH = txtField.maxScrollH;
 		}
@@ -228,12 +245,20 @@ package com.junkbyte.console.view {
 			if(e.text == "reset"){
 				reset();
 			}else if(e.text == "close"){
-				stop();
-			}
+				if(_type == FPS) console.fpsMonitor = false;
+				else if(_type == MEM) console.memoryMonitor = false;
+				else stop();
+			}else if(e.text == "gc"){
+				console.gc();
+			} 
 			e.stopPropagation();
 		}
 		protected function onMenuRollOver(e:TextEvent):void{
-			console.panels.tooltip(e.text?e.text.replace("event:",""):null, this);
+			var txt:String = e.text?e.text.replace("event:",""):null;
+			if(txt == "gc"){
+				txt = "Garbage collect::Requires debugger version of flash player";
+			}
+			console.panels.tooltip(txt, this);
 		}
 	}
 }

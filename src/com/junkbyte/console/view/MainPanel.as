@@ -76,6 +76,7 @@ package com.junkbyte.console.view
 		private var _priority:int;
 		private var _filterText:String;
 		private var _filterRegExp:RegExp;
+		private var _clScope:String = "";
 		
 		private var _needUpdateMenu:Boolean;
 		private var _needUpdateTrace:Boolean;
@@ -151,7 +152,6 @@ package com.junkbyte.console.view
 			_cmdPrefx.height = fsize+6;
 			_cmdPrefx.selectable = false;
 			_cmdPrefx.defaultTextFormat = tf;
-			_cmdPrefx.text = " ";
 			_cmdPrefx.addEventListener(MouseEvent.MOUSE_DOWN, onCmdPrefMouseDown);
 			_cmdPrefx.addEventListener(MouseEvent.MOUSE_MOVE, onCmdPrefRollOverOut);
 			_cmdPrefx.addEventListener(MouseEvent.ROLL_OUT, onCmdPrefRollOverOut);
@@ -182,6 +182,7 @@ package com.junkbyte.console.view
 			_cmdField.visible = false;
 			_cmdPrefx.visible = false;
 			_cmdBG.visible = false;
+			updateCLScope("");
 			//
 			init(640,100,true);
 			registerDragger(txtField);
@@ -246,7 +247,7 @@ package com.junkbyte.console.view
 				_cmdBG.transform.colorTransform = ct;
 				_traceField.transform.colorTransform = new ColorTransform(0.7,0.7,0.7);
 			}else{
-				updateCLScope("?");
+				updateCLScope("");
 				_cmdBG.transform.colorTransform = ct;
 				_traceField.transform.colorTransform = ct;
 			}
@@ -256,6 +257,10 @@ package com.junkbyte.console.view
 		public function update(changed:Boolean):void{
 			if(_bottomLine.alpha>0){
 				_bottomLine.alpha -= 0.25;
+			}
+			if(_clScope != console.cl.scopeString && console.remoter.remoting != Remoting.RECIEVER){
+				_clScope = console.cl.scopeString;
+				updateCLScope(_clScope);
 			}
 			if(changed){
 				_bottomLine.alpha = 1;
@@ -531,7 +536,7 @@ package com.junkbyte.console.view
 			_lockScrollUpdate = true;
 			super.width = n;
 			_traceField.width = n-4;
-			txtField.width = n-4;
+			txtField.width = n-6;
 			_cmdField.width = width-15-_cmdField.x;
 			_cmdBG.width = n;
 			
@@ -540,8 +545,8 @@ package com.junkbyte.console.view
 			_bottomLine.graphics.moveTo(10, -1);
 			_bottomLine.graphics.lineTo(n-10, -1);
 			_scroll.x = n;
-			if(console.remoter.remoting != Remoting.RECIEVER) updateCLScope(console.cl.scopeString);
 			_atBottom = true;
+			updateCLSize();
 			_needUpdateMenu = true;
 			_needUpdateTrace = true;
 			_lockScrollUpdate = false;
@@ -550,8 +555,7 @@ package com.junkbyte.console.view
 			_lockScrollUpdate = true;
 			var fsize:int = style.menuFontSize;
 			var msize:Number = fsize+6+style.traceFontSize;
-			if(super.height != n)
-			{
+			if(height != n){
 				_mini = n < (_cmdField.visible?(msize+fsize+4):msize);
 			}
 			super.height = n;
@@ -597,7 +601,7 @@ package com.junkbyte.console.view
 		private function _updateMenu():void{
 			var str:String = "<r><w>";
 			if(_mini || !style.topMenu){
-				str += "<menu><b> <a href=\"event:show\">‹</a> </b></menu>";
+				str += "<menu><b> <a href=\"event:show\">‹</a>";
 			}else {
 				if(!console.panels.channelsPanel){
 					str += getChannelsLink(true);
@@ -617,6 +621,7 @@ package com.junkbyte.console.view
 				str += doActive(" <a href=\"event:command\">CL</a>", commandLine);
 				
 				if(console.remoter.remoting != Remoting.RECIEVER){
+					if(config.displayRollerEnabled)
 					str += doActive(" <a href=\"event:roller\">Ro</a>", console.displayRoller);
 					str += doActive(" <a href=\"event:ruler\">RL</a>", console.panels.rulerActive);
 				}
@@ -624,9 +629,9 @@ package com.junkbyte.console.view
 				str += " <a href=\"event:copy\">Cc</a>";
 				str += " <a href=\"event:priority\">P"+_priority+"</a>";
 				str += doActive(" <a href=\"event:pause\">P</a>", console.paused);
-				str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a> <a href=\"event:hide\">›</a> </b></menu>";
+				str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a> <a href=\"event:hide\">›</a>";
 			}
-			str += "</w></r>";
+			str += " </b></menu></w></r>";
 			txtField.htmlText = str;
 			txtField.scrollH = txtField.maxScrollH;
 		}
@@ -927,6 +932,9 @@ package com.junkbyte.console.view
 			}
 			_cmdPrefx.autoSize = TextFieldAutoSize.LEFT;
 			_cmdPrefx.text = str;
+			updateCLSize();
+		}
+		private function updateCLSize():void{
 			var w:Number = width-48;
 			if(_cmdPrefx.width > 120 || _cmdPrefx.width > w){
 				_cmdPrefx.autoSize = TextFieldAutoSize.NONE;

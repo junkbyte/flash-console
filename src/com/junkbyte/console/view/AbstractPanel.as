@@ -196,7 +196,7 @@ package com.junkbyte.console.view {
 				scaler = new Sprite();
 				scaler.name = "scaler";
 				scaler.graphics.beginFill(0, 0);
-				scaler.graphics.drawRect(-15, -15, 15, 15);
+				scaler.graphics.drawRect(-10, -18, 10, 18);
 	            scaler.graphics.endFill();
 				scaler.graphics.beginFill(style.controlColor, style.backgroundAlpha);
 	            scaler.graphics.moveTo(0, 0);

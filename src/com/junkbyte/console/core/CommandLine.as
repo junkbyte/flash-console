@@ -42,6 +42,7 @@ package com.junkbyte.console.core
 		
 		private var _scope:*;
 		private var _prevScope:WeakRef;
+		private var _scopeStr:String = "";
 		
 		private var _slashCmds:Object;
 		
@@ -77,16 +78,12 @@ package com.junkbyte.console.core
 			}else{
 				_prevScope.reference = _scope;
 				_scope = obj;
-				console.panels.mainPanel.updateCLScope(scopeString);
+				_scopeStr = LogReferences.ShortClassName(obj, false);
 			}
 			_saved.set("base", obj);
 		}
 		public function get base():Object {
 			return _saved.get("base");
-		}
-		public function destory():void {
-			_saved = null;
-			_scope = null;
 		}
 		public function handleScopeEvent(id:uint):void{
 			if(remoter.remoting == Remoting.RECIEVER){
@@ -148,7 +145,7 @@ package com.junkbyte.console.core
 			return hints;
 		}
 		public function get scopeString():String{
-			return LogReferences.ShortClassName(_scope, false);
+			return config.commandLineAllowed?_scopeStr:"";
 		}
 		public function addCLCmd(n:String, callback:Function, desc:String, allow:Boolean = false):void{
 			var split:Array = n.split("|");
@@ -168,11 +165,12 @@ package com.junkbyte.console.core
 			if(callback == null) delete _slashCmds[n];
 			else _slashCmds[n] = new SlashCommand(n, callback, desc, true, allow);
 		}
-		public function run(str:String):* {
+		public function run(str:String, saves:Object = null):* {
+			if(!str) return;
 			if(remoter.remoting == Remoting.RECIEVER){
-				if(str && str.charAt(0) == "~"){
+				if(str.charAt(0) == "~"){
 					str = str.substring(1);
-				}else{
+				}else if(str.search(/\/filter|\/filterexp/) != 0){
 					report("Run command at remote: "+str,-2);
 					if(!console.remoter.send("cmd", str)){
 						report("Command could not be sent to client.", 10);
@@ -192,7 +190,14 @@ package com.junkbyte.console.core
 					}
 					var exe:Executer = new Executer();
 					exe.addEventListener(Event.COMPLETE, onExecLineComplete, false, 0, true);
-					exe.setStored(_saved);
+					if(saves){
+						for(var X:String in _saved){
+							if(!saves[X]) saves[X] = _saved[X];
+						}
+					}else{
+						saves = _saved;
+					}
+					exe.setStored(saves);
 					exe.setReserved(RESERVED);
 					exe.autoScope = config.commandLineAutoScope;
 					v = exe.exec(_scope, str);
@@ -251,8 +256,8 @@ package com.junkbyte.console.core
 				if(changeScope && returned !== _scope){
 					_prevScope.reference = _scope;
 					_scope = returned;
+					_scopeStr = LogReferences.ShortClassName(_scope, false);
 					report("Changed to "+console.links.makeRefTyped(returned), -1);
-					console.panels.mainPanel.updateCLScope(scopeString);
 				}else{
 					if(say) report("Returned "+console.links.makeString(returned), -1);
 				}
@@ -277,7 +282,7 @@ package com.junkbyte.console.core
 					}
 					internalerrs++;
 				}
-				parts.push("<p"+p+">&gt;&nbsp;"+line.replace(/\s/, "&nbsp;")+"</p"+p+">");
+				parts.push("<p"+p+"> "+line+"</p"+p+">");
 				if(p>6) p--;
 			}
 			report(parts.join("\n"), 9);
@@ -338,7 +343,8 @@ package com.junkbyte.console.core
 		}
 		private function funCmd(param:String = ""):void{
 			var fakeFunction:FakeFunction = new FakeFunction(run, param);
-			setReturned(fakeFunction.exec);
+			report("Function created. Use /savestrong <i>(name)</i> to save.", -2);
+			setReturned(fakeFunction.exec, true);
 		}
 		private function autoscopeCmd(...args:Array):void{
 			config.commandLineAutoScope = !config.commandLineAutoScope;
@@ -375,7 +381,7 @@ internal class FakeFunction{
 	}
 	public function exec(...args):*
 	{
-		return run(line);
+		return run(line, args);
 	}
 }
 internal class SlashCommand{
