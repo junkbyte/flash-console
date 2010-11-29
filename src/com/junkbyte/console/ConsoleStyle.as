@@ -154,7 +154,7 @@ package com.junkbyte.console {
 				
 		private var _css:StyleSheet;
 		/**
-		 * Construct ConsoleConfig. Starts with default black based style.
+		 * Construct ConsoleStyle. Starts with default black based style.
 		 * You must set up the desired style and configuration before starting Console.
 		 */
 		public function ConsoleStyle() {

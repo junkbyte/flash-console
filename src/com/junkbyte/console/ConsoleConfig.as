@@ -54,14 +54,14 @@ package com.junkbyte.console {
 		public var autoStackPriority:int = Console.FATAL;
 
 		/**
-		 * Default stack trace depth.
-		 * default depth = 3;
+		 * Default stack trace depth
 		 */
 		public var defaultStackDepth:int = 2;
 		
 		/** 
 		 * Object linking allows you click on individual objects you have logged to inspect the detials in a specific view.
 		 * The down side is that it will take a little more memory to keep a WEAK reference to all objects pass for logging.
+		 * Potentially a security risk as users will be able to explore your code interface.
 		 */
 		public var useObjectLinking:Boolean = true;
 		
@@ -72,7 +72,7 @@ package com.junkbyte.console {
 		 * (You will normally get this message: "Reference no longer exists")
 		 * This feature allow you to set how many seconds console should hard reference object logs.
 		 * Example, if you set 120, you will get 2 mins guaranteed time that any object link will work since it first appeared.
-		 * Default is 0, meaning everything is weak linked.
+		 * Default is 0, meaning everything is weak linked straight away.
 		 * Recommend not to use too high numbers. possibly 120 (2 minutes) is max you should set.
 		 * 
 		 * Example:
@@ -99,7 +99,7 @@ package com.junkbyte.console {
 		/**
 		 * Assign custom trace function.
 		 * <p>
-		 * Strong reference to function. Console will only call this when tracing is set to true.<br/>
+		 * Console will only call this when Cc.config.tracing is set to true.<br/>
 		 * Custom function must accept 3 parameters:<br/>
 		 * - String channel name.<br/>
 		 * - String the log line.<br/>
@@ -108,7 +108,7 @@ package com.junkbyte.console {
 		 * <p>
 		 * Default function calls flash build-in trace in this format: "[channel] log line" (ignores priority)
 		 * Example:
-		 * function defaultTrace(ch:String, line:String, level:int):void {
+		 * Cc.config.traceCall = function(ch:String, line:String, level:int):void {
 		 * 	  trace("["+ch+"] "+line);
 		 * }
 		 * </p>
@@ -133,15 +133,6 @@ package com.junkbyte.console {
 		 * Note that local to network sandbox still apply.
 		 */
 		public var remotingConnectionName:String = "_Console";
-		
-		/*
-		// removed for this version
-		/**
-		 * Accessor for remoter's broadcast interval in frames.
-		 * Default = 1 (sent every frame)
-		 *
-		public var remoteDelay:uint = 1;
-		*/
 		
 		/**
 		 * allowDomain and allowInsecureDomain of remoting LocalConnection.
@@ -178,7 +169,8 @@ package com.junkbyte.console {
 		/**
 		 * Key binding availability
 		 * <p>
-		 * While turned off, you can still bind keys. Just that it will not trigger so long as the keyBindsEnabled is set to false.
+		 * While turned off, you can still bind keys. 
+		 * Just that it will not trigger so long as the keyBindsEnabled is set to false.
 		 * </p>
 		 */
 		public var keyBindsEnabled:Boolean = true;
@@ -200,19 +192,20 @@ package com.junkbyte.console {
 		 */
 		public var rulerHidesMouse:Boolean = true;
 		
-		/** Local shared object used for storing user data such as command line history
-		 *  Set to null to disable storing to local shared object.
+		/** 
+		 * Local shared object used for storing user data such as command line history
+		 * Set to null to disable storing to local shared object.
 		 */
 		public var sharedObjectName:String = "com.junkbyte/Console/UserData";
 		
 		/** Local shared object path */
 		public var sharedObjectPath:String = "/";
 		
-		/** When set to quiet, console will refrain from printing too many internal information 
+		/** 
+		 * When set to quiet, console will refrain from printing too many internal information 
 		 * <p>
 		 * It will stop tracing about start of storing and watching objects - and a few others.
 		 * If not sure, keep it to false.
-		 * Default: false;
 		 * </p>
 		 */
 		public var quiet:Boolean;

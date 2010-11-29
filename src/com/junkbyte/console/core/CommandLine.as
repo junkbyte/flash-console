@@ -132,8 +132,7 @@ package com.junkbyte.console.core
 			str = str.toLowerCase();
 			var hints:Array = new Array();
 			for each(var canadate:String in all){
-				if(canadate.toLowerCase().indexOf(str) == 0)
-				{
+				if(canadate.toLowerCase().indexOf(str) == 0){
 					hints.push(canadate);
 				}
 			}

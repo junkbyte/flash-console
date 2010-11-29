@@ -111,6 +111,16 @@ package com.junkbyte.console {
 		public function stack(str:*, depth:int = -1, priority:Number = 5):void{
 			if(enabled) _c.stackch(name, str,depth,priority);
 		}
+
+		/**
+		 * Expand object values and print in channel - similar to JSON encode
+		 * 
+		 * @param obj	Object to explode
+		 * @param depth	Depth of explosion, -1 = unlimited
+		 */
+		public function explode(obj:Object, depth:int = 3):void{
+			_c.explodech(name, obj, depth);
+		}
 		
 		/**
 		 * Get channel name

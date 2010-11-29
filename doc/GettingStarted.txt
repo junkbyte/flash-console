@@ -115,11 +115,20 @@ Cc.addSlashCommand("test", function():void{ Cc.log("Do the test!");} );
 
 // Slash command example 2
 Cc.addSlashCommand("test2", function(param:String):void{Cc.log("Do the test2 with param string:", param);} );
-//User type "/test2 abc 123" in commandLine to call function with param "abc 123".
+//User type "/test2 abc 123" in commandLine to call Cc.log with one param: "abc 123".
 }}}
-   * If you need multiple params or non-string type, you will need to do the conversion inside your call back function.
-   * If you are planning to use complex params, consider using Cc.store instead.
-   * Functions and arguments for slash command get stored as strong reference
+  * If you need multiple params, you will need to do the conversion inside your call back function.
+{{{
+// Slash command example 3 (multiple arguments trick)
+Cc.addSlashCommand("test3", function(param:String):void{ 
+		var args:Array = param.split(" ");
+		Cc.log.apply(null, args); // This is where you call a function that accept multiple arguments
+	});
+//User type "/test3 abc 123" in commandLine to call Cc.log with param 1: "abc", param 2: "123"
+}}}
+   * Functions and arguments you pass get STRONG referenced
+   * If you are planning to use complex params, consider using `Cc.store` instead
+
   * You can *store references* for use in commandline
 {{{
 //Example 1 (storing functions)
@@ -127,8 +136,8 @@ Cc.store("load", function(id:uint){Cc.log("Do some loading with id", id)});
 //User call this function by typing '$load(123);' to load with id 123.
 //
 //Example 2 (storing anything)
-Cc.store("stage", this.stage); // assuming there is this.stage
-//User manipulate frame rate by typing '$stage.frameRate = 60'
+Cc.store("mc", myMC); // assuming myMC is a MovieClip somewhere or could be anything, class, object, etc...
+//User manipulate the mc by typing `$mc.x = 100;`, `$mc.alpha = 0.5`, `$mc.parent.removeChild($mc);` etc...
 }}}
    * NOTE: Cc.store(...) use weak reference by default but you can specify to be strong
   * You can go crazy with commandline. Example:

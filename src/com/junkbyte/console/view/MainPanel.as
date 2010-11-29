@@ -60,6 +60,7 @@ package com.junkbyte.console.view
 		private var _bottomLine:Shape;
 		private var _mini:Boolean;
 		private var _shift:Boolean;
+		private var _ctrl:Boolean;
 		
 		private var _scroll:Sprite;
 		private var _scroller:Sprite;
@@ -224,10 +225,15 @@ package com.junkbyte.console.view
 			if(e.keyCode == Keyboard.SHIFT){
 				_shift = true;
 			}
+			if (e.keyCode == Keyboard.CONTROL) {
+				_ctrl = true;
+			}
 		}
 		private function keyUpHandler(e:KeyboardEvent):void{
 			if(e.keyCode == Keyboard.SHIFT){
 				_shift = false;
+			}else if(e.keyCode == Keyboard.CONTROL){
+				_ctrl = false;
 			}else if(e.keyCode == Keyboard.ENTER && parent.visible && visible && _cmdField.visible){
 				try{
 					stage.focus = _cmdField;
@@ -670,7 +676,7 @@ package com.junkbyte.console.view
 			}else if(txt == "channel_"+LogReferences.INSPECTING_CHANNEL) {
 				txt = "Inspecting channel";
 			}else if(txt.indexOf("channel_")==0) {
-				txt = "Change channel::Hold shift to select multiple channels";
+				txt = "Change channel::shift click to select multiple. ctrl click to invert select.";
 			}else if(txt == "pause"){
 				if(console.paused) txt = "Resume updates";
 				else txt = "Pause updates";
@@ -767,7 +773,16 @@ package com.junkbyte.console.view
 		}
 		public function onChannelPressed(chn:String):void{
 			var current:Array = _viewingChannels.concat();
-			if(_shift && chn != Console.GLOBAL_CHANNEL && current[0] != LogReferences.INSPECTING_CHANNEL){
+			if(_ctrl && chn != Console.GLOBAL_CHANNEL){
+				var channels:Array = console.logs.getChannels();
+				var i:int = channels.indexOf(chn);
+				if(i >= 0){
+					channels.splice(i, 1);
+					channels.splice(0, 1);
+				}
+				viewingChannels = channels;
+			}
+			else if(_shift && chn != Console.GLOBAL_CHANNEL && current[0] != LogReferences.INSPECTING_CHANNEL){
 				var ind:int = current.indexOf(chn);
 				if(ind>=0){
 					current.splice(ind,1);

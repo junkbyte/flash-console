@@ -60,7 +60,7 @@ package com.junkbyte.console {
 		/**
 		 * Start Console inside given Display.
 		 * <p>
-		 * Calling any other C calls before this (or startOnStage(...)) will fail silently (except Cc.config).
+		 * Calling any other Cc calls before this (or startOnStage(...)) will fail silently (except Cc.config).
 		 * When Console is no longer needed, removing this line alone will stop console from working without having any other errors.
 		 * In flex, it is more convenient to use Cc.startOnStage() as it will avoid UIComponent typing issue.
 		 * </p>
@@ -87,7 +87,7 @@ package com.junkbyte.console {
 		 * It will look for stage of mc (first param), if mc isn't a Stage or on Stage, console will be added to stage when mc get added to stage.
 		 * <p>
 		 * </p>
-		 * Calling any other C calls before this will fail silently (except Cc.config).
+		 * Calling any other Cc calls before this will fail silently (except Cc.config).
 		 * When Console is no longer needed, removing this line alone will stop console from working without having any other errors.
 		 * </p>
 		 * 
