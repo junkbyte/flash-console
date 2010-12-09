@@ -37,8 +37,8 @@ package com.junkbyte.console.core
 		protected function get remoter():Remoting{
 			return console.remoter;
 		}
-		protected function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true):void{
-			console.report(obj, priority, skipSafe);
+		protected function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void{
+			console.report(obj, priority, skipSafe, ch);
 		}
 	}
 }

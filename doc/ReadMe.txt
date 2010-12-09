@@ -50,22 +50,25 @@ http://code.google.com/p/flash-console/issues/
    * Removed Cc.paused. If you want to pause, press P in top menu
    * Removed Cc.remote as it is a special use case
    * Removed Cc.setPanelArea, Cc.commandBase and Cc.runCommand for simplicity
+   * Console will no longer trace about Cc.keybind, Cc.store and Cc.watch. Due to this, Cc.quiet is removed
    * Remoting now use ByteArray data format which will break older clients but is faster and more efficent
   * Minor changes
-   * Clicking on the priority filter *P0* will now skip priorities that are not used. Shift click to go backwards
-   * Ctrl click on channel name to invert select
+   * Clicking on the priority filter *P0* will skip priorities that are not used. Shift click to go backwards
+   * Ctrl click on channel name to invert select. (shift click to multi select as used to)
    * Top menu can now be minimized from UI OR Cc.config.style.topMenu = false;
    * Remote: to run local command line on remote, prefix string with ~, e.g. `~stage.frameRate=100;`
    * Remote: /filter and /filterexp will now do the filtering on remote rather than sending the command to client
    * Classes now get a `*` around the name to signify that its a class and not an instance of a class. eg. `*Sprite*`
-   * Added `Cc.explodech()` to explode to channel
+   * Added `Cc.explodech()` to output explode to channel
+   * Added `Cc.inspectch()` to output inspects to channel
+   * Added `Cc.mapch()` to output map to channel
    * Added `Cc.config.keyBindsEnabled` - to be able to disable all keybinds
    * Added `Cc.config.displayRollerEnabled` - to be able to disable display roller to increase security
    * Pressing Enter while console is visible will auto focus to commandLine
    * added /commands command to list all slash commands
    * added /keybinds command to list all used key binds
    * commandLine autoScoping can be set from Cc.config.commandLineAutoScope
-   * You can no longer change the name of global/console/default/filtered channels
+   * You can no longer change the name of global/console/default/filtered channels through Cc.config
    * Simplied sourcecode where possible while keeping compile size down
    * Merged some classes and functions to further reduce compile size
   * Bug fixes
@@ -73,7 +76,7 @@ http://code.google.com/p/flash-console/issues/
    * Not being able to keep selection while scrolling up. You may sometimes still have problem selecting while scrolling down
    * After dragging the main panel outside screen, it will snap back to view if you toggle it by entering the password
    * Fixed memory leak from deleted logs
-   * Cc.config.maxRepeats is now int so that you can pass -1
+   * Cc.config.maxRepeats is now int so that you can set -1
 
 ===2.4===
   * Renamed source package name to com.junkbyte.console - to be less personal
@@ -113,7 +116,7 @@ http://code.google.com/p/flash-console/issues/
 
 
 ===2.3===
-  * console source package renamed to com.junkbyte.console.
+  * console source package renamed to com.luaye.console.
   * memoryMonitor and fpsMonitor setters are now Boolean (used to be int)
   * Added Ch functionality where you can create instances of console channel.
   * Performace increase in terms of log lines management.

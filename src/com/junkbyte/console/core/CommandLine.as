@@ -109,10 +109,10 @@ package com.junkbyte.console.core
 			}else{
 				_saved.set(n, obj, strong);
 			}
-			if(!config.quiet){
+			/*if(!config.quiet){
 				var str:String = strong?"STRONG":"WEAK";
 				report("Stored <p5>$"+n+"</p5> for <b>"+console.links.makeRefTyped(obj)+"</b> using <b>"+ str +"</b> reference.",-1);
-			}
+			}*/
 		}
 		public function getHintsFor(str:String):Array{
 			var all:Array = new Array();
@@ -338,7 +338,7 @@ package com.junkbyte.console.core
 			console.explode(_scope, depth<=0?3:depth);
 		}
 		private function mapCmd(param:String = "0"):void{
-			console.map(_scope as DisplayObjectContainer, int(param));
+			console.mapch(console.panels.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
 		}
 		private function funCmd(param:String = ""):void{
 			var fakeFunction:FakeFunction = new FakeFunction(run, param);

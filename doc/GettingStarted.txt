@@ -18,13 +18,13 @@ For easy reference, please see `samples/flash/Sample.as` for working sample.
 import com.junkbyte.console.Cc;
 Cc.startOnStage(this, "");
 }}}
-  # First parameter is any DisplayObject which is already on stage or to be added.
+  # First parameter is any `DisplayObject` which is already on stage or to be added.
   # If you want to set a keyword for console to start, assign at second parameter. 
    * You will need to type the keyword in correct sequence to show the console. 
    * Recommended keyword: ``` or ~ or debug. Use letters and numbers only. 
    * Console will start hidden if you set a password (you can set `Cc.visible = true;` to force display console). 
    * Entering the keyword while console is visible with hide it
-   * Password will not trigger if user have focus on an input TextField
+   * Password will not trigger if user have focus on an input `TextField`
 
 ==Logging==
 {{{
@@ -55,7 +55,7 @@ ch.info("Hello!", "Works just like other logging methods but this way you keep t
 see: doc/console_controls.png
 
 ==Configuration==
-Console start with minimal features so you will need to use `Cc.config` to fit your needs.
+You will need to use `Cc.config` to enable or disable some features.
 It is recommended to set them before starting console. 
 Example:
 {{{
@@ -87,7 +87,7 @@ For easy reference, please see samples/flash/SampleAdvanced.as for working sampl
   * Key binding lets you bind keyboard keys to your own function
   * Example usages: open a specific panel, give special items/cheats in a game
   * The function you pass get STRONG referenced
-  * Key Binding will not trigger if user have focus on an input TextField
+  * Key Binding will not trigger if user have focus on an input `TextField`
   * If triggering something by keyboard is part of the actual project behaviour, it is recommended you write your own to avoid depending on console
   * Example below logs "Hello!" in console when user press the key H in keyboard.
 {{{
@@ -97,7 +97,7 @@ Cc.bindKey(new KeyBind("h"), Cc.log, ["Hello!"]);
 }}}
 
 ==Command line==
-  * CommandLine let you execute actionscript 3 code at run time
+  * `CommandLine` let you execute actionscript 3 code at run time
   * You must set `Cc.config.commandLineAllowed = true;` to be able to run full features.
   * Command line appears at the bottom of main panel (press CL at top menu)
 
@@ -153,7 +153,7 @@ Cc.store("mc", myMC); // assuming myMC is a MovieClip somewhere or could be anyt
    * Press C on keyboard to bind the capture key to that key
    * Roll over to anything you want to capture and press the keyboard C key
    * You will get the display map printed on console
-   * Clicking on the name will set that display (Sprite/MovieClip etc) as commandLine's scope
+   * Clicking on the name will set that display (`Sprite/MovieClip` etc) as commandLine's scope
    * Clicking on the link inside the {..} will inspect the object showing you the detailed info 
    * NOTE: You can also use Cc.setRollerCaptureKey(...) to assign the capture key
   * Example use: You got an item thats behaving weirdly on screen...
@@ -201,7 +201,7 @@ Cc.add("My advanced log in priority 2, 5th call", 2, true);
 
 ==Graphing==
   * Graphing lets you view number graphs similar to the FPS and memory monitor. (F and M buttons on top menu)
-  * Example as seen in samples/SampleAdvanced.as:
+  * Example as seen in `samples/SampleAdvanced.as`:
 {{{
 //Graph the current mouseX and mouseY values
 Cc.addGraph("mouse", this, "mouseX", 0xff3333,"X", new Rectangle(380,180,80,80), true);
@@ -238,9 +238,9 @@ aSprite = null;
   * Remoting sends log data for a remote console to use
   * The advantage is that you do not need to keep console open on your flash
   * You can use commandline, view FPS and memory from remote
-  * SWF version of remote is in bin/consoleRemote.swf
-  * AIR version of remote is in bin/ConsoleRemote.air
-  * EXE and APP version can be published using samples/flash/ConsoleRemote.as
+  * SWF version of remote is in `bin/consoleRemote.swf`
+  * AIR version of remote is in `bin/ConsoleRemote.air`
+  * EXE and APP version can be published using `samples/flash/ConsoleRemote.as`
   * NOTE: There can be confusion with FPS and memory monitor if you have more than one flash client sending to remote
 {{{
 Cc.remoting = true; // turns on remoting
@@ -258,6 +258,6 @@ Cc.config.style.backgroundAlpha = 1; // opaque background.
 Cc.startOnStage(this); // finally start with these styles
 }}}
 
-example: bin/sampleStyle.swf for demo. (src: samples/flash/SampleStyle.as).
+example: bin/sampleStyle.swf for demo. (src: `samples/flash/SampleStyle.as`).
 
 Asdoc: http://junkbyte.com/flash-console/asdoc/com/junkbyte/console/ConsoleStyle.html

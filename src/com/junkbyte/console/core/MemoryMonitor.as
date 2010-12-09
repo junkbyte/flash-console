@@ -64,7 +64,7 @@ package com.junkbyte.console.core
 			_namesList[n] = true;
 			_count++;
 			_objectsList[obj] = n;
-			if(!config.quiet) report("Watching <b>"+className+"</b> as <p5>"+ n +"</p5>.",-1);
+			//if(!config.quiet) report("Watching <b>"+className+"</b> as <p5>"+ n +"</p5>.",-1);
 			return n;
 		}
 		public function unwatch(n:String):void{
@@ -106,7 +106,7 @@ package com.junkbyte.console.core
 		public function gc():void {
 			if(remoter.remoting == Remoting.RECIEVER){
 				try{
-					report("Sending garbage collection request to client",-1);
+					//report("Sending garbage collection request to client",-1);
 					remoter.send("gc");
 				}catch(e:Error){
 					report(e,10);

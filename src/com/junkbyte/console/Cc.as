@@ -286,6 +286,20 @@ package com.junkbyte.console {
 			if(_console) _console.inspect(obj,detail);
 		}
 		/**
+		 * Output an object's info such as it's variables, methods (if any), properties,
+		 * superclass, children displays (if Display), parent displays (if Display), etc - to channel.
+		 * Similar to clicking on an object link or in commandLine: /inspect  OR  /inspectfull.
+		 * However this method does not go to 'inspection' channel but prints on the Console channel.
+		 * 
+		 * @param channel	Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param obj		Object to inspect
+		 * @param detail	Set to true to show inherited values.
+		 * 
+		 */
+		public static function inspectch(channel:*, obj:Object, detail:Boolean = true):void {
+			if(_console) _console.inspectch(channel,obj,detail);
+		}
+		/**
 		 * Expand object values and print in console log channel - similar to JSON encode
 		 * 
 		 * @param obj	Object to explode
@@ -313,6 +327,17 @@ package com.junkbyte.console {
 		 */
 		public static function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
 			if(_console ) _console.map(base, maxstep);
+		}
+		/**
+		 * Print the display list map to channel
+		 * (same as /map in commandLine)
+		 * 
+		 * @param channel	Name of channel, if a non-string param is passed, it will use the object's class name as channel name.
+		 * @param base	Display object to start mapping from
+		 * @param maxstep	Maximum child depth. 0 = unlimited
+		 */
+		public static function mapch(channel:String, base:DisplayObjectContainer, maxstep:uint = 0):void{
+			if(_console ) _console.mapch(channel, base, maxstep);
 		}
 		/**
 		 * Clear console logs.

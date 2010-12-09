@@ -34,9 +34,9 @@ package com.junkbyte.console.core
 		public function DisplayMapper(console:Console) {
 			super(console);
 		}
-		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
+		public function map(base:DisplayObjectContainer, maxstep:uint = 0, ch:String = null):void{
 			if(!base){
-				report("It is not a DisplayObjectContainer", 10);
+				report("It is not a DisplayObjectContainer", 10, true, ch);
 				return;
 			}
 			var list:Array = new Array();
@@ -98,15 +98,15 @@ package com.junkbyte.console.core
 						n = "<i>"+n+"</i>";
 					}
 					str += n+" "+console.links.makeRefTyped(mcDO);
-					report(str,mcDO is DisplayObjectContainer?5:2);
+					report(str,mcDO is DisplayObjectContainer?5:2, true, ch);
 				}else if(!wasHiding){
 					wasHiding = true;
-					report(str+"...",5);
+					report(str+"...",5, true, ch);
 				}
 				lastmcDO = mcDO;
 			}
-			report(base.name+":"+console.links.makeRefTyped(base)+" has "+(list.length-1)+" children/sub-children.", 10);
-			report("Click on the name to return a reference to the child clip.",-2);
+			report(base.name + ":" + console.links.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
+			if (config.commandLineAllowed) report("Click on the child display's name to set scope.", -2, true, ch);
 		}
 	}
 }

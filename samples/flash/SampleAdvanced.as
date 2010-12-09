@@ -24,6 +24,7 @@
 */
 package 
 {
+	import com.junkbyte.console.ConsoleChannel;
 	import flash.utils.setInterval;
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.vos.Log;

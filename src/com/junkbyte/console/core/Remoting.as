@@ -120,7 +120,7 @@ package com.junkbyte.console.core
 				var c:String = logs.readUTF();
 				var p:int = logs.readInt();
 				var r:Boolean = logs.readBoolean();
-				console.addLine(new Array(t),p,c,r, true);
+				console.addLine(new Array(t), p, c, r, true);
 			}
 			try{
 				var a:Array = [];

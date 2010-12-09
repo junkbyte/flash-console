@@ -201,14 +201,14 @@ package com.junkbyte.console {
 		/** Local shared object path */
 		public var sharedObjectPath:String = "/";
 		
-		/** 
+		/*
 		 * When set to quiet, console will refrain from printing too many internal information 
 		 * <p>
 		 * It will stop tracing about start of storing and watching objects - and a few others.
 		 * If not sure, keep it to false.
 		 * </p>
-		 */
 		public var quiet:Boolean;
+		 */
 		
 		/**
 		 * Keeping Console on top of display list.

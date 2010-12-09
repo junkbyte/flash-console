@@ -368,6 +368,9 @@ package com.junkbyte.console.view
 			 	&& ( _priority <= 0 || line.priority >= _priority)
 			);
 		}
+		public function get reportChannel():String{
+			return _viewingChannels.length == 1?_viewingChannels[0]:Console.CONSOLE_CHANNEL;
+		}
 		public function get viewingChannels():Array{
 			return _viewingChannels;
 		}

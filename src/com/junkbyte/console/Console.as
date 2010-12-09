@@ -46,10 +46,6 @@ package com.junkbyte.console
 	import flash.events.KeyboardEvent;
 	import flash.geom.Rectangle;
 	import flash.utils.getQualifiedClassName;
-
-	//import com.junkbyte.console.core.ObjectsMonitor;
-	
-
 	/**
 	 * Console is the main class. 
 	 * Please see com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
@@ -93,10 +89,10 @@ package com.junkbyte.console
 		private var _lineAdded:Boolean;
 		
 		/**
-		 * Console is the main class. However please use C for singleton Console adapter.
-		 * Using Console through C will also make sure you can remove console in a later date
+		 * Console is the main class. However please use Cc for singleton Console adapter.
+		 * Using Console through Cc will also make sure you can remove console in a later date
 		 * by simply removing Cc.start() or Cc.startOnStage()
-		 * 
+	 	 * See com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
 		 * 
 		 * @see com.junkbyte.console.Cc
 		 * @see http://code.google.com/p/flash-console/
@@ -253,16 +249,22 @@ package com.junkbyte.console
 			_cl.store(n, obj, strong);
 		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
-			_mapper.map(base, maxstep);
+			_mapper.map(base, maxstep, DEFAULT_CHANNEL);
+		}
+		public function mapch(channel:*, base:DisplayObjectContainer, maxstep:uint = 0):void{
+			_mapper.map(base, maxstep, MakeChannelName(channel));
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
-			_links.inspect(obj,detail);
+			_links.inspect(obj, detail, DEFAULT_CHANNEL);
+		}
+		public function inspectch(channel:*, obj:Object, detail:Boolean = true):void{
+			_links.inspect(obj,detail, MakeChannelName(channel));
 		}
 		public function explode(obj:Object, depth:int = 3):void{
-			report(_links.explode(obj, depth), 1);
+			addLine(new Array(_links.explode(obj, depth)), 1, null, false, true);
 		}
 		public function explodech(channel:*, obj:Object, depth:int = 3):void{
-			addLine(new Array(_links.explode(obj, depth)), 1, makeChannelName(channel), false, true);
+			addLine(new Array(_links.explode(obj, depth)), 1, MakeChannelName(channel), false, true);
 		}
 		public function get paused():Boolean{
 			return _paused;
@@ -320,7 +322,8 @@ package com.junkbyte.console
 				if(config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
 					_topTries--;
 					parent.addChild(this);
-					if(!config.quiet) report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
+					//if(!config.quiet) 
+					report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
 				_panels.update(_paused, _lineAdded);
 				if(graphsList) _panels.updateGraphs(graphsList, !_paused); 
@@ -344,12 +347,12 @@ package com.junkbyte.console
 		//
 		public function setViewingChannels(...args:Array):void{
 			var a:Array = new Array();
-			for each(var item:Object in args) a.push(makeChannelName(item));
+			for each(var item:Object in args) a.push(MakeChannelName(item));
 			_panels.mainPanel.viewingChannels = a;
 		}
-		public function report(obj:*, priority:int = 0, skipSafe:Boolean = true):void{
-			var cn:String = _panels.mainPanel.viewingChannels.length == 1?_panels.mainPanel.viewingChannels[0]:Console.CONSOLE_CHANNEL;
-			addLine([obj], priority, cn, false, skipSafe);
+		public function report(obj:*, priority:int = 0, skipSafe:Boolean = true, ch:String = null):void{
+			if(!ch) ch = _panels.mainPanel.reportChannel;
+			addLine([obj], priority, ch, false, skipSafe);
 		}
 		public function addLine(lineParts:Array, priority:int = 0,channel:String = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
 			var txt:String = "";
@@ -442,34 +445,28 @@ package com.junkbyte.console
 			addLine(args, FATAL);
 		}
 		public function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(new Array(newLine), priority, makeChannelName(channel), isRepeating);
+			addLine(new Array(newLine), priority, MakeChannelName(channel), isRepeating);
 		}
 		public function logch(channel:*, ...args):void{
-			addLine(args, LOG, makeChannelName(channel));
+			addLine(args, LOG, MakeChannelName(channel));
 		}
 		public function infoch(channel:*, ...args):void{
-			addLine(args, INFO, makeChannelName(channel));
+			addLine(args, INFO, MakeChannelName(channel));
 		}
 		public function debugch(channel:*, ...args):void{
-			addLine(args, DEBUG, makeChannelName(channel));
+			addLine(args, DEBUG, MakeChannelName(channel));
 		}
 		public function warnch(channel:*, ...args):void{
-			addLine(args, WARN, makeChannelName(channel));
+			addLine(args, WARN, MakeChannelName(channel));
 		}
 		public function errorch(channel:*, ...args):void{
-			addLine(args, ERROR, makeChannelName(channel));
+			addLine(args, ERROR, MakeChannelName(channel));
 		}
 		public function fatalch(channel:*, ...args):void{
-			addLine(args, FATAL, makeChannelName(channel));
+			addLine(args, FATAL, MakeChannelName(channel));
 		}
 		public function addCh(channel:*, lineParts:Array, priority:int = 2, isRepeating:Boolean = false):void{
-			addLine(lineParts, priority, makeChannelName(channel), isRepeating);
-		}
-		private function makeChannelName(obj:*):String{
-			if(obj is String) return obj as String;
-			else if(obj is ConsoleChannel) return ConsoleChannel(obj).name;
-			else if(obj) return LogReferences.ShortClassName(obj);
-			else return DEFAULT_CHANNEL;
+			addLine(lineParts, priority, MakeChannelName(channel), isRepeating);
 		}
 		//
 		//
@@ -482,7 +479,6 @@ package com.junkbyte.console
 		public function getAllLog(splitter:String = "\r\n"):String{
 			return _logs.getLogsAsString(splitter);
 		}
-		//
 		public function get config():ConsoleConfig{return _config;}
 		public function get panels():PanelsManager{return _panels;}
 		public function get cl():CommandLine{return _cl;}
@@ -492,5 +488,14 @@ package com.junkbyte.console
 		public function get links():LogReferences{return _links;}
 		public function get logs():Logs{return _logs;}
 		public function get mapper():DisplayMapper{return _mapper;}
+		//
+		//
+		//
+		public static function MakeChannelName(obj:*):String{
+			if(obj is String) return obj as String;
+			//else if(obj is ConsoleChannel) return ConsoleChannel(obj).name;
+			else if(obj) return LogReferences.ShortClassName(obj);
+			else return DEFAULT_CHANNEL;
+		}
 	}
 }

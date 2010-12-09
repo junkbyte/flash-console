@@ -23,6 +23,7 @@
 * 
 */
 package com.junkbyte.console {
+	import flash.display.DisplayObjectContainer;
 	
 	public class ConsoleChannel {
 		
@@ -37,8 +38,8 @@ package com.junkbyte.console {
 		 * @param String Name of channel
 		 * @param String (optional) instance of Console, leave blank to use C.
 		 */
-		public function ConsoleChannel(n:String = null, c:Console = null){
-			_name = n;
+		public function ConsoleChannel(n:*, c:Console = null){
+			_name = Console.MakeChannelName(n);
 			// allowed to pass in Console here incase you want to use a different console instance from whats used in Cc
 			_c = c?c:Cc;
 		}
@@ -52,7 +53,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function log(...args):void{
-			if(enabled) _c.logch.apply(null, [_name].concat(args));
+			multiadd(_c.logch, args);
 		}
 		/**
 		 * Add log line with priority 3 to channel
@@ -61,7 +62,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function info(...args):void{
-			if(enabled) _c.infoch.apply(null, [_name].concat(args));
+			multiadd(_c.infoch, args);
 		}
 		/**
 		 * Add log line with priority 5 to channel
@@ -70,7 +71,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function debug(...args):void{
-			if(enabled) _c.debugch.apply(null, [_name].concat(args));
+			multiadd(_c.debugch, args);
 		}
 		/**
 		 * Add log line with priority 7 to channel
@@ -79,7 +80,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function warn(...args):void{
-			if(enabled) _c.warnch.apply(null, [_name].concat(args));
+			multiadd(_c.warnch, args);
 		}
 		/**
 		 * Add log line with priority 9 to channel
@@ -89,7 +90,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function error(...args):void{
-			if(enabled) _c.errorch.apply(null, [_name].concat(args));
+			multiadd(_c.errorch, args);
 		}
 		/**
 		 * Add log line with priority 10 to channel
@@ -99,7 +100,10 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function fatal(...args):void{
-			if(enabled) _c.fatalch.apply(null, [_name].concat(args));
+			multiadd(_c.fatalch, args);
+		}
+		private function multiadd(f:Function, args:Array):void{
+			if(enabled) f.apply(null, new Array(_name).concat(args));
 		}
 		/**
 		 * Add log line with priority 10 to channel
@@ -109,7 +113,7 @@ package com.junkbyte.console {
 		 * @param String to be logged, any type can be passed and will be converted to string
 		 */
 		public function stack(str:*, depth:int = -1, priority:Number = 5):void{
-			if(enabled) _c.stackch(name, str,depth,priority);
+			if(enabled) _c.stackch(name, str, depth, priority);
 		}
 
 		/**
@@ -120,6 +124,29 @@ package com.junkbyte.console {
 		 */
 		public function explode(obj:Object, depth:int = 3):void{
 			_c.explodech(name, obj, depth);
+		}
+		/**
+		 * Print the display list map to channel
+		 * 
+		 * @param base	Display object to start mapping from
+		 * @param maxstep	Maximum child depth. 0 = unlimited
+		 */
+		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
+			_c.mapch(name, base, maxstep);
+		}
+		
+		/**
+		 * Output an object's info such as it's variables, methods (if any), properties,
+		 * superclass, children displays (if Display), parent displays (if Display), etc - to channel.
+		 * Similar to clicking on an object link or in commandLine: /inspect  OR  /inspectfull.
+		 * However this method does not go to 'inspection' channel but prints on the Console channel.
+		 * 
+		 * @param obj		Object to inspect
+		 * @param detail	Set to true to show inherited values.
+		 * 
+		 */
+		public function inspect(obj:Object, detail:Boolean = true):void{
+			_c.inspectch(name, obj, detail);
 		}
 		
 		/**

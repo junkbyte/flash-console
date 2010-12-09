@@ -259,9 +259,9 @@ package com.junkbyte.console.core
 		}
 		
 		
-		public function inspect(obj:*, viewAll:Boolean= true):void {
+		public function inspect(obj:*, viewAll:Boolean= true, ch:String = null):void {
 			if(!obj){
-				report(obj, -2, true);
+				report(obj, -2, true, ch);
 				return;
 			}
 			var refIndex:uint = setLogRef(obj);
@@ -284,8 +284,8 @@ package com.junkbyte.console.core
 				
 				if(viewAll) menuStr += " [<a href='event:refi'>Hide inherited</a>]";
 				else menuStr += showInherit;
-				report(menuStr, -1, true);
-				report();
+				report(menuStr, -1, true, ch);
+				report("", 1, true, ch);
 			}
 			//
 			// Class extends... extendsClass
@@ -318,7 +318,7 @@ package com.junkbyte.console.core
 			if(props.length > 0){
 				str += " <p-1>"+props.join(" | ")+"</p-1>";
 			}
-			report(str, -2, true);
+			report(str, -2, true, ch);
 			//
 			// extends...
 			//
@@ -330,7 +330,7 @@ package com.junkbyte.console.core
 					props.push(st.indexOf("*")<0?makeValue(getDefinitionByName(st)):EscHTML(st));
 					if(!viewAll) break;
 				}
-				report("<p10>Extends:</p10> "+props.join(" &gt; "));
+				report("<p10>Extends:</p10> "+props.join(" &gt; "), 1, true, ch);
 			}
 			//
 			// implements...
@@ -341,9 +341,9 @@ package com.junkbyte.console.core
 				for each (var implementX:XML in nodes) {
 					props.push(makeValue(getDefinitionByName(implementX.@type.toString())));
 				}
-				report("<p10>Implements:</p10> "+props.join(", "));
+				report("<p10>Implements:</p10> "+props.join(", "), 1, true, ch);
 			}
-			report();
+			report("", 1, true, ch);
 			//
 			// events
 			// metadata name="Event"
@@ -357,8 +357,8 @@ package com.junkbyte.console.core
 					if(refIndex) props.push("<a href='event:cl_"+refIndex+"_dispatchEvent(new "+et+"(\""+en+"\"))'>"+en+"</a><p0>("+et+")</p0>");
 					else props.push(en+"<p0>("+et+")</p0>");
 				}
-				report("<p10>Events:</p10> "+props.join("<p-1>; </p-1>"));
-				report();
+				report("<p10>Events:</p10> "+props.join("<p-1>; </p-1>"), 1, true, ch);
+				report("", 1, true, ch);
 			}
 			//
 			// display's parents and direct children
@@ -374,7 +374,7 @@ package com.junkbyte.console.core
 						var indstr:String = theParent?"@"+theParent.getChildIndex(pr):"";
 						props.push("<b>"+pr.name+"</b>"+indstr+makeValue(pr));
 					}
-					report("<p10>Parents:</p10> "+props.join("<p-1> -> </p-1>")+"<br/>", 1, true);
+					report("<p10>Parents:</p10> "+props.join("<p-1> -> </p-1>")+"<br/>", 1, true, ch);
 				}
 			}
 			if (obj is DisplayObjectContainer) {
@@ -386,7 +386,7 @@ package com.junkbyte.console.core
 					props.push("<b>"+child.name+"</b>@"+ci+makeValue(child));
 				}
 				if(clen){
-					report("<p10>Children:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 1, true);
+					report("<p10>Children:</p10> "+props.join("<p-1>; </p-1>")+"<br/>", 1, true, ch);
 				}
 			}
 			//
@@ -395,10 +395,10 @@ package com.junkbyte.console.core
 			props = [];
 			nodes = clsV..constant;
 			for each (var constantX:XML in nodes) {
-				report(" const <p3>"+constantX.@name+"</p3>:"+constantX.@type+" = "+makeValue(cls, constantX.@name)+"</p0>", 1);
+				report(" const <p3>"+constantX.@name+"</p3>:"+constantX.@type+" = "+makeValue(cls, constantX.@name)+"</p0>", 1, true, ch);
 			}
 			if(nodes.length()){
-				report("");
+				report("", 1, true, ch);
 			}
 			var inherit:uint = 0;
 			var hasstuff:Boolean;
@@ -424,15 +424,15 @@ package com.junkbyte.console.core
 						str += "<p3>"+methodX.@name+"</p3>";
 					}
 					str += "("+params.join(", ")+"):"+methodX.@returnType;
-					report(str, 1);
+					report(str, 1, true, ch);
 				}else{
 					inherit++;
 				}
 			}
 			if(inherit){
-				report("   \t + "+inherit+" inherited methods."+showInherit, 1);
+				report("   \t + "+inherit+" inherited methods."+showInherit, 1, true, ch);
 			}else if(hasstuff){
-				report();
+				report("", 1, true, ch);
 			}
 			//
 			// accessors
@@ -461,15 +461,15 @@ package com.junkbyte.console.core
 					{
 						str += " = "+makeValue(isstatic?cls:obj, accessorX.@name);
 					}
-					report(str, 1);
+					report(str, 1, true, ch);
 				}else{
 					inherit++;
 				}
 			}
 			if(inherit){
-				report("   \t + "+inherit+" inherited accessors."+showInherit, 1);
+				report("   \t + "+inherit+" inherited accessors."+showInherit, 1, true, ch);
 			}else if(hasstuff){
-				report();
+				report("", 1, true, ch);
 			}
 			//
 			// variables
@@ -481,7 +481,7 @@ package com.junkbyte.console.core
 				if(refIndex) str += " var <p3><a href='event:cl_"+refIndex+"_"+variableX.@name+" = '>"+variableX.@name+"</a>";
 				else str += " var <p3>"+variableX.@name;
 				str += "</p3>:"+variableX.@type+" = "+makeValue(isstatic?cls:obj, variableX.@name);
-				report(str, 1);
+				report(str, 1, true, ch);
 			}
 			//
 			// dynamic values
@@ -491,23 +491,23 @@ package com.junkbyte.console.core
 				for (var X:String in obj) {
 					if(refIndex) str = "<a href='event:cl_"+refIndex+"_"+X+" = '>"+X+"</a>";
 					else str = X;
-					report(" dynamic var <p3>"+str+"</p3> = "+makeValue(obj, X), 1);
+					report(" dynamic var <p3>"+str+"</p3> = "+makeValue(obj, X), 1, true, ch);
 				}
 			}catch(e:Error){
-				report("Could not get values due to: "+e, 9);
+				report("Could not get values due to: "+e, 9, true, ch);
 			}
 			if(obj is String){
-				report();
-				report("String", 10);
-				report(EscHTML(obj));
+				report("", 1, true, ch);
+				report("String", 10, true, ch);
+				report(EscHTML(obj), 1, true, ch);
 			}else if(obj is XML || obj is XMLList){
-				report();
-				report("XMLString", 10);
-				report(EscHTML(obj.toXMLString()));
+				report("", 1, true, ch);
+				report("XMLString", 10, true, ch);
+				report(EscHTML(obj.toXMLString()), 1, true, ch);
 			}
 			if(menuStr){
-				report();
-				report(menuStr, -1, true);
+				report("", 1, true, ch);
+				report(menuStr, -1, true, ch);
 			}
 		}
 		public function getPossibleCalls(obj:*):Array{

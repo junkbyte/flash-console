@@ -55,10 +55,10 @@ package com.junkbyte.console.core
 			}
 			if(fun == null){
 				delete _binds[key.key];
-				if(!config.quiet) report("Unbined key "+key.key+".", -1);
+				//if(!config.quiet) report("Unbined key "+key.key+".", -1);
 			}else{
 				_binds[key.key] = [fun, args];
-				if(!config.quiet) report("Bined key "+key.key+" to a function."+(config.keyBindsEnabled?"":" (will not trigger while key binding is disabled in config)"), -1);
+				//if(!config.quiet) report("Bined key "+key.key+" to a function."+(config.keyBindsEnabled?"":" (will not trigger while key binding is disabled in config)"), -1);
 			}
 		}
 		public function keyDownHandler(e:KeyboardEvent):void{
