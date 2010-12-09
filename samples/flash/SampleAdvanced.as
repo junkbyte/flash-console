@@ -24,8 +24,6 @@
 */
 package 
 {
-	import com.junkbyte.console.ConsoleChannel;
-	import flash.utils.setInterval;
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.vos.Log;
 
@@ -132,13 +130,6 @@ package
 		}
 		private function e():void{
 			Cc.stack("Hello from stack trace.");
-		}
-		
-		private function addRandom():void
-		{
-			var sprite:Sprite = new Sprite();
-			Cc.watch(sprite);
-			Cc.log("sprite", sprite);
 		}
 	}
 }
