@@ -393,12 +393,6 @@ package com.junkbyte.console.core
 				v.obj = _scope;
 			}else if (str == "null") {
 				v.obj = null;
-			}else if (str == "NaN") {
-				v.obj = NaN;
-			}else if (str == "Infinity") {
-				v.obj = Infinity;
-			}else if (str == "undefined") {
-				v.obj = undefined;
 			}else if (!isNaN(Number(str))) {
 				v.obj = Number(str);
 			}else if(str.indexOf(VALKEY)==0){

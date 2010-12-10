@@ -6,7 +6,7 @@
 ==Flash Console==
 
   * Version: 2.4 (Sept 2010)
-  * Version beta3: 2.5 (Nov 2010)
+  * Version 2.5 beta4 (Dec 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -33,7 +33,7 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.5 BETA 3 ===
+===2.5 BETA 4 ===
   * Features
    * *Object linking* where you can click on an object in the log to inspect or get scope for commandline
    * *Custom slash commands* use Cc.addSlashCommand(...);
@@ -77,6 +77,7 @@ http://code.google.com/p/flash-console/issues/
    * After dragging the main panel outside screen, it will snap back to view if you toggle it by entering the password
    * Fixed memory leak from deleted logs
    * Cc.config.maxRepeats is now int so that you can set -1
+   * Fixed where logging QName causes error on previous 2.5 beta versions
 
 ===2.4===
   * Renamed source package name to com.junkbyte.console - to be less personal

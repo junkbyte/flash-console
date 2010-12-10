@@ -88,7 +88,7 @@ package com.junkbyte.console.core
 					_currentBank.push(o);
 				}
 				_refIndex++;
-				// Look through every 20th older _refMap ids and delete empty ones
+				// Look through every 50th older _refMap ids and delete empty ones
 				// 50s rather than all to be faster.
 				var i:int = ind-50;
 				while(i>=0){
@@ -123,6 +123,8 @@ package com.junkbyte.console.core
 				return err.toString();
 			}else if(v is XML || v is XMLList){
 				return shortenString(EscHTML(v.toXMLString()), maxlen, o, prop);
+			}else if(v is QName){
+				return String(v);
 			}else if(v is Array || getQualifiedClassName(v).indexOf("__AS3__.vec::Vector.") == 0){
 				// note: using getQualifiedClassName for vector for backward compatibility
 				// Need to specifically cast to string in array to produce correct results
@@ -157,7 +159,7 @@ package com.junkbyte.console.core
 			return txt;
 		}
 		public function makeRefTyped(v:*):String{
-			if(v && typeof v == "object"){
+			if(v && typeof v == "object" && !(v is QName)){
 				return "{"+genLinkString(v, null, ShortClassName(v))+"}";
 			}
 			return ShortClassName(v);
