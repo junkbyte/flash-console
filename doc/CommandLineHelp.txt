@@ -1,4 +1,4 @@
-#summary For version 2.5
+#summary for v2.5
 =Command Line: help and tutorial=
 
 ==This document applies to v2.5 or above only==

@@ -5,7 +5,6 @@
 
 ==Flash Console==
 
-  * Version: 2.4 (Sept 2010)
   * Version 2.5 beta4 (Dec 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com

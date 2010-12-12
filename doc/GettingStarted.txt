@@ -5,7 +5,8 @@
 =Introduction=
 
   * The main class you need to use for console is `Cc`, (`com.junkbyte.console.Cc`).
-  * `Cc` stands for Console controller which acts as singleton adapter for `Console` (`com.junkbyte.console.Console`). 
+  * `Cc` stands for Console controller which acts as singleton adapter for `Console` (`com.junkbyte.console.Console`).
+  * Asdoc: http://console.junkbyte.com/2.5/asdoc/com/junkbyte/console/Cc.html
 
   * When you no longer need console in your project, you can remove `Cc.startOnStage(..)` and all other calls through Cc will stop working silently.
 
@@ -50,7 +51,7 @@ ch.info("Hello!", "Works just like other logging methods but this way you keep t
 
 ==UI==
 
-[http://www.junkbyte.com/flash-console/console_controls.png]
+[http://console.junkbyte.com/2.5/console_controls.png]
 
 see: doc/console_controls.png
 
@@ -66,7 +67,7 @@ Cc.config.maxLines = 2000; // change maximum log lines to 2000, default is 1000
 Cc.startOnStage(this); // finally start with these config
 }}}
 
-Asdoc: http://junkbyte.com/flash-console/asdoc/com/junkbyte/console/ConsoleConfig.html
+Asdoc: http://console.junkbyte.com/2.5/asdoc/com/junkbyte/console/ConsoleConfig.html
 
 ----
 
@@ -260,4 +261,4 @@ Cc.startOnStage(this); // finally start with these styles
 
 example: bin/sampleStyle.swf for demo. (src: `samples/flash/SampleStyle.as`).
 
-Asdoc: http://junkbyte.com/flash-console/asdoc/com/junkbyte/console/ConsoleStyle.html
+Asdoc: http://console.junkbyte.com/2.5/asdoc/com/junkbyte/console/ConsoleStyle.html
