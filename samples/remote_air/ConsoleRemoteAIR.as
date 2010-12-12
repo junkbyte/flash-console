@@ -44,7 +44,7 @@ package {
 		
 		public function ConsoleRemoteAIR() {
 			stage.frameRate = 60;
-			stage.nativeWindow.alwaysInFront = true;
+			//stage.nativeWindow.alwaysInFront = true;
 			
 			var config:ConsoleConfig = new ConsoleConfig();
 			config.maxLines = 2000;

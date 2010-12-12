@@ -51,16 +51,14 @@ package
 			//Cc.fpsMonitor = true;
 			//Cc.displayRoller = true;
 			
-			Cc.config.maxLines = 2000;
 			Cc.config.commandLineAllowed = true;
 			Cc.width = 700;
 			Cc.height = 300;
 			Cc.remotingPassword = null; // Just so that remote don't ask for password
 			Cc.remoting = true;
 			
-			Cc.addMenu("T(1)", Cc.log, ["Greetings 1"], "This is a test menu 1");
-			Cc.addMenu("T<3>", Cc.log, ["Greetings 3"], "This is a test menu 3");
-			Cc.addMenu("T\"2\"", Cc.log);
+			Cc.addMenu("T1", Cc.log, ["Greetings 1"], "This is a test menu 1");
+			Cc.addMenu("T<2>", Cc.log, ["Greetings 2"], "This is a test menu 2");
 			//
 			// End of setup
 			//
@@ -104,11 +102,8 @@ package
 			// but if you have debugger version of flash player installed,
 			// you can open memory monitor (M) and then press G in that panel to force garbage collect
 			// You will see "[C] GARBAGE COLLECTED 1 item(s): aSprite"
-
-			Cc.config.objectHardReferenceTimer = 10;
-			Cc.log("This is a temp object:", new Object());
 			
-			//
+			
 			// Test of Cc.stack,  If you have debugger version installed you will see a stack trace like:
 			// HELLO
 			//  @ SampleAdvanced/e()

@@ -532,54 +532,14 @@ package com.junkbyte.console.core
 		private function makeValue(obj:*, prop:String = null):String{
 			return makeString(obj, prop, false, config.useObjectLinking?100:-1);
 		}
-		public function explode(obj:Object, depth:int = 3, p:int = 9):String{
-			var t:String = typeof obj;
-			if(obj == null){ 
-				// could be null, undefined, NaN, 0, etc. all should be printed as is
-				return "<p-2>"+obj+"</p-2>";
-			}else if(obj is String){
-				return '"'+EscHTML(obj as String)+'"';
-			}else if(t != "object" || depth == 0 || obj is ByteArray){
-				return makeString(obj);
-			}
-			if(p<0) p = 0;
-			var V:XML = describeType(obj);
-			var nodes:XMLList, n:String;
-			var list:Array = [];
-			//
-			nodes = V["accessor"];
-			for each (var accessorX:XML in nodes) {
-				n = accessorX.@name;
-				if(accessorX.@access!="writeonly"){
-					try{
-						list.push(stepExp(obj, n, depth, p));
-					}catch(e:Error){}
-				}else{
-					list.push(n);
-				}
-			}
-			//
-			nodes = V["variable"];
-			for each (var variableX:XML in nodes) {
-				n = variableX.@name;
-				list.push(stepExp(obj, n, depth, p));
-			}
-			//
-			try{
-				for (var X:String in obj) {
-					list.push(stepExp(obj, X, depth, p));
-				}
-			}catch(e:Error){}
-			return "<p"+p+">{"+ShortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
-		}
-		private function stepExp(o:*, n:String, d:int, p:int):String{
-			return n+":"+explode(o[n], d-1, p-1);
-		}	
+		
 		
 		public static function EscHTML(str:String):String{
-			str = str.replace(/</gm, "&lt;");
-	 		return str.replace(new RegExp(">", "gm"), "&gt;");
+			return str.replace(/</gm, "&lt;").replace(/\>/g, "&gt;");
 		}
+		/*public static function UnEscHTML(str:String):String{
+	 		return str.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+		}*/
 		/** 
 		 * Produces class name without package path
 		 * e.g: flash.display.Sprite => Sprite

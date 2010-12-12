@@ -49,6 +49,10 @@ package com.junkbyte.console.core {
 			remoter.registerClient("removeGroup", removeGroup);
 		}
 		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
+			if(obj == null) {
+				report("ERROR: Graph ["+n+"] received a null object to graph property ["+prop+"].", 10);
+				return;
+			}
 			var group:GraphGroup = _map[n];
 			var newGroup:Boolean;
 			if(!group) {

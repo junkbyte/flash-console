@@ -24,14 +24,18 @@
 */
 package com.junkbyte.console.core 
 {
+	import flash.utils.ByteArray;
+	import flash.utils.describeType;
+	import com.junkbyte.console.Cc;
+	import flash.utils.getQualifiedClassName;
 	import com.junkbyte.console.Console;
 
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 
-	public class DisplayMapper extends ConsoleCore{
+	public class ConsoleTools extends ConsoleCore{
 		
-		public function DisplayMapper(console:Console) {
+		public function ConsoleTools(console:Console) {
 			super(console);
 		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0, ch:String = null):void{
@@ -107,6 +111,76 @@ package com.junkbyte.console.core
 			}
 			report(base.name + ":" + console.links.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
 			if (config.commandLineAllowed) report("Click on the child display's name to set scope.", -2, true, ch);
+		}
+		
+		
+		public function explode(obj:Object, depth:int = 3, p:int = 9):String{
+			var t:String = typeof obj;
+			if(obj == null){ 
+				// could be null, undefined, NaN, 0, etc. all should be printed as is
+				return "<p-2>"+obj+"</p-2>";
+			}else if(obj is String){
+				return '"'+LogReferences.EscHTML(obj as String)+'"';
+			}else if(t != "object" || depth == 0 || obj is ByteArray){
+				return console.links.makeString(obj);
+			}
+			if(p<0) p = 0;
+			var V:XML = describeType(obj);
+			var nodes:XMLList, n:String;
+			var list:Array = [];
+			//
+			nodes = V["accessor"];
+			for each (var accessorX:XML in nodes) {
+				n = accessorX.@name;
+				if(accessorX.@access!="writeonly"){
+					try{
+						list.push(stepExp(obj, n, depth, p));
+					}catch(e:Error){}
+				}else{
+					list.push(n);
+				}
+			}
+			//
+			nodes = V["variable"];
+			for each (var variableX:XML in nodes) {
+				n = variableX.@name;
+				list.push(stepExp(obj, n, depth, p));
+			}
+			//
+			try{
+				for (var X:String in obj) {
+					list.push(stepExp(obj, X, depth, p));
+				}
+			}catch(e:Error){}
+			return "<p"+p+">{"+LogReferences.ShortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
+		}
+		private function stepExp(o:*, n:String, d:int, p:int):String{
+			return n+":"+explode(o[n], d-1, p-1);
+		}
+		
+		public function getStack(depth:int, priority:int):String{
+			var e:Error = new Error();
+			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
+			if(!str) return "";
+			var txt:String = "";
+			var lines:Array = str.split(/\n\sat\s/);
+			var len:int = lines.length;
+			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(Console)+"|"+getQualifiedClassName(Cc));
+			var found:Boolean = false;
+			for (var i:int = 2; i < len; i++){
+				if(!found && (lines[i].search(reg) != 0)){
+					found = true;
+				}
+				if(found){
+					txt += "\n<p"+priority+"> @ "+lines[i]+"</p"+priority+">";
+					if(priority>0) priority--;
+					depth--;
+					if(depth<=0){
+						break;
+					}
+				}
+			}
+			return txt;
 		}
 	}
 }

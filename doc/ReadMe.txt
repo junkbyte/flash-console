@@ -27,7 +27,6 @@ http://code.google.com/p/flash-console/issues/
 == Credits ==
   * Created by Lu Aye Oo
   * Logo by Nick Holliday
-  * Special thanks to Joe Nash
 
 
 == Change Log ==

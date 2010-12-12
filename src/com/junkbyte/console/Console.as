@@ -25,14 +25,13 @@
 package com.junkbyte.console 
 {
 	import com.junkbyte.console.core.CommandLine;
-	import com.junkbyte.console.core.DisplayMapper;
+	import com.junkbyte.console.core.ConsoleTools;
 	import com.junkbyte.console.core.Graphing;
 	import com.junkbyte.console.core.KeyBinder;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.MemoryMonitor;
 	import com.junkbyte.console.core.Remoting;
-	import com.junkbyte.console.core.UserData;
 	import com.junkbyte.console.view.PanelsManager;
 	import com.junkbyte.console.view.RollerPanel;
 	import com.junkbyte.console.vos.Log;
@@ -45,7 +44,7 @@ package com.junkbyte.console
 	import flash.events.IEventDispatcher;
 	import flash.events.KeyboardEvent;
 	import flash.geom.Rectangle;
-	import flash.utils.getQualifiedClassName;
+	import flash.net.SharedObject;
 	/**
 	 * Console is the main class. 
 	 * Please see com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
@@ -74,19 +73,21 @@ package com.junkbyte.console
 		private var _config:ConsoleConfig;
 		private var _panels:PanelsManager;
 		private var _cl:CommandLine;
-		private var _ud:UserData;
 		private var _kb:KeyBinder;
 		private var _links:LogReferences;
 		private var _mm:MemoryMonitor;
 		private var _graphing:Graphing;
 		private var _remoter:Remoting;
-		private var _mapper:DisplayMapper;
+		private var _tools:ConsoleTools;
 		//
 		private var _topTries:int = 50;
 		private var _paused:Boolean;
 		private var _rollerKey:KeyBind;
 		private var _logs:Logs;
 		private var _lineAdded:Boolean;
+		
+		private var _so:SharedObject;
+		private var _soData:Object = {};
 		
 		/**
 		 * Console is the main class. However please use Cc for singleton Console adapter.
@@ -104,16 +105,25 @@ package com.junkbyte.console
 			//
 			_remoter = new Remoting(this, pass);
 			_logs = new Logs(this);
-			_ud = new UserData(this);
 			_links = new LogReferences(this);
 			_cl = new CommandLine(this);
-			_mapper =  new DisplayMapper(this);
+			_tools =  new ConsoleTools(this);
 			_graphing = new Graphing(this);
 			_mm = new MemoryMonitor(this);
 			_kb = new KeyBinder(this, pass);
 			
+			if(config.sharedObjectName){
+				try{
+					_so = SharedObject.getLocal(config.sharedObjectName, config.sharedObjectPath);
+					_soData = _so.data;
+				}catch(e:Error){
+					
+				}
+			}
+			
 			_config.style.updateStyleSheet();
 			_panels = new PanelsManager(this);
+			
 			
 			report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
@@ -167,10 +177,6 @@ package com.junkbyte.console
 		}
 		
 		public function addGraph(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
-			if(obj == null) {
-				report("ERROR: Graph ["+n+"] received a null object to graph property ["+prop+"].", 10);
-				return;
-			}
 			_graphing.add(n,obj,prop,col,key,rect,inverse);
 		}
 		public function fixGraphRange(n:String, min:Number = NaN, max:Number = NaN):void{
@@ -249,10 +255,10 @@ package com.junkbyte.console
 			_cl.store(n, obj, strong);
 		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0):void{
-			_mapper.map(base, maxstep, DEFAULT_CHANNEL);
+			_tools.map(base, maxstep, DEFAULT_CHANNEL);
 		}
 		public function mapch(channel:*, base:DisplayObjectContainer, maxstep:uint = 0):void{
-			_mapper.map(base, maxstep, MakeChannelName(channel));
+			_tools.map(base, maxstep, MakeChannelName(channel));
 		}
 		public function inspect(obj:Object, detail:Boolean = true):void{
 			_links.inspect(obj, detail, DEFAULT_CHANNEL);
@@ -261,10 +267,10 @@ package com.junkbyte.console
 			_links.inspect(obj,detail, MakeChannelName(channel));
 		}
 		public function explode(obj:Object, depth:int = 3):void{
-			addLine(new Array(_links.explode(obj, depth)), 1, null, false, true);
+			addLine(new Array(_tools.explode(obj, depth)), 1, null, false, true);
 		}
 		public function explodech(channel:*, obj:Object, depth:int = 3):void{
-			addLine(new Array(_links.explode(obj, depth)), 1, MakeChannelName(channel), false, true);
+			addLine(new Array(_tools.explode(obj, depth)), 1, MakeChannelName(channel), false, true);
 		}
 		public function get paused():Boolean{
 			return _paused;
@@ -366,7 +372,7 @@ package com.junkbyte.console
 			if(!channel || channel == GLOBAL_CHANNEL) channel = Console.DEFAULT_CHANNEL;
 
 			if(!html && stacks>0){
-				txt += getStack(stacks, priority);
+				txt += _tools.getStack(stacks, priority);
 			}
 			var line:Log = new Log(txt, channel, priority, isRepeating, html);
 			
@@ -377,30 +383,6 @@ package com.junkbyte.console
 			
 			_lineAdded = true;
 			_remoter.queueLog(line);
-		}
-		private function getStack(depth:int, priority:int):String{
-			var e:Error = new Error();
-			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
-			if(!str) return "";
-			var txt:String = "";
-			var lines:Array = str.split(/\n\sat\s/);
-			var len:int = lines.length;
-			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(this)+"|"+getQualifiedClassName(Cc));
-			var found:Boolean = false;
-			for (var i:int = 2; i < len; i++){
-				if(!found && (lines[i].search(reg) != 0)){
-					found = true;
-				}
-				if(found){
-					txt += "\n<p"+priority+"> @ "+lines[i]+"</p"+priority+">";
-					if(priority>0) priority--;
-					depth--;
-					if(depth<=0){
-						break;
-					}
-				}
-			}
-			return txt;
 		}
 		//
 		// COMMAND LINE
@@ -482,12 +464,19 @@ package com.junkbyte.console
 		public function get config():ConsoleConfig{return _config;}
 		public function get panels():PanelsManager{return _panels;}
 		public function get cl():CommandLine{return _cl;}
-		public function get ud():UserData{return _ud;}
 		public function get remoter():Remoting{return _remoter;}
 		public function get graphing():Graphing{return _graphing;}
 		public function get links():LogReferences{return _links;}
 		public function get logs():Logs{return _logs;}
-		public function get mapper():DisplayMapper{return _mapper;}
+		public function get mapper():ConsoleTools{return _tools;}
+		
+		public function get so():Object{return _soData;}
+		public function updateSO(key:String = null):void{
+			if(_so) {
+				if(key) _so.setDirty(key);
+				else _so.clear();
+			}
+		}
 		//
 		//
 		//

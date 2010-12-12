@@ -335,7 +335,7 @@ package com.junkbyte.console.core
 		}
 		private function explodeCmd(param:String = "0"):void{
 			var depth:int = int(param);
-			console.explode(_scope, depth<=0?3:depth);
+			console.explodech(console.panels.mainPanel.reportChannel, _scope, depth<=0?3:depth);
 		}
 		private function mapCmd(param:String = "0"):void{
 			console.mapch(console.panels.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
@@ -349,12 +349,10 @@ package com.junkbyte.console.core
 			config.commandLineAutoScope = !config.commandLineAutoScope;
 			report("Auto-scoping <b>"+(config.commandLineAutoScope?"enabled":"disabled")+"</b>.",10);
 		}
-		private function baseCmd(...args:Array):void
-		{
+		private function baseCmd(...args:Array):void{
 			setReturned(base, true);
 		}
-		private function prevCmd(...args:Array):void
-		{
+		private function prevCmd(...args:Array):void{
 			setReturned(_prevScope.reference, true);
 		}
 		private function printHelp():void {

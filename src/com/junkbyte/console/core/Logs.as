@@ -108,7 +108,7 @@ package com.junkbyte.console.core
 			var str:String = "";
 			var line:Log = first;
 			while(line){
-				str += (line.toString()+(line.next?splitter:""));
+				str += line.toString()+(line.next?splitter:"");
 				line = line.next;
 			}
 			return str;

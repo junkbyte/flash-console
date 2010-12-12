@@ -52,6 +52,8 @@ package com.junkbyte.console.view
 		
 		public static const NAME:String = "mainPanel";
 		
+		private static const CL_HISTORY:String = "clhistory";
+		
 		private var _traceField:TextField;
 		private var _cmdPrefx:TextField;
 		private var _cmdField:TextField;
@@ -86,6 +88,8 @@ package com.junkbyte.console.view
 		private var _enteringLogin:Boolean;
 		
 		private var _hint:String;
+		
+		private var _cmdsHistory:Array;
 		
 		public function MainPanel(m:Console) {
 			super(m);
@@ -137,7 +141,7 @@ package com.junkbyte.console.view
 			_hintField.name = "commandField";
 			_hintField.mouseEnabled = false;
 			_hintField.background = true;
-            _hintField.backgroundColor = style.backgroundColor;
+			_hintField.backgroundColor = style.backgroundColor;
 			_hintField.defaultTextFormat = new TextFormat(style.menuFont, style.menuFontSize-1, style.lowColor);
 			_hintField.x = _cmdField.x;
 			_hintField.width = 300;
@@ -187,6 +191,12 @@ package com.junkbyte.console.view
 			//
 			init(640,100,true);
 			registerDragger(txtField);
+			//
+			if(console.so[CL_HISTORY] is Array){
+				_cmdsHistory = console.so[CL_HISTORY];
+			}else{
+				console.so[CL_HISTORY] = _cmdsHistory = new Array();
+			}
 			//
 			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
@@ -697,7 +707,7 @@ package com.junkbyte.console.view
 					command:"Command Line",
 					copy:"Copy to clipboard",
 					clear:"Clear log",
-					priority:"Toggle priority filter::auto skips unused priorites.\nshift click to reverse",
+					priority:"Priority filter::shift click to reverse. skips unused priorites.",
 					channels:"Expand channels",
 					close:"Close"
 					};
@@ -838,15 +848,14 @@ package com.junkbyte.console.view
 		//
 		private function clearCommandLineHistory(...args:Array):void
 		{
-			console.ud.commandLineHistory.splice(0);
 			_cmdsInd = -1;
-			console.ud.commandLineHistoryChanged();
+			console.updateSO();
+			_cmdsHistory = new Array();
 		}
 		private function commandKeyDown(e:KeyboardEvent):void{
 			e.stopPropagation();
 		}
 		private function commandKeyUp(e:KeyboardEvent):void{
-			var cmdshistory:Array = console.ud.commandLineHistory;
 			if( e.keyCode == Keyboard.ENTER){
 				updateToBottom();
 				setHints();
@@ -857,18 +866,18 @@ package com.junkbyte.console.view
 				}else{
 					var txt:String = _cmdField.text;
 					if(txt.length > 2){
-						var i:int = cmdshistory.indexOf(txt);
+						var i:int = _cmdsHistory.indexOf(txt);
 						while(i>=0){
-							cmdshistory.splice(i,1);
-							i = cmdshistory.indexOf(txt);
+							_cmdsHistory.splice(i,1);
+							i = _cmdsHistory.indexOf(txt);
 						}
-						cmdshistory.unshift(txt);
+						_cmdsHistory.unshift(txt);
 						_cmdsInd = -1;
 						// maximum 20 commands history
-						if(cmdshistory.length>20){
-							cmdshistory.splice(20);
+						if(_cmdsHistory.length>20){
+							_cmdsHistory.splice(20);
 						}
-						console.ud.commandLineHistoryChanged();
+						console.updateSO(CL_HISTORY);
 					}
 					_cmdField.text = "";
 					console.cl.run(txt);
@@ -879,22 +888,22 @@ package com.junkbyte.console.view
 				setHints();
 				// if its back key for first time, store the current key
 				if(_cmdField.text && _cmdsInd<0){
-					cmdshistory.unshift(_cmdField.text);
+					_cmdsHistory.unshift(_cmdField.text);
 					_cmdsInd++;
 				}
-				if(_cmdsInd<(cmdshistory.length-1)){
+				if(_cmdsInd<(_cmdsHistory.length-1)){
 					_cmdsInd++;
-					_cmdField.text = cmdshistory[_cmdsInd];
+					_cmdField.text = _cmdsHistory[_cmdsInd];
 					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
 				}else{
-					_cmdsInd = cmdshistory.length;
+					_cmdsInd = _cmdsHistory.length;
 					_cmdField.text = "";
 				}
 			}else if( e.keyCode == Keyboard.DOWN){
 				setHints();
 				if(_cmdsInd>0){
 					_cmdsInd--;
-					_cmdField.text = cmdshistory[_cmdsInd];
+					_cmdField.text = _cmdsHistory[_cmdsInd];
 					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
 				}else{
 					_cmdsInd = -1;
