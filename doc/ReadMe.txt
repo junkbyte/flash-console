@@ -5,7 +5,7 @@
 
 ==Flash Console==
 
-  * Version 2.5 beta4 (Dec 2010)
+  * Version 2.5 beta5 (Dec 2010)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -75,6 +75,7 @@ http://code.google.com/p/flash-console/issues/
    * After dragging the main panel outside screen, it will snap back to view if you toggle it by entering the password
    * Fixed memory leak from deleted logs
    * Cc.config.maxRepeats is now int so that you can set -1
+   * Fixed bug where inspecting Dictionary would always print undefined value to those that use non-string key
    * Fixed where logging QName causes error on previous 2.5 beta versions
 
 ===2.4===

@@ -106,7 +106,7 @@ package com.junkbyte.console.core
 		public function getRefById(ind:uint):*{
 			return _refMap[ind];
 		}
-		public function makeString(o:*, prop:String = null, html:Boolean = false, maxlen:int = -1):String{
+		public function makeString(o:*, prop:* = null, html:Boolean = false, maxlen:int = -1):String{
 			var txt:String;
 			try{
 				var v:* = prop?o[prop]:o;
@@ -164,7 +164,11 @@ package com.junkbyte.console.core
 			}
 			return ShortClassName(v);
 		}
-		private function genLinkString(o:*, prop:String, str:String):String{
+		private function genLinkString(o:*, prop:*, str:String):String{
+			if(prop && !(prop is String)) {
+				o = prop;
+				prop = null;
+			}
 			var ind:uint = setLogRef(o);
 			if(ind){
 				return "<l><a href='event:ref_"+ind+(prop?("_"+prop):"")+"'>"+str+"</a></l>";
@@ -172,7 +176,7 @@ package com.junkbyte.console.core
 				return str;
 			}
 		}
-		private function shortenString(str:String, maxlen:int, o:*, prop:String = null):String{
+		private function shortenString(str:String, maxlen:int, o:*, prop:* = null):String{
 			if(maxlen>=0 && str.length > maxlen) {
 				str = str.substring(0, maxlen);
 				return str+genLinkString(o, prop, " ...");
@@ -397,7 +401,7 @@ package com.junkbyte.console.core
 			props = [];
 			nodes = clsV..constant;
 			for each (var constantX:XML in nodes) {
-				report(" const <p3>"+constantX.@name+"</p3>:"+constantX.@type+" = "+makeValue(cls, constantX.@name)+"</p0>", 1, true, ch);
+				report(" const <p3>"+constantX.@name+"</p3>:"+constantX.@type+" = "+makeValue(cls, constantX.@name.toString())+"</p0>", 1, true, ch);
 			}
 			if(nodes.length()){
 				report("", 1, true, ch);
@@ -461,7 +465,7 @@ package com.junkbyte.console.core
 					}
 					if(access != "writeonly" && (isstatic || !isClass))
 					{
-						str += " = "+makeValue(isstatic?cls:obj, accessorX.@name);
+						str += " = "+makeValue(isstatic?cls:obj, accessorX.@name.toString());
 					}
 					report(str, 1, true, ch);
 				}else{
@@ -482,7 +486,7 @@ package com.junkbyte.console.core
 				str = isstatic?" static":"";
 				if(refIndex) str += " var <p3><a href='event:cl_"+refIndex+"_"+variableX.@name+" = '>"+variableX.@name+"</a>";
 				else str += " var <p3>"+variableX.@name;
-				str += "</p3>:"+variableX.@type+" = "+makeValue(isstatic?cls:obj, variableX.@name);
+				str += "</p3>:"+variableX.@type+" = "+makeValue(isstatic?cls:obj, variableX.@name.toString());
 				report(str, 1, true, ch);
 			}
 			//
@@ -490,13 +494,17 @@ package com.junkbyte.console.core
 			// - It can sometimes fail if we are looking at proxy object which havnt extended nextNameIndex, nextName, etc.
 			try{
 				props = [];
-				for (var X:String in obj) {
-					if(refIndex) str = "<a href='event:cl_"+refIndex+"_"+X+" = '>"+X+"</a>";
-					else str = X;
-					report(" dynamic var <p3>"+str+"</p3> = "+makeValue(obj, X), 1, true, ch);
+				for (var X:* in obj) {
+					if(X is String){
+						if(refIndex) str = "<a href='event:cl_"+refIndex+"_"+X+" = '>"+X+"</a>";
+						else str = X;
+						report(" dynamic var <p3>"+str+"</p3> = "+makeValue(obj, X), 1, true, ch);
+					}else{
+						report(" dictionary <p3>"+makeValue(X)+"</p3> = "+makeValue(obj, X), 1, true, ch);
+					}
 				}
-			}catch(e:Error){
-				report("Could not get values due to: "+e, 9, true, ch);
+			} catch(e : Error) {
+				report("Could not get values. " + e.message, 9, true, ch);
 			}
 			if(obj is String){
 				report("", 1, true, ch);
@@ -529,7 +537,7 @@ package com.junkbyte.console.core
 			}
 			return list;
 		}
-		private function makeValue(obj:*, prop:String = null):String{
+		private function makeValue(obj:*, prop:* = null):String{
 			return makeString(obj, prop, false, config.useObjectLinking?100:-1);
 		}
 		

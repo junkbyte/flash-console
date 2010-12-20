@@ -55,8 +55,8 @@ package com.junkbyte.console
 
 		public static const VERSION:Number = 2.5;
 		public static const VERSION_STAGE:String = "beta5";
-		public static const BUILD:int = 559;
-		public static const BUILD_DATE:String = "2010/12/12 13:37";
+		public static const BUILD:int = 560;
+		public static const BUILD_DATE:String = "2010/12/20 00:07";
 		//
 		public static const LOG:uint = 1;
 		public static const INFO:uint = 3;
@@ -270,7 +270,7 @@ package com.junkbyte.console
 			addLine(new Array(_tools.explode(obj, depth)), 1, null, false, true);
 		}
 		public function explodech(channel:*, obj:Object, depth:int = 3):void{
-			addLine(new Array(_tools.explode(obj, depth)), 1, MakeChannelName(channel), false, true);
+			addLine(new Array(_tools.explode(obj, depth)), 1, channel, false, true);
 		}
 		public function get paused():Boolean{
 			return _paused;
@@ -360,7 +360,7 @@ package com.junkbyte.console
 			if(!ch) ch = _panels.mainPanel.reportChannel;
 			addLine([obj], priority, ch, false, skipSafe);
 		}
-		public function addLine(lineParts:Array, priority:int = 0,channel:String = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
+		public function addLine(lineParts:Array, priority:int = 0, channel:* = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
 			var txt:String = "";
 			var len:int = lineParts.length;
 			for(var i:int = 0; i < len; i++){
@@ -368,17 +368,15 @@ package com.junkbyte.console
 			}
 			
 			if(priority >= _config.autoStackPriority && stacks<0) stacks = _config.defaultStackDepth;
-			
-			if(!channel || channel == GLOBAL_CHANNEL) channel = Console.DEFAULT_CHANNEL;
 
 			if(!html && stacks>0){
 				txt += _tools.getStack(stacks, priority);
 			}
-			var line:Log = new Log(txt, channel, priority, isRepeating, html);
+			var line:Log = new Log(txt, MakeChannelName(channel), priority, isRepeating, html);
 			
 			var cantrace:Boolean = _logs.add(line, isRepeating);
 			if( _config.tracing && cantrace && _config.traceCall != null){
-				_config.traceCall(channel, line.plainText(), priority);
+				_config.traceCall(line.ch, line.plainText(), priority);
 			}
 			
 			_lineAdded = true;
@@ -405,8 +403,8 @@ package com.junkbyte.console
 		public function stack(newLine:*, depth:int = -1, priority:int = 5):void{
 			addLine(new Array(newLine), priority, DEFAULT_CHANNEL, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
-		public function stackch(ch:String, newLine:*, depth:int = -1, priority:int = 5):void{
-			addLine(new Array(newLine), priority, ch, false, false, depth>=0?depth:_config.defaultStackDepth);
+		public function stackch(channel:*, newLine:*, depth:int = -1, priority:int = 5):void{
+			addLine(new Array(newLine), priority, channel, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		public function log(...args):void{
 			addLine(args, LOG);
@@ -427,28 +425,28 @@ package com.junkbyte.console
 			addLine(args, FATAL);
 		}
 		public function ch(channel:*, newLine:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(new Array(newLine), priority, MakeChannelName(channel), isRepeating);
+			addLine(new Array(newLine), priority, channel, isRepeating);
 		}
 		public function logch(channel:*, ...args):void{
-			addLine(args, LOG, MakeChannelName(channel));
+			addLine(args, LOG, channel);
 		}
 		public function infoch(channel:*, ...args):void{
-			addLine(args, INFO, MakeChannelName(channel));
+			addLine(args, INFO, channel);
 		}
 		public function debugch(channel:*, ...args):void{
-			addLine(args, DEBUG, MakeChannelName(channel));
+			addLine(args, DEBUG, channel);
 		}
 		public function warnch(channel:*, ...args):void{
-			addLine(args, WARN, MakeChannelName(channel));
+			addLine(args, WARN, channel);
 		}
 		public function errorch(channel:*, ...args):void{
-			addLine(args, ERROR, MakeChannelName(channel));
+			addLine(args, ERROR, channel);
 		}
 		public function fatalch(channel:*, ...args):void{
-			addLine(args, FATAL, MakeChannelName(channel));
+			addLine(args, FATAL, channel);
 		}
 		public function addCh(channel:*, lineParts:Array, priority:int = 2, isRepeating:Boolean = false):void{
-			addLine(lineParts, priority, MakeChannelName(channel), isRepeating);
+			addLine(lineParts, priority, channel, isRepeating);
 		}
 		//
 		//
@@ -481,10 +479,11 @@ package com.junkbyte.console
 		//
 		//
 		public static function MakeChannelName(obj:*):String{
-			if(obj is String) return obj as String;
-			//else if(obj is ConsoleChannel) return ConsoleChannel(obj).name;
+			if(obj is String){
+				if(obj != GLOBAL_CHANNEL) return obj as String;
+			}
 			else if(obj) return LogReferences.ShortClassName(obj);
-			else return DEFAULT_CHANNEL;
+			return DEFAULT_CHANNEL;
 		}
 	}
 }
