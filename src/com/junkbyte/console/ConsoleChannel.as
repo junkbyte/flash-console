@@ -40,6 +40,7 @@ package com.junkbyte.console {
 		 */
 		public function ConsoleChannel(n:*, c:Console = null){
 			_name = Console.MakeChannelName(n);
+			if (_name == Console.GLOBAL_CHANNEL) _name = Console.DEFAULT_CHANNEL;
 			// allowed to pass in Console here incase you want to use a different console instance from whats used in Cc
 			_c = c?c:Cc;
 		}

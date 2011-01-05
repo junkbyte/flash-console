@@ -504,7 +504,7 @@ package com.junkbyte.console.core
 					}
 				}
 			} catch(e : Error) {
-				report("Could not get values. " + e.message, 9, true, ch);
+				report("Could not get dynamic values. " + e.message, 9, false, ch);
 			}
 			if(obj is String){
 				report("", 1, true, ch);

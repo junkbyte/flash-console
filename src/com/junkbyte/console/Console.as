@@ -54,9 +54,9 @@ package com.junkbyte.console
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.5;
-		public static const VERSION_STAGE:String = "beta5";
-		public static const BUILD:int = 560;
-		public static const BUILD_DATE:String = "2010/12/20 00:07";
+		public static const VERSION_STAGE:String = "";
+		public static const BUILD:int = 566;
+		public static const BUILD_DATE:String = "2011/01/05 21:46";
 		//
 		public static const LOG:uint = 1;
 		public static const INFO:uint = 3;
@@ -479,9 +479,7 @@ package com.junkbyte.console
 		//
 		//
 		public static function MakeChannelName(obj:*):String{
-			if(obj is String){
-				if(obj != GLOBAL_CHANNEL) return obj as String;
-			}
+			if(obj is String) return obj as String;
 			else if(obj) return LogReferences.ShortClassName(obj);
 			return DEFAULT_CHANNEL;
 		}

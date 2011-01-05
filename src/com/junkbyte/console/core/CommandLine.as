@@ -43,8 +43,9 @@ package com.junkbyte.console.core
 		private var _scope:*;
 		private var _prevScope:WeakRef;
 		private var _scopeStr:String = "";
-		
 		private var _slashCmds:Object;
+		
+		public var localCommands:Array = new Array("filter", "filterexp");
 		
 		public function CommandLine(m:Console) {
 			super(m);
@@ -169,7 +170,7 @@ package com.junkbyte.console.core
 			if(remoter.remoting == Remoting.RECIEVER){
 				if(str.charAt(0) == "~"){
 					str = str.substring(1);
-				}else if(str.search(/\/filter|\/filterexp/) != 0){
+				}else if(str.search(new RegExp("\/"+localCommands.join("|\/"))) != 0){
 					report("Run command at remote: "+str,-2);
 					if(!console.remoter.send("cmd", str)){
 						report("Command could not be sent to client.", 10);
