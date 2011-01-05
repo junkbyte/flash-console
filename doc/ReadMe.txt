@@ -5,7 +5,7 @@
 
 ==Flash Console==
 
-  * Version 2.5 beta5 (Dec 2010)
+  * Version 2.5 (Jan 2011)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -31,7 +31,7 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.5 BETA 4 ===
+===2.5 ===
   * Features
    * *Object linking* where you can click on an object in the log to inspect or get scope for commandline
    * *Custom slash commands* use Cc.addSlashCommand(...);
@@ -77,6 +77,7 @@ http://code.google.com/p/flash-console/issues/
    * Cc.config.maxRepeats is now int so that you can set -1
    * Fixed bug where inspecting Dictionary would always print undefined value to those that use non-string key
    * Fixed where logging QName causes error on previous 2.5 beta versions
+   * Fixed where clicking on global channel changes to default channel instead on previous 2.5 beta versions
 
 ===2.4===
   * Renamed source package name to com.junkbyte.console - to be less personal
