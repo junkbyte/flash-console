@@ -24,6 +24,7 @@
 */
 package {
 	import com.junkbyte.console.Cc;
+	import com.junkbyte.console.ConsoleChannel;
 
 	import flash.display.MovieClip;
 
@@ -37,9 +38,12 @@ package {
 	// Go to publish settings > Link library > point to SWC
 	//
 	public class ConsoleComponent extends MovieClip{
-		// just to have a reference to C, so that flash will include the source when compiling
+		// just to have a reference to Cc, so that flash will include the source when compiling
 		public static function get CONSOLE():Class{
 			return Cc;
+		}
+		public static function get CHANNEL():Class{
+			return ConsoleChannel;
 		}
 	}
 }
