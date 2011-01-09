@@ -43,44 +43,38 @@ package com.junkbyte.console.core
 				report("It is not a DisplayObjectContainer", 10, true, ch);
 				return;
 			}
-			var list:Array = new Array();
+			
+			var steps:int = 0;
+			var wasHiding:Boolean;
 			var index:int = 0;
+			var lastmcDO:DisplayObject = null;
+			var list:Array = new Array();
 			list.push(base);
 			while(index<list.length){
 				var mcDO:DisplayObject = list[index];
+				index++;
+				// add children to list
 				if(mcDO is DisplayObjectContainer){
 					var mc:DisplayObjectContainer = mcDO as DisplayObjectContainer;
 					var numC:int = mc.numChildren;
 					for(var i:int = 0;i<numC;i++){
 						var child:DisplayObject = mc.getChildAt(i);
-						list.splice((index+i+1),0,child);
+						list.splice(index+i,0,child);
 					}
 				}
-				index++;
-			}
-			
-			var steps:int = 0;
-			var lastmcDO:DisplayObject = null;
-			var indexes:Array = new Array();
-			var wasHiding:Boolean;
-			for (var X:String in list){
-				mcDO = list[X];
+				// figure out the depth and print it out.
 				if(lastmcDO){
 					if(lastmcDO is DisplayObjectContainer && (lastmcDO as DisplayObjectContainer).contains(mcDO)){
 						steps++;
-						//indexes.push((lastmcDO as DisplayObjectContainer).getChildIndex(mcDO));
-						indexes.push(mcDO.name);
 					}else{
 						while(lastmcDO){
 							lastmcDO = lastmcDO.parent;
 							if(lastmcDO is DisplayObjectContainer){
 								if(steps>0){
-									indexes.pop();
 									steps--;
 								}
 								if((lastmcDO as DisplayObjectContainer).contains(mcDO)){
 									steps++;
-									indexes.push(mcDO.name);
 									break;
 								}
 							}
