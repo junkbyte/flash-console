@@ -223,7 +223,7 @@ package com.junkbyte.console.core
 					if(prop) o = o[prop];
 					if(o){
 						if(str.indexOf("refe_")==0){
-							console.explode(o);
+							console.explodech(console.panels.mainPanel.reportChannel, o);
 						}else{
 							focus(o, _dofull);
 						}
@@ -285,7 +285,7 @@ package com.junkbyte.console.core
 				menuStr += "</b> || [<a href='event:ref_"+refIndex+"'>refresh</a>]";
 				menuStr += "</b> [<a href='event:refe_"+refIndex+"'>explode</a>]";
 				if(config.commandLineAllowed){
-					menuStr += " [<a href='event:cl_"+refIndex+"'>Set scope</a>]";
+					menuStr += " [<a href='event:cl_"+refIndex+"'>scope</a>]";
 				}
 				
 				if(viewAll) menuStr += " [<a href='event:refi'>Hide inherited</a>]";
