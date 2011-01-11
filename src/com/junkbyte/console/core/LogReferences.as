@@ -272,15 +272,15 @@ package com.junkbyte.console.core
 			}
 			var refIndex:uint = setLogRef(obj);
 			var showInherit:String = "";
-			if(!viewAll) showInherit = " [<a href='event:refi'>Show inherited</a>]";
+			if(!viewAll) showInherit = " [<a href='event:refi'>show inherited</a>]";
 			var menuStr:String;
 			if(_history){
-				menuStr = "<b>[<a href='event:refexit'>Exit</a>]";
+				menuStr = "<b>[<a href='event:refexit'>exit</a>]";
 				if(_hisIndex>1){
-					menuStr += " [<a href='event:refprev'>Previous</a>]";
+					menuStr += " [<a href='event:refprev'>previous</a>]";
 				}
 				if(_history && _hisIndex < _history.length){
-					menuStr += " [<a href='event:reffwd'>Forward</a>]";
+					menuStr += " [<a href='event:reffwd'>forward</a>]";
 				}
 				menuStr += "</b> || [<a href='event:ref_"+refIndex+"'>refresh</a>]";
 				menuStr += "</b> [<a href='event:refe_"+refIndex+"'>explode</a>]";
@@ -288,7 +288,7 @@ package com.junkbyte.console.core
 					menuStr += " [<a href='event:cl_"+refIndex+"'>scope</a>]";
 				}
 				
-				if(viewAll) menuStr += " [<a href='event:refi'>Hide inherited</a>]";
+				if(viewAll) menuStr += " [<a href='event:refi'>hide inherited</a>]";
 				else menuStr += showInherit;
 				report(menuStr, -1, true, ch);
 				report("", 1, true, ch);
