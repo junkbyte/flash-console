@@ -35,7 +35,7 @@ http://code.google.com/p/flash-console/issues/
   * Socket remoting support
   * Fixed not sending very long lines to remote
   * Reintroduced Cc.minimumPriority
-  * ByteArray.toString() no longer brake console prints.
+  * ByteArray.toString() no longer brake console prints
   * CTRL+scroll wheel to make log text bigger / smaller
   * TAB key focuses to command line if visible (in addition to previous ENTER key)
   * TAB key to accept autocomplete suggestion in CL (in addition to previous SPACE key)
