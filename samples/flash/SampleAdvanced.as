@@ -24,6 +24,7 @@
 */
 package 
 {
+	import flash.ui.Keyboard;
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.vos.Log;
 
@@ -50,6 +51,7 @@ package
 			//Cc.memoryMonitor = true;
 			//Cc.fpsMonitor = true;
 			//Cc.displayRoller = true;
+			Cc.config.tracing = true;
 			
 			Cc.config.commandLineAllowed = true;
 			Cc.width = 700;
@@ -76,7 +78,18 @@ package
 			Cc.explode(arr);
 			Cc.log("___");
 			ba = new ByteArray();
-			ba.writeUTF("HA! You found the secret byte array string!");
+			ba.writeUTF("HA!");
+			ba.writeObject({test:"test", num:99});
+			ba.writeObject(arr);
+			ba.writeInt(10);
+			ba.writeBoolean(true);
+			ba.writeBoolean(false);
+			ba.writeByte(1);
+			ba.writeByte(0);
+			ba.writeShort(10);
+			ba.writeFloat(10.11111);
+			ba.writeDouble(10.11111);
+			
 			Cc.info("Bytearry will now print properly rather than breaking the whole console.");
 			Cc.info("A byteArray with UTF string:", ba);
 			Cc.log("___");
@@ -103,13 +116,27 @@ package
 			// you can open memory monitor (M) and then press G in that panel to force garbage collect
 			// You will see "[C] GARBAGE COLLECTED 1 item(s): aSprite"
 			
-			
 			// Test of Cc.stack,  If you have debugger version installed you will see a stack trace like:
 			// HELLO
 			//  @ SampleAdvanced/e()
 			//  @ SampleAdvanced/d()
 			//  @ SampleAdvanced/c()
 			a(); // see function e() below
+			
+			
+			Cc.addMenu("spam34k", spam, [34000]);
+			Cc.addMenu("spam38k", spam, [38000]);
+			Cc.addMenu("spam50k", spam, [50000]);
+			Cc.addMenu("spam100k", spam, [100000]);
+		}
+		private function spam(chars:int):void{
+			var str:String = "";
+			while(str.length < chars){
+				str += "12345678901234567890123456789012345678901234567890123456789012345678901234567890";
+			}
+			str = str.substring(0, chars);
+			Cc.log(str);
+			Cc.log("<<",chars,"chars.");
 		}
 		private function a():void{
 			b();

@@ -24,6 +24,10 @@
 */
 package com.junkbyte.console.core 
 {
+	import flash.events.ProgressEvent;
+	import flash.events.IOErrorEvent;
+	import flash.events.Event;
+	import flash.net.Socket;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.Log;
@@ -44,12 +48,14 @@ package com.junkbyte.console.core
 		private var _client:Object;
 		private var _mode:uint;
 		private var _connection:LocalConnection;
+		private var _socket:Socket;
 		private var _queue:Array;
 		
 		private var _lastLogin:String = "";
 		private var _password:String;
 		private var _loggedIn:Boolean;
 		private var _canDraw:Boolean;
+		private var _splitLineCache:ByteArray;
 		
 		private var _prevG:Boolean;
 		private var _prevScope:String;
@@ -63,7 +69,9 @@ package com.junkbyte.console.core
 			_client.loginFail = loginFail;
 			_client.loginSuccess = loginSuccess;
 			_client.sync = remoteSync;
+			_client.split = splitLineSync;
 		}
+		
 		public function queueLog(line:Log):void{
 			if(_mode != SENDER || !_loggedIn) return;
 			_queue.push(line.toBytes());
@@ -90,8 +98,17 @@ package com.junkbyte.console.core
 					var line:ByteArray = _queue[i];
 					size += line.length;
 					// real limit is 40,000
-					if(size <= 36000 || i == 0){
+					if(size <= 36000){
 						logs.writeBytes(line);
+					}else if(i == 0){
+						line.position = 0;
+						while(line.position < line.length){
+							var split:ByteArray = new ByteArray();
+							var splen:uint = Math.min(line.length-line.position, 36000);
+							split.writeBoolean(line.position+splen == line.length);
+							line.readBytes(split, 1, splen);
+							send("split", split);
+						}
 					}else break;
 				}
 				_queue = _queue.splice(i);
@@ -110,17 +127,24 @@ package com.junkbyte.console.core
 				_canDraw = true;
 			}
 		}
+		private function splitLineSync(bytes:ByteArray):void
+		{
+			if(!_splitLineCache) _splitLineCache = new ByteArray();
+			var end:Boolean = bytes.readBoolean();
+			_splitLineCache.writeBytes(bytes, 1);
+			if(end){
+				_splitLineCache.position = 0;
+				readLog(_splitLineCache);
+				_splitLineCache = null;
+			}
+		}
 		private function remoteSync(bytes:ByteArray):void{
 			if(remoting != Remoting.RECIEVER || !bytes) return;
 			bytes.position = 0;
 			var logs:ByteArray = bytes.readObject();
 			logs.position = 0;
 			while(logs.bytesAvailable){
-				var t:String = logs.readUTF();
-				var c:String = logs.readUTF();
-				var p:int = logs.readInt();
-				var r:Boolean = logs.readBoolean();
-				console.addLine(new Array(t), p, c, r, true);
+				readLog(logs);
 			}
 			try{
 				var a:Array = [];
@@ -138,11 +162,24 @@ package com.junkbyte.console.core
 				report(e);
 			}
 		}
+		private function readLog(bytes:ByteArray):void{
+			var t:String = bytes.readUTFBytes(bytes.readUnsignedInt());
+			var c:String = bytes.readUTF();
+			var p:int = bytes.readInt();
+			var r:Boolean = bytes.readBoolean();
+			console.addLine(new Array(t), p, c, r, true);
+		}
 		public function send(command:String, ...args):Boolean{
-			var target:String = config.remotingConnectionName+(remoting == Remoting.RECIEVER?SENDER:RECIEVER);
-			args = [target, command].concat(args);
 			try{
-				_connection.send.apply(this, args);
+				if(_socket && _socket.connected){
+					_socket.writeUTF(command);
+					_socket.writeObject(args);
+					_socket.flush();
+				}else{
+					var target:String = config.remotingConnectionName+(remoting == Remoting.RECIEVER?SENDER:RECIEVER);
+					args = [target, command].concat(args);
+					_connection.send.apply(this, args);
+				}
 			}catch(e:Error){
 				return false;
 			}
@@ -190,8 +227,67 @@ package com.junkbyte.console.core
 			_password = str;
 			if(_mode == SENDER && !str) login();
 		}
+		public function remotingSocket(host:String, port:int = 0):void{
+			if(_socket && _socket.connected){
+				_socket.close();
+				_socket = null;
+			}
+			if(host && port)
+			{
+				report("Connecting to socket " + host + ":" + port);
+				_socket = new Socket();
+		        _socket.addEventListener(Event.CLOSE, socketCloseHandler);
+		        _socket.addEventListener(Event.CONNECT, socketConnectHandler);
+		        _socket.addEventListener(IOErrorEvent.IO_ERROR, socketIOErrorHandler);
+		        _socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, socketSecurityErrorHandler);
+		        _socket.addEventListener(ProgressEvent.SOCKET_DATA, socketDataHandler);
+		        _socket.connect(host, port);
+			}
+		}
+
+		private function socketCloseHandler(e:Event) : void {
+			if(e.currentTarget == _socket){
+				_socket = null;
+			}
+		}
+		private function socketConnectHandler(e:Event) : void {
+			report("Remoting socket connected.", -1);
+			if(_loggedIn || checkLogin("")){
+				_loggedIn = true;
+				_queue = console.logs.getLogsAsBytes();
+				send("loginSuccess");
+			}else{
+				send("requestLogin");
+			}
+			// not needed yet
+		}
+		private function socketIOErrorHandler(e:Event) : void {
+			report("Remoting socket error." + e, 9);
+			remotingSocket(null);
+		}
+		private function socketSecurityErrorHandler(e:Event) : void {
+			report("Remoting security error." + e, 9);
+			remotingSocket(null);
+		}
+		private function socketDataHandler(e:Event) : void {
+			handleSocket(e.currentTarget as Socket);
+		}
+		public function handleSocket(socket:Socket):void{
+			if(socket != _socket) _socket = socket;
+			try{
+				while(socket.bytesAvailable)
+				{
+					var cmd:Function = _client[socket.readUTF()];
+					var args:Object = socket.readObject();
+					if(cmd != null) cmd.apply(null, args);
+				}
+			} catch(err:Error){
+				report("Remoting socket data error." + err, 9);
+			}
+		}
+		
 		private function onRemotingStatus(e:StatusEvent):void{
-			if(e.level == "error") {
+			if(e.level == "error" && !(_socket && _socket.connected)) {
 				_loggedIn = false;
 			}
 		}

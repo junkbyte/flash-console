@@ -53,10 +53,10 @@ package com.junkbyte.console
 	 */
 	public class Console extends Sprite {
 
-		public static const VERSION:Number = 2.5;
-		public static const VERSION_STAGE:String = "";
-		public static const BUILD:int = 567;
-		public static const BUILD_DATE:String = "2011/01/06 21:31";
+		public static const VERSION:Number = 2.51;
+		public static const VERSION_STAGE:String = "WIP";
+		public static const BUILD:int = 571;
+		public static const BUILD_DATE:String = "2011/02/27 20:09";
 		//
 		public static const LOG:uint = 1;
 		public static const INFO:uint = 3;
@@ -111,6 +111,12 @@ package com.junkbyte.console
 			_graphing = new Graphing(this);
 			_mm = new MemoryMonitor(this);
 			_kb = new KeyBinder(this, pass);
+			
+			
+			cl.addCLCmd("remotingSocket", function(str:String = ""):void{
+				var args:Array = str.split(/\s+/);
+				remotingSocket(args[0], args[1]);
+			}, "Connect to socket remote. /remotingSocket ip port");
 			
 			if(config.sharedObjectName){
 				try{
@@ -345,6 +351,9 @@ package com.junkbyte.console
 		public function set remoting(b:Boolean):void{
 			_remoter.remoting = b?Remoting.SENDER:Remoting.NONE;
 		}
+		public function remotingSocket(host:String, port:int):void{
+			_remoter.remotingSocket(host, port);
+		}
 		public function set remotingPassword(str:String):void{
 			_remoter.remotingPassword = str;
 		}
@@ -355,6 +364,9 @@ package com.junkbyte.console
 			var a:Array = new Array();
 			for each(var item:Object in args) a.push(MakeChannelName(item));
 			_panels.mainPanel.viewingChannels = a;
+		}
+		public function set minimumPriority(level:uint):void{
+			_panels.mainPanel.priority = level;
 		}
 		public function report(obj:*, priority:int = 0, skipSafe:Boolean = true, ch:String = null):void{
 			if(!ch) ch = _panels.mainPanel.reportChannel;

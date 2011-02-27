@@ -149,7 +149,6 @@ package com.junkbyte.console.core
 				else if(v is DisplayObject && v.name) add = " "+v.name;
 				txt = "{"+genLinkString(o, prop, ShortClassName(v))+EscHTML(add)+"}";
 			}else{
-				// special case cause it'll break the html if it does bytearray.toString();
 				if(v is ByteArray) txt = "[ByteArray position:"+ByteArray(v).position+" length:"+ByteArray(v).length+"]";
 				else txt = String(v);
 				if(!html){
@@ -543,7 +542,7 @@ package com.junkbyte.console.core
 		
 		
 		public static function EscHTML(str:String):String{
-			return str.replace(/</gm, "&lt;").replace(/\>/g, "&gt;");
+			return str.replace(/</g, "&lt;").replace(/\>/g, "&gt;").replace(/\x00/g, "");
 		}
 		/*public static function UnEscHTML(str:String):String{
 	 		return str.replace(/&lt;/g, "<").replace(/&gt;/g, ">");

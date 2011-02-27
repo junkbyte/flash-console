@@ -12,6 +12,8 @@
 	<property name="src.ver.file" value="${src.dir}/com/junkbyte/console/Console.as" />
 	<property name="src.air.config.file" value="${samples.dir}/remote_air/ConsoleRemoteAIR-app.xml" />
 	
+	<property name="swc.classes" value="com.junkbyte.console.Cc com.junkbyte.console.ConsoleChannel" />
+	
 	<property file="${build.dir}/local.properties" />
 
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
@@ -23,6 +25,11 @@
 	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant.classpath" />
 
 	<target name="BuildAll" description="Compile everything!" depends="updateVersion">
+		<antcall target="swf">
+			<param name="file" value="${samples.dir}/flash/Sample.as" />
+			<param name="output" value="${bin.dir}/sample.swf" />
+			<param name="config" value="flex" />
+		</antcall>
 		<antcall target="swf">
 			<param name="file" value="${samples.dir}/flash/SampleAdvanced.as" />
 			<param name="output" value="${bin.dir}/sampleAdvanced.swf" />
@@ -39,9 +46,7 @@
 			<param name="config" value="flex" />
 		</antcall>
 		<antcall target="packageAir" />
-		<exec executable="${FLASH}">
-			<arg line="'${build.dir}/exportswc.jsfl'" />
-		</exec>
+		<antcall target="swc" />
 		<antcall target="compileASDoc" />
 	</target>
 	
@@ -62,18 +67,21 @@
 	<!-- Parameters: file, output, config -->
 	<target name="swf">
 		<echo message="Compiling SWF: ${file} to ${output}" />
-		<mxmlc file="${file}" output="${output}" keep-generated-actionscript="false">
+		<mxmlc file="${file}" output="${output}" keep-generated-actionscript="false" 
+			static-link-runtime-shared-libraries="true" >
 			<load-config filename="${FLEX_HOME}/frameworks/${config}-config.xml" />
 			<source-path path-element="${FLEX_HOME}/frameworks" />
 			<compiler.source-path path-element="${src.dir}" />
+			<compiler.source-path path-element="${samples.dir}/flash"/>
 			<default-size width="640" height="480" />
 		</mxmlc>
 	</target>
 
 	<!-- Parameters: class, output -->
 	<target name="swc">
-		<echo message="Compiling SWC: ${class} to ${output}" />
-		<compc output="${output}" include-classes="${class}">
+		<echo message="Compiling SWC" />
+		<property file="${build.dir}/build.properties"/>
+		<compc output="${bin.dir}/Console${build.version}.swc" include-classes="${swc.classes}">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
 			<compiler.source-path path-element="${src.dir}" />
 		</compc>

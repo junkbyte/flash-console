@@ -24,22 +24,24 @@
 */
 package 
 {
+	import com.junkbyte.console.Console;
+	import flash.text.TextField;
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.ConsoleChannel;
 
 	import flash.display.*;
 	import flash.events.*;
-	import flash.text.*;
 	import flash.utils.*;
 
-	public dynamic class Sample extends MovieClip{
+	[SWF(width='640',height='480',backgroundColor='0xDDDDDD',frameRate='30')]
+	public class Sample extends MovieClip{
 		
+		[Embed(source="SampleAssets.swf", symbol="SampleScreenClip", mimeType="application/x-shockwave-flash" )]
+        public var ScreenClipClass:Class;
+        public var screenClip:Sprite;
+        
 		private var _spamcount:int;
-		//
-		// This class is to be compiled from sample.fla
-		// If you rather compile else where, look SampleAdvanced.as 
-		// (though you will miss out on some basic feature demos)
-		//
+		
 		public function Sample() {
 			//
 			// SET UP - only required once
@@ -114,14 +116,22 @@ package
 		//
 		//
 		private function setupUI():void{
-			TextField(txtPriority).restrict = "0-9";
-			TextField(txtPriority2).restrict = "0-9";
-			setUpButton(btnInterval, "Start interval");
-			setUpButton(btnAdd1, "Add");
-			setUpButton(btnAdd2, "Add");
-			setUpButton(btnSpam, "Spam");
+			screenClip = new ScreenClipClass();
+			addChild(screenClip);
+			getScreenChild("mcBunny").head.stop();
+			TextField(getScreenChild("version")).text = "v"+Console.VERSION+Console.VERSION_STAGE;
+			TextField(getScreenChild("txtPriority")).restrict = "0-9";
+			TextField(getScreenChild("txtPriority2")).restrict = "0-9";
+			setUpButton("btnInterval", "Start interval");
+			setUpButton("btnAdd1", "Add");
+			setUpButton("btnAdd2", "Add");
+			setUpButton("btnSpam", "Spam");
 		}
-		private function setUpButton(btn:MovieClip, t:String):void{
+		private function getScreenChild(n:String):Object{
+			return screenClip.getChildByName(n);
+		}
+		private function setUpButton(btnname:String, t:String):void{
+			var btn:MovieClip = getScreenChild(btnname) as MovieClip;
 			btn.stop();
 			btn.buttonMode = true;
 			btn.mouseChildren = false;
@@ -134,24 +144,27 @@ package
 			MovieClip(e.currentTarget).gotoAndStop(e.type==MouseEvent.ROLL_OVER?"over":"out");
 		}
 		private function onButtonClick(e:MouseEvent):void{
-			switch(e.currentTarget){
-				case btnAdd1:
-					Cc.add(txtLog.text,int(txtPriority.text));
+			switch(MovieClip(e.currentTarget).name){
+				case "btnAdd1":
+					Cc.add(getScreenChild("txtLog").text,int(getScreenChild("txtPriority").text));
 				break;
-				case btnAdd2:
-					Cc.ch(txtChannel.text, txtLog2.text,int(txtPriority2.text));
+				case "btnAdd2":
+					var ch:String = getScreenChild("txtChannel").text;
+					var txt:String = getScreenChild("txtLog2").text;
+					var lvl:int = int(getScreenChild("txtPriority2").text);
+					Cc.ch(ch, txt, lvl);
 				break;
-				case btnInterval:
+				case "btnInterval":
 					if(_interval){
 						clearInterval(_interval);
 						_interval = 0;
-						btnInterval.txt.text = "Start Interval";
+						getScreenChild("btnInterval").txt.text = "Start Interval";
 					}else{
 						_interval = setInterval(onIntervalEvent, 50);
-						btnInterval.txt.text = "Stop Interval";
+						getScreenChild("btnInterval").txt.text = "Stop Interval";
 					}
 				break;
-				case btnSpam:
+				case "btnSpam":
 					spam();
 				break;
 			}

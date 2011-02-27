@@ -76,7 +76,7 @@ package com.junkbyte.console.view
 		private var _viewingChannels:Array;
 		private var _extraMenus:Object = new Object();
 		private var _cmdsInd:int = -1;
-		private var _priority:int;
+		private var _priority:uint;
 		private var _filterText:String;
 		private var _filterRegExp:RegExp;
 		private var _clScope:String = "";
@@ -198,6 +198,7 @@ package com.junkbyte.console.view
 				console.so[CL_HISTORY] = _cmdsHistory = new Array();
 			}
 			//
+			addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel, false, 0, true);
 			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
@@ -222,6 +223,18 @@ package com.junkbyte.console.view
 			stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
+
+		private function onMouseWheel(e : MouseEvent) : void {
+			if(_ctrl){
+				var s:int = console.config.style.traceFontSize + (e.delta>0?1:-1);
+				if(s > 10 && s < 20){
+					console.config.style.traceFontSize = s;
+					console.config.style.updateStyleSheet();
+					updateToBottom();
+					e.stopPropagation();
+				}
+			}
+		}
 		private function onCmdPrefRollOverOut(e : MouseEvent) : void {
 			console.panels.tooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", this);
 		}
@@ -244,7 +257,8 @@ package com.junkbyte.console.view
 				_shift = false;
 			}else if(e.keyCode == Keyboard.CONTROL){
 				_ctrl = false;
-			}else if(e.keyCode == Keyboard.ENTER && parent.visible && visible && _cmdField.visible){
+			}
+			if((e.keyCode == Keyboard.TAB || e.keyCode == Keyboard.ENTER) && parent.visible && visible && _cmdField.visible){
 				try{
 					stage.focus = _cmdField;
 					_cmdField.setSelection(0, _cmdField.text.length);
@@ -375,7 +389,7 @@ package com.junkbyte.console.view
 			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTER_CHANNEL) >= 0 && line.text.toLowerCase().indexOf(_filterText)>=0 )
 			 		|| (_filterRegExp && _viewingChannels.indexOf(Console.FILTER_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )
 			 	) 
-			 	&& ( _priority <= 0 || line.priority >= _priority)
+			 	&& ( _priority == 0 || line.priority >= _priority)
 			);
 		}
 		public function get reportChannel():String{
@@ -465,7 +479,7 @@ package com.junkbyte.console.view
 		// START OF SCROLL BAR STUFF
 		//
 		private function onTraceScroll(e:Event = null):void{
-			if(_lockScrollUpdate) return;
+			if(_lockScrollUpdate || _ctrl) return;
 			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
 			if(!console.paused && _atBottom !=atbottom){
 				var diff:int = _traceField.maxScrollV-_traceField.scrollV;
@@ -810,12 +824,12 @@ package com.junkbyte.console.view
 				console.setViewingChannels(chn);
 			}
 		}
-		public function set priority(p:int):void{
+		public function set priority(p:uint):void{
 			_priority = p;
 			updateToBottom();
 			updateMenu();
 		}
-		public function get priority():int{
+		public function get priority():uint{
 			return _priority;
 		}
 		//
@@ -910,7 +924,7 @@ package com.junkbyte.console.view
 					_cmdField.text = "";
 				}
 			}
-			else if(e.keyCode == Keyboard.SPACE){
+			else if(e.keyCode == Keyboard.SPACE || e.keyCode == Keyboard.TAB){
 				if(_hint) 
 				{
 					_cmdField.text = _hint;
