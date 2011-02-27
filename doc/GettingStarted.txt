@@ -81,6 +81,8 @@ For easy reference, please see samples/flash/SampleAdvanced.as for working sampl
   * Clicking on the link {Stage} will reveal detailed info about stage
   * Details shows up in an 'inspection' channel. When you are done, click 'Exit' to return to normal logging view
   * As references are stored as weak link, some objects may get garbage collected before you click
+  * To avoid early garbage collection issue, see Cc.config.objectHardReferenceTimer. 
+   * asdoc: http://console.junkbyte.com/asdoc/com/junkbyte/console/ConsoleConfig.html#objectHardReferenceTimer
   * You can click on `[set scope]` to set scope in commandLine (explained later)
   * You can manually print detailed info about an object by calling Cc.inspect(...);
 
