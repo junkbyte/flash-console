@@ -81,7 +81,7 @@
 	<target name="swc">
 		<echo message="Compiling SWC" />
 		<property file="${build.dir}/build.properties"/>
-		<compc output="${bin.dir}/Console${build.version}.swc" include-classes="${swc.classes}">
+		<compc output="${bin.dir}/Console${build.version}${build.stage}.swc" include-classes="${swc.classes}">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
 			<compiler.source-path path-element="${src.dir}" />
 		</compc>
