@@ -25,19 +25,17 @@
 package 
 {
 	import com.junkbyte.console.Cc;
-	import com.junkbyte.console.vos.Log;
 
 	import flash.display.*;
 	import flash.geom.Rectangle;
-	import flash.utils.ByteArray;
 
 	[SWF(width='700',height='300',backgroundColor='0xFFFFFF',frameRate='30')]
 	// Might want to add compile argument: -use-network=false -debug=true
 	
 	public dynamic class SampleAdvanced extends MovieClip{
 		
-		private var temp:Object = {o1:{o11:{o111:{text:"Some randome text", number:123}, o12:[2,3,4,5]}}, o2:{o21:[]}};
-		private var  ba:ByteArray;
+		private var temp:Object = {object1:{subObj:{text:"Some randome text", number:123}, subArr:[2,3,4,5]}, object2:{arr:[3,4,5]}};
+		
 		public function SampleAdvanced() {
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			//
@@ -58,7 +56,8 @@ package
 			Cc.remoting = true;
 			
 			Cc.addMenu("T1", Cc.log, ["Greetings 1"], "This is a test menu 1");
-			Cc.addMenu("T<2>", Cc.log, ["Greetings 2"], "This is a test menu 2");
+			Cc.addMenu("T2", Cc.log, ["Greetings 2"], "This is a test menu 2");
+			Cc.addMenu("spam100k", spam, [100000]);
 			//
 			// End of setup
 			//
@@ -66,19 +65,17 @@ package
 			Cc.info("Here is a link to stage: ", stage);
 			Cc.info("Here is a link to Cc class", Cc);
 			Cc.info("Here is a link to Console instance", Cc.instance);
+			//
+			// HTML text
+			Cc.addHTML("Here is HTML <font color='#ff0000'>red <b>bold</b> <b><i>and</i></b> <i>italic</i></font> text.");
+			Cc.addHTMLch("html", 8, "Mix objects inside html <p9>like this <i><b>&gt;", this,"&lt;</b></i></p9>");
 			
 			Cc.log("___");
-			var o:Log = new Log("test", "ch1", 5);
-			o.prev = new Log("Previous log", "ch0", 1);
+			
 			// explode an object into its values..
-			var arr:Array = ["a","b","c",temp, o];
-			Cc.log("Going to Cc.explode() a junk of values below...");
-			Cc.explode(arr);
-			Cc.log("___");
-			ba = new ByteArray();
-			ba.writeUTF("HA! You found the secret byte array string!");
-			Cc.info("Bytearry will now print properly rather than breaking the whole console.");
-			Cc.info("A byteArray with UTF string:", ba);
+			Cc.log("Cc.explode() test:");
+			Cc.explode(temp);
+			
 			Cc.log("___");
 			Cc.info("Try the new search highlighting... Type '/filter link' in commandline below.");
 			//
@@ -110,6 +107,7 @@ package
 			//  @ SampleAdvanced/d()
 			//  @ SampleAdvanced/c()
 			a(); // see function e() below
+			
 		}
 		private function a():void{
 			b();
@@ -125,6 +123,14 @@ package
 		}
 		private function e():void{
 			Cc.stack("Hello from stack trace.");
+		}
+		private function spam(chars:int):void{
+			var str:String = "";
+			while(str.length < chars){
+				str += "12345678901234567890123456789012345678901234567890123456789012345678901234567890";
+			}
+			Cc.log(str.substring(0, chars));
+			Cc.log("<<",chars,"chars.");
 		}
 	}
 }

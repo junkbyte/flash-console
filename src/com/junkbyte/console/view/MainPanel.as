@@ -99,7 +99,7 @@ package com.junkbyte.console.view
 			console.cl.addCLCmd("filter", setFilterText, "Filter console logs to matching string. When done, click on the * (global channel) at top.", true);
 			console.cl.addCLCmd("filterexp", setFilterRegExp, "Filter console logs to matching regular expression", true);
 			console.cl.addCLCmd("clearhistory", clearCommandLineHistory, "Clear history of commands you have entered.", true);
-
+			
 			name = NAME;
 			minWidth = 50;
 			minHeight = 18;
@@ -225,7 +225,7 @@ package com.junkbyte.console.view
 		}
 
 		private function onMouseWheel(e : MouseEvent) : void {
-			if(_ctrl){
+			if(_shift){
 				var s:int = console.config.style.traceFontSize + (e.delta>0?1:-1);
 				if(s > 10 && s < 20){
 					console.config.style.traceFontSize = s;
@@ -288,7 +288,7 @@ package com.junkbyte.console.view
 			if(_bottomLine.alpha>0){
 				_bottomLine.alpha -= 0.25;
 			}
-			if(_clScope != console.cl.scopeString && console.remoter.remoting != Remoting.RECIEVER){
+			if(_clScope != console.cl.scopeString){
 				_clScope = console.cl.scopeString;
 				updateCLScope(_clScope);
 			}
@@ -479,7 +479,7 @@ package com.junkbyte.console.view
 		// START OF SCROLL BAR STUFF
 		//
 		private function onTraceScroll(e:Event = null):void{
-			if(_lockScrollUpdate || _ctrl) return;
+			if(_lockScrollUpdate || _shift) return;
 			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
 			if(!console.paused && _atBottom !=atbottom){
 				var diff:int = _traceField.maxScrollV-_traceField.scrollV;

@@ -34,7 +34,7 @@ package com.junkbyte.console.core
 		private var _lastRepeat:Log;
 		private var _newRepeat:Log;
 		
-		private var first:Log;
+		public var first:Log;
 		public var last:Log;
 		
 		private var _length:uint;
@@ -44,7 +44,7 @@ package com.junkbyte.console.core
 			_channels = new Object();
 		}
 		
-		public function tick():void{
+		public function update():void{
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){
 				if(_lastRepeat) remove(_lastRepeat);
@@ -53,9 +53,9 @@ package com.junkbyte.console.core
 				push(_lastRepeat);
 			}
 		}
-		public function add(line:Log, isRepeating:Boolean):Boolean{
+		public function add(line:Log):Boolean{
 			addChannel(line.ch);
-			if(isRepeating){
+			if (line.repeat) {
 				if(_repeating > 0 && _lastRepeat){
 					_newRepeat = line;
 					return false;
@@ -94,15 +94,6 @@ package com.junkbyte.console.core
 				_length = 0;
 				_channels = new Object();
 			}
-		}
-		public function getLogsAsBytes():Array{
-			var a:Array = [];
-			var line:Log = first;
-			while(line){
-				a.push(line.toBytes());
-				line = line.next;
-			}
-			return a;
 		}
 		public function getLogsAsString(splitter:String):String{
 			var str:String = "";

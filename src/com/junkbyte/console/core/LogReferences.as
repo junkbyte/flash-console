@@ -63,10 +63,12 @@ package com.junkbyte.console.core
 		public function LogReferences(console:Console) {
 			super(console);
 			
-			remoter.registerClient("ref", handleString);
+			remoter.registerClient("ref", function(bytes:ByteArray):void{
+				handleString(bytes.readUTF());
+			});
 			remoter.registerClient("focus", handleFocused);
 		}
-		public function tick():void{
+		public function update():void{
 			if(_currentBank.length || _prevBank.length){
 				var time:int = getTimer();
 				if( time > _lastWithdraw+config.objectHardReferenceTimer*1000){
@@ -191,7 +193,9 @@ package com.junkbyte.console.core
 		}
 		public function handleRefEvent(str:String):void{
 			if(remoter.remoting == Remoting.RECIEVER){
-				remoter.send("ref", str);
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeUTF(str);
+				remoter.send("ref", bytes);
 			}else{
 				handleString(str);
 			}
@@ -258,7 +262,9 @@ package com.junkbyte.console.core
 			_history = null;
 			_hisIndex = 0;
 			if(remoter.remoting == Remoting.SENDER){
-				remoter.send("ref", "refexit");
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeUTF("refexit");
+				remoter.send("ref", bytes);
 			}
 			console.clear(LogReferences.INSPECTING_CHANNEL);
 		}

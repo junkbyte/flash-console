@@ -24,6 +24,7 @@
 */
 package com.junkbyte.console.core 
 {
+	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.WeakObject;
@@ -55,8 +56,13 @@ package com.junkbyte.console.core
 			_prevScope = new WeakRef(m);
 			_saved.set("C", m);
 			
-			console.remoter.registerClient("cmd", run);
-			console.remoter.registerClient("scope", handleScopeEvent);
+			console.remoter.registerClient("cmd", function(bytes:ByteArray):void{
+				run(bytes.readUTF());
+			});
+			console.remoter.registerClient("scope", function(bytes:ByteArray):void{
+				handleScopeEvent(bytes.readUnsignedInt());
+			});
+			console.remoter.registerClient("cls", handleScopeString);
 			
 			addCLCmd("help", printHelp, "How to use command line");
 			addCLCmd("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
@@ -86,9 +92,14 @@ package com.junkbyte.console.core
 		public function get base():Object {
 			return _saved.get("base");
 		}
+		public function handleScopeString(bytes:ByteArray):void{
+			_scopeStr = bytes.readUTF();
+		}
 		public function handleScopeEvent(id:uint):void{
 			if(remoter.remoting == Remoting.RECIEVER){
-				remoter.send("scope", id);
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeUnsignedInt(id);
+				remoter.send("scope", bytes);
 			}else{
 				var v:* = console.links.getRefById(id);
 				if(v) console.cl.setReturned(v, true, false);
@@ -172,7 +183,10 @@ package com.junkbyte.console.core
 					str = str.substring(1);
 				}else if(str.search(new RegExp("\/"+localCommands.join("|\/"))) != 0){
 					report("Run command at remote: "+str,-2);
-					if(!console.remoter.send("cmd", str)){
+					
+					var bytes:ByteArray = new ByteArray();
+					bytes.writeUTF(str);
+					if(!console.remoter.send("cmd", bytes)){
 						report("Command could not be sent to client.", 10);
 					}
 					return null;
@@ -254,9 +268,13 @@ package com.junkbyte.console.core
 			{
 				_saved.set(Executer.RETURNED, returned, true);
 				if(changeScope && returned !== _scope){
+					// scope changed
 					_prevScope.reference = _scope;
 					_scope = returned;
-					_scopeStr = LogReferences.ShortClassName(_scope, false);
+					if(remoter.remoting != Remoting.RECIEVER){
+						_scopeStr = LogReferences.ShortClassName(_scope, false);
+						sendCmdScope2Remote();
+					}
 					report("Changed to "+console.links.makeRefTyped(returned), -1);
 				}else{
 					if(say) report("Returned "+console.links.makeString(returned), -1);
@@ -264,6 +282,11 @@ package com.junkbyte.console.core
 			}else{
 				if(say) report("Exec successful, undefined return.", -1);
 			}
+		}
+		public function sendCmdScope2Remote():void{
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeUTF(_scopeStr);
+			console.remoter.send("cls", bytes);
 		}
 		private function reportError(e:Error):void{
 			var str:String = console.links.makeString(e);
@@ -319,7 +342,7 @@ package com.junkbyte.console.core
 				}
 			}
 			buildin = buildin.sortOn("n");
-			report("Build-in commands:"+(!config.commandLineAllowed?" (limited permission)":""), 4);
+			report("Built-in commands:"+(!config.commandLineAllowed?" (limited permission)":""), 4);
 			for each(cmd in buildin){
 				report("<b>/"+cmd.n+"</b> <p-1>" + cmd.d+"</p-1>", -2);
 			}

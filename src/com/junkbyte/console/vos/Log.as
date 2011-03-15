@@ -51,6 +51,13 @@ package com.junkbyte.console.vos {
 			bytes.writeBoolean(repeat);
 			return bytes;
 		}
+		public static function FromBytes(bytes:ByteArray):Log{
+			var t:String = bytes.readUTFBytes(bytes.readUnsignedInt());
+			var c:String = bytes.readUTF();
+			var p:int = bytes.readInt();
+			var r:Boolean = bytes.readBoolean();
+			return new Log(t, c, p, r);
+		}
 		
 		public function plainText():String{
 			return text.replace(/<.*?>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">");

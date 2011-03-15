@@ -43,10 +43,9 @@ package com.junkbyte.console.view
 		private var _memPanel:GraphingPanel;
 		private var _graphsMap:Object = {};
 		private var _graphPlaced:uint = 0;
-		//private var _objMonitors:Object = {};
-		//private var _monPlaced:uint = 0;
 		
 		private var _tooltipField:TextField;
+		private var _canDraw:Boolean;
 		
 		public function PanelsManager(master:Console) {
 			console = master;
@@ -107,6 +106,7 @@ package com.junkbyte.console.view
 			if(chpanel) chpanel.update();
 		}
 		public function update(paused:Boolean, lineAdded:Boolean):void{
+			_canDraw = !paused;
 			_mainPanel.update(!paused && lineAdded);
 			if(!paused) {
 				if(lineAdded && _chsPanel!=null){
@@ -114,10 +114,11 @@ package com.junkbyte.console.view
 				}
 			}
 		}
-		public function updateGraphs(graphs:Array, draw:Boolean = true):void{
+		public function updateGraphs(graphs:Array):void{
 			var usedMap:Object = {};
 			var fpsGroup:GraphGroup;
 			var memGroup:GraphGroup;
+			_graphPlaced = 0;
 			for each(var group:GraphGroup in graphs){
 				if(group.type == GraphGroup.FPS) {
 					fpsGroup = group;
@@ -130,10 +131,8 @@ package com.junkbyte.console.view
 						var rect:Rectangle = group.rect;
 						if(rect == null) rect = new Rectangle(NaN,NaN, 0, 0);
 						var size:Number = 100;
-						if(isNaN(rect.x) || isNaN(rect.y))
-						{
-							if(_mainPanel.width < 150)
-							{
+						if(isNaN(rect.x) || isNaN(rect.y)){
+							if(_mainPanel.width < 150){
 								size = 50;
 							}
 							var maxX:Number = Math.floor(_mainPanel.width/size)-1;
@@ -153,7 +152,7 @@ package com.junkbyte.console.view
 						_graphsMap[n] = panel;
 						addPanel(panel);
 					}
-					panel.update(group, draw);
+					panel.update(group, _canDraw);
 				}
 				usedMap[group.name] = true;
 			}
@@ -174,7 +173,7 @@ package com.junkbyte.console.view
 					addPanel(_fpsPanel);
 					_mainPanel.updateMenu();
 				}
-				_fpsPanel.update(fpsGroup);
+				_fpsPanel.update(fpsGroup, _canDraw);
 			}else if(_fpsPanel!=null){
 				removePanel(GraphingPanel.FPS);
 				_fpsPanel = null;
@@ -190,11 +189,12 @@ package com.junkbyte.console.view
 					addPanel(_memPanel);
 					_mainPanel.updateMenu();
 				}
-				_memPanel.update(memGroup);
+				_memPanel.update(memGroup, _canDraw);
 			}else if(_memPanel!=null){
 				removePanel(GraphingPanel.MEM);
 				_memPanel = null;
 			}
+			_canDraw = false;
 		}
 		//
 		//

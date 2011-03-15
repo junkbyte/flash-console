@@ -23,7 +23,6 @@
  * 
  */
 package {
-	import flash.utils.ByteArray;
 	import flash.events.ProgressEvent;
 	import flash.net.Socket;
 

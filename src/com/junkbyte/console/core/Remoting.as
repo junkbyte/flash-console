@@ -24,18 +24,18 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.events.ProgressEvent;
-	import flash.events.IOErrorEvent;
-	import flash.events.Event;
-	import flash.net.Socket;
+	import flash.utils.Dictionary;
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.Log;
 
 	import flash.events.AsyncErrorEvent;
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.events.StatusEvent;
 	import flash.net.LocalConnection;
+	import flash.net.Socket;
 	import flash.system.Security;
 	import flash.utils.ByteArray;
 
@@ -45,169 +45,151 @@ package com.junkbyte.console.core
 		public static const SENDER:uint = 1;
 		public static const RECIEVER:uint = 2;
 		
-		private var _client:Object;
+		private var _client:Object = new Object();
 		private var _mode:uint;
-		private var _connection:LocalConnection;
+		private var _local:LocalConnection;
 		private var _socket:Socket;
-		private var _queue:Array;
+		private var _sendBuffer:ByteArray = new ByteArray();
+		private var _recBuffers:Object = new Object();
+		private var _senders:Dictionary = new Dictionary();
 		
 		private var _lastLogin:String = "";
 		private var _password:String;
 		private var _loggedIn:Boolean;
-		private var _canDraw:Boolean;
-		private var _splitLineCache:ByteArray;
 		
-		private var _prevG:Boolean;
-		private var _prevScope:String;
+		private var _sendID:String;
+		private var _lastReciever:String;
 		
 		public function Remoting(m:Console, pass:String) {
 			super(m);
 			_password = pass;
-			_client = new Object();
-			_client.login = login;
-			_client.requestLogin = requestLogin;
-			_client.loginFail = loginFail;
-			_client.loginSuccess = loginSuccess;
-			_client.sync = remoteSync;
-			_client.split = splitLineSync;
+			registerClient("login", function(bytes:ByteArray):void{
+				login(bytes.readUTF());
+			});
+			registerClient("requestLogin", requestLogin);
+			registerClient("loginFail", loginFail);
+			registerClient("loginSuccess", loginSuccess);
+			registerClient("log", function(bytes:ByteArray):void{
+				console.addLogLine(Log.FromBytes(bytes));
+			});
 		}
 		
 		public function queueLog(line:Log):void{
-			if(_mode != SENDER || !_loggedIn) return;
-			_queue.push(line.toBytes());
-			var maxlines:int = config.maxLines;
-			if(_queue.length > maxlines && maxlines > 0 ){
-				_queue.splice(0,1);
-			}
+			if(canSend) send("log", line.toBytes());
 		}
-		public function update(graphs:Array):void{
-			if(_mode == SENDER){
-				if(!_loggedIn) return;
-				// graphs
-				var ga:ByteArray = new ByteArray();
-				len = graphs.length;
-				for(i = 0; i<len; i++){
-					ga.writeBytes(GraphGroup(graphs[i]).toBytes());
-				}
-				//
-				// logs
-				var size:uint = ga.length;
-				var len:uint = _queue.length;
-				var logs:ByteArray = new ByteArray();
-				for(var i:uint = 0 ; i<len; i++){
-					var line:ByteArray = _queue[i];
-					size += line.length;
-					// real limit is 40,000
-					if(size <= 36000){
-						logs.writeBytes(line);
-					}else if(i == 0){
-						line.position = 0;
-						while(line.position < line.length){
-							var split:ByteArray = new ByteArray();
-							var splen:uint = Math.min(line.length-line.position, 36000);
-							split.writeBoolean(line.position+splen == line.length);
-							line.readBytes(split, 1, splen);
-							send("split", split);
-						}
-					}else break;
-				}
-				_queue = _queue.splice(i);
-				//
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeObject(logs);
-				bytes.writeObject(ga);
-				bytes.writeUTF(console.cl.scopeString);
-				if(size>0 || _prevScope!=console.cl.scopeString || _prevG)
-				{
-					_prevG = ga.length?true:false;
-					_prevScope = console.cl.scopeString;
-					send("sync", bytes);
-				}
-			}else if(!console.paused){
-				_canDraw = true;
-			}
-		}
-		private function splitLineSync(bytes:ByteArray):void
-		{
-			if(!_splitLineCache) _splitLineCache = new ByteArray();
-			var end:Boolean = bytes.readBoolean();
-			_splitLineCache.writeBytes(bytes, 1);
-			if(end){
-				_splitLineCache.position = 0;
-				readLog(_splitLineCache);
-				_splitLineCache = null;
-			}
-		}
-		private function remoteSync(bytes:ByteArray):void{
-			if(remoting != Remoting.RECIEVER || !bytes) return;
-			bytes.position = 0;
-			var logs:ByteArray = bytes.readObject();
-			logs.position = 0;
-			while(logs.bytesAvailable){
-				readLog(logs);
-			}
-			try{
-				var a:Array = [];
-				var graphs:ByteArray = bytes.readObject();
-				graphs.position = 0;
-				while(graphs.bytesAvailable){
-					a.push(GraphGroup.FromBytes(graphs));
-				}
-				console.panels.updateGraphs(a, _canDraw);
-				if(_canDraw) {
-					console.panels.mainPanel.updateCLScope(bytes.readUTF());
-					_canDraw = false;
-				}
-			}catch(e:Error){
-				report(e);
-			}
-		}
-		private function readLog(bytes:ByteArray):void{
-			var t:String = bytes.readUTFBytes(bytes.readUnsignedInt());
-			var c:String = bytes.readUTF();
-			var p:int = bytes.readInt();
-			var r:Boolean = bytes.readBoolean();
-			console.addLine(new Array(t), p, c, r, true);
-		}
-		public function send(command:String, ...args):Boolean{
-			try{
+		public function update():void{
+			if(_sendBuffer.length){
 				if(_socket && _socket.connected){
-					_socket.writeUTF(command);
-					_socket.writeObject(args);
+					_socket.writeBytes(_sendBuffer);
 					_socket.flush();
+					_sendBuffer = new ByteArray();
 				}else{
+					var packet:ByteArray = new ByteArray();
+					_sendBuffer.position = 0;
+					_sendBuffer.readBytes(packet, 0, Math.min(38000, _sendBuffer.bytesAvailable));
+					
+					var newbuffer:ByteArray = new ByteArray();
+					_sendBuffer.readBytes(newbuffer);
+					_sendBuffer = newbuffer;
 					var target:String = config.remotingConnectionName+(remoting == Remoting.RECIEVER?SENDER:RECIEVER);
-					args = [target, command].concat(args);
-					_connection.send.apply(this, args);
+					_local.send(target, "synchronize", _sendID, packet);
 				}
-			}catch(e:Error){
-				return false;
+			}
+			for (var id:String in _recBuffers){
+				if(!_senders[id]){
+					_senders[id] = true;
+					if(_lastReciever){
+						report("Remote switched to new sender ["+id+"] as primary.", -2);
+					}
+					_lastReciever = id;
+				}
+				
+				var buffer:ByteArray = _recBuffers[id];
+				try{
+					var pointer:uint = buffer.position = 0;
+					while(buffer.bytesAvailable){
+						var cmd:String = buffer.readUTF();
+						var arg:ByteArray = null;
+						if(buffer.bytesAvailable == 0) break;
+						if(buffer.readBoolean()){
+							if(buffer.bytesAvailable == 0) break;
+							var blen:uint = buffer.readUnsignedInt();
+							if(buffer.bytesAvailable < blen) break;
+							arg = new ByteArray();
+							buffer.readBytes(arg, 0, blen);
+						}
+						var callbackData:Object = _client[cmd];
+						if(!callbackData.latest || id == _lastReciever){
+							if(arg) callbackData.fun(arg);
+							else callbackData.fun();
+						}
+						pointer = buffer.position;
+					}
+					if(pointer < buffer.length){
+						var recbuffer:ByteArray = new ByteArray();
+						recbuffer.writeBytes(buffer, pointer);
+						_recBuffers[id] = buffer = recbuffer;
+					}else{
+						delete _recBuffers[id];
+					}
+				}catch(err:Error){
+					report("Remoting sync error: "+err, 9);
+				}
+			}
+		}
+		private function synchronize(id:String, obj:Object):void{
+			if(!(obj is ByteArray)){
+				report("Remoting sync error. Recieved non ByteArray:"+obj, 9);
+				return;
+			}
+			var packet:ByteArray = obj as ByteArray;
+			var buffer:ByteArray = _recBuffers[id];
+			if(buffer){
+				buffer.position = buffer.length;
+				buffer.writeBytes(packet);
+			}else{
+				_recBuffers[id] = packet;
+			}
+		}
+		public function send(command:String, arg:ByteArray = null):Boolean{
+			_sendBuffer.position = _sendBuffer.length;
+			_sendBuffer.writeUTF(command);
+			if(arg){
+				_sendBuffer.writeBoolean(true);
+				_sendBuffer.writeUnsignedInt(arg.length);
+				_sendBuffer.writeBytes(arg);
+			}else{
+				_sendBuffer.writeBoolean(false);
 			}
 			return true;
 		}
 		public function get remoting():uint{
 			return _mode;
 		}
+		public function get canSend():Boolean{
+			return _mode == SENDER && _loggedIn;
+		}
 		public function set remoting(newMode:uint):void{
 			if(newMode == _mode) return;
+			_sendID = generateId();
 			if(newMode == SENDER){
-				_queue = new Array();
 				if(!startSharedConnection(SENDER)){
 					report("Could not create remoting client service. You will not be able to control this console with remote.", 10);
 				}
-				_connection.addEventListener(StatusEvent.STATUS, onRemotingStatus, false, 0, true);
+				_sendBuffer = new ByteArray();
+				_local.addEventListener(StatusEvent.STATUS, onSenderStatus, false, 0, true);
 				report("<b>Remoting started.</b> "+getInfo(),-1);
 				_loggedIn = checkLogin("");
 				if(_loggedIn){
-					_queue = console.logs.getLogsAsBytes();
-					send("loginSuccess");
+					sendLoginSuccess();
 				}else{
 					send("requestLogin");
 				}
 			}else if(newMode == RECIEVER){
 				if(startSharedConnection(RECIEVER)){
-					_connection.addEventListener(AsyncErrorEvent.ASYNC_ERROR , onRemoteAsyncError, false, 0, true);
-					_connection.addEventListener(StatusEvent.STATUS, onRemoteStatus, false, 0, true);
+					_sendBuffer = new ByteArray();
+					_local.addEventListener(AsyncErrorEvent.ASYNC_ERROR , onRemoteAsyncError, false, 0, true);
+					_local.addEventListener(StatusEvent.STATUS, onRecieverStatus, false, 0, true);
 					report("<b>Remote started.</b> "+getInfo(),-1);
 					var sdt:String = Security.sandboxType;
 					if(sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK){
@@ -252,10 +234,9 @@ package com.junkbyte.console.core
 		}
 		private function socketConnectHandler(e:Event) : void {
 			report("Remoting socket connected.", -1);
+			_sendBuffer = new ByteArray();
 			if(_loggedIn || checkLogin("")){
-				_loggedIn = true;
-				_queue = console.logs.getLogsAsBytes();
-				send("loginSuccess");
+				sendLoginSuccess();
 			}else{
 				send("requestLogin");
 			}
@@ -273,22 +254,22 @@ package com.junkbyte.console.core
 			handleSocket(e.currentTarget as Socket);
 		}
 		public function handleSocket(socket:Socket):void{
-			if(socket != _socket) _socket = socket;
-			try{
-				while(socket.bytesAvailable)
-				{
-					var cmd:Function = _client[socket.readUTF()];
-					var args:Object = socket.readObject();
-					if(cmd != null) cmd.apply(null, args);
-				}
-			} catch(err:Error){
-				report("Remoting socket data error." + err, 9);
+			if(!_senders[socket]){
+				_senders[socket] = generateId();
+				_socket = socket;
 			}
+			var bytes:ByteArray = new ByteArray();
+			socket.readBytes(bytes);
+			synchronize(_senders[socket], bytes);
 		}
-		
-		private function onRemotingStatus(e:StatusEvent):void{
+		private function onSenderStatus(e:StatusEvent):void{
 			if(e.level == "error" && !(_socket && _socket.connected)) {
 				_loggedIn = false;
+			}
+		}
+		private function onRecieverStatus(e:StatusEvent):void{
+			if(remoting == Remoting.RECIEVER && e.level=="error"){
+				report("Problem communicating to client.", 10);
 			}
 		}
 		private function onRemotingSecurityError(e:SecurityErrorEvent):void{
@@ -298,11 +279,6 @@ package com.junkbyte.console.core
 		private function onRemoteAsyncError(e:AsyncErrorEvent):void{
 			report("Problem with remote sync. [<a href='event:remote'>Click here</a>] to restart.", 10);
 			remoting = NONE;
-		}
-		private function onRemoteStatus(e:StatusEvent):void{
-			if(remoting == Remoting.RECIEVER && e.level=="error"){
-				report("Problem communicating to client.", 10);
-			}
 		}
 		
 		private function getInfo():String{
@@ -314,31 +290,44 @@ package com.junkbyte.console.core
 			report("Go to Settings Manager [<a href='event:settings'>click here</a>] &gt; 'Global Security Settings Panel' (on left) &gt; add the location of the local flash (swf) file.", -2);
 		}
 		
+		private function generateId():String{
+			return new Date().time+"."+Math.floor(Math.random()*100000);
+		}
 		private function startSharedConnection(targetmode:uint):Boolean{
 			close();
 			_mode = targetmode;
-			_connection = new LocalConnection();
+			_local = new LocalConnection();
+			_local.client = {synchronize:synchronize};
 			if(config.allowedRemoteDomain){
-				_connection.allowDomain(config.allowedRemoteDomain);
-				_connection.allowInsecureDomain(config.allowedRemoteDomain);
+				_local.allowDomain(config.allowedRemoteDomain);
+				_local.allowInsecureDomain(config.allowedRemoteDomain);
 			}
-			_connection.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError, false, 0, true);
-			_connection.client = _client;
+			_local.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError, false, 0, true);
 			
 			try{
-				_connection.connect(config.remotingConnectionName+_mode);
+				_local.connect(config.remotingConnectionName+_mode);
 			}catch(err:Error){
 				return false;
 			}
 			return true;
 		}
-		public function registerClient(key:String, fun:Function):void{
-			_client[key] = fun;
+		public function registerClient(key:String, fun:Function, latestOnly:Boolean = false):void{
+			_client[key] = {fun:fun, latest:latestOnly};
 		}
 		private function loginFail():void{
 			if(remoting != Remoting.RECIEVER) return;
 			report("Login Failed", 10);
 			console.panels.mainPanel.requestLogin();
+		}
+		private function sendLoginSuccess():void{
+			_loggedIn = true;
+			send("loginSuccess");
+			var log:Log = console.logs.first;
+			while(log){
+				queueLog(log);
+				log = log.next;
+			}
+			console.cl.sendCmdScope2Remote();
 		}
 		private function loginSuccess():void{
 			console.setViewingChannels();
@@ -346,23 +335,24 @@ package com.junkbyte.console.core
 		}
 		private function requestLogin():void{
 			if(remoting != Remoting.RECIEVER) return;
+			_sendBuffer = new ByteArray();
 			if(_lastLogin){
 				login(_lastLogin);
 			}else{
 				console.panels.mainPanel.requestLogin();
 			}
 		}
-		public function login(pass:String = null):void{
+		public function login(pass:String = ""):void{
 			if(remoting == Remoting.RECIEVER){
 				_lastLogin = pass;
 				report("Attempting to login...", -1);
-				send("login", pass);
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeUTF(pass);
+				send("login", bytes);
 			}else{
 				// once logged in, next login attempts will always be success
 				if(_loggedIn || checkLogin(pass)){
-					_loggedIn = true;
-					_queue = console.logs.getLogsAsBytes();
-					send("loginSuccess");
+					sendLoginSuccess();
 				}else{
 					send("loginFail");
 				}
@@ -372,30 +362,16 @@ package com.junkbyte.console.core
 			return (!_password || _password == pass);
 		}
 		public function close():void{
-			if(_connection){
+			if(_local){
 				try{
-					_connection.close();
+					_local.close();
 				}catch(error:Error){
 					report("Remote.close: "+error, 10);
 				}
 			}
 			_mode = NONE;
-			_connection = null;
-			_queue = null;
+			_sendBuffer = new ByteArray();
+			_local = null;
 		}
-		//
-		//
-		//
-		/*public static function get RemoteIsRunning():Boolean{
-			var sCon:LocalConnection = new LocalConnection();
-			try{
-				sCon.allowInsecureDomain("*");
-				sCon.connect(Console.RemotingConnectionName+REMOTE_PREFIX);
-			}catch(error:Error){
-				return true;
-			}
-			sCon.close();
-			return false;
-		}*/
 	}
 }

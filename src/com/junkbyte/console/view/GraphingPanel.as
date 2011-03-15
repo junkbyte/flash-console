@@ -135,7 +135,7 @@ package com.junkbyte.console.view {
 		//
 		//
 		//
-		public function update(group:GraphGroup, draw:Boolean = true):void{
+		public function update(group:GraphGroup, draw:Boolean):void{
 			_group = group;
 			var push:int = 1; // 0 = no push, 1 = 1 push, 2 = push all
 			if(group.idle>0){
@@ -218,7 +218,7 @@ package com.junkbyte.console.view {
 					delete _infoMap[X];
 				}
 			}
-			if(listchanged || _type) updateKeyText();
+			if(draw && (listchanged || _type)) updateKeyText();
 		}
 		public function updateKeyText():void{
 			var str:String = "<r><s>";
