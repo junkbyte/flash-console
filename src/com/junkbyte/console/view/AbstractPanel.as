@@ -81,14 +81,11 @@ package com.junkbyte.console.view {
 			
 			bg.graphics.clear();
 			bg.graphics.beginFill(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha);
-			var size:int = 100;
-			if(rounding <0 ) rounding = style.roundBorder;
-			var roundSize:int = size-(rounding*2);
-			if(rounding<=0) bg.graphics.drawRect(0, 0, size, size);
+			if(rounding < 0) rounding = style.roundBorder;
+			if(rounding <= 0) bg.graphics.drawRect(0, 0, 100, 100);
 			else {
-				bg.graphics.drawRoundRect(0, 0, size, size,rounding,rounding);
-				var grid:Rectangle = new Rectangle(rounding, rounding, roundSize, roundSize);
-				bg.scale9Grid = grid;
+				bg.graphics.drawRoundRect(0, 0, rounding+10, rounding+10, rounding, rounding);
+				bg.scale9Grid = new Rectangle(rounding*0.5, rounding*0.5, 10, 10);
 			}
 			
 			scalable = resizable;
