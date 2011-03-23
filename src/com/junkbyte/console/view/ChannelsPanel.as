@@ -28,7 +28,7 @@ package com.junkbyte.console.view {
 	import flash.events.TextEvent;
 	import flash.text.TextFieldAutoSize;		
 
-	public class ChannelsPanel extends AbstractPanel{
+	public class ChannelsPanel extends ConsolePanel{
 		
 		public static const NAME:String = "channelsPanel";
 		
@@ -48,8 +48,8 @@ package com.junkbyte.console.view {
 		public function update():void{
 			txtField.wordWrap = false;
 			txtField.width = 80;
-			var str:String = "<w><menu> <b><a href=\"event:close\">X</a></b></menu> "+ console.panels.mainPanel.getChannelsLink();
-			txtField.htmlText = str+"</w>";
+			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> "+ console.panels.mainPanel.getChannelsLink();
+			txtField.htmlText = str+"</high>";
 			if(txtField.width>160){
 				txtField.wordWrap = true;
 				txtField.width = 160;

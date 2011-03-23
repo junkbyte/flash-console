@@ -32,7 +32,7 @@ package com.junkbyte.console.view {
 	import flash.events.TextEvent;
 	import flash.text.TextField;		
 
-	public class GraphingPanel extends AbstractPanel {
+	public class GraphingPanel extends ConsolePanel {
 		//
 		public static const FPS:String = "fpsPanel";
 		public static const MEM:String = "memoryPanel";
@@ -153,8 +153,8 @@ package com.junkbyte.console.view {
 			var keys:Object = {};
 			var listchanged:Boolean = false;
 			if(draw) {
-				(group.inv?highTxt:lowTxt).text = isNaN(group.low)?"":"<s>"+group.low+"</s>";
-				(group.inv?lowTxt:highTxt).text = isNaN(group.hi)?"":"<s>"+group.hi+"</s>";
+				(group.inv?highTxt:lowTxt).text = isNaN(group.low)?"":"<low>"+group.low+"</low>";
+				(group.inv?lowTxt:highTxt).text = isNaN(group.hi)?"":"<low>"+group.hi+"</low>";
 				graph.graphics.clear();
 			}
 			for each(var interest:GraphInterest in interests){
@@ -221,7 +221,7 @@ package com.junkbyte.console.view {
 			if(draw && (listchanged || _type)) updateKeyText();
 		}
 		public function updateKeyText():void{
-			var str:String = "<r><s>";
+			var str:String = "<r><low>";
 			if(_type){
 				if(isNaN(_interest.v)){
 					str += "no input<menu>";
@@ -236,7 +236,7 @@ package com.junkbyte.console.view {
 				}
 				str += " | <menu><a href=\"event:reset\">R</a>";
 			}
-			str += " <a href=\"event:close\">X</a></menu></s></r>";
+			str += " <a href=\"event:close\">X</a></menu></low></r>";
 			txtField.htmlText = str;
 			txtField.scrollH = txtField.maxScrollH;
 		}

@@ -172,7 +172,7 @@ package com.junkbyte.console.core
 			}
 			var ind:uint = setLogRef(o);
 			if(ind){
-				return "<l><a href='event:ref_"+ind+(prop?("_"+prop):"")+"'>"+str+"</a></l>";
+				return "<menu><a href='event:ref_"+ind+(prop?("_"+prop):"")+"'>"+str+"</a></menu>";
 			}else{
 				return str;
 			}

@@ -39,7 +39,7 @@ package com.junkbyte.console.view
 	import flash.text.TextFieldAutoSize;
 	import flash.utils.Dictionary;
 
-	public class RollerPanel extends AbstractPanel{
+	public class RollerPanel extends ConsolePanel{
 		
 		public static const NAME:String = "rollerPanel";
 		
@@ -69,9 +69,9 @@ package com.junkbyte.console.view
 				return;
 			}
 			if(_settingKey){
-				txtField.htmlText = "<w><menu>Press a key to set [ <a href=\"event:cancel\"><b>cancel</b></a> ]</menu></w>";
+				txtField.htmlText = "<high><menu>Press a key to set [ <a href=\"event:cancel\"><b>cancel</b></a> ]</menu></high>";
 			}else{
-				txtField.htmlText = "<s>"+getMapString(false)+"</s>";
+				txtField.htmlText = "<low>"+getMapString(false)+"</low>";
 				txtField.autoSize = TextFieldAutoSize.LEFT;
 				txtField.setSelection(0, 0);
 			}

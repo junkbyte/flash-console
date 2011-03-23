@@ -39,7 +39,7 @@ package com.junkbyte.console.view {
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 
-	public class AbstractPanel extends Sprite {
+	public class ConsolePanel extends Sprite {
 		
 		public static const DRAGGING:String = "DRAGGING";
 		public static const SCALING:String = "SCALING";
@@ -62,7 +62,7 @@ package com.junkbyte.console.view {
 		private var _movedFrom:Point;
 		public var moveable:Boolean = true;
 		
-		public function AbstractPanel(m:Console) {
+		public function ConsolePanel(m:Console) {
 			console = m;
 			bg = new Sprite();
 			bg.name = "background";
@@ -156,7 +156,7 @@ package com.junkbyte.console.view {
 			updateDragText();
 		}
 		private function updateDragText():void{
-			_resizeTxt.text = "<s>"+x+","+y+"</s>";
+			_resizeTxt.text = "<low>"+x+","+y+"</low>";
 		}
 		private function onDraggerMouseUp(e:MouseEvent):void{
 			stopDragging();
@@ -234,7 +234,7 @@ package com.junkbyte.console.view {
 			updateScaleText();
 		}
 		private function updateScaleText():void{
-			_resizeTxt.text = "<s>"+width+","+height+"</s>";
+			_resizeTxt.text = "<low>"+width+","+height+"</low>";
 		}
 		public function stopScaling():void{
 			onScalerMouseUp(null);

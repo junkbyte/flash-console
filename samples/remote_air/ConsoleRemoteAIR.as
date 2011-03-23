@@ -29,7 +29,7 @@ package {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.core.Remoting;
-	import com.junkbyte.console.view.AbstractPanel;
+	import com.junkbyte.console.view.ConsolePanel;
 
 	import flash.display.MovieClip;
 	import flash.display.StageAlign;
@@ -67,8 +67,8 @@ package {
 			var menu : TextField = _c.panels.mainPanel.getChildByName("menuField") as TextField;
 			menu.doubleClickEnabled = true;
 			menu.addEventListener(MouseEvent.DOUBLE_CLICK, ondouble);
-			_c.panels.mainPanel.addEventListener(AbstractPanel.DRAGGING, moveHandle);
-			_c.panels.mainPanel.addEventListener(AbstractPanel.SCALING, scaleHandle);
+			_c.panels.mainPanel.addEventListener(ConsolePanel.DRAGGING, moveHandle);
+			_c.panels.mainPanel.addEventListener(ConsolePanel.SCALING, scaleHandle);
 
 			_c.filters = new Array(new GlowFilter(0, 0.7, 5, 5));
 

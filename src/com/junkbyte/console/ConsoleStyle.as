@@ -167,14 +167,14 @@ package com.junkbyte.console {
 		 * calling this method have a good chance of updating console style on the fly as well - not guarantee tho.
 		 */
 		public function updateStyleSheet():void {
-			_css.setStyle("r",{textAlign:'right', display:'inline'});
-			_css.setStyle("w",{color:hesh(highColor), fontFamily:menuFont, fontSize:menuFontSize, display:'inline'});
-			_css.setStyle("s",{color:hesh(lowColor), fontFamily:menuFont, fontSize:menuFontSize-2, display:'inline'});
-			_css.setStyle("hi",{color:hesh(menuHighlightColor), display:'inline'});
+			_css.setStyle("high",{color:hesh(highColor), fontFamily:menuFont, fontSize:menuFontSize, display:'inline'});
+			_css.setStyle("low",{color:hesh(lowColor), fontFamily:menuFont, fontSize:menuFontSize-2, display:'inline'});
 			_css.setStyle("menu",{color:hesh(menuColor), display:'inline'});
+			_css.setStyle("menuHi",{color:hesh(menuHighlightColor), display:'inline'});
 			_css.setStyle("chs",{color:hesh(channelsColor), fontSize:menuFontSize, leading:'2', display:'inline'});
 			_css.setStyle("ch",{color:hesh(channelColor), display:'inline'});
 			_css.setStyle("tt",{color:hesh(menuColor),fontFamily:menuFont,fontSize:menuFontSize, textAlign:'center'});
+			_css.setStyle("r",{textAlign:'right', display:'inline'});
 			_css.setStyle("p",{fontFamily:traceFont, fontSize:traceFontSize});
 			_css.setStyle("p0",{color:hesh(priority0), display:'inline'});
 			_css.setStyle("p1",{color:hesh(priority1), display:'inline'});
@@ -189,8 +189,52 @@ package com.junkbyte.console {
 			_css.setStyle("p10",{color:hesh(priority10), fontWeight:'bold', display:'inline'});
 			_css.setStyle("p-1",{color:hesh(priorityC1), display:'inline'});
 			_css.setStyle("p-2",{color:hesh(priorityC2), display:'inline'});
-			_css.setStyle("l",{color:hesh(menuColor), display:'inline'});
 		}
+		/**
+		 * Style sheet used by Console.
+		 * <p>
+		 * You may add your own stlye definitions if you plan to use Cc.addHTML feature excessively.
+		 * Only CSS properties supported by flash will work.
+		 * 
+		 * </p>
+		 * At console startup, it sets several style sets using settings from ConsoleStyle, such as trace font size, menu color, etc.
+		 * <ul>
+		 * <li>List of build in styles:</li>
+		 * <ul>
+		 * <li>high - color:ConsoleStyle.highColor</li>
+		 * <li>low - color:ConsoleStyle.lowColor</li>
+		 * <li>menu - color:ConsoleStyle.menuColor</li>
+		 * <li>menuHi - color:ConsoleStyle.menuHighlightColor</li>
+		 * <li>chs - color:ConsoleStyle.channelsColor, fontSize:ConsoleStyle.menuFontSize, leading:2, display:inline</li>
+		 * <li>r - textAlign:right (does not always work in logging)</li>
+		 * <li>p - fontFamily:traceFont, fontSize:traceFontSize</li>
+		 * <li>p0 - (priority0) color:priority0</li>
+		 * <li>p1 - (priority1) color:priority1</li>
+		 * <li>p2 - (priority2) color:priority2</li>
+		 * <li>p3 - (priority3) color:priority3</li>
+		 * <li>p4 - (priority4) color:priority4</li>
+		 * <li>p5 - (priority5) color:priority5</li>
+		 * <li>p6 - (priority6) color:priority6</li>
+		 * <li>p7 - (priority7) color:priority7</li>
+		 * <li>p8 - (priority8) color:priority8</li>
+		 * <li>p9 - (priority9) color:priority9</li>
+		 * <li>p10 - (priority10) color:priority10, fontWeight:bold</li>
+		 * <li>p-1 - (priority-1) color:priority-1</li>
+		 * <li>p-2 - (priority-2) color:priority-2</li>
+		 * <li>tt - (tooltip) color:channelsColor, fontFamily:menuFont, fontSize:menuFontSize, textAlign:center</li>
+		 * </ul>
+		 * <li>Adding new style example:</li>
+		 * <ul>
+		 * <li><code>Cc.config.style.styleSheet.setStyle("purple",{color:'#FF00FF', fontWeight:'bold', display:'inline'});</code></li>
+		 * <li><code>Cc.addHTML("My special &lt;purple&gt;PURPLE&lt;/purple&gt; text");</code></li>
+		 * </ul>
+		 * <li>Example 2:</li>
+		 * <ul>
+		 * <li><code>Cc.config.style.styleSheet.setStyle(".spacy",{letterSpacing:10});</code></li>
+		 * <li><code>Cc.addHTML("Here is &lt;span class='spacy'&gt;big letter spacing&lt;/span&gt;.");</code></li>
+		 * </ul>
+		 * </ul>
+		 */
 		public function get styleSheet():StyleSheet	{
 			return _css;
 		}

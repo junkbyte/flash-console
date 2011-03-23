@@ -93,7 +93,7 @@ package com.junkbyte.console.view {
 			_pointer.graphics.moveTo(mouseX, _area.y);
 			_pointer.graphics.lineTo(mouseX, _area.y+_area.height);
 			_pointer.blendMode = BlendMode.INVERT;
-			_posTxt.text = "<s>"+mouseX+","+mouseY+"</s>";
+			_posTxt.text = "<low>"+mouseX+","+mouseY+"</low>";
 			//
 			var bmd:BitmapData = new BitmapData(30, 30);
 			try{

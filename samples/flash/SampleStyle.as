@@ -74,6 +74,16 @@ package
 			Cc.debugch("myChannel", "A debug level log.");
 			Cc.warnch("myChannel", "This is a warning log.");
 			Cc.errorch("myChannel", "This is an error log.", "multiple arguments are supported", "for above basic logging methods.");
+			
+			
+			Cc.info("Custom css examples:");	
+			Cc.config.style.styleSheet.setStyle("purple",{color:'#FF00FF', fontWeight:'bold', display:'inline'});
+			Cc.addHTML("My special <purple>PURPLE</purple> text.");
+			
+			Cc.config.style.styleSheet.setStyle(".spacy",{letterSpacing:10});
+			Cc.addHTML("Here is <span class='spacy'>big letter spacing</span>.");
+			
+			
 		}
 	}
 }

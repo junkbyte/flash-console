@@ -56,30 +56,30 @@ package com.junkbyte.console.view
 			_tooltipField.multiline = true;
 			addPanel(_mainPanel);
 		}
-		public function addPanel(panel:AbstractPanel):void{
+		public function addPanel(panel:ConsolePanel):void{
 			if(console.contains(_tooltipField)){
 				console.addChildAt(panel, console.getChildIndex(_tooltipField));
 			}else{
 				console.addChild(panel);
 			}
-			panel.addEventListener(AbstractPanel.DRAGGING, onPanelStartDragScale, false,0, true);
-			panel.addEventListener(AbstractPanel.SCALING, onPanelStartDragScale, false,0, true);
+			panel.addEventListener(ConsolePanel.DRAGGING, onPanelStartDragScale, false,0, true);
+			panel.addEventListener(ConsolePanel.SCALING, onPanelStartDragScale, false,0, true);
 		}
 		public function removePanel(n:String):void{
-			var panel:AbstractPanel = console.getChildByName(n) as AbstractPanel;
+			var panel:ConsolePanel = console.getChildByName(n) as ConsolePanel;
 			if(panel){
 				// this removes it self from parent. this way each individual panel can clean up before closing.  
 				panel.close();
 			}
 		}
-		public function getPanel(n:String):AbstractPanel{
-			return console.getChildByName(n) as AbstractPanel;
+		public function getPanel(n:String):ConsolePanel{
+			return console.getChildByName(n) as ConsolePanel;
 		}
 		public function get mainPanel():MainPanel{
 			return _mainPanel;
 		}
 		public function panelExists(n:String):Boolean{
-			return (console.getChildByName(n) as AbstractPanel)?true:false;
+			return (console.getChildByName(n) as ConsolePanel)?true:false;
 		}
 		/**
 		 * Set panel position and size.
@@ -92,7 +92,7 @@ package com.junkbyte.console.view
 		 *  		For example, if you don't want to change the height of the panel, pass rect.height = 0;
 		 */
 		public function setPanelArea(panelname:String, rect:Rectangle):void{
-			var panel:AbstractPanel = getPanel(panelname);
+			var panel:ConsolePanel = getPanel(panelname);
 			if(panel){
 				panel.x = rect.x;
 				panel.y = rect.y;
@@ -254,9 +254,9 @@ package com.junkbyte.console.view
 		//
 		//
 		//
-		public function tooltip(str:String = null, panel:AbstractPanel = null):void{
+		public function tooltip(str:String = null, panel:ConsolePanel = null):void{
 			if(str && !rulerActive){
-				str = str.replace(/\:\:(.*)/, "<br/><s>$1</s>");
+				str = str.replace(/\:\:(.*)/, "<br/><low>$1</low>");
 				console.addChild(_tooltipField);
 				_tooltipField.wordWrap = false;
 				_tooltipField.htmlText = "<tt>"+str+"</tt>";
@@ -315,7 +315,7 @@ package com.junkbyte.console.view
 		//
 		//
 		private function onPanelStartDragScale(e:Event):void{
-			var target:AbstractPanel = e.currentTarget as AbstractPanel;
+			var target:ConsolePanel = e.currentTarget as ConsolePanel;
 			if(console.config.style.panelSnapping) {
 				var X:Array = [0];
 				var Y:Array = [0];
@@ -326,7 +326,7 @@ package com.junkbyte.console.view
 				}
 				var numchildren:int = console.numChildren;
 				for(var i:int = 0;i<numchildren;i++){
-					var panel:AbstractPanel = console.getChildAt(i) as AbstractPanel;
+					var panel:ConsolePanel = console.getChildAt(i) as ConsolePanel;
 					if(panel && panel.visible){
 						X.push(panel.x, panel.x+panel.width);
 						Y.push(panel.y, panel.y+panel.height);

@@ -48,7 +48,7 @@ package com.junkbyte.console.view
 	import flash.text.TextFormat;
 	import flash.ui.Keyboard;
 
-	public class MainPanel extends AbstractPanel {
+	public class MainPanel extends ConsolePanel {
 		
 		public static const NAME:String = "mainPanel";
 		
@@ -632,7 +632,7 @@ package com.junkbyte.console.view
 			}
 		}
 		private function _updateMenu():void{
-			var str:String = "<r><w>";
+			var str:String = "<r><high>";
 			if(_mini || !style.topMenu){
 				str += "<menu><b> <a href=\"event:show\">‹</a>";
 			}else {
@@ -664,7 +664,7 @@ package com.junkbyte.console.view
 				str += doActive(" <a href=\"event:pause\">P</a>", console.paused);
 				str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a> <a href=\"event:hide\">›</a>";
 			}
-			str += " </b></menu></w></r>";
+			str += " </b></menu></high></r>";
 			txtField.htmlText = str;
 			txtField.scrollH = txtField.maxScrollH;
 		}
@@ -685,10 +685,10 @@ package com.junkbyte.console.view
 			return str;
 		}
 		private function doActive(str:String, b:Boolean):String{
-			if(b) return "<hi>"+str+"</hi>";
+			if(b) return "<menuHi>"+str+"</menuHi>";
 			return str;
 		}
-		public function onMenuRollOver(e:TextEvent, src:AbstractPanel = null):void{
+		public function onMenuRollOver(e:TextEvent, src:ConsolePanel = null):void{
 			if(src==null) src = this;
 			var txt:String = e.text?e.text.replace("event:",""):"";
 			if(txt == "channel_"+Console.GLOBAL_CHANNEL){
