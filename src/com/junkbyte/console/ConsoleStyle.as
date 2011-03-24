@@ -142,7 +142,7 @@ package com.junkbyte.console {
 		}
 		/** Use bigger font size */
 		public function big():void{
-			traceFontSize = 12;
+			traceFontSize = 13;
 			menuFontSize = 14;
 		}
 		

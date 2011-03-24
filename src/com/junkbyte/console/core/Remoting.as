@@ -152,6 +152,7 @@ package com.junkbyte.console.core
 			}
 		}
 		public function send(command:String, arg:ByteArray = null):Boolean{
+			if(_mode == NONE) return false;
 			_sendBuffer.position = _sendBuffer.length;
 			_sendBuffer.writeUTF(command);
 			if(arg){
@@ -216,6 +217,7 @@ package com.junkbyte.console.core
 			}
 			if(host && port)
 			{
+				remoting = SENDER;
 				report("Connecting to socket " + host + ":" + port);
 				_socket = new Socket();
 		        _socket.addEventListener(Event.CLOSE, socketCloseHandler);

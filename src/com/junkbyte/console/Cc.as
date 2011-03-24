@@ -710,6 +710,17 @@ package com.junkbyte.console {
 		public static function set remoting(v:Boolean):void{
 			if(_console) _console.remoting = v;
 		}
+		/**
+		 * Connect to console remote via socket.
+		 * <ul>
+		 * <li>Remote need to be listening for connections at the same ip and port.</li>
+		 * <li>Currently only AIR version of console remote can host socket connections.</li>
+		 * <li>Use /listen (ip) (port) on AIR ConsoleRemote</li>
+		 * <li>While socket connection is connected, default local connection is disabled.</li>
+		 * <li>You may also use the command /remotingSocket to start a connection.</li>
+		 * <li>Host name as IP address is not supported.</li>
+		 * </ul>
+		 */
 		public static function remotingSocket(host:String, port:int):void{
 			if(_console) _console.remotingSocket(host, port);
 		}

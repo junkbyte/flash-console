@@ -196,6 +196,22 @@ package com.junkbyte.console.view
 			}
 			_canDraw = false;
 		}
+		public function removeGraph(group:GraphGroup):void
+		{
+			if(_fpsPanel && group == _fpsPanel.group){
+				_fpsPanel.close();
+				_fpsPanel = null;
+			}else if(_memPanel && group == _memPanel.group){
+				_memPanel.close();
+				_memPanel = null;
+			}else{
+				var graph:GraphingPanel = _graphsMap[group.name];
+				if(graph){
+					graph.close();
+					delete _graphsMap[group.name];
+				}
+			}
+		}
 		//
 		//
 		//

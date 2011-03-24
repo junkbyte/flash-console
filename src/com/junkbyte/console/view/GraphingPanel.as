@@ -89,6 +89,9 @@ package com.junkbyte.console.view {
 		private function stop():void {
 			if(_group) console.graphing.remove(_group.name);
 		}
+		public function get group():GraphGroup{
+			return _group;
+		}
 		public function reset():void{
 			_infoMap = {};
 			graph.graphics.clear();
@@ -248,6 +251,7 @@ package com.junkbyte.console.view {
 				if(_type == FPS) console.fpsMonitor = false;
 				else if(_type == MEM) console.memoryMonitor = false;
 				else stop();
+				console.panels.removeGraph(_group);
 			}else if(e.text == "gc"){
 				console.gc();
 			} 
