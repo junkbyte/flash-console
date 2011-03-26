@@ -24,9 +24,7 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.utils.Dictionary;
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.vos.Log;
 
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
@@ -38,14 +36,16 @@ package com.junkbyte.console.core
 	import flash.net.Socket;
 	import flash.system.Security;
 	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
 
+	[Event(name="CONNECT", type="flash.events.Event")]
 	public class Remoting extends ConsoleCore{
 		
 		public static const NONE:uint = 0;
 		public static const SENDER:uint = 1;
 		public static const RECIEVER:uint = 2;
 		
-		private var _client:Object = new Object();
+		private var _callbacks:Object = new Object();
 		private var _mode:uint;
 		private var _local:LocalConnection;
 		private var _socket:Socket;
@@ -63,36 +63,36 @@ package com.junkbyte.console.core
 		public function Remoting(m:Console, pass:String) {
 			super(m);
 			_password = pass;
-			registerClient("login", function(bytes:ByteArray):void{
+			registerCallback("login", function(bytes:ByteArray):void{
 				login(bytes.readUTF());
 			});
-			registerClient("requestLogin", requestLogin);
-			registerClient("loginFail", loginFail);
-			registerClient("loginSuccess", loginSuccess);
-			registerClient("log", function(bytes:ByteArray):void{
-				console.addLogLine(Log.FromBytes(bytes));
-			});
-		}
-		
-		public function queueLog(line:Log):void{
-			if(canSend) send("log", line.toBytes());
+			registerCallback("requestLogin", requestLogin);
+			registerCallback("loginFail", loginFail);
+			registerCallback("loginSuccess", loginSuccess);
 		}
 		public function update():void{
 			if(_sendBuffer.length){
 				if(_socket && _socket.connected){
 					_socket.writeBytes(_sendBuffer);
-					_socket.flush();
+					//_socket.flush();
 					_sendBuffer = new ByteArray();
-				}else{
-					var packet:ByteArray = new ByteArray();
-					_sendBuffer.position = 0;
-					_sendBuffer.readBytes(packet, 0, Math.min(38000, _sendBuffer.bytesAvailable));
-					
-					var newbuffer:ByteArray = new ByteArray();
-					_sendBuffer.readBytes(newbuffer);
-					_sendBuffer = newbuffer;
+				}else if(_local){
+					var packet:ByteArray;
+						_sendBuffer.position = 0;
+					if(_sendBuffer.bytesAvailable < 38000){
+						packet = _sendBuffer;
+						_sendBuffer = new ByteArray();
+					}else{
+						packet = new ByteArray();
+						_sendBuffer.readBytes(packet, 0, Math.min(38000, _sendBuffer.bytesAvailable));
+						var newbuffer:ByteArray = new ByteArray();
+						_sendBuffer.readBytes(newbuffer);
+						_sendBuffer = newbuffer;
+					}
 					var target:String = config.remotingConnectionName+(remoting == Remoting.RECIEVER?SENDER:RECIEVER);
 					_local.send(target, "synchronize", _sendID, packet);
+				}else{
+					_sendBuffer = new ByteArray();
 				}
 			}
 			for (var id:String in _recBuffers){
@@ -118,7 +118,7 @@ package com.junkbyte.console.core
 							arg = new ByteArray();
 							buffer.readBytes(arg, 0, blen);
 						}
-						var callbackData:Object = _client[cmd];
+						var callbackData:Object = _callbacks[cmd];
 						if(!callbackData.latest || id == _lastReciever){
 							if(arg) callbackData.fun(arg);
 							else callbackData.fun();
@@ -139,7 +139,7 @@ package com.junkbyte.console.core
 		}
 		private function synchronize(id:String, obj:Object):void{
 			if(!(obj is ByteArray)){
-				report("Remoting sync error. Recieved non ByteArray:"+obj, 9);
+				report("Remoting sync error. Recieved non-ByteArray:"+obj, 9);
 				return;
 			}
 			var packet:ByteArray = obj as ByteArray;
@@ -313,8 +313,8 @@ package com.junkbyte.console.core
 			}
 			return true;
 		}
-		public function registerClient(key:String, fun:Function, latestOnly:Boolean = false):void{
-			_client[key] = {fun:fun, latest:latestOnly};
+		public function registerCallback(key:String, fun:Function, latestOnly:Boolean = false):void{
+			_callbacks[key] = {fun:fun, latest:latestOnly};
 		}
 		private function loginFail():void{
 			if(remoting != Remoting.RECIEVER) return;
@@ -324,12 +324,7 @@ package com.junkbyte.console.core
 		private function sendLoginSuccess():void{
 			_loggedIn = true;
 			send("loginSuccess");
-			var log:Log = console.logs.first;
-			while(log){
-				queueLog(log);
-				log = log.next;
-			}
-			console.cl.sendCmdScope2Remote();
+			dispatchEvent(new Event(Event.CONNECT));
 		}
 		private function loginSuccess():void{
 			console.setViewingChannels();

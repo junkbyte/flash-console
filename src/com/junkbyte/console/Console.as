@@ -74,7 +74,7 @@ package com.junkbyte.console
 		private var _panels:PanelsManager;
 		private var _cl:CommandLine;
 		private var _kb:KeyBinder;
-		private var _links:LogReferences;
+		private var _refs:LogReferences;
 		private var _mm:MemoryMonitor;
 		private var _graphing:Graphing;
 		private var _remoter:Remoting;
@@ -84,7 +84,6 @@ package com.junkbyte.console
 		private var _paused:Boolean;
 		private var _rollerKey:KeyBind;
 		private var _logs:Logs;
-		private var _lineAdded:Boolean;
 		
 		private var _so:SharedObject;
 		private var _soData:Object = {};
@@ -101,26 +100,26 @@ package com.junkbyte.console
 		public function Console(password:String = "", config:ConsoleConfig = null) {
 			name = "Console";
 			tabChildren = false; // Tabbing is not supported
-			_config = config?config:new ConsoleConfig();
+			if(config == null) config = new ConsoleConfig();
+			_config = config;
 			//
 			_remoter = new Remoting(this, password);
 			_logs = new Logs(this);
-			_links = new LogReferences(this);
+			_refs = new LogReferences(this);
 			_cl = new CommandLine(this);
 			_tools =  new ConsoleTools(this);
 			_graphing = new Graphing(this);
 			_mm = new MemoryMonitor(this);
 			_kb = new KeyBinder(this, password);
 			
-			
 			cl.addCLCmd("remotingSocket", function(str:String = ""):void{
 				var args:Array = str.split(/\s+|\:/);
 				remotingSocket(args[0], args[1]);
 			}, "Connect to socket remote. /remotingSocket ip port");
 			
-			if(config.sharedObjectName){
+			if(_config.sharedObjectName){
 				try{
-					_so = SharedObject.getLocal(config.sharedObjectName, config.sharedObjectPath);
+					_so = SharedObject.getLocal(_config.sharedObjectName, _config.sharedObjectPath);
 					_soData = _so.data;
 				}catch(e:Error){
 					
@@ -129,13 +128,13 @@ package com.junkbyte.console
 			
 			_config.style.updateStyleSheet();
 			_panels = new PanelsManager(this);
-			
+			if(password) visible = false;
 			
 			report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
-			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			if(password) visible = false;
+			
 			// must have enterFrame here because user can start without a parent display and use remoting.
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
 		private function stageAddedHandle(e:Event=null):void{
 			if(_cl.base == null) _cl.base = parent;
@@ -172,7 +171,7 @@ package com.junkbyte.console
 			var error:* = e.hasOwnProperty("error")?e["error"]:e; // for flash 9 compatibility
 			var str:String;
 			if (error is Error){
-				str = _links.makeString(error);
+				str = _refs.makeString(error);
 			}else if (error is ErrorEvent){
 				str = ErrorEvent(error).text;
 			}
@@ -192,14 +191,14 @@ package com.junkbyte.console
 			_graphing.remove(name, obj, property);
 		}
 		//
-		// WARNING: key binding hard references the functoin and arguments.
+		// WARNING: key binding hard references the function and arguments.
 		// This should only be used for development purposes only.
 		//
 		public function bindKey(key:KeyBind, callback:Function ,args:Array = null):void{
 			if(key) _kb.bindKey(key, callback, args);
 		}
 		//
-		// WARNING: Add menu hard references the functoin and arguments.
+		// WARNING: Add menu hard references the function and arguments.
 		//
 		public function addMenu(key:String, callback:Function, args:Array = null, rollover:String = null):void{
 			panels.mainPanel.addMenu(key, callback, args, rollover);
@@ -267,10 +266,10 @@ package com.junkbyte.console
 			_tools.map(container, maxstep, MakeChannelName(channel));
 		}
 		public function inspect(obj:Object, showInherit:Boolean = true):void{
-			_links.inspect(obj, showInherit, DEFAULT_CHANNEL);
+			_refs.inspect(obj, showInherit, DEFAULT_CHANNEL);
 		}
 		public function inspectch(channel:*, obj:Object, showInherit:Boolean = true):void{
-			_links.inspect(obj, showInherit, MakeChannelName(channel));
+			_refs.inspect(obj, showInherit, MakeChannelName(channel));
 		}
 		public function explode(obj:Object, depth:int = 3):void{
 			addLine(new Array(_tools.explode(obj, depth)), 1, null, false, true);
@@ -320,7 +319,7 @@ package com.junkbyte.console
 		//
 		private function _onEnterFrame(e:Event):void{
 			_logs.update();
-			_links.update();
+			_refs.update();
 			_mm.update();
 			var graphsList:Array;
 			if(remoter.remoting != Remoting.RECIEVER)
@@ -334,12 +333,11 @@ package com.junkbyte.console
 				if(config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
 					_topTries--;
 					parent.addChild(this);
-					//if(!config.quiet) 
 					report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
-				_panels.update(_paused, _lineAdded);
+				_panels.update(_paused, logs.newLines);
 				if(graphsList) _panels.updateGraphs(graphsList); 
-				_lineAdded = false;
+				logs.newLines = false;
 			}
 		}
 		//
@@ -376,7 +374,7 @@ package com.junkbyte.console
 			var txt:String = "";
 			var len:int = strings.length;
 			for(var i:int = 0; i < len; i++){
-				txt += (i?" ":"")+_links.makeString(strings[i], null, html);
+				txt += (i?" ":"")+_refs.makeString(strings[i], null, html);
 			}
 			
 			if(priority >= _config.autoStackPriority && stacks<0) stacks = _config.defaultStackDepth;
@@ -384,15 +382,7 @@ package com.junkbyte.console
 			if(!html && stacks>0){
 				txt += _tools.getStack(stacks, priority);
 			}
-			addLogLine(new Log(txt, MakeChannelName(channel), priority, isRepeating, html));
-		}
-		public function addLogLine(line:Log):void{
-			var cantrace:Boolean = _logs.add(line);
-			if ( _config.tracing && cantrace && _config.traceCall != null) {
-				_config.traceCall(line.ch, line.plainText(), line.priority);
-			}
-			_lineAdded = true;
-			_remoter.queueLog(line);
+			_logs.add(new Log(txt, MakeChannelName(channel), priority, isRepeating, html));
 		}
 		//
 		// COMMAND LINE
@@ -471,7 +461,7 @@ package com.junkbyte.console
 		}
 		private function testHTML(args:Array):Boolean{
 			try{
-				new XML("<p>"+args.join("")+"</p>");
+				new XML("<p>"+args.join("")+"</p>"); // OR use RegExp?
 			}catch(err:Error){
 				return false;
 			}
@@ -493,7 +483,7 @@ package com.junkbyte.console
 		public function get cl():CommandLine{return _cl;}
 		public function get remoter():Remoting{return _remoter;}
 		public function get graphing():Graphing{return _graphing;}
-		public function get links():LogReferences{return _links;}
+		public function get refs():LogReferences{return _refs;}
 		public function get logs():Logs{return _logs;}
 		public function get mapper():ConsoleTools{return _tools;}
 		

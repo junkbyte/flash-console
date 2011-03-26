@@ -56,13 +56,14 @@ package com.junkbyte.console.core
 			_prevScope = new WeakRef(m);
 			_saved.set("C", m);
 			
-			console.remoter.registerClient("cmd", function(bytes:ByteArray):void{
+			remoter.registerCallback("cmd", function(bytes:ByteArray):void{
 				run(bytes.readUTF());
 			});
-			console.remoter.registerClient("scope", function(bytes:ByteArray):void{
+			remoter.registerCallback("scope", function(bytes:ByteArray):void{
 				handleScopeEvent(bytes.readUnsignedInt());
 			});
-			console.remoter.registerClient("cls", handleScopeString);
+			remoter.registerCallback("cls", handleScopeString);
+			remoter.addEventListener(Event.CONNECT, sendCmdScope2Remote);
 			
 			addCLCmd("help", printHelp, "How to use command line");
 			addCLCmd("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
@@ -101,7 +102,7 @@ package com.junkbyte.console.core
 				bytes.writeUnsignedInt(id);
 				remoter.send("scope", bytes);
 			}else{
-				var v:* = console.links.getRefById(id);
+				var v:* = console.refs.getRefById(id);
 				if(v) console.cl.setReturned(v, true, false);
 				else console.report("Reference no longer exist.", -2);
 			}
@@ -138,7 +139,7 @@ package com.junkbyte.console.core
 				}
 				if(_scope){
 					all.push("this");
-					all = all.concat(console.links.getPossibleCalls(_scope));
+					all = all.concat(console.refs.getPossibleCalls(_scope));
 				}
 			}
 			str = str.toLowerCase();
@@ -275,21 +276,21 @@ package com.junkbyte.console.core
 						_scopeStr = LogReferences.ShortClassName(_scope, false);
 						sendCmdScope2Remote();
 					}
-					report("Changed to "+console.links.makeRefTyped(returned), -1);
+					report("Changed to "+console.refs.makeRefTyped(returned), -1);
 				}else{
-					if(say) report("Returned "+console.links.makeString(returned), -1);
+					if(say) report("Returned "+console.refs.makeString(returned), -1);
 				}
 			}else{
 				if(say) report("Exec successful, undefined return.", -1);
 			}
 		}
-		public function sendCmdScope2Remote():void{
+		public function sendCmdScope2Remote(e:Event = null):void{
 			var bytes:ByteArray = new ByteArray();
 			bytes.writeUTF(_scopeStr);
 			console.remoter.send("cls", bytes);
 		}
 		private function reportError(e:Error):void{
-			var str:String = console.links.makeString(e);
+			var str:String = console.refs.makeString(e);
 			var lines:Array = str.split(/\n\s*/);
 			var p:int = 10;
 			var internalerrs:int = 0;
@@ -324,7 +325,7 @@ package com.junkbyte.console.core
 				var ref:WeakRef = _saved.getWeakRef(X);
 				sii++;
 				if(ref.reference==null) sii2++;
-				report((ref.strong?"strong":"weak")+" <b>$"+X+"</b> = "+console.links.makeString(ref.reference), -2);
+				report((ref.strong?"strong":"weak")+" <b>$"+X+"</b> = "+console.refs.makeString(ref.reference), -2);
 			}
 			report("Found "+sii+" item(s), "+sii2+" empty.", -1);
 		}
@@ -355,7 +356,7 @@ package com.junkbyte.console.core
 			}
 		}
 		private function inspectCmd(...args:Array):void{
-			console.links.focus(_scope);
+			console.refs.focus(_scope);
 		}
 		private function explodeCmd(param:String = "0"):void{
 			var depth:int = int(param);

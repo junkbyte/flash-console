@@ -216,14 +216,20 @@ package com.junkbyte.console.view
 			}else console.report("ERROR: Invalid add menu params.", 9);
 		}
 		private function stageAddedHandle(e:Event=null):void{
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true, 0, true);
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
 		}
 		private function stageRemovedHandle(e:Event=null):void{
+			stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true);
 			stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
 
+		private function onStageMouseDown(e : MouseEvent) : void {
+			_shift = e.shiftKey;
+			_ctrl = e.ctrlKey;
+		}
 		private function onMouseWheel(e : MouseEvent) : void {
 			if(_shift){
 				var s:int = console.config.style.traceFontSize + (e.delta>0?1:-1);
@@ -400,7 +406,7 @@ package com.junkbyte.console.view
 		}
 		public function set viewingChannels(a:Array):void{
 			if(_viewingChannels[0] == LogReferences.INSPECTING_CHANNEL && (!a || a[0] != _viewingChannels[0])){
-				console.links.exitFocus();
+				console.refs.exitFocus();
 			}
 			_viewingChannels.splice(0);
 			if(a.indexOf(Console.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
@@ -782,7 +788,7 @@ package com.junkbyte.console.view
 			}else if(t == "remote"){
 				console.remoter.remoting = Remoting.RECIEVER;
 			}else if(t.indexOf("ref")==0){
-				console.links.handleRefEvent(t);
+				console.refs.handleRefEvent(t);
 			}else if(t.indexOf("channel_")==0){
 				onChannelPressed(t.substring(8));
 			}else if(t.indexOf("cl_")==0){

@@ -43,7 +43,7 @@ package com.junkbyte.console.core
 			_namesList = new Object();
 			_objectsList = new Dictionary(true);
 			
-			console.remoter.registerClient("gc", gc);
+			console.remoter.registerCallback("gc", gc);
 		}
 		public function watch(obj:Object, n:String):String{
 			var className:String = getQualifiedClassName(obj);

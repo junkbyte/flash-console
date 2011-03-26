@@ -24,9 +24,11 @@
 */
 package com.junkbyte.console.core 
 {
-	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.Console;
-	public class ConsoleCore 
+	import com.junkbyte.console.ConsoleConfig;
+
+	import flash.events.EventDispatcher;
+	public class ConsoleCore extends EventDispatcher
 	{
 		protected var console:Console;
 		protected var config:ConsoleConfig;

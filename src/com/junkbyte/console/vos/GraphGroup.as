@@ -61,8 +61,7 @@ package com.junkbyte.console.vos {
 		//
 		//
 		//
-		public function toBytes():ByteArray{
-			var bytes:ByteArray = new ByteArray();
+		public function toBytes(bytes:ByteArray):void{
 			bytes.writeUTF(name);
 			bytes.writeUnsignedInt(type);
 			bytes.writeUnsignedInt(idle);
@@ -70,8 +69,7 @@ package com.junkbyte.console.vos {
 			bytes.writeDouble(hi);
 			bytes.writeBoolean(inv);
 			bytes.writeUnsignedInt(interests.length);
-			for each(var gi:GraphInterest in interests) bytes.writeBytes(gi.toBytes());
-			return bytes;
+			for each(var gi:GraphInterest in interests) gi.toBytes(bytes);
 		}
 		public static function FromBytes(bytes:ByteArray):GraphGroup{
 			var g:GraphGroup = new GraphGroup(bytes.readUTF());

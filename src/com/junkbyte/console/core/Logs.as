@@ -24,6 +24,8 @@
 */
 package com.junkbyte.console.core 
 {
+	import flash.utils.ByteArray;
+	import flash.events.Event;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.Log;
 
@@ -37,13 +39,32 @@ package com.junkbyte.console.core
 		public var first:Log;
 		public var last:Log;
 		
+		public var newLines:Boolean;
+		
 		private var _length:uint;
 		
 		public function Logs(console:Console){
 			super(console);
 			_channels = new Object();
+			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
+			remoter.registerCallback("log", function(bytes:ByteArray):void{
+				add(Log.FromBytes(bytes));
+			});
 		}
-		
+		private function onRemoteConnection(e:Event):void{
+			var log:Log = first;
+			while(log){
+				logRemote(log);
+				log = log.next;
+			}
+		}
+		private function logRemote(line:Log):void{
+			if(remoter.canSend) {
+				var bytes:ByteArray = new ByteArray();
+				line.toBytes(bytes);
+				remoter.send("log", bytes);
+			}
+		}
 		public function update():void{
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){
@@ -53,30 +74,27 @@ package com.junkbyte.console.core
 				push(_lastRepeat);
 			}
 		}
-		public function add(line:Log):Boolean{
+		public function add(line:Log):void{
+			newLines = true;
 			addChannel(line.ch);
 			if (line.repeat) {
 				if(_repeating > 0 && _lastRepeat){
 					_newRepeat = line;
-					return false;
+					return;
 				}else{
 					_repeating = config.maxRepeats;
 					_lastRepeat = line;
 				}
 			}
 			push(line);
-			if(config.maxLines > 0 ){
-				var off:int = _length - config.maxLines;
-				//shift(off)
-				while(off>0 && first){
-					if(first == _lastRepeat) _lastRepeat = null;
-					first = first.next;
-					first.prev = null;
-					off--;
-					_length--;
-				}
+			while(_length > config.maxLines){
+				remove(first);
 			}
-			return true;
+			//
+			logRemote(line);
+			if ( config.tracing && config.traceCall != null) {
+				config.traceCall(line.ch, line.plainText(), line.priority);
+			}
 		}
 		public function clear(channel:String = null):void{
 			if(channel){
@@ -112,9 +130,7 @@ package com.junkbyte.console.core
 			addIfexist(Console.CONSOLE_CHANNEL, arr);
 			var others:Array = new Array();
 			for(var X:String in _channels){
-				if(arr.indexOf(X)<0){
-					others.push(X);
-				}
+				if(arr.indexOf(X)<0) others.push(X);
 			}
 			return arr.concat(others.sort(Array.CASEINSENSITIVE));
 		}

@@ -63,10 +63,10 @@ package com.junkbyte.console.core
 		public function LogReferences(console:Console) {
 			super(console);
 			
-			remoter.registerClient("ref", function(bytes:ByteArray):void{
+			remoter.registerCallback("ref", function(bytes:ByteArray):void{
 				handleString(bytes.readUTF());
 			});
-			remoter.registerClient("focus", handleFocused);
+			remoter.registerCallback("focus", handleFocused);
 		}
 		public function update():void{
 			if(_currentBank.length || _prevBank.length){

@@ -46,16 +46,16 @@ package com.junkbyte.console.core {
 		
 		public function Graphing(m:Console){
 			super(m);
-			remoter.registerClient("fps", function(bytes:ByteArray):void{
+			remoter.registerCallback("fps", function(bytes:ByteArray):void{
 				fpsMonitor = bytes.readBoolean();
 			});
-			remoter.registerClient("mem", function(bytes:ByteArray):void{
+			remoter.registerCallback("mem", function(bytes:ByteArray):void{
 				memoryMonitor = bytes.readBoolean();
 			});
-			remoter.registerClient("removeGroup", function(bytes:ByteArray):void{
+			remoter.registerCallback("removeGroup", function(bytes:ByteArray):void{
 				removeGroup(bytes.readUTF());
 			});;
-			remoter.registerClient("graph", handleRemoteGraph, true);
+			remoter.registerCallback("graph", handleRemoteGraph, true);
 			
 		}
 		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
@@ -246,7 +246,7 @@ package com.junkbyte.console.core {
 				var len:uint = _groups.length;
 				var ga:ByteArray = new ByteArray();
 				for(var j:uint = 0; j<len; j++){
-					ga.writeBytes(GraphGroup(_groups[j]).toBytes());
+					GraphGroup(_groups[j]).toBytes(ga);
 				}
 				remoter.send("graph", ga);
 				_hadGraph = _groups.length>0;

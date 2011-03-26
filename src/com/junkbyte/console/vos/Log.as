@@ -42,14 +42,12 @@ package com.junkbyte.console.vos {
 			repeat = repeating;
 			html = skipSafe;
 		}
-		public function toBytes():ByteArray{
-			var bytes:ByteArray = new ByteArray();
+		public function toBytes(bytes:ByteArray):void{
 			bytes.writeUnsignedInt(text.length);
 			bytes.writeUTFBytes(text); // because writeUTF can't accept more than 65535
 			bytes.writeUTF(ch);
 			bytes.writeInt(priority);
 			bytes.writeBoolean(repeat);
-			return bytes;
 		}
 		public static function FromBytes(bytes:ByteArray):Log{
 			var t:String = bytes.readUTFBytes(bytes.readUnsignedInt());

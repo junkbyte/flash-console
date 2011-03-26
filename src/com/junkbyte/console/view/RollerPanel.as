@@ -114,13 +114,13 @@ package com.junkbyte.console.view
 						var n:String = obj.name;
 						var ind:uint;
 						if(dolink && console.config.useObjectLinking) {
-							ind = console.links.setLogRef(obj);
-							n = "<a href='event:cl_"+ind+"'>"+n+"</a> "+console.links.makeRefTyped(obj);
+							ind = console.refs.setLogRef(obj);
+							n = "<a href='event:cl_"+ind+"'>"+n+"</a> "+console.refs.makeRefTyped(obj);
 						}
 						else n = n+" ("+LogReferences.ShortClassName(obj)+")";
 			
 						if(obj == stg){
-							ind = console.links.setLogRef(stg);
+							ind = console.refs.setLogRef(stg);
 							if(ind) str +=  "<p3><a href='event:cl_"+ind+"'><i>Stage</i></a> ";
 							else str += "<p3><i>Stage</i> ";
 							str +=  "["+stg.mouseX+","+stg.mouseY+"]</p3><br/>";

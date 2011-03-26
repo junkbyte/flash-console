@@ -78,13 +78,11 @@
 		//
 		//
 		//
-		public function toBytes():ByteArray{
-			var bytes:ByteArray = new ByteArray();
+		public function toBytes(bytes:ByteArray):void{
 			bytes.writeUTF(key);
 			bytes.writeUnsignedInt(col);
 			bytes.writeDouble(v);
 			bytes.writeDouble(avg);
-			return bytes;
 		}
 		public static function FromBytes(bytes:ByteArray):GraphInterest{
 			var interest:GraphInterest = new GraphInterest(bytes.readUTF(), bytes.readUnsignedInt());

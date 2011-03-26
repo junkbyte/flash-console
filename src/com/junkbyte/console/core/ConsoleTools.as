@@ -87,7 +87,7 @@ package com.junkbyte.console.core
 				}
 				if(maxstep<=0 || steps<=maxstep){
 					wasHiding = false;
-					var ind:uint = console.links.setLogRef(mcDO);
+					var ind:uint = console.refs.setLogRef(mcDO);
 					var n:String = mcDO.name;
 					if(ind) n = "<a href='event:cl_"+ind+"'>"+n+"</a>";
 					if(mcDO is DisplayObjectContainer){
@@ -95,7 +95,7 @@ package com.junkbyte.console.core
 					}else{
 						n = "<i>"+n+"</i>";
 					}
-					str += n+" "+console.links.makeRefTyped(mcDO);
+					str += n+" "+console.refs.makeRefTyped(mcDO);
 					report(str,mcDO is DisplayObjectContainer?5:2, true, ch);
 				}else if(!wasHiding){
 					wasHiding = true;
@@ -103,7 +103,7 @@ package com.junkbyte.console.core
 				}
 				lastmcDO = mcDO;
 			}
-			report(base.name + ":" + console.links.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
+			report(base.name + ":" + console.refs.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
 			if (config.commandLineAllowed) report("Click on the child display's name to set scope.", -2, true, ch);
 		}
 		
@@ -116,7 +116,7 @@ package com.junkbyte.console.core
 			}else if(obj is String){
 				return '"'+LogReferences.EscHTML(obj as String)+'"';
 			}else if(t != "object" || depth == 0 || obj is ByteArray){
-				return console.links.makeString(obj);
+				return console.refs.makeString(obj);
 			}
 			if(p<0) p = 0;
 			var V:XML = describeType(obj);
