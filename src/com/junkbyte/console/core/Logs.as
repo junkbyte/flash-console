@@ -35,11 +35,11 @@ package com.junkbyte.console.core
 		private var _repeating:uint;
 		private var _lastRepeat:Log;
 		private var _newRepeat:Log;
+		private var _hasNewLog:Boolean;
 		
-		public var first:Log;
+		private var first:Log;
 		public var last:Log;
 		
-		public var newLines:Boolean;
 		
 		private var _length:uint;
 		
@@ -65,7 +65,7 @@ package com.junkbyte.console.core
 				remoter.send("log", bytes);
 			}
 		}
-		public function update():void{
+		public function update():Boolean{
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){
 				if(_lastRepeat) remove(_lastRepeat);
@@ -73,9 +73,12 @@ package com.junkbyte.console.core
 				_newRepeat = null;
 				push(_lastRepeat);
 			}
+			var b:Boolean = _hasNewLog;
+			_hasNewLog = false;
+			return b;
 		}
 		public function add(line:Log):void{
-			newLines = true;
+			_hasNewLog = true;
 			addChannel(line.ch);
 			if (line.repeat) {
 				if(_repeating > 0 && _lastRepeat){

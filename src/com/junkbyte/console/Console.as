@@ -318,7 +318,7 @@ package com.junkbyte.console
 		//
 		//
 		private function _onEnterFrame(e:Event):void{
-			_logs.update();
+			var hasNewLog:Boolean = _logs.update();
 			_refs.update();
 			_mm.update();
 			var graphsList:Array;
@@ -335,9 +335,8 @@ package com.junkbyte.console
 					parent.addChild(this);
 					report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
-				_panels.update(_paused, logs.newLines);
-				if(graphsList) _panels.updateGraphs(graphsList); 
-				logs.newLines = false;
+				_panels.update(_paused, hasNewLog);
+				if(graphsList) _panels.updateGraphs(graphsList);
 			}
 		}
 		//

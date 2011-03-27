@@ -31,6 +31,7 @@ package com.junkbyte.console.vos {
 		public var priority:int;
 		public var repeat:Boolean;
 		public var html:Boolean;
+		//public var stack:String;
 		//
 		public var next:Log;
 		public var prev:Log;
