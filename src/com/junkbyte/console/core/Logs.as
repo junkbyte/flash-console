@@ -42,6 +42,7 @@ package com.junkbyte.console.core
 		
 		
 		private var _length:uint;
+		private var _lines:uint;
 		
 		public function Logs(console:Console){
 			super(console);
@@ -83,12 +84,15 @@ package com.junkbyte.console.core
 			if (line.repeat) {
 				if(_repeating > 0 && _lastRepeat){
 					_newRepeat = line;
+					//line.line = _lines;
 					return;
 				}else{
 					_repeating = config.maxRepeats;
 					_lastRepeat = line;
 				}
 			}
+			_lines++;
+			//line.line = _lines;
 			push(line);
 			while(_length > config.maxLines){
 				remove(first);
@@ -116,11 +120,12 @@ package com.junkbyte.console.core
 				_channels = new Object();
 			}
 		}
-		public function getLogsAsString(splitter:String):String{
+		public function getLogsAsString(splitter:String, incChNames:Boolean):String{
 			var str:String = "";
 			var line:Log = first;
 			while(line){
-				str += line.toString()+(line.next?splitter:"");
+				str += incChNames?line.toString():line.plainText();
+				if(line.next) str += splitter;
 				line = line.next;
 			}
 			return str;

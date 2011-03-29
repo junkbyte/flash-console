@@ -54,9 +54,9 @@ package com.junkbyte.console
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.51;
-		public static const VERSION_STAGE:String = "beta2";
-		public static const BUILD:int = 582;
-		public static const BUILD_DATE:String = "2011/03/24 00:39";
+		public static const VERSION_STAGE:String = "beta3";
+		public static const BUILD:int = 583;
+		public static const BUILD_DATE:String = "2011/03/29 22:54";
 		//
 		public static const LOG:uint = 1;
 		public static const INFO:uint = 3;
@@ -358,16 +358,17 @@ package com.junkbyte.console
 		//
 		//
 		public function setViewingChannels(...channels:Array):void{
-			var a:Array = new Array();
-			for each(var item:Object in channels) a.push(MakeChannelName(item));
-			_panels.mainPanel.viewingChannels = a;
+			_panels.mainPanel.setViewingChannels.apply(this, channels);
+		}
+		public function setIgnoredChannels(...channels:Array):void{
+			_panels.mainPanel.setIgnoredChannels.apply(this, channels);
 		}
 		public function set minimumPriority(level:uint):void{
 			_panels.mainPanel.priority = level;
 		}
 		public function report(obj:*, priority:int = 0, skipSafe:Boolean = true, channel:String = null):void{
 			if(!channel) channel = _panels.mainPanel.reportChannel;
-			addLine([obj], priority, channel, false, skipSafe);
+			addLine([obj], priority, channel, false, skipSafe, 0);
 		}
 		public function addLine(strings:Array, priority:int = 0, channel:* = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
 			var txt:String = "";
@@ -377,11 +378,23 @@ package com.junkbyte.console
 			}
 			
 			if(priority >= _config.autoStackPriority && stacks<0) stacks = _config.defaultStackDepth;
-
+			
+			/* 
+			//work in progress
+			var stack:String;
+			if(config.rolloverStackToolTip || stacks>0){
+				stack = _tools.getStack(stacks, priority);
+			}
+			if(!html && stacks>0){
+				txt += stack;
+			}
+			*/
 			if(!html && stacks>0){
 				txt += _tools.getStack(stacks, priority);
 			}
-			_logs.add(new Log(txt, MakeChannelName(channel), priority, isRepeating, html));
+			var l:Log = new Log(txt, MakeChannelName(channel), priority, isRepeating, html);
+			//l.stack = stack;
+			_logs.add(l);
 		}
 		//
 		// COMMAND LINE
@@ -474,8 +487,8 @@ package com.junkbyte.console
 			if(!_paused) _panels.mainPanel.updateToBottom();
 			_panels.updateMenu();
 		}
-		public function getAllLog(splitter:String = "\r\n"):String{
-			return _logs.getLogsAsString(splitter);
+		public function getAllLog(splitter:String = "\r\n", incChNames:Boolean = true):String{
+			return _logs.getLogsAsString(splitter, incChNames);
 		}
 		public function get config():ConsoleConfig{return _config;}
 		public function get panels():PanelsManager{return _panels;}

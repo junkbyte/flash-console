@@ -26,6 +26,7 @@ package com.junkbyte.console.vos {
 	import flash.utils.ByteArray;
 	
 	public class Log{
+		//public var line:uint;
 		public var text:String;
 		public var ch:String;
 		public var priority:int;
@@ -36,12 +37,12 @@ package com.junkbyte.console.vos {
 		public var next:Log;
 		public var prev:Log;
 		//
-		public function Log(txt:String, cc:String, pp:int, repeating:Boolean = false, skipSafe:Boolean = false){
+		public function Log(txt:String, cc:String, pp:int, repeating:Boolean = false, ishtml:Boolean = false){
 			text = txt;
 			ch = cc;
 			priority = pp;
 			repeat = repeating;
-			html = skipSafe;
+			html = ishtml;
 		}
 		public function toBytes(bytes:ByteArray):void{
 			bytes.writeUnsignedInt(text.length);
@@ -66,7 +67,10 @@ package com.junkbyte.console.vos {
 		}
 		
 		public function clone():Log{
-			return new Log(text, ch, priority, repeat, html);
+			var l:Log = new Log(text, ch, priority, repeat, html);
+			//l.line = line;
+			//l.stack = stack;
+			return l;
 		}
 	}
 }

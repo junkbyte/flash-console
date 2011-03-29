@@ -36,7 +36,7 @@ package
 	// To compile in flash, point this class as document class.
 	// comment out the metadata tag above if you are getting an error.
 	
-	public class ConsoleRemote extends MovieClip {
+	public class ConsoleRemote extends Sprite {
 
 		public function ConsoleRemote() {
 			

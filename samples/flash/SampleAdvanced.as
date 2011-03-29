@@ -67,7 +67,7 @@ package
 			Cc.info("Here is a link to Console instance", Cc.instance);
 			//
 			// HTML text
-			Cc.addHTML("Here is HTML <font color='#ff0000'>red <b>bold</b> <b><i>and</i></b> <i>italic</i></font> text.");
+			Cc.addHTML("Here is HTML <font color='#ff00ff'>purple <b>bold</b> <b><i>and</i></b> <i>italic</i></font> text.");
 			Cc.addHTMLch("html", 8, "Mix objects inside html <p9>like this <i><b>&gt;", this,"&lt;</b></i></p9>");
 			
 			Cc.log("___");

@@ -52,7 +52,7 @@ package com.junkbyte.console {
 		 * default priortiy = 10; fatal level
 		 */
 		public var autoStackPriority:int = Console.FATAL;
-
+		
 		/**
 		 * Default stack trace depth
 		 */
@@ -114,10 +114,12 @@ package com.junkbyte.console {
 		 * </p>
 		 * @see tracing
 		 */
-		public var traceCall:Function = function (ch:String, line:String, ...args):void
-		{
+		public var traceCall:Function = function (ch:String, line:String, ...args):void{
 			trace("["+ch+"] "+line);
 		};
+
+		// Work in progress
+		//public var rolloverStackToolTip:Boolean = false;
 		
 		///////////////////////
 		//                   //

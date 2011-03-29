@@ -74,6 +74,7 @@ package com.junkbyte.console.view
 		private var _selectionEnd:int;
 		
 		private var _viewingChannels:Array;
+		private var _ignoredChannels:Array;
 		private var _extraMenus:Object = new Object();
 		private var _cmdsInd:int = -1;
 		private var _priority:uint;
@@ -95,6 +96,7 @@ package com.junkbyte.console.view
 			super(m);
 			var fsize:int = style.menuFontSize;
 			_viewingChannels = new Array();
+			_ignoredChannels = new Array();
 			
 			console.cl.addCLCmd("filter", setFilterText, "Filter console logs to matching string. When done, click on the * (global channel) at top.", true);
 			console.cl.addCLCmd("filterexp", setFilterRegExp, "Filter console logs to matching regular expression", true);
@@ -335,9 +337,10 @@ package com.junkbyte.console.view
 		private function updateFull():void{
 			var str:String = "";
 			var line:Log = console.logs.last;
+			var showch:Boolean = _viewingChannels.length != 1;
 			while(line){
 				if(lineShouldShow(line)){
-					str = makeLine(line)+str;
+					str = makeLine(line, showch)+str;
 				}
 				line = line.prev;
 			}
@@ -363,15 +366,16 @@ package com.junkbyte.console.view
 			var maxchars:int = Math.round(_traceField.width*5/style.traceFontSize);
 			
 			var line:Log = console.logs.last;
+			var showch:Boolean = _viewingChannels.length != 1;
 			while(line){
 				if(lineShouldShow(line)){
 					var numlines:int = Math.ceil(line.text.length/ maxchars);
 					if(line.html || linesLeft >= numlines ){
-						lines.push(makeLine(line));
+						lines.push(makeLine(line, showch));
 					}else{
 						line = line.clone();
 						line.text = line.text.substring(Math.max(0,line.text.length-(maxchars*linesLeft)));
-						lines.push(makeLine(line));
+						lines.push(makeLine(line, showch));
 						break;
 					}
 					linesLeft-=numlines;
@@ -390,27 +394,51 @@ package com.junkbyte.console.view
 		private function lineShouldShow(line:Log):Boolean{
 			return (
 				(
-					_viewingChannels.length == 0
-			 		|| _viewingChannels.indexOf(line.ch)>=0 
+					chShouldShow(line.ch)
 			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTER_CHANNEL) >= 0 && line.text.toLowerCase().indexOf(_filterText)>=0 )
 			 		|| (_filterRegExp && _viewingChannels.indexOf(Console.FILTER_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )
 			 	) 
 			 	&& ( _priority == 0 || line.priority >= _priority)
 			);
 		}
+		private function chShouldShow(ch:String):Boolean{
+			return  ((_viewingChannels.length == 0 || _viewingChannels.indexOf(ch)>=0)
+					&&
+					 (_ignoredChannels.length == 0 || _ignoredChannels.indexOf(ch)<0));
+		}
 		public function get reportChannel():String{
 			return _viewingChannels.length == 1?_viewingChannels[0]:Console.CONSOLE_CHANNEL;
 		}
-		public function get viewingChannels():Array{
+		/*public function get viewingChannels():Array{
 			return _viewingChannels;
-		}
-		public function set viewingChannels(a:Array):void{
+		}*/
+		public function setViewingChannels(...channels:Array):void{
+			var a:Array = new Array();
+			for each(var item:Object in channels) a.push(Console.MakeChannelName(item));
+			
 			if(_viewingChannels[0] == LogReferences.INSPECTING_CHANNEL && (!a || a[0] != _viewingChannels[0])){
 				console.refs.exitFocus();
 			}
+			_ignoredChannels.splice(0);
 			_viewingChannels.splice(0);
 			if(a.indexOf(Console.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
 				for each(var ch:String in a) _viewingChannels.push(ch);
+			}
+			updateToBottom();
+			console.panels.updateMenu();
+		}
+		public function setIgnoredChannels(...channels:Array):void{
+			var a:Array = new Array();
+			for each(var item:Object in channels) a.push(Console.MakeChannelName(item));
+			
+			if(_viewingChannels[0] == LogReferences.INSPECTING_CHANNEL){
+				console.refs.exitFocus();
+			}
+			
+			_ignoredChannels.splice(0);
+			_viewingChannels.splice(0);
+			if(a.indexOf(Console.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
+				for each(var ch:String in a) _ignoredChannels.push(ch);
 			}
 			updateToBottom();
 			console.panels.updateMenu();
@@ -437,19 +465,19 @@ package com.junkbyte.console.view
 		private function startFilter():void{
 			console.clear(Console.FILTER_CHANNEL);
 			console.logs.addChannel(Console.FILTER_CHANNEL);
-			viewingChannels = [Console.FILTER_CHANNEL];
+			setViewingChannels(Console.FILTER_CHANNEL);
 		}
 		private function endFilter():void{
 			_filterRegExp = null;
 			_filterText = null;
 			if(_viewingChannels.length == 1 && _viewingChannels[0] == Console.FILTER_CHANNEL){
-				viewingChannels = [Console.GLOBAL_CHANNEL];
+				setViewingChannels(Console.GLOBAL_CHANNEL);
 			}
 		}
-		private function makeLine(line:Log):String{
+		private function makeLine(line:Log, showch:Boolean):String{
 			var str:String = "";
 			var txt:String = line.text;
-			if(line.ch != Console.DEFAULT_CHANNEL && (_viewingChannels.length == 0 || _viewingChannels.length>1)){
+			if(showch && line.ch != Console.DEFAULT_CHANNEL){
 				txt = "[<a href=\"event:channel_"+line.ch+"\">"+line.ch+"</a>] "+txt;
 			}
 			var index:int;
@@ -679,9 +707,10 @@ package com.junkbyte.console.view
 			var channels:Array = console.logs.getChannels();
 			var len:int = channels.length;
 			if(limited && len>style.maxChannelsInMenu) len = style.maxChannelsInMenu;
+			var filtering:Boolean = _viewingChannels.length > 0 || _ignoredChannels.length > 0;
 			for(var i:int = 0; i<len;  i++){
 				var channel:String = channels[i];
-				var channelTxt:String = ((i == 0 && _viewingChannels.length == 0) || _viewingChannels.indexOf(channel)>=0) ? "<ch><b>"+channel+"</b></ch>" : channel;
+				var channelTxt:String = ((!filtering && i == 0) || (filtering && chShouldShow(channel))) ? "<ch><b>"+channel+"</b></ch>" : channel;
 				str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
 			}
 			if(limited){
@@ -725,7 +754,7 @@ package com.junkbyte.console.view
 					roller:"Display Roller::Map the display list under your mouse",
 					ruler:"Screen Ruler::Measure the distance and angle between two points on screen.",
 					command:"Command Line",
-					copy:"Copy to clipboard",
+					copy:"Copy to clipboard::shift click to copy without channel names",
 					clear:"Clear log",
 					priority:"Priority filter::shift click to reverse. skips unused priorites.",
 					channels:"Expand channels",
@@ -778,7 +807,7 @@ package com.junkbyte.console.view
 			}else if(t == "command"){
 				commandLine = !commandLine;
 			}else if(t == "copy") {
-				System.setClipboard(console.getAllLog());
+				System.setClipboard(console.getAllLog("\r\n", !_shift));
 				console.report("Copied log to clipboard.", -1);
 			}else if(t == "clear"){
 				console.clear();
@@ -805,30 +834,30 @@ package com.junkbyte.console.view
 			e.stopPropagation();
 		}
 		public function onChannelPressed(chn:String):void{
-			var current:Array = _viewingChannels.concat();
+			var current:Array;
 			if(_ctrl && chn != Console.GLOBAL_CHANNEL){
-				var channels:Array = console.logs.getChannels();
-				var i:int = channels.indexOf(chn);
-				if(i >= 0){
-					channels.splice(i, 1);
-					channels.splice(0, 1);
-				}
-				viewingChannels = channels;
+				current = toggleCHList(_ignoredChannels, chn);
+				setIgnoredChannels.apply(this, current);
 			}
-			else if(_shift && chn != Console.GLOBAL_CHANNEL && current[0] != LogReferences.INSPECTING_CHANNEL){
-				var ind:int = current.indexOf(chn);
-				if(ind>=0){
-					current.splice(ind,1);
-					if(current.length == 0){
-						current.push(Console.GLOBAL_CHANNEL);
-					}
-				}else{
-					current.push(chn);
-				}
-				viewingChannels = current;
+			else if(_shift && chn != Console.GLOBAL_CHANNEL && _viewingChannels[0] != LogReferences.INSPECTING_CHANNEL){
+				current = toggleCHList(_viewingChannels, chn);
+				setViewingChannels.apply(this, current);
 			}else{
 				console.setViewingChannels(chn);
 			}
+		}
+		private function toggleCHList(current:Array, chn:String):Array{
+			current = current.concat();
+			var ind:int = current.indexOf(chn);
+			if(ind>=0){
+				current.splice(ind,1);
+				if(current.length == 0){
+					current.push(Console.GLOBAL_CHANNEL);
+				}
+			}else{
+				current.push(chn);
+			}
+			return current;
 		}
 		public function set priority(p:uint):void{
 			_priority = p;

@@ -31,16 +31,19 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.51 beta ===
+===2.51 beta3 ===
   * HTML formatted logging support. see Cc.addHTML, Cc.addHTMLch
-  * Socket remoting support 
+  * Socket remoting support
+  * Cc.setIgnoredChannels() to set ignored channels
+  * Ctrl click on channel name now use setIgnoredChannels which function slightly differently than it used to
   * Reintroduced Cc.minimumPriority
-  * Fixed not sending very long lines to remote
-  * ByteArray.toString() no longer brake console prints
+  * Shift clicking on *Cc* top menu button will now copy text to clipboard without channel names
   * SHIFT+scroll wheel to make log text bigger / smaller
   * TAB key focuses to command line if visible (in addition to previous ENTER key)
   * TAB key to accept autocomplete suggestion in CL (in addition to previous SPACE key)
   * SWC now include argument names. However it will no longer support importing in CS3 as a component
+  * Fixed not sending very long lines to remote
+  * ByteArray.toString() no longer brake console prints
 
 ===2.5 ===
   * Features

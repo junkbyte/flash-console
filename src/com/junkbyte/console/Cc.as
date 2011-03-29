@@ -562,10 +562,21 @@ package com.junkbyte.console {
 		//
 		/**
 		 * Set currently viewing channels.
+		 * Calling this method will reset ignored channels set via setIgnoredChannels().
 		 * @param ...channels Channels to view. Send empty to view all channels (global channel).
+	 	 * @see #setIgnoredChannels()
 		 */
 		public static function setViewingChannels(...channels:Array):void{
 			if(_console) _console.setViewingChannels.apply(null, channels);
+		}
+		/**
+		 * Set ignored viewing channels.
+		 * Calling this method will reset viewing channels set via setViewingChannels().
+		 * @param ...channels Channels to view. Send empty to view all channels (global channel).
+	 	 * @see #setViewingChannels()
+		 */
+		public static function setIgnoredChannels(...channels:Array):void{
+			if(_console) _console.setIgnoredChannels.apply(null, channels);
 		}
 		/**
 		 * Set minimum viewing priority level.
