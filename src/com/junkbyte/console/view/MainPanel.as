@@ -710,7 +710,7 @@ package com.junkbyte.console.view
 			var filtering:Boolean = _viewingChannels.length > 0 || _ignoredChannels.length > 0;
 			for(var i:int = 0; i<len;  i++){
 				var channel:String = channels[i];
-				var channelTxt:String = ((!filtering && i == 0) || (filtering && chShouldShow(channel))) ? "<ch><b>"+channel+"</b></ch>" : channel;
+				var channelTxt:String = ((!filtering && i == 0) || (filtering && i != 0 && chShouldShow(channel))) ? "<ch><b>"+channel+"</b></ch>" : channel;
 				str += "<a href=\"event:channel_"+channel+"\">["+channelTxt+"]</a> ";
 			}
 			if(limited){
@@ -738,7 +738,7 @@ package com.junkbyte.console.view
 			}else if(txt == "channel_"+LogReferences.INSPECTING_CHANNEL) {
 				txt = "Inspecting channel";
 			}else if(txt.indexOf("channel_")==0) {
-				txt = "Change channel::shift click to select multiple. ctrl click to invert select.";
+				txt = "Change channel::shift-click to select multiple. ctrl-click to ignore channel.";
 			}else if(txt == "pause"){
 				if(console.paused) txt = "Resume updates";
 				else txt = "Pause updates";
@@ -754,9 +754,9 @@ package com.junkbyte.console.view
 					roller:"Display Roller::Map the display list under your mouse",
 					ruler:"Screen Ruler::Measure the distance and angle between two points on screen.",
 					command:"Command Line",
-					copy:"Copy to clipboard::shift click to copy without channel names",
+					copy:"Copy to clipboard::shift-click to copy without channel names",
 					clear:"Clear log",
-					priority:"Priority filter::shift click to reverse. skips unused priorites.",
+					priority:"Priority filter::shift-click to reverse. skips unused priorites.",
 					channels:"Expand channels",
 					close:"Close"
 					};
