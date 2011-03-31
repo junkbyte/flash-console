@@ -193,7 +193,7 @@ package com.junkbyte.console {
 		/**
 		 * Style sheet used by Console.
 		 * <p>
-		 * You may add your own stlye definitions if you plan to use Cc.addHTML feature excessively.
+		 * You may add your own style definitions if you plan to use Cc.addHTML feature excessively.
 		 * Only CSS properties supported by flash will work.
 		 * 
 		 * </p>
