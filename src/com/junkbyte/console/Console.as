@@ -55,8 +55,8 @@ package com.junkbyte.console
 
 		public static const VERSION:Number = 2.51;
 		public static const VERSION_STAGE:String = "beta3";
-		public static const BUILD:int = 583;
-		public static const BUILD_DATE:String = "2011/03/29 22:54";
+		public static const BUILD:int = 585;
+		public static const BUILD_DATE:String = "2011/04/14 00:40";
 		//
 		public static const LOG:uint = 1;
 		public static const INFO:uint = 3;
@@ -392,9 +392,9 @@ package com.junkbyte.console
 			if(!html && stacks>0){
 				txt += _tools.getStack(stacks, priority);
 			}
-			var l:Log = new Log(txt, MakeChannelName(channel), priority, isRepeating, html);
+			//var l:Log = new Log(txt, MakeChannelName(channel), priority, isRepeating, html);
 			//l.stack = stack;
-			_logs.add(l);
+			_logs.add(new Log(txt, MakeChannelName(channel), priority, isRepeating, html));
 		}
 		//
 		// COMMAND LINE
@@ -412,13 +412,13 @@ package com.junkbyte.console
 		// LOGGING
 		//
 		public function add(string:*, priority:int = 2, isRepeating:Boolean = false):void{
-			addLine(new Array(string), priority, DEFAULT_CHANNEL, isRepeating);
+			addLine([string], priority, DEFAULT_CHANNEL, isRepeating);
 		}
 		public function stack(string:*, depth:int = -1, priority:int = 5):void{
-			addLine(new Array(string), priority, DEFAULT_CHANNEL, false, false, depth>=0?depth:_config.defaultStackDepth);
+			addLine([string], priority, DEFAULT_CHANNEL, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		public function stackch(channel:*, string:*, depth:int = -1, priority:int = 5):void{
-			addLine(new Array(string), priority, channel, false, false, depth>=0?depth:_config.defaultStackDepth);
+			addLine([string], priority, channel, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		
 		
@@ -442,7 +442,7 @@ package com.junkbyte.console
 			addLine(strings, FATAL);
 		}
 		public function ch(channel:*, string:*, priority:Number = 2, isRepeating:Boolean = false):void{
-			addLine(new Array(string), priority, channel, isRepeating);
+			addLine([string], priority, channel, isRepeating);
 		}
 		public function logch(channel:*, ...strings):void{
 			addLine(strings, LOG, channel);
