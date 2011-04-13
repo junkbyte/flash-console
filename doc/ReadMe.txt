@@ -44,6 +44,7 @@ http://code.google.com/p/flash-console/issues/
   * SWC now include argument names. However it will no longer support importing in CS3 as a component
   * Fixed not sending very long lines to remote
   * ByteArray.toString() no longer brake console prints
+  * Fixed issue where single Number/int logs to Cc.add, Cc.stack,Cc.stackch, Cc.ch doesn't work
 
 ===2.5 ===
   * Features
