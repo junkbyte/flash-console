@@ -37,7 +37,7 @@ package com.junkbyte.console.core
 		private var _newRepeat:Log;
 		private var _hasNewLog:Boolean;
 		
-		private var first:Log;
+		public var first:Log;
 		public var last:Log;
 		
 		
@@ -120,12 +120,14 @@ package com.junkbyte.console.core
 				_channels = new Object();
 			}
 		}
-		public function getLogsAsString(splitter:String, incChNames:Boolean):String{
+		public function getLogsAsString(splitter:String, incChNames:Boolean = true, filter:Function = null):String{
 			var str:String = "";
 			var line:Log = first;
 			while(line){
-				str += incChNames?line.toString():line.plainText();
-				if(line.next) str += splitter;
+				if(filter == null || filter(line)){
+					if(first != line) str += splitter;
+					str += incChNames?line.toString():line.plainText();
+				}
 				line = line.next;
 			}
 			return str;

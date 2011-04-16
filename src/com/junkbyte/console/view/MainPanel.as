@@ -25,6 +25,9 @@
 
 package com.junkbyte.console.view 
 {
+	import flash.system.Capabilities;
+	import flash.net.FileReference;
+	import flash.filesystem.File;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Remoting;
@@ -53,6 +56,9 @@ package com.junkbyte.console.view
 		public static const NAME:String = "mainPanel";
 		
 		private static const CL_HISTORY:String = "clhistory";
+		private static const VIEWING_CH_HISTORY:String = "viewingChannels";
+		private static const IGNORED_CH_HISTORY:String = "ignoredChannels";
+		private static const PRIORITY_HISTORY:String = "priority";
 		
 		private var _traceField:TextField;
 		private var _cmdPrefx:TextField;
@@ -63,6 +69,7 @@ package com.junkbyte.console.view
 		private var _mini:Boolean;
 		private var _shift:Boolean;
 		private var _ctrl:Boolean;
+		private var _alt:Boolean;
 		
 		private var _scroll:Sprite;
 		private var _scroller:Sprite;
@@ -95,8 +102,8 @@ package com.junkbyte.console.view
 		public function MainPanel(m:Console) {
 			super(m);
 			var fsize:int = style.menuFontSize;
-			_viewingChannels = new Array();
-			_ignoredChannels = new Array();
+			//_viewingChannels = new Array();
+			//_ignoredChannels = new Array();
 			
 			console.cl.addCLCmd("filter", setFilterText, "Filter console logs to matching string. When done, click on the * (global channel) at top.", true);
 			console.cl.addCLCmd("filterexp", setFilterRegExp, "Filter console logs to matching regular expression", true);
@@ -200,6 +207,22 @@ package com.junkbyte.console.view
 				console.so[CL_HISTORY] = _cmdsHistory = new Array();
 			}
 			//
+			if(config.rememberFilterSettings && console.so[VIEWING_CH_HISTORY] is Array){
+				_viewingChannels = console.so[VIEWING_CH_HISTORY];
+			}else{
+				console.so[VIEWING_CH_HISTORY] = _viewingChannels = new Array();
+			}
+			if(config.rememberFilterSettings && console.so[IGNORED_CH_HISTORY] is Array){
+				_ignoredChannels = console.so[IGNORED_CH_HISTORY];
+			}
+			if(_viewingChannels.length > 0 || _ignoredChannels == null){
+				console.so[IGNORED_CH_HISTORY] = _ignoredChannels = new Array();
+			}
+			if(config.rememberFilterSettings && console.so[PRIORITY_HISTORY] is uint)
+			{
+				_priority = console.so[PRIORITY_HISTORY];
+			}
+			//
 			addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel, false, 0, true);
 			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
@@ -231,6 +254,7 @@ package com.junkbyte.console.view
 		private function onStageMouseDown(e : MouseEvent) : void {
 			_shift = e.shiftKey;
 			_ctrl = e.ctrlKey;
+			_alt = e.altKey;
 		}
 		private function onMouseWheel(e : MouseEvent) : void {
 			if(_shift){
@@ -259,13 +283,15 @@ package com.junkbyte.console.view
 			if (e.keyCode == Keyboard.CONTROL) {
 				_ctrl = true;
 			}
+			if (e.keyCode == Keyboard.ALTERNATE) {
+				_alt = true;
+			}
 		}
 		private function keyUpHandler(e:KeyboardEvent):void{
-			if(e.keyCode == Keyboard.SHIFT){
-				_shift = false;
-			}else if(e.keyCode == Keyboard.CONTROL){
-				_ctrl = false;
-			}
+			if(e.keyCode == Keyboard.SHIFT) _shift = false;
+			else if(e.keyCode == Keyboard.CONTROL) _ctrl = false;
+			else if (e.keyCode == Keyboard.ALTERNATE) _alt = false;
+			
 			if((e.keyCode == Keyboard.TAB || e.keyCode == Keyboard.ENTER) && parent.visible && visible && _cmdField.visible){
 				try{
 					stage.focus = _cmdField;
@@ -693,7 +719,7 @@ package com.junkbyte.console.view
 					str += doActive(" <a href=\"event:ruler\">RL</a>", console.panels.rulerActive);
 				}
 				str += " ¦</b>";
-				str += " <a href=\"event:copy\">Cc</a>";
+				str += " <a href=\"event:copy\">Sv</a>";
 				str += " <a href=\"event:priority\">P"+_priority+"</a>";
 				str += doActive(" <a href=\"event:pause\">P</a>", console.paused);
 				str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a> <a href=\"event:hide\">›</a>";
@@ -738,7 +764,7 @@ package com.junkbyte.console.view
 			}else if(txt == "channel_"+LogReferences.INSPECTING_CHANNEL) {
 				txt = "Inspecting channel";
 			}else if(txt.indexOf("channel_")==0) {
-				txt = "Change channel::shift-click to select multiple. ctrl-click to ignore channel.";
+				txt = "Change channel::shift: select multiple\nctrl: ignore channel";
 			}else if(txt == "pause"){
 				if(console.paused) txt = "Resume updates";
 				else txt = "Pause updates";
@@ -754,12 +780,12 @@ package com.junkbyte.console.view
 					roller:"Display Roller::Map the display list under your mouse",
 					ruler:"Screen Ruler::Measure the distance and angle between two points on screen.",
 					command:"Command Line",
-					copy:"Copy to clipboard::shift-click to copy without channel names",
+					copy:"Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file",
 					clear:"Clear log",
-					priority:"Priority filter::shift-click to reverse. skips unused priorites.",
+					priority:"Priority filter::shift: previous priority\n(skips unused priorites)",
 					channels:"Expand channels",
 					close:"Close"
-					};
+				};
 				txt = obj[txt];
 			}
 			console.panels.tooltip(txt, src);
@@ -806,9 +832,19 @@ package com.junkbyte.console.view
 				console.panels.startRuler();
 			}else if(t == "command"){
 				commandLine = !commandLine;
-			}else if(t == "copy") {
-				System.setClipboard(console.getAllLog("\r\n", !_shift));
-				console.report("Copied log to clipboard.", -1);
+			} else if (t == "copy") {
+				var str : String = console.logs.getLogsAsString("\r\n", !_shift, _ctrl?lineShouldShow:null);
+				if(_alt){
+					var file:FileReference = new FileReference();
+					try{
+						file["save"](str,"log.txt");
+					}catch(err:Error) {
+						console.report("Save to file is not supported in your flash player.", 8);
+					}
+				}else{
+					System.setClipboard(str);
+					console.report("Copied log to clipboard.", -1);
+				}
 			}else if(t == "clear"){
 				console.clear();
 			}else if(t == "settings"){
@@ -861,6 +897,7 @@ package com.junkbyte.console.view
 		}
 		public function set priority(p:uint):void{
 			_priority = p;
+			console.so[PRIORITY_HISTORY] = _priority;
 			updateToBottom();
 			updateMenu();
 		}

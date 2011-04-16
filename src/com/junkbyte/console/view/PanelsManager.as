@@ -272,7 +272,9 @@ package com.junkbyte.console.view
 		//
 		public function tooltip(str:String = null, panel:ConsolePanel = null):void{
 			if(str && !rulerActive){
-				str = str.replace(/\:\:(.*)/, "<br/><low>$1</low>");
+				var split:Array = str.split("::");
+				str = split[0];
+				if(split.length > 1) str += "<br/><low>"+split[1]+"</low>";
 				console.addChild(_tooltipField);
 				_tooltipField.wordWrap = false;
 				_tooltipField.htmlText = "<tt>"+str+"</tt>";

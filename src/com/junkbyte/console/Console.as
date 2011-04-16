@@ -24,6 +24,7 @@
 */
 package com.junkbyte.console 
 {
+	import flash.system.Capabilities;
 	import com.junkbyte.console.core.CommandLine;
 	import com.junkbyte.console.core.ConsoleTools;
 	import com.junkbyte.console.core.Graphing;
@@ -130,7 +131,8 @@ package com.junkbyte.console
 			_panels = new PanelsManager(this);
 			if(password) visible = false;
 			
-			report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
+			//report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
+			report("<b>Console v"+VERSION+VERSION_STAGE+"</b>, build "+BUILD+". "+Capabilities.playerType+" "+Capabilities.version, -2);
 			
 			// must have enterFrame here because user can start without a parent display and use remoting.
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
@@ -487,8 +489,8 @@ package com.junkbyte.console
 			if(!_paused) _panels.mainPanel.updateToBottom();
 			_panels.updateMenu();
 		}
-		public function getAllLog(splitter:String = "\r\n", incChNames:Boolean = true):String{
-			return _logs.getLogsAsString(splitter, incChNames);
+		public function getAllLog(splitter:String = "\r\n"):String{
+			return _logs.getLogsAsString(splitter);
 		}
 		public function get config():ConsoleConfig{return _config;}
 		public function get panels():PanelsManager{return _panels;}

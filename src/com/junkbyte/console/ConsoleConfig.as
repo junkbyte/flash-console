@@ -149,6 +149,14 @@ package com.junkbyte.console {
 		//               //
 		///////////////////
 		
+				
+		/**
+		 * Remember viewing filters such as channels and priority level over different sessions.
+		 * <p>
+		 * Requires sharedObject feature turned on.
+		 * </p>
+		 */
+		public var rememberFilterSettings:Boolean;
 		
 		/**
 		 * Full Command line features usage allowance.
