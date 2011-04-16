@@ -37,12 +37,11 @@ package com.junkbyte.console.core
 		private var _newRepeat:Log;
 		private var _hasNewLog:Boolean;
 		
-		public var first:Log;
+		private var first:Log;
 		public var last:Log;
 		
-		
 		private var _length:uint;
-		private var _lines:uint;
+		//private var _lines:uint; // number of lines since start.
 		
 		public function Logs(console:Console){
 			super(console);
@@ -55,11 +54,11 @@ package com.junkbyte.console.core
 		private function onRemoteConnection(e:Event):void{
 			var log:Log = first;
 			while(log){
-				logRemote(log);
+				send2Remote(log);
 				log = log.next;
 			}
 		}
-		private function logRemote(line:Log):void{
+		private function send2Remote(line:Log):void{
 			if(remoter.canSend) {
 				var bytes:ByteArray = new ByteArray();
 				line.toBytes(bytes);
@@ -81,24 +80,25 @@ package com.junkbyte.console.core
 		public function add(line:Log):void{
 			_hasNewLog = true;
 			addChannel(line.ch);
+			send2Remote(line);
 			if (line.repeat) {
 				if(_repeating > 0 && _lastRepeat){
+					//line.line = _lastRepeat.line;
 					_newRepeat = line;
-					//line.line = _lines;
 					return;
 				}else{
 					_repeating = config.maxRepeats;
 					_lastRepeat = line;
 				}
 			}
-			_lines++;
+			//_lines++;
 			//line.line = _lines;
+			//
 			push(line);
 			while(_length > config.maxLines){
 				remove(first);
 			}
 			//
-			logRemote(line);
 			if ( config.tracing && config.traceCall != null) {
 				config.traceCall(line.ch, line.plainText(), line.priority);
 			}

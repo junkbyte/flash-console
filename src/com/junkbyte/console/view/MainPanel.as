@@ -25,9 +25,6 @@
 
 package com.junkbyte.console.view 
 {
-	import flash.system.Capabilities;
-	import flash.net.FileReference;
-	import flash.filesystem.File;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Remoting;
@@ -42,6 +39,7 @@ package com.junkbyte.console.view
 	import flash.events.TextEvent;
 	import flash.geom.ColorTransform;
 	import flash.geom.Rectangle;
+	import flash.net.FileReference;
 	import flash.system.Security;
 	import flash.system.SecurityPanel;
 	import flash.system.System;
