@@ -539,11 +539,11 @@ package com.junkbyte.console.core
 			}
 			nodes = V.accessor;
 			for each (var accessorX:XML in nodes) {
-				list.push([accessorX.@name, accessorX.@type]);
+				list.push([String(accessorX.@name), String(accessorX.@type)]);
 			}
 			nodes = V.variable;
 			for each (var variableX:XML in nodes) {
-				list.push([variableX.@name, variableX.@type]);
+				list.push([String(variableX.@name), String(variableX.@type)]);
 			}
 			return list;
 		}

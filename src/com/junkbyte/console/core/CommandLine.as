@@ -180,7 +180,7 @@ package com.junkbyte.console.core
 				}
 			}
 			if(callback == null) delete _slashCmds[n];
-			else _slashCmds[n] = new SlashCommand(n, callback, desc, true, allow);
+			else _slashCmds[n] = new SlashCommand(n, callback, LogReferences.EscHTML(desc), true, allow);
 		}
 		public function run(str:String, saves:Object = null):* {
 			if(!str) return;

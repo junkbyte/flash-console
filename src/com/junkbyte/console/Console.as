@@ -100,7 +100,6 @@ package com.junkbyte.console
 		 */
 		public function Console(password:String = "", config:ConsoleConfig = null) {
 			name = "Console";
-			tabChildren = false; // Tabbing is not supported
 			if(config == null) config = new ConsoleConfig();
 			_config = config;
 			//

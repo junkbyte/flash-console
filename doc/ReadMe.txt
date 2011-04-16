@@ -31,24 +31,32 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.51 beta3 ===
-  * HTML formatted logging support. see Cc.addHTML, Cc.addHTMLch
-  * Socket remoting support
-  * Extensive changes were made on remoting. Older remotes will not work with this version.
-  * Cc.setIgnoredChannels() to set ignored channels
-  * Ctrl click on channel name now use setIgnoredChannels which function slightly differently than it used to
-  * Reintroduced Cc.minimumPriority
-  * *Cc* button on top menu changed to *Sv* with additional controls:
-   * Shift clicking copy text without channel names
-   * Ctrl clicking copy using current filtering (channels, priority level)
-   * Alt click prompts a save dialog on flash player 10 or above
-  * SHIFT+scroll wheel to make log text bigger / smaller
-  * TAB key focuses to command line if visible (in addition to previous ENTER key)
-  * TAB key to accept autocomplete suggestion in CL (in addition to previous SPACE key)
-  * SWC now include argument names. However it will no longer support importing in CS3 as a component
-  * Fixed not sending very long lines to remote
-  * ByteArray.toString() no longer brake console prints
-  * Fixed issue where single Number/int logs to Cc.add, Cc.stack,Cc.stackch, Cc.ch doesn't work
+===2.51 beta4 ===
+  * Major changes
+   * HTML formatted logging support. see Cc.addHTML, Cc.addHTMLch
+   * Socket remoting support
+   * Extensive changes were made on remoting. Older remotes will not work with this version
+   * Improved commandLine autocomplete / hinting
+    * CommandLine autocomplete is now stepped so that it will stop completion at multiple matches
+    * TAB key to accept autocomplete suggestion in CL (in REPLACEMENT of previous SPACE key)
+  * Minor changes
+   * *Cc* button on top menu changed to *Sv* with additional controls:
+    * Normal click copies all text with channel names to clipboard
+    * Shift click copies text without channel names
+    * Ctrl click copies using current filtering (channels, priority level)
+    * Alt click prompts a save dialog on flash player 10 or above
+    * Keys can be combiled. Example:
+     * Ctrl+alt+shift click will open a dialog to save logs without channel names using current filters
+   * Cc.setIgnoredChannels() to set ignored channels
+   * Ctrl click on channel name now use setIgnoredChannels which function slightly differently than it used to
+   * SHIFT+scroll wheel to make log text bigger / smaller
+   * Reintroduced Cc.minimumPriority
+   * TAB key focuses to command line if visible (in addition to previous ENTER key)
+   * SWC now include argument names. However it will no longer support importing in CS3 as a component
+  * Bug fixes
+   * Fixed not sending very long lines to remote
+   * ByteArray.toString() no longer brake console prints
+   * Fixed issue where single Number/int logs to Cc.add, Cc.stack,Cc.stackch, Cc.ch doesn't work
 
 ===2.5 ===
   * Features

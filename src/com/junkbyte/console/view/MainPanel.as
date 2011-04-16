@@ -170,12 +170,14 @@ package com.junkbyte.console.view
 			addChild(_bottomLine);
 			//
 			_scroll = new Sprite();
-			_scroll.y = fsize+4;
 			_scroll.name = "scroller";
+			_scroll.tabEnabled = false;
+			_scroll.y = fsize+4;
 			_scroll.buttonMode = true;
 			_scroll.addEventListener(MouseEvent.MOUSE_DOWN, onScrollbarDown, false, 0, true);
 			_scroller = new Sprite();
 			_scroller.name = "scrollbar";
+			_scroller.tabEnabled = false;
 			_scroller.y = 5;
 			_scroller.graphics.beginFill(style.controlColor, 1);
 			_scroller.graphics.drawRect(-5, 0, 5, 30);
@@ -266,7 +268,7 @@ package com.junkbyte.console.view
 		private function onCmdPrefMouseDown(e : MouseEvent) : void {
 			try{
 				stage.focus = _cmdField;
-				_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
+				setCLSelectionAtEnd();
 			} catch(err:Error) {}
 		}
 		private function keyDownHandler(e:KeyboardEvent):void{
@@ -288,7 +290,7 @@ package com.junkbyte.console.view
 			if((e.keyCode == Keyboard.TAB || e.keyCode == Keyboard.ENTER) && parent.visible && visible && _cmdField.visible){
 				try{
 					stage.focus = _cmdField;
-					_cmdField.setSelection(0, _cmdField.text.length);
+					setCLSelectionAtEnd();
 				} catch(err:Error) {}
 			}
 		}
@@ -933,6 +935,14 @@ package com.junkbyte.console.view
 		}
 		private function commandKeyDown(e:KeyboardEvent):void{
 			e.stopPropagation();
+			if(e.keyCode == Keyboard.TAB){
+				if(_hint) 
+				{
+					_cmdField.text = _hint;
+					setCLSelectionAtEnd();
+					setHints();
+				}
+			}
 		}
 		private function commandKeyUp(e:KeyboardEvent):void{
 			if( e.keyCode == Keyboard.ENTER){
@@ -973,7 +983,7 @@ package com.junkbyte.console.view
 				if(_cmdsInd<(_cmdsHistory.length-1)){
 					_cmdsInd++;
 					_cmdField.text = _cmdsHistory[_cmdsInd];
-					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
+					setCLSelectionAtEnd();
 				}else{
 					_cmdsInd = _cmdsHistory.length;
 					_cmdField.text = "";
@@ -983,28 +993,25 @@ package com.junkbyte.console.view
 				if(_cmdsInd>0){
 					_cmdsInd--;
 					_cmdField.text = _cmdsHistory[_cmdsInd];
-					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
+					setCLSelectionAtEnd();
 				}else{
 					_cmdsInd = -1;
 					_cmdField.text = "";
 				}
-			}
-			else if(e.keyCode == Keyboard.SPACE || e.keyCode == Keyboard.TAB){
-				if(_hint) 
-				{
-					_cmdField.text = _hint;
-					_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
-					setHints();
-				}
+			}else if(e.keyCode == Keyboard.TAB){
+				setCLSelectionAtEnd();
 			}
 			else if(!_enteringLogin) updateCmdHint();
 			e.stopPropagation();
+		}
+		private function setCLSelectionAtEnd():void{
+			_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
 		}
 		private function updateCmdHint(e:Event = null):void{
 			var str:String = _cmdField.text;
 			if(str && console.remoter.remoting != Remoting.RECIEVER){
 				try{
-					setHints(console.cl.getHintsFor(str, 5));
+					setHints(console.cl.getHintsFor(str, 8));
 					return;
 				}catch(err:Error){}
 			}
@@ -1016,6 +1023,18 @@ package com.junkbyte.console.view
 		private function setHints(hints:Array = null):void{
 			if(hints && hints.length){
 				_hint = hints[0][0];
+				if(hints.length > 1){
+					var next:String = hints[1][0];
+					var matched:Boolean = false;
+					for (var i:int = 0; i<next.length; i++){
+						if(next.charAt(i) == _hint.charAt(i)){
+							matched = true;
+						}else{
+							if(matched && _cmdField.text.length < i) _hint = _hint.substring(0, i);
+							break;
+						}
+					}
+				}
 				var strs:Array = new Array();
 				for each(var hint:Array in hints) strs.push("<p3>"+hint[0]+"</p3> <p0>"+(hint[1]?hint[1]:"")+"</p0>");
 				_hintField.htmlText = "<p>"+strs.reverse().join("\n")+"</p>";
