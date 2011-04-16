@@ -34,10 +34,14 @@ http://code.google.com/p/flash-console/issues/
 ===2.51 beta3 ===
   * HTML formatted logging support. see Cc.addHTML, Cc.addHTMLch
   * Socket remoting support
+  * Extensive changes were made on remoting. Older remotes will not work with this version.
   * Cc.setIgnoredChannels() to set ignored channels
   * Ctrl click on channel name now use setIgnoredChannels which function slightly differently than it used to
   * Reintroduced Cc.minimumPriority
-  * Shift clicking on *Cc* top menu button will now copy text to clipboard without channel names
+  * *Cc* button on top menu changed to *Sv* with additional controls:
+   * Shift clicking copy text without channel names
+   * Ctrl clicking copy using current filtering (channels, priority level)
+   * Alt click prompts a save dialog on flash player 10 or above
   * SHIFT+scroll wheel to make log text bigger / smaller
   * TAB key focuses to command line if visible (in addition to previous ENTER key)
   * TAB key to accept autocomplete suggestion in CL (in addition to previous SPACE key)
