@@ -132,7 +132,7 @@ package com.junkbyte.console
 			if(password) visible = false;
 			
 			//report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
-			report("<b>Console v"+VERSION+VERSION_STAGE+"</b>, build "+BUILD+". "+Capabilities.playerType+" "+Capabilities.version, -2);
+			report("<b>Console v"+VERSION+VERSION_STAGE+"</b> build "+BUILD+". "+Capabilities.playerType+" "+Capabilities.version+".", -2);
 			
 			// must have enterFrame here because user can start without a parent display and use remoting.
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);

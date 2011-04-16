@@ -1003,18 +1003,21 @@ package com.junkbyte.console.view
 		private function updateCmdHint(e:Event = null):void{
 			var str:String = _cmdField.text;
 			if(str && console.remoter.remoting != Remoting.RECIEVER){
-				setHints(console.cl.getHintsFor(str, 3));
-			}else setHints();
+				try{
+					setHints(console.cl.getHintsFor(str, 5));
+					return;
+				}catch(err:Error){}
+			}
+			setHints();
 		}
 		private function onCmdFocusOut(e:Event):void{
 			setHints();
 		}
-		private function setHints(a:Array = null):void{
-			if(a && a.length)
-			{
-				_hint = a[0][0];
+		private function setHints(hints:Array = null):void{
+			if(hints && hints.length){
+				_hint = hints[0][0];
 				var strs:Array = new Array();
-				for each(var hint:Array in a) strs.push("<p3>"+hint[0]+"</p3> <p0>"+(hint[1]?hint[1]:"")+"</p0>");
+				for each(var hint:Array in hints) strs.push("<p3>"+hint[0]+"</p3> <p0>"+(hint[1]?hint[1]:"")+"</p0>");
 				_hintField.htmlText = "<p>"+strs.reverse().join("\n")+"</p>";
 				_hintField.visible = true;
 				var r:Rectangle = _cmdField.getCharBoundaries(_cmdField.text.length-1);
