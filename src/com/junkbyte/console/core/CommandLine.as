@@ -127,33 +127,38 @@ package com.junkbyte.console.core
 				report("Stored <p5>$"+n+"</p5> for <b>"+console.links.makeRefTyped(obj)+"</b> using <b>"+ str +"</b> reference.",-1);
 			}*/
 		}
-		public function getHintsFor(str:String):Array{
+		public function getHintsFor(str:String, max:uint):Array{
 			var all:Array = new Array();
 			for (var X:String in _slashCmds){
-				if(config.commandLineAllowed || _slashCmds[X].allow)
-				all.push("/"+X+" ");
+				var cmd:Object = _slashCmds[X];
+				if(config.commandLineAllowed || cmd.allow)
+				all.push(["/"+X+" ", cmd.d?cmd.d:null]);
 			}
 			if(config.commandLineAllowed){
 				for (var Y:String in _saved){
-					all.push("$"+Y);
+					all.push(["$"+Y, LogReferences.ShortClassName(_saved.get(Y))]);
 				}
 				if(_scope){
-					all.push("this");
+					all.push(["this", LogReferences.ShortClassName(_scope)]);
 					all = all.concat(console.refs.getPossibleCalls(_scope));
 				}
 			}
 			str = str.toLowerCase();
 			var hints:Array = new Array();
-			for each(var canadate:String in all){
-				if(canadate.toLowerCase().indexOf(str) == 0){
+			for each(var canadate:Array in all){
+				if(canadate[0].toLowerCase().indexOf(str) == 0){
 					hints.push(canadate);
 				}
 			}
-			hints = hints.sort(function(a:String, b:String):int{
-				if(a.length < b.length) return -1;
-				if(a.length > b.length) return 1;
+			hints = hints.sort(function(a:Array, b:Array):int{
+				if(a[0].length < b[0].length) return -1;
+				if(a[0].length > b[0].length) return 1;
 				return 0;
 			});
+			if(max > 0 && hints.length > max){
+				hints.splice(max);
+				hints.push(["..."]);
+			}
 			return hints;
 		}
 		public function get scopeString():String{

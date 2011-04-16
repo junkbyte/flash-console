@@ -530,15 +530,20 @@ package com.junkbyte.console.core
 			var V:XML = describeType(obj);
 			var nodes:XMLList = V.method;
 			for each (var methodX:XML in nodes) {
-				list.push(methodX.@name+"(");
+				var params:Array = [];
+				var mparamsList:XMLList = methodX.parameter;
+				for each(var paraX:XML in mparamsList){
+					params.push(paraX.@optional=="true"?("<i>"+paraX.@type+"</i>"):paraX.@type);
+				}
+				list.push([methodX.@name+"(", params.join(", ")+" ):"+methodX.@returnType]);
 			}
 			nodes = V.accessor;
 			for each (var accessorX:XML in nodes) {
-				list.push(accessorX.@name);
+				list.push([accessorX.@name, accessorX.@type]);
 			}
 			nodes = V.variable;
 			for each (var variableX:XML in nodes) {
-				list.push(variableX.@name);
+				list.push([variableX.@name, variableX.@type]);
 			}
 			return list;
 		}

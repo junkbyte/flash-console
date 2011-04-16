@@ -144,14 +144,9 @@ package com.junkbyte.console.view
 			_cmdField.defaultTextFormat = tf;
 			addChild(_cmdField);
 			
-			_hintField = new TextField();
-			_hintField.name = "commandField";
+			_hintField = makeTF("hintField", true);
 			_hintField.mouseEnabled = false;
-			_hintField.background = true;
-			_hintField.backgroundColor = style.backgroundColor;
-			_hintField.defaultTextFormat = new TextFormat(style.menuFont, style.menuFontSize-1, style.lowColor);
 			_hintField.x = _cmdField.x;
-			_hintField.width = 300;
 			_hintField.autoSize = TextFieldAutoSize.LEFT;
 			addChild(_hintField);
 			setHints();
@@ -281,14 +276,14 @@ package com.junkbyte.console.view
 			if (e.keyCode == Keyboard.CONTROL) {
 				_ctrl = true;
 			}
-			if (e.keyCode == Keyboard.ALTERNATE) {
+			if (e.keyCode == 18) { //Keyboard.ALTERNATE not supported in flash 9
 				_alt = true;
 			}
 		}
 		private function keyUpHandler(e:KeyboardEvent):void{
 			if(e.keyCode == Keyboard.SHIFT) _shift = false;
 			else if(e.keyCode == Keyboard.CONTROL) _ctrl = false;
-			else if (e.keyCode == Keyboard.ALTERNATE) _alt = false;
+			else if (e.keyCode == 18) _alt = false;
 			
 			if((e.keyCode == Keyboard.TAB || e.keyCode == Keyboard.ENTER) && parent.visible && visible && _cmdField.visible){
 				try{
@@ -1006,16 +1001,10 @@ package com.junkbyte.console.view
 			e.stopPropagation();
 		}
 		private function updateCmdHint(e:Event = null):void{
-			var hints:Array;
 			var str:String = _cmdField.text;
 			if(str && console.remoter.remoting != Remoting.RECIEVER){
-				hints = console.cl.getHintsFor(str);
-				if(hints.length>3){
-					hints.splice(3);
-					hints.push("...");
-				}
-			}
-			setHints(hints);
+				setHints(console.cl.getHintsFor(str, 3));
+			}else setHints();
 		}
 		private function onCmdFocusOut(e:Event):void{
 			setHints();
@@ -1023,13 +1012,14 @@ package com.junkbyte.console.view
 		private function setHints(a:Array = null):void{
 			if(a && a.length)
 			{
-				_hint = a[0];
-				a = a.reverse();
-				_hintField.text = a.join("\n");
+				_hint = a[0][0];
+				var strs:Array = new Array();
+				for each(var hint:Array in a) strs.push("<p3>"+hint[0]+"</p3> <p0>"+(hint[1]?hint[1]:"")+"</p0>");
+				_hintField.htmlText = "<p>"+strs.reverse().join("\n")+"</p>";
 				_hintField.visible = true;
 				var r:Rectangle = _cmdField.getCharBoundaries(_cmdField.text.length-1);
 				if(!r) r = new Rectangle();
-				_hintField.x = _cmdField.x + r.x + r.width+20;
+				_hintField.x = _cmdField.x + r.x + r.width+ 30;
 				_hintField.y = height-_hintField.height;
 			}else{
 				_hintField.visible = false;
