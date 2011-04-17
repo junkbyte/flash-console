@@ -5,7 +5,7 @@
 
 ==Flash Console==
 
-  * Version 2.51 beta (March 2011)
+  * Version 2.51 beta4 (April 2011)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above

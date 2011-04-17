@@ -40,7 +40,7 @@ package com.junkbyte.console.core
 		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0, ch:String = null):void{
 			if(!base){
-				report("It is not a DisplayObjectContainer", 10, true, ch);
+				report("Not a DisplayObjectContainer.", 10, true, ch);
 				return;
 			}
 			

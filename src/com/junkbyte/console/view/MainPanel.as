@@ -22,7 +22,6 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-
 package com.junkbyte.console.view 
 {
 	import com.junkbyte.console.Console;
@@ -1011,7 +1010,7 @@ package com.junkbyte.console.view
 			var str:String = _cmdField.text;
 			if(str && console.remoter.remoting != Remoting.RECIEVER){
 				try{
-					setHints(console.cl.getHintsFor(str, 8));
+					setHints(console.cl.getHintsFor(str, 5));
 					return;
 				}catch(err:Error){}
 			}
