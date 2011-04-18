@@ -39,6 +39,7 @@ http://code.google.com/p/flash-console/issues/
    * Improved commandLine autocomplete / hinting
     * CommandLine autocomplete is now stepped so that it will stop completion at multiple matches
     * TAB key to accept autocomplete suggestion in CL (in REPLACEMENT of previous SPACE key)
+   * Cc.config.rememberFilterSettings to remember channel and priority level settings as SharedObject
   * Minor changes
    * *Cc* button on top menu changed to *Sv* with additional controls:
     * Normal click copies all text with channel names to clipboard
