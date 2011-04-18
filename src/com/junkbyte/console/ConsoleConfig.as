@@ -149,15 +149,6 @@ package com.junkbyte.console {
 		//               //
 		///////////////////
 		
-				
-		/**
-		 * Remember viewing filters such as channels and priority level over different sessions.
-		 * <p>
-		 * Requires sharedObject feature turned on.
-		 * </p>
-		 */
-		public var rememberFilterSettings:Boolean;
-		
 		/**
 		 * Full Command line features usage allowance.
 		 * <p>
@@ -210,6 +201,17 @@ package com.junkbyte.console {
 		
 		/** Local shared object path */
 		public var sharedObjectPath:String = "/";
+			
+		/**
+		 * Remembers viewing filters such as channels and priority level over different sessions.
+		 * <ul>
+		 * <li>Must be set before starting console (before Cc.start / Cc.startOnStage)</li>
+		 * <li>Requires sharedObject feature turned on</li>
+		 * <li>Because console's SharedObject is shared across, your filtering settings will carry over to other flash projects</li>
+		 * <li>You may want to set sharedObjectName to store project specificly</li>
+		 * </ul>
+		 */
+		public var rememberFilterSettings:Boolean;
 		
 		/**
 		 * Keeping Console on top of display list.
