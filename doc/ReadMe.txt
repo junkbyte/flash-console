@@ -5,7 +5,7 @@
 
 ==Flash Console==
 
-  * Version 2.51 beta4 (April 2011)
+  * Version 2.51 (May 2011)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -31,7 +31,7 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.51 beta4 ===
+===2.51 ===
   * Major changes
    * HTML formatted logging support. see Cc.addHTML, Cc.addHTMLch
    * Socket remoting support
