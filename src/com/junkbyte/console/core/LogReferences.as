@@ -167,7 +167,7 @@ package com.junkbyte.console.core
 		}
 		private function genLinkString(o:*, prop:*, str:String):String{
 			if(prop && !(prop is String)) {
-				o = prop;
+				o = o[prop];
 				prop = null;
 			}
 			var ind:uint = setLogRef(o);
