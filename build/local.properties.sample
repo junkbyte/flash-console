@@ -1,3 +1,12 @@
 svnant.path		=	D:/Program Files (x86)/eclipse/svnant-1.3.0/lib/
 FLEX_HOME		=	D:/Program Files (x86)/flex_sdk_4.1
+ANT_HOME		=   E:/Development/__ant
 AIR_CERT_PASS	=   Console
+
+# ivy jar download settings
+# if downloading ivy specify the mirror from where to download. you can find the mirrors list here:
+# http://ant.apache.org/ivy/download.cgi -->
+ivy.download.mirror=http\://apache.deathculture.net
+ivy.download.version=2.2.0
+ivy.download.file=apache-ivy-${ivy.download.version}-bin.zip
+ivy.download.url=${ivy.download.mirror}/ant/ivy/${ivy.download.version}/${ivy.download.file}

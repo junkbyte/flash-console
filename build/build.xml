@@ -1,4 +1,4 @@
-<project name="Console" basedir="..">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="Console" basedir="..">
 
 	<property name="src.dir" value="${basedir}/src" />
 	<property name="build.dir" value="${basedir}/build" />
@@ -23,7 +23,7 @@
 	</path>
 	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant.classpath" />
 
-	<target name="BuildAll" description="Compile everything!" depends="updateVersion">
+	<target name="BuildAll" description="Compile everything!" depends="incrementBuildNumber,updateVersion">
 		<antcall target="swf">
 			<param name="file" value="${samples.dir}/flash/Sample.as" />
 			<param name="output" value="${bin.dir}/sample.swf" />
@@ -48,12 +48,14 @@
 		<antcall target="swc" />
 		<antcall target="compileASDoc" />
 	</target>
-	
-	<target name="updateVersion">
+
+	<target name="incrementBuildNumber">
 		<propertyfile file="${build.dir}/build.properties">
 			<entry key="build.number" type="int" operation="+" value="1" />
 			<entry key="build.date" type="date" value="now"/>
 		</propertyfile>
+	</target>
+	<target name="updateVersion">
 		<property file="${build.dir}/build.properties"/>
 		<echo>"Version ${build.version}${build.stage}. build ${build.number} @ ${build.date}"</echo>
 		<replaceregexp file="${src.ver.file}" match="(VERSION:Number\s*=\s*).+;" replace="\1${build.version};" />
@@ -150,5 +152,58 @@
 			<arg line="-window-title 'Flash-Console v${build.version}'" />
 			<arg line="-footer 'Flash-Console v${build.version}'" />
 		</exec>
+	</target>
+
+	
+	<!-- 
+	
+	EXTERNAL PUBLISHING
+	
+	-->
+	<!-- get the ivy settings file -->
+	<property name="ivy.settings.file" value="${build.dir}/ivysettings.xml" />
+	
+	<!-- check if the file exists in your ant lib -->
+    <target name="-check-use-file">
+        <available property="file.exists" file="${ANT_HOME}/lib/ivy-${ivy.download.version}.jar"/>
+    </target>
+
+	<!-- Get ivy jar for ant if not installed already -->
+	<target name="download_ivy" depends="-check-use-file" unless="file.exists">
+		<echo>[IVY download] Downloading ivy jar into your ant's lib folder (${ANT_HOME}) ${ANT_HOME}/lib/ivy-${ivy.download.version}.jar from ${ivy.download.url}</echo>
+		<mkdir dir="tmp" />
+		<get src="${ivy.download.url}" dest="tmp/${ivy.download.file}" usetimestamp="true"/>
+		<unzip src="tmp/${ivy.download.file}" dest="tmp">
+			<patternset>
+				<include name="apache-ivy-${ivy.download.version}/ivy-${ivy.download.version}.jar"/>
+			</patternset>
+			<mapper type="flatten"/>
+		</unzip>
+		<copy file="tmp/ivy-${ivy.download.version}.jar" todir="${ANT_HOME}/lib" />
+		<delete dir="tmp" />
+		<echo>[IVY download] Done</echo>
+	</target>
+	<!-- Publish to the repo -->
+	<target name="publish to as-artifacts" depends="download_ivy,updateVersion,swc">
+	<!-- zip the source files -->
+		<zip destfile="${bin.dir}/Console-${build.version}${build.stage}.src.zip">
+			<fileset dir="${src.dir}" excludes=".svn"/>
+		</zip>
+
+	<!-- publish the swc and the src.zip -->
+		<ivy:configure />
+		<copy file="${build.dir}/ivy.tmpl" tofile="${build.dir}/ivy.xml" overwrite="true">
+		  <filterchain>
+			<replacetokens>
+			  <token key="version" value="${build.version}${build.stage}"/>
+			</replacetokens>
+		  </filterchain>
+		</copy>
+		<ivy:resolve file="${build.dir}/ivy.xml" />
+	<!-- if overwrite is true, if the library version already exists on the repo it will be overriden. -->
+		<ivy:publish resolver="as-artifacts" forcedeliver="true" overwrite="false">
+			<ivy:artifacts pattern="${bin.dir}/[artifact]-[revision].[ext]" />
+		</ivy:publish>
+		<delete file="${bin.loc}/${project.name.versioned}.src.zip" failonerror="false"/>
 	</target>
 </project>
