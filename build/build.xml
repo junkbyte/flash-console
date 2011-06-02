@@ -184,7 +184,7 @@
 		<echo>[IVY download] Done</echo>
 	</target>
 	<!-- Publish to the repo -->
-	<target name="publish to as-artifacts" depends="download_ivy,updateVersion,swc">
+	<target name="publish to as-artifacts" description="Publish to as-artifacts" depends="download_ivy,updateVersion,swc">
 	<!-- zip the source files -->
 		<zip destfile="${bin.dir}/Console-${build.version}${build.stage}.src.zip">
 			<fileset dir="${src.dir}" excludes=".svn"/>
