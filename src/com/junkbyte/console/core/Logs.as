@@ -95,7 +95,7 @@ package com.junkbyte.console.core
 			//line.line = _lines;
 			//
 			push(line);
-			while(_length > config.maxLines){
+			while(_length > config.maxLines && config.maxLines > 0){
 				remove(first);
 			}
 			//
