@@ -31,6 +31,10 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
+===2.52 pre (labrat) ===
+  * Multi-line support with slash commands. E.g. "/base; /explode" will now work.
+  * Fixed bug: Issue 82, No output when selecting Unlimited 'maxLines'.
+
 ===2.51 ===
   * Major changes
    * HTML formatted logging support. see Cc.addHTML, Cc.addHTMLch

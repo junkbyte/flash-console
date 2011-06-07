@@ -69,7 +69,7 @@ package com.junkbyte.console.core
 			addCLCmd("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
 			addCLCmd("savestrong|storestrong", saveStrongCmd, "Save current scope as strong reference");
 			addCLCmd("saved|stored", savedCmd, "Show a list of all saved references");
-			addCLCmd("string", stringCmd, "Create String, useful to paste complex strings without worrying about \" or \'");
+			addCLCmd("string", stringCmd, "Create String, useful to paste complex strings without worrying about \" or \'", false, null);
 			addCLCmd("commands", cmdsCmd, "Show a list of all slash commands", true);
 			addCLCmd("inspect", inspectCmd, "Inspect current scope");
 			addCLCmd("explode", explodeCmd, "Explode current scope to its properties and values (similar to JSON)");
@@ -164,15 +164,16 @@ package com.junkbyte.console.core
 		public function get scopeString():String{
 			return config.commandLineAllowed?_scopeStr:"";
 		}
-		public function addCLCmd(n:String, callback:Function, desc:String, allow:Boolean = false):void{
+		public function addCLCmd(n:String, callback:Function, desc:String, allow:Boolean = false, endOfArgsMarker:String = ";"):void{
 			var split:Array = n.split("|");
 			for(var i:int = 0; i<split.length; i++){
 				n = split[i];
-				_slashCmds[n] = new SlashCommand(n, callback, desc, false, allow);
+				_slashCmds[n] = new SlashCommand(n, callback, desc, false, allow, endOfArgsMarker);
 				if(i>0) _slashCmds.setPropertyIsEnumerable(n, false);
 			}
 		}
-		public function addSlashCommand(n:String, callback:Function, desc:String = "", allow:Boolean = true):void{
+		public function addSlashCommand(n:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void{
+			n = n.replace(/[^\w]*/g, "");
 			if(_slashCmds[n] != null){
 				var prev:SlashCommand = _slashCmds[n];
 				if(!prev.user) {
@@ -180,10 +181,11 @@ package com.junkbyte.console.core
 				}
 			}
 			if(callback == null) delete _slashCmds[n];
-			else _slashCmds[n] = new SlashCommand(n, callback, LogReferences.EscHTML(desc), true, allow);
+			else _slashCmds[n] = new SlashCommand(n, callback, LogReferences.EscHTML(desc), true, alwaysAvailable, endOfArgsMarker);
 		}
 		public function run(str:String, saves:Object = null):* {
 			if(!str) return;
+			str = str.replace(/\s*/,"");
 			if(remoter.remoting == Remoting.RECIEVER){
 				if(str.charAt(0) == "~"){
 					str = str.substring(1);
@@ -202,7 +204,7 @@ package com.junkbyte.console.core
 			var v:* = null;
 			try{
 				if(str.charAt(0) == "/"){
-					execCommand(str);
+					execCommand(str.substring(1));
 				}else{
 					if(!config.commandLineAllowed) {
 						report(DISABLED, 9);
@@ -237,14 +239,14 @@ package com.junkbyte.console.core
 			}
 		}
 		private function execCommand(str:String):void{
-			var brk:int = str.indexOf(" ");
-			var cmd:String = str.substring(1, brk>0?brk:str.length);
+			var brk:int = str.search(/[^\w]/); 
+			var cmd:String = str.substring(0, brk>0?brk:str.length);
 			if(cmd == "")
 			{
 				setReturned(_saved.get(Executer.RETURNED), true);
 				return;
 			}
-			var param:String = brk>0?str.substring(brk+1):"";
+			var param:String = brk>0?str.substring(brk):"";
 			if(_slashCmds[cmd] != null){
 				try{
 					var slashcmd:SlashCommand = _slashCmds[cmd];
@@ -253,10 +255,21 @@ package com.junkbyte.console.core
 						report(DISABLED, 9);
 						return;
 					}
+					var restStr:String;
+					if(slashcmd.endMarker){
+						var endInd : int = param.indexOf(slashcmd.endMarker);
+						if(endInd >= 0){
+							restStr = param.substring(endInd+slashcmd.endMarker.length);
+							param = param.substring(0, endInd);
+						}
+					}
 					if(param.length == 0){
 						slashcmd.f();
-					}else{
+					} else {
 						slashcmd.f(param);
+					}
+					if(restStr){
+						run(restStr);
 					}
 				}catch(err:Error){
 					reportError(err);
@@ -385,7 +398,7 @@ package com.junkbyte.console.core
 		private function prevCmd(...args:Array):void{
 			setReturned(_prevScope.reference, true);
 		}
-		private function printHelp():void {
+		private function printHelp(...args:Array):void {
 			report("____Command Line Help___",10);
 			report("/filter (text) = filter/search logs for matching text",5);
 			report("/commands to see all slash commands",5);
@@ -417,11 +430,13 @@ internal class SlashCommand{
 	public var d:String;
 	public var user:Boolean;
 	public var allow:Boolean;
-	public function SlashCommand(nn:String, ff:Function, dd:String = "", cus:Boolean = true, permit:Boolean = false){
+	public var endMarker:String;
+	public function SlashCommand(nn:String, ff:Function, dd:String, cus:Boolean, permit:Boolean, argsMarker:String){
 		n = nn;
 		f = ff;
 		d = dd?dd:"";
 		user = cus;
 		allow = permit;
+		endMarker = argsMarker;
 	}
 }
