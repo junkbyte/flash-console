@@ -160,12 +160,29 @@ package com.junkbyte.console {
 		public var commandLineAllowed:Boolean;
 		
 		/**
-		 * Command line autoscoping
+		 * CommandLine autoscoping
 		 * <p>
 		 * When turned on, it will autoscope to objects returned without the need to call the command "/".
 		 * </p>
 		 */
 		public var commandLineAutoScope:Boolean;
+		
+		/**
+		 * CommandLine input pass through function
+		 * <p>
+		 * Function to call when user enter commandLine input via main console panel.
+		 * This can be used to essentially replace built-in commandLine functionality.
+		 * If function returns a String, that string is executed as command.
+		 * <ul>
+		 * <li>Example below prints the command input insted of executing:</li>
+		 * <li><code>Cc.config.commandLineInputPassThrough = function(commandStr:String):String{</code></li>
+		 * <li><code>Cc.info("Received command input: '"+commandStr+"'.");</code></li>
+		 * <li><code>return null;</code></li>
+		 * <li><code>};</code></li>
+		 * </ul>
+		 * </p>
+		 */
+		public var commandLineInputPassThrough:Function;
 		
 		/**
 		 * Key binding availability

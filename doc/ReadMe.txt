@@ -31,10 +31,11 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.52 pre (labrat) ===
+===2.52 pre (guineapig) ===
   * Multi-line support with slash commands. E.g. "/base; /explode" will now work.
+  * Added config.commandLineInputPassThrough which allows replacing command input execution.
   * Fixed bug: Issue 82, No output when selecting Unlimited 'maxLines'.
-
+  
 ===2.51 ===
   * Major changes
    * HTML formatted logging support. see Cc.addHTML, Cc.addHTMLch

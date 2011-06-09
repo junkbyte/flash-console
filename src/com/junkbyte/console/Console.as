@@ -55,9 +55,9 @@ package com.junkbyte.console
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.52;
-		public static const VERSION_STAGE:String = "labrat";
-		public static const BUILD:int = 590;
-		public static const BUILD_DATE:String = "2011/06/08 00:10";
+		public static const VERSION_STAGE:String = "guineapig";
+		public static const BUILD:int = 591;
+		public static const BUILD_DATE:String = "2011/06/09 23:15";
 		//
 		public static const LOG:uint = 1;
 		public static const INFO:uint = 3;

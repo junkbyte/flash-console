@@ -968,7 +968,10 @@ package com.junkbyte.console.view
 						console.updateSO(CL_HISTORY);
 					}
 					_cmdField.text = "";
-					console.cl.run(txt);
+					if(config.commandLineInputPassThrough != null){
+						txt = config.commandLineInputPassThrough(txt);
+					}
+					if(txt) console.cl.run(txt);
 				}
 			}else if( e.keyCode == Keyboard.ESCAPE){
 				if(stage) stage.focus = null;
