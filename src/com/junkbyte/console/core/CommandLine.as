@@ -241,12 +241,11 @@ package com.junkbyte.console.core
 		private function execCommand(str:String):void{
 			var brk:int = str.search(/[^\w]/); 
 			var cmd:String = str.substring(0, brk>0?brk:str.length);
-			if(cmd == "")
-			{
+			if(cmd == ""){
 				setReturned(_saved.get(Executer.RETURNED), true);
 				return;
 			}
-			var param:String = brk>0?str.substring(brk):"";
+			var param:String = brk>0?str.substring(brk+1):"";
 			if(_slashCmds[cmd] != null){
 				try{
 					var slashcmd:SlashCommand = _slashCmds[cmd];
