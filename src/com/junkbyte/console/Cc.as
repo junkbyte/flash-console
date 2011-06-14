@@ -638,10 +638,6 @@ package com.junkbyte.console {
 		}
 		/**
 		 * visibility of all console panels
-		 * <p>
-		 * If you have closed the main console by pressing the X button, setting true here will not turn it back on.
-		 * You will need to press the password key to turn that panel back on instead.
-		 * </p>
 		 */
 		public static function get visible():Boolean{
 			if(_console) return _console.visible;
