@@ -316,7 +316,12 @@ package com.junkbyte.console.view
 			if(_bottomLine.alpha>0){
 				_bottomLine.alpha -= 0.25;
 			}
-			if(_clScope != console.cl.scopeString){
+			if (config.commandLineInputPassThrough != null) {
+				if(_clScope != null){
+					_clScope = "";
+					updateCLScope("");
+				}
+			}else if(_clScope != console.cl.scopeString){
 				_clScope = console.cl.scopeString;
 				updateCLScope(_clScope);
 			}
@@ -1011,7 +1016,7 @@ package com.junkbyte.console.view
 		}
 		private function updateCmdHint(e:Event = null):void{
 			var str:String = _cmdField.text;
-			if(str && console.remoter.remoting != Remoting.RECIEVER){
+			if(str && config.commandLineInputPassThrough == null && console.remoter.remoting != Remoting.RECIEVER){
 				try{
 					setHints(console.cl.getHintsFor(str, 5));
 					return;
