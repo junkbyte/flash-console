@@ -185,6 +185,15 @@ package com.junkbyte.console {
 		public var commandLineInputPassThrough:Function;
 		
 		/**
+		 * Commandline auto hinting and auto-completion
+		 * <p>
+		 * When using config.commandLineInputPassThrough feature, 
+		 * it maybe be convenient to turn off commandLineAutoCompleteEnabled.
+		 * </p>
+		 */
+		public var commandLineAutoCompleteEnabled:Boolean = true;
+		
+		/**
 		 * Key binding availability
 		 * <p>
 		 * While turned off, you can still bind keys. 
@@ -202,7 +211,12 @@ package com.junkbyte.console {
 		public var displayRollerEnabled:Boolean = true;
 		
 		/**
-		 * Determine if Console should hide the mouse cursor when using Ruler tool.
+		 * Ruler tool availability
+		 */
+		public var rulerToolEnabled:Boolean = true;
+		
+		/**
+		 * Determine if Console should hide mouse cursor when using Ruler tool.
 		 * <p>
 		 * You may want to turn it off if your app/game don't use system mouse.
 		 * Default: true

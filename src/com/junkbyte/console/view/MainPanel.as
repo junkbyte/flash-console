@@ -316,14 +316,14 @@ package com.junkbyte.console.view
 			if(_bottomLine.alpha>0){
 				_bottomLine.alpha -= 0.25;
 			}
-			if (config.commandLineInputPassThrough != null) {
-				if(_clScope != null){
-					_clScope = "";
-					updateCLScope("");
+			if (style.showCommandLineScope) {
+				if(_clScope != console.cl.scopeString){
+					_clScope = console.cl.scopeString;
+					updateCLScope(_clScope);
 				}
-			}else if(_clScope != console.cl.scopeString){
-				_clScope = console.cl.scopeString;
-				updateCLScope(_clScope);
+			}else if(_clScope != null){
+				_clScope = "";
+				updateCLScope("");
 			}
 			if(changed){
 				_bottomLine.alpha = 1;
@@ -715,6 +715,7 @@ package com.junkbyte.console.view
 				if(console.remoter.remoting != Remoting.RECIEVER){
 					if(config.displayRollerEnabled)
 					str += doActive(" <a href=\"event:roller\">Ro</a>", console.displayRoller);
+					if(config.rulerToolEnabled)
 					str += doActive(" <a href=\"event:ruler\">RL</a>", console.panels.rulerActive);
 				}
 				str += " ¦</b>";
@@ -1016,7 +1017,7 @@ package com.junkbyte.console.view
 		}
 		private function updateCmdHint(e:Event = null):void{
 			var str:String = _cmdField.text;
-			if(str && config.commandLineInputPassThrough == null && console.remoter.remoting != Remoting.RECIEVER){
+			if(str && config.commandLineAutoCompleteEnabled && console.remoter.remoting != Remoting.RECIEVER){
 				try{
 					setHints(console.cl.getHintsFor(str, 5));
 					return;
