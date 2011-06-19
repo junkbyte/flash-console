@@ -72,33 +72,15 @@ getChildByName('root1')
   * If you do /inspect again you should get slightly different results this time.
 {{{
 /inspect
-}}} 
-  * Because Sample is a dynamic class (You can see by the inspect result at the top saying 'dyanmic'), you can directly access displays by name:
-
-{{{
-mcBunny
-}}} 
-OR
-{{{
-getChildByName('mcBunny')
-}}} 
-  * To change your scope to bunny MovieClip:
-{{{
-/
-}}} 
+}}}
   * Lets demonstrate another command, /map - which maps the display list of your current scope.
 {{{
 /map
 }}} 
-  * You should get a tree like structure list mapping the display list of 'mcBunny'
+  * You should get a tree like structure list mapping the display list
   * You can click on any of the names in the log to change to the scope of that displayObject.
-  * Lets go to the head, *click on 'head {bunnyHead_6}'* - near the bottom. _(you need to click on the word head to change scope, if you click on 'bunnyHead_6', it'll inspect that object)_ *OR* just type: 
-{{{
-// alternative to clicking... type:
-head
-/
-}}} 
-  * it should say "Changed to {bunnyHead_6}"
+  * Lets go to the head, *click on 'head {MovieClip}'* - near the bottom. _(you need to click on the word 'head' to change scope, if you click on '{MovieClip}', it'll inspect that object)_
+  * it should say "Changed to {MovieClip}"
 
   * The head have animation on the timeline, so you can play it.
 {{{
