@@ -1,42 +1,48 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Console log</title>
 <style type="text/css">
+body {
+	background-color: #BACKGROUND_COLOR;
+}
 body,td,th{
-	font-family: Verdana, Geneva, sans-serif;
+	font-family: Verdana, Arial, sans-serif;
 	font-size: 12px;
 }
-a {
+a{
 	font-style:inherit;
 	color:inherit;
 	text-decoration:none;
 }
-body {
-	background-color: #REPLACE_BG_FROM_FLASH;
-}
 menu{
 	padding-left:0;
 }
-log{
-	display:inline;
-}
 #menuElement{
     position: fixed;
-    overflow: hidden;
+	left:8px;
+	right:180px;
+}
+#searchField{
+    position: fixed;
+	width:160px;
+	top:0px;
+	right:0px;
+	border-width:1px;
+	border-color:#TEXT_COLOR;
+	background-color:#BACKGROUND_COLOR;
+	color:#TEXT_COLOR;
 }
 #logsElement{
     position: fixed;
-    top: 26px;
-    left: 5pt;
-    bottom: 5px;
-    right: 5pt;
+    bottom: 0px;
+	padding-bottom:8px;
     overflow: auto;
+	line-height:120%;
 }
 #REPLACE_STYLES_FROM_FLASH{}
 </style>
-
 <script type="text/javascript">
 	var logs = [{text:'REPLACE_LOGS_FROM_FLASH'}];
 </script>
@@ -44,15 +50,21 @@ log{
 	
 	var channels = new Object();
 	var priorities = new Object();
+	
 	var viewingPriority = 0;
 	var viewingChannels = null;
+	var ignoredChannels = null;
+	var searchTerm = null;
 	
 	var shiftKeyPressed = false;
 	var ctrlKeyPressed = false;
 	
-	document.onkeydown=updateKeyAccessors;
-	document.onkeyup=updateKeyAccessors;
+	var logsElement;
+	var menuElement;
 	
+	document.onkeydown = updateKeyAccessors;
+	document.onkeyup = updateKeyAccessors;
+	window.onresize = function(event) { updateLogsTop(); }
 	
 	function updateKeyAccessors(e)
 	{
@@ -62,7 +74,8 @@ log{
 	
 	function init()
 	{
-		
+		logsElement = document.getElementById("logsElement");
+		menuElement = document.getElementById("menuElement");
 		var len = logs.length;
 		for (var i = 0; i<len; i++)
 		{
@@ -72,15 +85,16 @@ log{
 		}
 		
 		updateMenu();
-		writeLogs();
+		updateLogs();
 	}
 	
 	function updateMenu()
 	{
 		var text = "<high><menu><b>";
-		text += makeJSLink("P"+viewingPriority, "increaseViewingPriority()") + " </b></menu> | ";
+		text += makeJSLink("P"+viewingPriority, "priorityClicked()") + " </b></menu> | ";
 		var chText = makeJSLink(" * ", "channelClicked(null)" );
-		if(!viewingChannels)
+		var showingAll = !(viewingChannels || ignoredChannels);
+		if(showingAll)
 		{
 			chText = "<ch>"+chText+"</ch>"; 
 		}
@@ -88,82 +102,161 @@ log{
 		for (var ch in channels)
 		{
 			var chText = makeJSLink(ch, "channelClicked(\""+ch+"\")" ) ;
-			if(viewingChannels && viewingChannels[ch])
+			if(!showingAll && channelShouldShow(ch))
 			{
 				chText = "<ch>"+chText+"</ch>"; 
 			}
 			text += "["+chText+ "] ";
 		}
 		text += "</chs></high>"
-		document.getElementById("menuElement").innerHTML = text;
+		menuElement.innerHTML = text;
+		updateLogsTop();
 	}
 	
-	function increaseViewingPriority()
+	function updateLogsTop()
 	{
-		viewingPriority ++;
-		while(!priorities[viewingPriority])
+		logsElement.style.top = (menuElement.clientTop + menuElement.clientHeight + 12)+"px";
+	}
+	
+	function priorityClicked()
+	{
+		var inc = shiftKeyPressed ? -1 : 1;
+		do
 		{
-			viewingPriority ++;
+			viewingPriority += inc;
 			if(viewingPriority > 10)
 			{
 				viewingPriority = 0;
 				break;
 			}
+			if(viewingPriority < 0)
+			{
+				viewingPriority = 10;
+				break;
+			}
 		}
+		while(!priorities[viewingPriority]);
 		updateMenu();
-		writeLogs();
+		updateLogs();
 	}
 	
 	function channelClicked(channel)
 	{
-		if(shiftKeyPressed)
+		if(channel)
 		{
-			viewingChannels[channel] = true;
-		}
-		else if(channel)
-		{
-			viewingChannels = new Object();
-			viewingChannels[channel] = true;
+			if(shiftKeyPressed)
+			{
+				ignoredChannels = null;
+				viewingChannels = toggleChannelsList(viewingChannels, channel);
+			}
+			else if(ctrlKeyPressed)
+			{
+				viewingChannels = null;
+				ignoredChannels = toggleChannelsList(ignoredChannels, channel);
+			}
+			else
+			{
+				ignoredChannels = null;
+				viewingChannels = new Object();
+				viewingChannels[channel] = true;
+			}
 		}
 		else
 		{
-			 viewingChannels = null;
+			ignoredChannels = null;
+			viewingChannels = null;
 		}
 		updateMenu();
-		writeLogs();
+		updateLogs();
 	}
 	
-	function writeLogs() {
+	function toggleChannelsList(chs, ch)
+	{
+		if(chs == null)
+		{
+			chs = new Object();
+		}
+		if(chs[ch])
+		{
+			delete chs[ch];
+			if(!haveChannels(chs))
+			{
+				chs = null;
+			}
+		}
+		else
+		{
+			chs[ch] = true;
+		}
+		return chs;
+	}
+	
+	function haveChannels(chs)
+	{
+		for (var X in chs)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	function searchChanged()
+	{
+		var searchField = document.getElementById("searchField");
+		searchTerm = searchField.value.toLowerCase();
+		updateLogs();
+	}
+	
+	function updateLogs() {
 		var text = "";
 		var len = logs.length;
 		for (var i = 0; i<len; i++)
 		{
 			var log = logs[i];
-			if(shouldShow(log))
+			if(lineShouldShow(log))
 			{
 				text += makeLine(log);
 			}
 		}
-		document.getElementById("logsElement").innerHTML = text;
+		logsElement.innerHTML = text;
+		scrollToBottom();
 	}
 	
-	function shouldShow(log)
+	function isScrollAtBottom()
 	{
-		if(!viewingChannels || viewingChannels[log.ch])
+		return logsElement.scrollTop == logsElement.scrollHeight - logsElement.clientHeight;
+	}
+	
+	function scrollToBottom()
+	{
+		logsElement.scrollTop = logsElement.scrollHeight;
+	}
+	
+	function lineShouldShow(log)
+	{
+		if(channelShouldShow(log.ch))
 		{
 			if(viewingPriority == 0 || log.priority >= viewingPriority)
 			{
-				return true;
+				if(!searchTerm || log.text.toLowerCase().search(searchTerm) >= 0)
+				{
+					return true;
+				}
 			}
 		}
 		return false;
+	}
+	
+	function channelShouldShow(ch)
+	{
+		return (!viewingChannels || viewingChannels[ch]) && (!ignoredChannels || !ignoredChannels[ch]);
 	}
 	
 	function makeLine(log)
 	{
 		var txt = "[" + makeJSLink(log.ch, "channelClicked(\""+log.ch+"\")" ) + "] " + log.text;
 		var ptag = "p"+log.priority;
-		txt = "<log><"+ptag+">" + txt + "</"+ptag+"></log>";
+		txt = "<"+ptag+">" + txt + "</"+ptag+">";
 		return txt + "<br/>";
 	}
 	
@@ -173,8 +266,9 @@ log{
 	}
 </script>
 </head>
-<body onload="init()">
-    <div id="menuElement"><strong> P0 </strong> [ * ] [-] [C] [html]</div>
+<body onLoad="init()">
+	<input type="text" id="searchField" onKeyUp="searchChanged();">
+	<div id="menuElement"></div>
     <div id="logsElement"></div>
 </body>
 </html>

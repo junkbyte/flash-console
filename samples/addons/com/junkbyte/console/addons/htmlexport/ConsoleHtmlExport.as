@@ -14,9 +14,10 @@ package com.junkbyte.console.addons.htmlexport {
 		[Embed(source="template.html", mimeType="application/octet-stream")]
 		private static var EmbeddedTemplate:Class;
 		
-		public static const REPLACE_STYLES_TEXT:String = "#REPLACE_STYLES_FROM_FLASH{}";
-		public static const REPLACE_BG_FROM_FLASH:String = "#REPLACE_BG_FROM_FLASH";
-		public static const REPLACE_LOGS_TEXT:String = "[{text:'REPLACE_LOGS_FROM_FLASH'}]";
+		public static const REPLACE_BACKGROUND_COLOR:RegExp = /#BACKGROUND_COLOR/g;
+		public static const REPLACE_TEXT_COLOR:RegExp = /#TEXT_COLOR/g;
+		public static const REPLACE_STYLES:String = "#REPLACE_STYLES_FROM_FLASH{}";
+		public static const REPLACE_LOGS:String = "[{text:'REPLACE_LOGS_FROM_FLASH'}]";
 		
 		private var console:Console;
 		
@@ -42,9 +43,10 @@ package com.junkbyte.console.addons.htmlexport {
 		{
 			var html:String = String(new EmbeddedTemplate() as ByteArray);
 			
-			html = html.replace(REPLACE_LOGS_TEXT, getLogsReplacement());
-			html = html.replace(REPLACE_BG_FROM_FLASH, safeColor(console.config.style.backgroundColor.toString(16)));
-			html = html.replace(REPLACE_STYLES_TEXT, getStylesReplacement());
+			html = html.replace(REPLACE_BACKGROUND_COLOR, safeColor(console.config.style.backgroundColor.toString(16)));
+			html = html.replace(REPLACE_TEXT_COLOR, safeColor(console.config.style.menuColor.toString(16)));
+			html = html.replace(REPLACE_STYLES, getStylesReplacement());
+			html = html.replace(REPLACE_LOGS, getLogsReplacement());
 			
 			var file:FileReference = new FileReference();
 			try
