@@ -5,7 +5,7 @@
 <title>Console log</title>
 <style type="text/css">
 body {
-	background-color: #BACKGROUND_COLOR;
+	background-color:#BACKGROUND_COLOR;
 }
 body,td,th{
 	font-family: Verdana, Arial, sans-serif;
@@ -22,17 +22,23 @@ menu{
 #menuElement{
     position: fixed;
 	left:8px;
-	right:180px;
+	right:185px;
 }
-#searchField{
+#searchElement{
     position: fixed;
-	width:160px;
+	width:180px;
 	top:0px;
-	right:0px;
+	right:1px;
+	color:#TEXT_COLOR;
+}
+input{
+	color:inherit;
 	border-width:1px;
 	border-color:#TEXT_COLOR;
 	background-color:#BACKGROUND_COLOR;
-	color:#TEXT_COLOR;
+}
+#searchField{
+	width:140px;
 }
 #logsElement{
     position: fixed;
@@ -55,6 +61,7 @@ menu{
 	var viewingChannels = null;
 	var ignoredChannels = null;
 	var searchTerm = null;
+	var searchExp = false;
 	
 	var shiftKeyPressed = false;
 	var ctrlKeyPressed = false;
@@ -207,6 +214,13 @@ menu{
 		updateLogs();
 	}
 	
+	function regExpChanged()
+	{
+		var regExpField = document.getElementById("regExpField");
+		searchExp = regExpField.value;
+		updateLogs();
+	}
+	
 	function updateLogs() {
 		var text = "";
 		var len = logs.length;
@@ -238,7 +252,19 @@ menu{
 		{
 			if(viewingPriority == 0 || log.priority >= viewingPriority)
 			{
-				if(!searchTerm || log.text.toLowerCase().search(searchTerm) >= 0)
+				if(searchTerm)
+				{
+					var txt = log.text.toLowerCase();
+					if(searchExp)
+					{
+						return txt.search(new RegExp(searchTerm , "ig")) >= 0;
+					}
+					else
+					{
+						return txt.indexOf(searchTerm) >= 0;
+					}
+				}
+				else
 				{
 					return true;
 				}
@@ -267,8 +293,11 @@ menu{
 </script>
 </head>
 <body onLoad="init()">
-	<input type="text" id="searchField" onKeyUp="searchChanged();">
-	<div id="menuElement"></div>
-    <div id="logsElement"></div>
+<div id="searchElement">
+    <input type="text" id="searchField" onKeyUp="searchChanged();" title="Search term">
+    //<input type="checkbox" id="regExpField" title="Use regular expression" onChange="regExpChanged()">
+</div>
+<div id="menuElement"></div>
+<div id="logsElement"></div>
 </body>
 </html>
