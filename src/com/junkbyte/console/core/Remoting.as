@@ -24,8 +24,6 @@
 */
 package com.junkbyte.console.core 
 {
-	import com.junkbyte.console.Console;
-
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -60,7 +58,7 @@ package com.junkbyte.console.core
 		private var _sendID:String;
 		private var _lastReciever:String;
 		
-		public function Remoting(m:Console, pass:String) {
+		public function Remoting(m:ConsoleCentral, pass:String) {
 			super(m);
 			_password = pass;
 			registerCallback("login", function(bytes:ByteArray):void{
@@ -204,7 +202,7 @@ package com.junkbyte.console.core
 			}else{
 				close();
 			}
-			console.panels.updateMenu();
+			_central.panels.updateMenu();
 		}
 		public function set remotingPassword(str:String):void{
 			_password = str;
@@ -319,7 +317,7 @@ package com.junkbyte.console.core
 		private function loginFail():void{
 			if(remoting != Remoting.RECIEVER) return;
 			report("Login Failed", 10);
-			console.panels.mainPanel.requestLogin();
+			_central.panels.mainPanel.requestLogin();
 		}
 		private function sendLoginSuccess():void{
 			_loggedIn = true;
@@ -327,7 +325,7 @@ package com.junkbyte.console.core
 			dispatchEvent(new Event(Event.CONNECT));
 		}
 		private function loginSuccess():void{
-			console.setViewingChannels();
+			_central.console.setViewingChannels();
 			report("Login Successful", -1);
 		}
 		private function requestLogin():void{
@@ -336,7 +334,7 @@ package com.junkbyte.console.core
 			if(_lastLogin){
 				login(_lastLogin);
 			}else{
-				console.panels.mainPanel.requestLogin();
+				_central.panels.mainPanel.requestLogin();
 			}
 		}
 		public function login(pass:String = ""):void{

@@ -23,15 +23,13 @@
 * 
 */
 package com.junkbyte.console.core {
-	import flash.utils.ByteArray;
-	import com.junkbyte.console.Console;
-	import flash.system.System;
-	import flash.utils.getTimer;
-
-	import com.junkbyte.console.vos.GraphInterest;
 	import com.junkbyte.console.vos.GraphGroup;
+	import com.junkbyte.console.vos.GraphInterest;
 
 	import flash.geom.Rectangle;
+	import flash.system.System;
+	import flash.utils.ByteArray;
+	import flash.utils.getTimer;
 
 	public class Graphing extends ConsoleCore{
 		
@@ -44,7 +42,7 @@ package com.junkbyte.console.core {
 		private var _hadGraph:Boolean;
 		private var _previousTime:Number = -1;
 		
-		public function Graphing(m:Console){
+		public function Graphing(m:ConsoleCentral){
 			super(m);
 			remoter.registerCallback("fps", function(bytes:ByteArray):void{
 				fpsMonitor = bytes.readBoolean();
@@ -138,7 +136,7 @@ package com.junkbyte.console.core {
 			}
 		}
 		public function get fpsMonitor():Boolean{
-			if(remoter.remoting == Remoting.RECIEVER) return console.panels.fpsMonitor;
+			if(remoter.remoting == Remoting.RECIEVER) return _central.panels.fpsMonitor;
 			return _fpsGroup!=null;
 		}
 		public function set fpsMonitor(b:Boolean):void{
@@ -158,12 +156,12 @@ package com.junkbyte.console.core {
 					if(index>=0) _groups.splice(index, 1);
 					_fpsGroup = null;
 				}
-				console.panels.mainPanel.updateMenu();
+				_central.panels.mainPanel.updateMenu();
 			}
 		}
 		//
 		public function get memoryMonitor():Boolean{
-			if(remoter.remoting == Remoting.RECIEVER) return console.panels.memoryMonitor;
+			if(remoter.remoting == Remoting.RECIEVER) return _central.panels.memoryMonitor;
 			return _memGroup!=null;
 		}
 		public function set memoryMonitor(b:Boolean):void{
@@ -180,7 +178,7 @@ package com.junkbyte.console.core {
 					if(index>=0) _groups.splice(index, 1);
 					_memGroup = null;
 				}
-				console.panels.mainPanel.updateMenu();
+				_central.panels.mainPanel.updateMenu();
 			}
 		}
 		private function addSpecialGroup(type:int):GraphGroup{
@@ -260,9 +258,9 @@ package com.junkbyte.console.core {
 				while(bytes.bytesAvailable){
 					a.push(GraphGroup.FromBytes(bytes));
 				}
-				console.panels.updateGraphs(a);
+				_central.panels.updateGraphs(a);
 			}else{
-				console.panels.updateGraphs(new Array());
+				_central.panels.updateGraphs(new Array());
 			}
 		}
 	}

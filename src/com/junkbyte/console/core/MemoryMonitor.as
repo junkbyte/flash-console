@@ -24,8 +24,6 @@
 */
 package com.junkbyte.console.core 
 {
-	import com.junkbyte.console.Console;
-
 	import flash.system.System;
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
@@ -38,12 +36,12 @@ package com.junkbyte.console.core
 		private var _count:uint;
 		//
 		//
-		public function MemoryMonitor(m:Console) {
+		public function MemoryMonitor(m:ConsoleCentral) {
 			super(m);
 			_namesList = new Object();
 			_objectsList = new Dictionary(true);
 			
-			console.remoter.registerCallback("gc", gc);
+			_central.remoter.registerCallback("gc", gc);
 		}
 		public function watch(obj:Object, n:String):String{
 			var className:String = getQualifiedClassName(obj);

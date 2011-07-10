@@ -24,18 +24,16 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.utils.ByteArray;
-	import flash.utils.describeType;
 	import com.junkbyte.console.Cc;
-	import flash.utils.getQualifiedClassName;
-	import com.junkbyte.console.Console;
-
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.utils.ByteArray;
+	import flash.utils.describeType;
+	import flash.utils.getQualifiedClassName;
 
 	public class ConsoleTools extends ConsoleCore{
 		
-		public function ConsoleTools(console:Console) {
+		public function ConsoleTools(console:ConsoleCentral) {
 			super(console);
 		}
 		public function map(base:DisplayObjectContainer, maxstep:uint = 0, ch:String = null):void{
@@ -87,7 +85,7 @@ package com.junkbyte.console.core
 				}
 				if(maxstep<=0 || steps<=maxstep){
 					wasHiding = false;
-					var ind:uint = console.refs.setLogRef(mcDO);
+					var ind:uint = _central.refs.setLogRef(mcDO);
 					var n:String = mcDO.name;
 					if(ind) n = "<a href='event:cl_"+ind+"'>"+n+"</a>";
 					if(mcDO is DisplayObjectContainer){
@@ -95,7 +93,7 @@ package com.junkbyte.console.core
 					}else{
 						n = "<i>"+n+"</i>";
 					}
-					str += n+" "+console.refs.makeRefTyped(mcDO);
+					str += n+" "+_central.refs.makeRefTyped(mcDO);
 					report(str,mcDO is DisplayObjectContainer?5:2, true, ch);
 				}else if(!wasHiding){
 					wasHiding = true;
@@ -103,7 +101,7 @@ package com.junkbyte.console.core
 				}
 				lastmcDO = mcDO;
 			}
-			report(base.name + ":" + console.refs.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
+			report(base.name + ":" + _central.refs.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
 			if (config.commandLineAllowed) report("Click on the child display's name to set scope.", -2, true, ch);
 		}
 		
@@ -116,7 +114,7 @@ package com.junkbyte.console.core
 			}else if(obj is String){
 				return '"'+LogReferences.EscHTML(obj as String)+'"';
 			}else if(t != "object" || depth == 0 || obj is ByteArray){
-				return console.refs.makeString(obj);
+				return _central.refs.makeString(obj);
 			}
 			if(p<0) p = 0;
 			var V:XML = describeType(obj);
@@ -159,7 +157,7 @@ package com.junkbyte.console.core
 			var txt:String = "";
 			var lines:Array = str.split(/\n\sat\s/);
 			var len:int = lines.length;
-			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(Console)+"|"+getQualifiedClassName(Cc));
+			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(ConsoleCentral)+"|"+getQualifiedClassName(Cc));
 			var found:Boolean = false;
 			for (var i:int = 2; i < len; i++){
 				if(!found && (lines[i].search(reg) != 0)){

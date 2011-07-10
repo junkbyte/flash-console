@@ -26,21 +26,36 @@ package com.junkbyte.console.core
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.view.ConsoleLayer;
 
 	import flash.events.EventDispatcher;
 	public class ConsoleCore extends EventDispatcher
 	{
-		protected var console:Console;
-		protected var config:ConsoleConfig;
-		public function ConsoleCore(c:Console){
-			console = c;
-			config = console.config;
+		
+		protected var _central:ConsoleCentral;
+		
+		public function ConsoleCore(c:ConsoleCentral){
+			_central = c;
 		}
+		
 		protected function get remoter():Remoting{
-			return console.remoter;
+			return _central.remoter;
 		}
-		protected function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void{
-			console.report(obj, priority, skipSafe, ch);
+		
+		protected function get console():Console{
+			return _central.console;
+		}
+		
+		protected function get config():ConsoleConfig{
+			return _central.config;
+		}
+		
+		public function get panels():ConsoleLayer{
+			return _central.panels;
+		}
+		
+		public function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void{
+			_central.report(obj, priority, skipSafe, ch);
 		}
 	}
 }

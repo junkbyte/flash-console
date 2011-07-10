@@ -24,12 +24,17 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.utils.ByteArray;
-	import flash.events.Event;
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.Log;
+	import flash.events.Event;
+	import flash.utils.ByteArray;
 
 	public class Logs extends ConsoleCore{
+		
+		public static const GLOBAL_CHANNEL:String = " * ";
+		public static const DEFAULT_CHANNEL:String = "-";
+		public static const CONSOLE_CHANNEL:String = "C";
+		public static const FILTER_CHANNEL:String = "~";
+		public static const INSPECTING_CHANNEL:String = "⌂";
 		
 		private var _channels:Object;
 		private var _repeating:uint;
@@ -43,7 +48,7 @@ package com.junkbyte.console.core
 		private var _length:uint;
 		//private var _lines:uint; // number of lines since start.
 		
-		public function Logs(console:Console){
+		public function Logs(console:ConsoleCentral){
 			super(console);
 			_channels = new Object();
 			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
@@ -133,11 +138,11 @@ package com.junkbyte.console.core
 			return str;
 		}
 		public function getChannels():Array{
-			var arr:Array = new Array(Console.GLOBAL_CHANNEL);
-			addIfexist(Console.DEFAULT_CHANNEL, arr);
-			addIfexist(Console.FILTER_CHANNEL, arr);
-			addIfexist(LogReferences.INSPECTING_CHANNEL, arr);
-			addIfexist(Console.CONSOLE_CHANNEL, arr);
+			var arr:Array = new Array(GLOBAL_CHANNEL);
+			addIfexist(DEFAULT_CHANNEL, arr);
+			addIfexist(FILTER_CHANNEL, arr);
+			addIfexist(INSPECTING_CHANNEL, arr);
+			addIfexist(CONSOLE_CHANNEL, arr);
 			var others:Array = new Array();
 			for(var X:String in _channels){
 				if(arr.indexOf(X)<0) others.push(X);

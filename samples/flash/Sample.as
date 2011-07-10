@@ -24,14 +24,17 @@
 */
 package 
 {
-	import com.junkbyte.console.Console;
-	import flash.text.TextField;
 	import com.junkbyte.console.Cc;
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
 
-	import flash.display.*;
-	import flash.events.*;
-	import flash.utils.*;
+	import flash.display.MovieClip;
+	import flash.display.Sprite;
+	import flash.events.MouseEvent;
+	import flash.text.TextField;
+	import flash.utils.clearInterval;
+	import flash.utils.getTimer;
+	import flash.utils.setInterval;
 
 	[SWF(width='640',height='480',backgroundColor='0xDDDDDD',frameRate='30')]
 	public class Sample extends MovieClip{

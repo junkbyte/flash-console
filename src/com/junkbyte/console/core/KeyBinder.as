@@ -24,12 +24,11 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.text.TextFieldType;
-	import flash.text.TextField;
-	import com.junkbyte.console.Console;
+	import flash.events.Event;
 	import com.junkbyte.console.KeyBind;
-
 	import flash.events.KeyboardEvent;
+	import flash.text.TextField;
+	import flash.text.TextFieldType;
 
 	/**
 	 * Suppse this could be 'view' ?
@@ -42,12 +41,27 @@ package com.junkbyte.console.core
 		
 		private var _warns:uint;
 		
-		public function KeyBinder(console:Console, pass:String) {
+		public function KeyBinder(console:ConsoleCentral, pass:String) {
 			super(console);
 			_pass = pass == ""?null:pass;
 			
 			console.cl.addCLCmd("keybinds", printBinds, "List all keybinds used");
+			
+			if(panels.stage){
+				stageAddedHandle();
+			}else panels.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
+		private function stageAddedHandle(e:Event=null):void{
+			panels.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			panels.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			panels.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+		}
+		private function stageRemovedHandle(e:Event=null):void{
+			panels.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			panels.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			panels.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+		}
+		
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
 			if(_pass && (!key.useKeyCode && key.key.charAt(0) == _pass.charAt(0))){
 				report("Error: KeyBind ["+key.key+"] is conflicting with Console password.",9);
@@ -68,12 +82,12 @@ package com.junkbyte.console.core
 				if(_passInd >= _pass.length){
 					_passInd = 0;
 					if(canTrigger()){
-						if(console.visible && !console.panels.mainPanel.visible){
-							console.panels.mainPanel.visible = true;
+						if(_central.panels.visible && !_central.panels.mainPanel.visible){
+							_central.panels.mainPanel.visible = true;
 						}else {
-							console.visible = !console.visible;
+							_central.panels.visible = !_central.panels.visible;
 						}
-						console.panels.mainPanel.moveBackSafePosition();
+						_central.panels.mainPanel.moveBackSafePosition();
 					}else if(_warns < 3){
 						_warns++;
 						report("Password did not trigger because you have focus on an input TextField.", 8);
@@ -115,8 +129,8 @@ package com.junkbyte.console.core
 		private function canTrigger():Boolean{
 			// in try catch block incase the textfield is in another domain and we wont be able to access the type... (i think)
 			try {
-				if(console.stage && console.stage.focus is TextField){
-					var txt:TextField = console.stage.focus as TextField;
+				if(_central.panels.stage && _central.panels.stage.focus is TextField){
+					var txt:TextField = _central.panels.stage.focus as TextField;
 					if(txt.type == TextFieldType.INPUT) {
 						return false;
 					}

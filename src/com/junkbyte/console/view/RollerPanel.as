@@ -24,10 +24,9 @@
 */
 package com.junkbyte.console.view 
 {
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.KeyBind;
+	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.LogReferences;
-
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
@@ -45,7 +44,7 @@ package com.junkbyte.console.view
 		
 		private var _settingKey:Boolean;
 		
-		public function RollerPanel(m:Console) {
+		public function RollerPanel(m:ConsoleCentral) {
 			super(m);
 			name = NAME;
 			init(60,100,false);
@@ -64,7 +63,7 @@ package com.junkbyte.console.view
 			if(stage) stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
 		private function _onFrame(e:Event):void{
-			if(!console.stage){
+			if(!stage){
 				close();
 				return;
 			}
@@ -79,10 +78,10 @@ package com.junkbyte.console.view
 			height = txtField.height;
 		}
 		public function getMapString(dolink:Boolean):String{
-			var stg:Stage = console.stage;
+			var stg:Stage = stage;
 			var str:String = "";
 			if(!dolink){
-				var key:String = console.rollerCaptureKey?console.rollerCaptureKey.key:"unassigned";
+				var key:String = central.console.rollerCaptureKey?central.console.rollerCaptureKey.key:"unassigned";
 				str = "<menu> <a href=\"event:close\"><b>X</b></a></menu> Capture key: <menu><a href=\"event:capture\">"+key+"</a></menu><br/>";
 			}
 			var p:Point = new Point(stg.mouseX, stg.mouseY);
@@ -113,14 +112,14 @@ package com.junkbyte.console.view
 						
 						var n:String = obj.name;
 						var ind:uint;
-						if(dolink && console.config.useObjectLinking) {
-							ind = console.refs.setLogRef(obj);
-							n = "<a href='event:cl_"+ind+"'>"+n+"</a> "+console.refs.makeRefTyped(obj);
+						if(dolink && central.config.useObjectLinking) {
+							ind = central.refs.setLogRef(obj);
+							n = "<a href='event:cl_"+ind+"'>"+n+"</a> "+central.refs.makeRefTyped(obj);
 						}
 						else n = n+" ("+LogReferences.ShortClassName(obj)+")";
 			
 						if(obj == stg){
-							ind = console.refs.setLogRef(stg);
+							ind = central.refs.setLogRef(stg);
 							if(ind) str +=  "<p3><a href='event:cl_"+ind+"'><i>Stage</i></a> ";
 							else str += "<p3><i>Stage</i> ";
 							str +=  "["+stg.mouseX+","+stg.mouseY+"]</p3><br/>";
@@ -138,14 +137,14 @@ package com.junkbyte.console.view
 			cancelCaptureKeySet();
 			removeListeners();
 			super.close();
-			console.panels.updateMenu(); // should be black boxed :/
+			central.panels.updateMenu(); // should be black boxed :/
 		}
 		private function onMenuRollOver(e:TextEvent):void{
 			var txt:String = e.text?e.text.replace("event:",""):"";
 			if(txt == "close"){
 				txt = "Close";
 			}else if(txt == "capture"){
-				var key:KeyBind = console.rollerCaptureKey;
+				var key:KeyBind = central.console.rollerCaptureKey;
 				if(key){
 					txt = "Unassign key ::"+key.key;
 				}else{
@@ -156,23 +155,23 @@ package com.junkbyte.console.view
 			}else{
 				txt = null;
 			}
-			console.panels.tooltip(txt, this);
+			central.panels.tooltip(txt, this);
 		}
 		protected function linkHandler(e:TextEvent):void{
 			TextField(e.currentTarget).setSelection(0, 0);
 			if(e.text == "close"){
 				close();
 			}else if(e.text == "capture"){
-				if(console.rollerCaptureKey){
-					console.setRollerCaptureKey(null);
+				if(central.console.rollerCaptureKey){
+					central.console.setRollerCaptureKey(null);
 				}else{
 					_settingKey = true;
 					stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
 				}
-				console.panels.tooltip(null);
+				central.panels.tooltip(null);
 			}else if(e.text == "cancel"){
 				cancelCaptureKeySet();
-				console.panels.tooltip(null);
+				central.panels.tooltip(null);
 			}
 			e.stopPropagation();
 		}
@@ -184,8 +183,8 @@ package com.junkbyte.console.view
 			if(!e.charCode) return;
 			var char:String = String.fromCharCode(e.charCode);
 			cancelCaptureKeySet();
-			console.setRollerCaptureKey(char, e.shiftKey, e.ctrlKey, e.altKey);
-			console.panels.tooltip(null);
+			central.console.setRollerCaptureKey(char, e.shiftKey, e.ctrlKey, e.altKey);
+			central.panels.tooltip(null);
 		}
 	}
 }

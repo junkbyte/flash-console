@@ -23,30 +23,29 @@
 * 
 */
 package com.junkbyte.console.view {
-	import flash.geom.Matrix;
-	import flash.display.BitmapData;
+	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.ConsoleStyle;
+	import com.junkbyte.console.core.ConsoleCentral;
 	import flash.display.Bitmap;
-	import com.junkbyte.console.ConsoleConfig;	
-	import com.junkbyte.console.ConsoleStyle;	
-	import com.junkbyte.console.Console;
-	
+	import flash.display.BitmapData;
 	import flash.display.BlendMode;
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
-	import flash.ui.Mouse;		
+	import flash.ui.Mouse;
 
 	public class Ruler extends Sprite{
 		
-		private var _master:Console;
+		private var _master:ConsoleCentral;
 		private var _config : ConsoleConfig;
 
 		private var _area:Rectangle;
@@ -57,7 +56,7 @@ package com.junkbyte.console.view {
 		
 		private var _points:Array;
 		
-		public function Ruler(console:Console) {
+		public function Ruler(console:ConsoleCentral) {
 			_master = console;
 			_config = console.config;
 			buttonMode = true;
@@ -66,7 +65,7 @@ package com.junkbyte.console.view {
 			addChild(_pointer);
 			var p:Point = new Point();
 			p = globalToLocal(p);
-			_area = new Rectangle(-console.stage.stageWidth*1.5+p.x, -console.stage.stageHeight*1.5+p.y, console.stage.stageWidth*3, console.stage.stageHeight*3);
+			_area = new Rectangle(-console.panels.stage.stageWidth*1.5+p.x, -console.panels.stage.stageHeight*1.5+p.y, console.panels.stage.stageWidth*3, console.panels.stage.stageHeight*3);
 			graphics.beginFill(_config.style.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();

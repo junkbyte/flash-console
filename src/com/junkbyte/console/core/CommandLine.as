@@ -24,14 +24,13 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
 
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
+	import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
 
 	public class CommandLine extends ConsoleCore{
 		
@@ -48,7 +47,7 @@ package com.junkbyte.console.core
 		
 		public var localCommands:Array = new Array("filter", "filterexp");
 		
-		public function CommandLine(m:Console) {
+		public function CommandLine(m:ConsoleCentral) {
 			super(m);
 			_saved = new WeakObject();
 			_scope = m;
@@ -102,9 +101,9 @@ package com.junkbyte.console.core
 				bytes.writeUnsignedInt(id);
 				remoter.send("scope", bytes);
 			}else{
-				var v:* = console.refs.getRefById(id);
-				if(v) console.cl.setReturned(v, true, false);
-				else console.report("Reference no longer exist.", -2);
+				var v:* = _central.refs.getRefById(id);
+				if(v) _central.cl.setReturned(v, true, false);
+				else _central.report("Reference no longer exist.", -2);
 			}
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void {
@@ -140,7 +139,7 @@ package com.junkbyte.console.core
 				}
 				if(_scope){
 					all.push(["this", LogReferences.ShortClassName(_scope)]);
-					all = all.concat(console.refs.getPossibleCalls(_scope));
+					all = all.concat(_central.refs.getPossibleCalls(_scope));
 				}
 			}
 			str = str.toLowerCase();
@@ -194,7 +193,7 @@ package com.junkbyte.console.core
 					
 					var bytes:ByteArray = new ByteArray();
 					bytes.writeUTF(str);
-					if(!console.remoter.send("cmd", bytes)){
+					if(!_central.remoter.send("cmd", bytes)){
 						report("Command could not be sent to client.", 10);
 					}
 					return null;
@@ -293,9 +292,9 @@ package com.junkbyte.console.core
 						_scopeStr = LogReferences.ShortClassName(_scope, false);
 						sendCmdScope2Remote();
 					}
-					report("Changed to "+console.refs.makeRefTyped(returned), -1);
+					report("Changed to "+_central.refs.makeRefTyped(returned), -1);
 				}else{
-					if(say) report("Returned "+console.refs.makeString(returned), -1);
+					if(say) report("Returned "+_central.refs.makeString(returned), -1);
 				}
 			}else{
 				if(say) report("Exec successful, undefined return.", -1);
@@ -304,10 +303,10 @@ package com.junkbyte.console.core
 		public function sendCmdScope2Remote(e:Event = null):void{
 			var bytes:ByteArray = new ByteArray();
 			bytes.writeUTF(_scopeStr);
-			console.remoter.send("cls", bytes);
+			_central.remoter.send("cls", bytes);
 		}
 		private function reportError(e:Error):void{
-			var str:String = console.refs.makeString(e);
+			var str:String = _central.refs.makeString(e);
 			var lines:Array = str.split(/\n\s*/);
 			var p:int = 10;
 			var internalerrs:int = 0;
@@ -342,7 +341,7 @@ package com.junkbyte.console.core
 				var ref:WeakRef = _saved.getWeakRef(X);
 				sii++;
 				if(ref.reference==null) sii2++;
-				report((ref.strong?"strong":"weak")+" <b>$"+X+"</b> = "+console.refs.makeString(ref.reference), -2);
+				report((ref.strong?"strong":"weak")+" <b>$"+X+"</b> = "+_central.refs.makeString(ref.reference), -2);
 			}
 			report("Found "+sii+" item(s), "+sii2+" empty.", -1);
 		}
@@ -373,14 +372,14 @@ package com.junkbyte.console.core
 			}
 		}
 		private function inspectCmd(...args:Array):void{
-			console.refs.focus(_scope);
+			_central.refs.focus(_scope);
 		}
 		private function explodeCmd(param:String = "0"):void{
 			var depth:int = int(param);
-			console.explodech(console.panels.mainPanel.reportChannel, _scope, depth<=0?3:depth);
+			_central.console.explodech(_central.panels.mainPanel.reportChannel, _scope, depth<=0?3:depth);
 		}
 		private function mapCmd(param:String = "0"):void{
-			console.mapch(console.panels.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
+			_central.console.mapch(_central.panels.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
 		}
 		private function funCmd(param:String = ""):void{
 			var fakeFunction:FakeFunction = new FakeFunction(run, param);

@@ -47,7 +47,7 @@ package
 			Cc.config.commandLineAllowed = true;
 			
 			// Start remote service.
-			Cc.instance.remoter.remoting = Remoting.RECIEVER;
+			Cc.instance.central.remoter.remoting = Remoting.RECIEVER;
 			// Disable scaling and moving
 			Cc.instance.panels.mainPanel.moveable = false;
 			Cc.instance.panels.mainPanel.scalable = false;

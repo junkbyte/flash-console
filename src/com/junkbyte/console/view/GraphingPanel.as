@@ -23,14 +23,13 @@
 * 
 */
 package com.junkbyte.console.view {
-	import com.junkbyte.console.Console;
+	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
-	
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.events.TextEvent;
-	import flash.text.TextField;		
+	import flash.text.TextField;
 
 	public class GraphingPanel extends ConsolePanel {
 		//
@@ -52,7 +51,7 @@ package com.junkbyte.console.view {
 		//
 		public var startOffset:int = 5;
 		//
-		public function GraphingPanel(m:Console, W:int, H:int, type:String = null) {
+		public function GraphingPanel(m:ConsoleCentral, W:int, H:int, type:String = null) {
 			super(m);
 			_type = type;
 			registerDragger(bg);
@@ -87,7 +86,7 @@ package com.junkbyte.console.view {
 			init(W,H,true);
 		}
 		private function stop():void {
-			if(_group) console.graphing.remove(_group.name);
+			if(_group) central.graphing.remove(_group.name);
 		}
 		public function get group():GraphGroup{
 			return _group;
@@ -248,12 +247,12 @@ package com.junkbyte.console.view {
 			if(e.text == "reset"){
 				reset();
 			}else if(e.text == "close"){
-				if(_type == FPS) console.fpsMonitor = false;
-				else if(_type == MEM) console.memoryMonitor = false;
+				if(_type == FPS) central.console.fpsMonitor = false;
+				else if(_type == MEM) central.console.memoryMonitor = false;
 				else stop();
-				console.panels.removeGraph(_group);
+				central.panels.removeGraph(_group);
 			}else if(e.text == "gc"){
-				console.gc();
+				central.console.gc();
 			} 
 			e.stopPropagation();
 		}
@@ -262,7 +261,7 @@ package com.junkbyte.console.view {
 			if(txt == "gc"){
 				txt = "Garbage collect::Requires debugger version of flash player";
 			}
-			console.panels.tooltip(txt, this);
+			central.panels.tooltip(txt, this);
 		}
 	}
 }

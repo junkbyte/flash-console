@@ -23,17 +23,14 @@
 * 
 */
 package com.junkbyte.console.view {
-	import com.junkbyte.console.ConsoleStyle;	
 	import com.junkbyte.console.ConsoleConfig;
-
-	import flash.events.TextEvent;
-
-	import com.junkbyte.console.Console;
-
+	import com.junkbyte.console.ConsoleStyle;
+	import com.junkbyte.console.core.ConsoleCentral;
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.events.TextEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
@@ -52,7 +49,7 @@ package com.junkbyte.console.view {
 		
 		private var _resizeTxt:TextField;
 		//
-		protected var console:Console;
+		protected var central:ConsoleCentral;
 		protected var bg:Sprite;
 		protected var scaler:Sprite;
 		protected var txtField:TextField;
@@ -62,19 +59,19 @@ package com.junkbyte.console.view {
 		private var _movedFrom:Point;
 		public var moveable:Boolean = true;
 		
-		public function ConsolePanel(m:Console) {
-			console = m;
+		public function ConsolePanel(m:ConsoleCentral) {
+			central = m;
 			bg = new Sprite();
 			bg.name = "background";
 			addChild(bg);
 		}
 		
 		protected function get config() : ConsoleConfig {
-			return console.config;
+			return central.config;
 		}
 		
 		protected function get style() : ConsoleStyle {
-			return console.config.style;
+			return central.config.style;
 		}
 		
 		protected function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
@@ -94,7 +91,7 @@ package com.junkbyte.console.view {
 		}
 		public function close():void {
 			stopDragging();
-			console.panels.tooltip();
+			central.panels.tooltip();
 			if(parent){
 				parent.removeChild(this);
 			}

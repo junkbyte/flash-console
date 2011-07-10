@@ -25,26 +25,23 @@
 
 package com.junkbyte.console.core 
 {
-	import flash.utils.getTimer;
-	import flash.events.Event;
-	import flash.geom.Matrix;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.WeakObject;
 
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.events.Event;
+	import flash.geom.Matrix;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
+	import flash.utils.getTimer;
 
 	public class LogReferences extends ConsoleCore
 	{
-		
-		public static const INSPECTING_CHANNEL:String = "⌂";
 		
 		private var _refMap:WeakObject = new WeakObject();
 		private var _refRev:Dictionary = new Dictionary(true);
@@ -60,7 +57,7 @@ package com.junkbyte.console.core
 		private var _currentBank:Array = new Array();
 		private var _lastWithdraw:uint;
 		
-		public function LogReferences(console:Console) {
+		public function LogReferences(console:ConsoleCentral) {
 			super(console);
 			
 			remoter.registerCallback("ref", function(bytes:ByteArray):void{
@@ -203,7 +200,7 @@ package com.junkbyte.console.core
 		private function handleString(str:String):void{
 			if(str == "refexit"){
 				exitFocus();
-				console.setViewingChannels();
+				_central.console.setViewingChannels();
 			}else if(str == "refprev"){
 				historyInc(-2);
 			}else if(str == "reffwd"){
@@ -226,7 +223,7 @@ package com.junkbyte.console.core
 					if(prop) o = o[prop];
 					if(o){
 						if(str.indexOf("refe_")==0){
-							console.explodech(console.panels.mainPanel.reportChannel, o);
+							_central.console.explodech(_central.panels.mainPanel.reportChannel, o);
 						}else{
 							focus(o, _dofull);
 						}
@@ -238,8 +235,8 @@ package com.junkbyte.console.core
 		}
 		public function focus(o:*, full:Boolean = false):void{
 			remoter.send("focus");
-			console.clear(LogReferences.INSPECTING_CHANNEL);
-			console.setViewingChannels(LogReferences.INSPECTING_CHANNEL);
+			_central.console.clear(Logs.INSPECTING_CHANNEL);
+			_central.console.setViewingChannels(Logs.INSPECTING_CHANNEL);
 			
 			if(!_history) _history = new Array();
 			
@@ -253,8 +250,8 @@ package com.junkbyte.console.core
 			inspect(o, _dofull);
 		}
 		private function handleFocused():void{
-			console.clear(LogReferences.INSPECTING_CHANNEL);
-			console.setViewingChannels(LogReferences.INSPECTING_CHANNEL);
+			_central.console.clear(Logs.INSPECTING_CHANNEL);
+			_central.console.setViewingChannels(Logs.INSPECTING_CHANNEL);
 		}
 		public function exitFocus():void{
 			_current = null;
@@ -266,7 +263,7 @@ package com.junkbyte.console.core
 				bytes.writeUTF("refexit");
 				remoter.send("ref", bytes);
 			}
-			console.clear(LogReferences.INSPECTING_CHANNEL);
+			_central.console.clear(Logs.INSPECTING_CHANNEL);
 		}
 		
 		

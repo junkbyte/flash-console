@@ -24,17 +24,17 @@
 */
 package com.junkbyte.console.view 
 {
-	import com.junkbyte.console.Console;
+	import flash.display.Sprite;
+	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.vos.GraphGroup;
-
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 
-	public class PanelsManager{
+	public class ConsoleLayer extends Sprite{
 		
-		private var console:Console;
+		private var _central:ConsoleCentral;
 		private var _mainPanel:MainPanel;
 		private var _ruler:Ruler;
 		
@@ -46,40 +46,93 @@ package com.junkbyte.console.view
 		
 		private var _tooltipField:TextField;
 		private var _canDraw:Boolean;
+		private var _topTries:int = 50;
 		
-		public function PanelsManager(master:Console) {
-			console = master;
-			_mainPanel = new MainPanel(console);
+		public function ConsoleLayer(master:ConsoleCentral) {
+			name = "Console";
+			_central = master;
+		}
+		
+		public function start():void{
+			
+			_mainPanel = new MainPanel(_central);
 			_tooltipField = mainPanel.makeTF("tooltip", true);
 			_tooltipField.mouseEnabled = false;
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
 			_tooltipField.multiline = true;
 			addPanel(_mainPanel);
+			
+			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+		}
+		private function stageAddedHandle(e:Event=null):void{
+			if(_central.cl.base == null) _central.cl.base = parent;
+			if(loaderInfo){
+				_central.console.listenUncaughtErrors(loaderInfo);
+			}
+			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
+		}
+		private function stageRemovedHandle(e:Event=null):void{
+			_central.cl.base = null;
+			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
+		}
+		private function onStageMouseLeave(e:Event):void{
+			tooltip(null);
+		}
+		//
+		//
+		//
+		private function _onEnterFrame(e:Event):void{
+			_central.update();
+			
+			if(visible && parent){
+				if(_central.config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
+					_topTries--;
+					parent.addChild(this);
+					_central.report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
+				}
+			}
+		}
+		public function update(paused:Boolean, lineAdded:Boolean):void{
+			if(!visible || !parent){
+				return;
+			}
+			_canDraw = !paused;
+			_mainPanel.update(!paused && lineAdded);
+			if(!paused) {
+				if(lineAdded && _chsPanel!=null){
+					_chsPanel.update();
+				}
+			}
 		}
 		public function addPanel(panel:ConsolePanel):void{
-			if(console.contains(_tooltipField)){
-				console.addChildAt(panel, console.getChildIndex(_tooltipField));
+			if(contains(_tooltipField)){
+				addChildAt(panel, getChildIndex(_tooltipField));
 			}else{
-				console.addChild(panel);
+				addChild(panel);
 			}
 			panel.addEventListener(ConsolePanel.DRAGGING, onPanelStartDragScale, false,0, true);
 			panel.addEventListener(ConsolePanel.SCALING, onPanelStartDragScale, false,0, true);
 		}
 		public function removePanel(n:String):void{
-			var panel:ConsolePanel = console.getChildByName(n) as ConsolePanel;
+			var panel:ConsolePanel = getChildByName(n) as ConsolePanel;
 			if(panel){
 				// this removes it self from parent. this way each individual panel can clean up before closing.  
 				panel.close();
 			}
 		}
 		public function getPanel(n:String):ConsolePanel{
-			return console.getChildByName(n) as ConsolePanel;
+			return getChildByName(n) as ConsolePanel;
 		}
 		public function get mainPanel():MainPanel{
 			return _mainPanel;
 		}
 		public function panelExists(n:String):Boolean{
-			return (console.getChildByName(n) as ConsolePanel)?true:false;
+			return (getChildByName(n) as ConsolePanel)?true:false;
 		}
 		/**
 		 * Set panel position and size.
@@ -105,16 +158,10 @@ package com.junkbyte.console.view
 			var chpanel:ChannelsPanel = getPanel(ChannelsPanel.NAME) as ChannelsPanel;
 			if(chpanel) chpanel.update();
 		}
-		public function update(paused:Boolean, lineAdded:Boolean):void{
-			_canDraw = !paused;
-			_mainPanel.update(!paused && lineAdded);
-			if(!paused) {
-				if(lineAdded && _chsPanel!=null){
-					_chsPanel.update();
-				}
-			}
-		}
 		public function updateGraphs(graphs:Array):void{
+			if(!visible || !parent){
+				return;
+			}
 			var usedMap:Object = {};
 			var fpsGroup:GraphGroup;
 			var memGroup:GraphGroup;
@@ -145,7 +192,7 @@ package com.junkbyte.console.view
 						}
 						if(rect.width<=0 || isNaN(rect.width))  rect.width = size;
 						if(rect.height<=0 || isNaN(rect.height)) rect.height = size;
-						panel = new GraphingPanel(console, rect.width,rect.height);
+						panel = new GraphingPanel(_central, rect.width,rect.height);
 						panel.x = rect.x;
 						panel.y = rect.y;
 						panel.name = "graph_"+n;
@@ -166,7 +213,7 @@ package com.junkbyte.console.view
 			//
 			if(fpsGroup != null){
 				if (_fpsPanel == null) {
-					_fpsPanel = new GraphingPanel(console, 80 ,40, GraphingPanel.FPS);
+					_fpsPanel = new GraphingPanel(_central, 80 ,40, GraphingPanel.FPS);
 					_fpsPanel.name = GraphingPanel.FPS;
 					_fpsPanel.x = _mainPanel.x+_mainPanel.width-160;
 					_fpsPanel.y = _mainPanel.y+15;
@@ -182,7 +229,7 @@ package com.junkbyte.console.view
 			//
 			if(memGroup != null){
 				if(_memPanel == null){
-					_memPanel = new GraphingPanel(console, 80 ,40, GraphingPanel.MEM);
+					_memPanel = new GraphingPanel(_central, 80 ,40, GraphingPanel.MEM);
 					_memPanel.name = GraphingPanel.MEM;
 					_memPanel.x = _mainPanel.x+_mainPanel.width-80;
 					_memPanel.y = _mainPanel.y+15;
@@ -221,13 +268,13 @@ package com.junkbyte.console.view
 		public function set displayRoller(n:Boolean):void{
 			if(displayRoller != n){
 				if(n){
-					if(console.config.displayRollerEnabled){
-						var roller:RollerPanel = new RollerPanel(console);
+					if(_central.config.displayRollerEnabled){
+						var roller:RollerPanel = new RollerPanel(_central);
 						roller.x = _mainPanel.x+_mainPanel.width-180;
 						roller.y = _mainPanel.y+55;
 						addPanel(roller);
 					}else{
-						console.report("Display roller is disabled in config.", 9);
+						_central.report("Display roller is disabled in config.", 9);
 					}
 				}else{
 					removePanel(RollerPanel.NAME);
@@ -243,9 +290,9 @@ package com.junkbyte.console.view
 		}
 		public function set channelsPanel(b:Boolean):void{
 			if(channelsPanel != b){
-				console.logs.cleanChannels();
+				_central.logs.cleanChannels();
 				if(b){
-					_chsPanel = new ChannelsPanel(console);
+					_chsPanel = new ChannelsPanel(_central);
 					_chsPanel.x = _mainPanel.x+_mainPanel.width-332;
 					_chsPanel.y = _mainPanel.y-2;
 					addPanel(_chsPanel);
@@ -275,24 +322,24 @@ package com.junkbyte.console.view
 				var split:Array = str.split("::");
 				str = split[0];
 				if(split.length > 1) str += "<br/><low>"+split[1]+"</low>";
-				console.addChild(_tooltipField);
+				addChild(_tooltipField);
 				_tooltipField.wordWrap = false;
 				_tooltipField.htmlText = "<tt>"+str+"</tt>";
 				if(_tooltipField.width>120){
 					_tooltipField.width = 120;
 					_tooltipField.wordWrap = true;
 				}
-				_tooltipField.x = console.mouseX-(_tooltipField.width/2);
-				_tooltipField.y = console.mouseY+20;
+				_tooltipField.x = mouseX-(_tooltipField.width/2);
+				_tooltipField.y = mouseY+20;
 				if(panel){
-					var txtRect:Rectangle = _tooltipField.getBounds(console);
+					var txtRect:Rectangle = _tooltipField.getBounds(this);
 					var panRect:Rectangle = new Rectangle(panel.x,panel.y,panel.width,panel.height);
 					var doff:Number = txtRect.bottom - panRect.bottom;
 					if(doff>0){
-						if((_tooltipField.y - doff)>(console.mouseY+15)){
+						if((_tooltipField.y - doff)>(mouseY+15)){
 							_tooltipField.y -= doff;
-						}else if(panRect.y<(console.mouseY-24) && txtRect.y>panRect.bottom){
-							_tooltipField.y = console.mouseY-_tooltipField.height-15;
+						}else if(panRect.y<(mouseY-24) && txtRect.y>panRect.bottom){
+							_tooltipField.y = mouseY-_tooltipField.height-15;
 						}
 					}
 					var loff:Number = txtRect.left - panRect.left;
@@ -303,8 +350,8 @@ package com.junkbyte.console.view
 						_tooltipField.x -= roff;
 					}
 				}
-			}else if(console.contains(_tooltipField)){
-				console.removeChild(_tooltipField);
+			}else if(contains(_tooltipField)){
+				removeChild(_tooltipField);
 			}
 		}
 		//
@@ -314,17 +361,17 @@ package com.junkbyte.console.view
 			if(rulerActive){
 				return;
 			}
-			_ruler = new Ruler(console);
+			_ruler = new Ruler(_central);
 			_ruler.addEventListener(Event.COMPLETE, onRulerExit, false, 0, true);
-			console.addChild(_ruler);
+			addChild(_ruler);
 			_mainPanel.updateMenu();
 		}
 		public function get rulerActive():Boolean{
-			return (_ruler && console.contains(_ruler))?true:false;
+			return (_ruler && contains(_ruler))?true:false;
 		}
 		private function onRulerExit(e:Event):void{
-			if(_ruler && console.contains(_ruler)){
-				console.removeChild(_ruler);
+			if(_ruler && contains(_ruler)){
+				removeChild(_ruler);
 			}
 			_ruler = null;
 			_mainPanel.updateMenu();
@@ -334,17 +381,17 @@ package com.junkbyte.console.view
 		//
 		private function onPanelStartDragScale(e:Event):void{
 			var target:ConsolePanel = e.currentTarget as ConsolePanel;
-			if(console.config.style.panelSnapping) {
+			if(_central.config.style.panelSnapping) {
 				var X:Array = [0];
 				var Y:Array = [0];
-				if(console.stage){
+				if(stage){
 					// this will only work if stage size is not changed or top left aligned
-					X.push(console.stage.stageWidth);
-					Y.push(console.stage.stageHeight);
+					X.push(stage.stageWidth);
+					Y.push(stage.stageHeight);
 				}
-				var numchildren:int = console.numChildren;
+				var numchildren:int = numChildren;
 				for(var i:int = 0;i<numchildren;i++){
-					var panel:ConsolePanel = console.getChildAt(i) as ConsolePanel;
+					var panel:ConsolePanel = getChildAt(i) as ConsolePanel;
 					if(panel && panel.visible){
 						X.push(panel.x, panel.x+panel.width);
 						Y.push(panel.y, panel.y+panel.height);

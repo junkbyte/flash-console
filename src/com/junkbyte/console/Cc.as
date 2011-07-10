@@ -23,9 +23,9 @@
 * 
 */
 package com.junkbyte.console {
-	import flash.display.LoaderInfo;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.LoaderInfo;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 
@@ -73,11 +73,11 @@ package com.junkbyte.console {
 		 */
 		public static function start(container:DisplayObjectContainer, password:String = ""):void{
 			if(_console){
-				if(container && !_console.parent) container.addChild(_console);
+				if(container && !_console.panels.parent) container.addChild(_console.panels);
 			}else{
 				_console = new Console(password, config);
 				// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
-				if(container) container.addChild(_console);
+				if(container) container.addChild(_console.panels);
 			}
 		}
 		/**
@@ -99,7 +99,7 @@ package com.junkbyte.console {
 		 */
 		public static function startOnStage(display:DisplayObject, password:String = ""):void{
 			if(_console){
-				if(display && display.stage && _console.parent != display.stage) display.stage.addChild(_console);
+				if(display && display.stage && _console.panels.parent != display.stage) display.stage.addChild(_console.panels);
 			}else{
 				if(display && display.stage){
 					start(display.stage, password);
@@ -640,7 +640,7 @@ package com.junkbyte.console {
 		 * visibility of all console panels
 		 */
 		public static function get visible():Boolean{
-			if(_console) return _console.visible;
+			if(_console) return _console.panels.visible;
 			return false;
 		}
 		public static function set visible(v:Boolean):void{
@@ -751,8 +751,8 @@ package com.junkbyte.console {
 		 */
 		public static function remove():void{
 			if(_console){
-				if(_console.parent){
-					_console.parent.removeChild(_console);
+				if(_console.panels.parent){
+					_console.panels.parent.removeChild(_console.panels);
 				}
 				_console = null;
 			}
@@ -786,8 +786,8 @@ package com.junkbyte.console {
 		private static function addedToStageHandle(e:Event):void{
 			var mc:DisplayObjectContainer = e.currentTarget as DisplayObjectContainer;
 			mc.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
-			if(_console && _console.parent == null){
-				mc.stage.addChild(_console);
+			if(_console && _console.panels.parent == null){
+				mc.stage.addChild(_console.panels);
 			}
 		}
 	}
