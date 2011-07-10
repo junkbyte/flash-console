@@ -6,8 +6,6 @@
 <style type="text/css">
 body {
 	background-color:#BACKGROUND_COLOR;
-}
-body,td,th{
 	font-family: Verdana, Arial, sans-serif;
 	font-size: 12px;
 }
@@ -20,6 +18,7 @@ menu{
 	padding-left:0;
 }
 #menuElement{
+	font-size: 125%;
     position: fixed;
 	left:8px;
 	right:185px;
@@ -27,18 +26,16 @@ menu{
 #searchElement{
     position: fixed;
 	width:180px;
-	top:0px;
+	top:4px;
 	right:1px;
 	color:#TEXT_COLOR;
 }
-input{
+#searchField{
 	color:inherit;
+	width:140px;
 	border-width:1px;
 	border-color:#TEXT_COLOR;
 	background-color:#BACKGROUND_COLOR;
-}
-#searchField{
-	width:140px;
 }
 #logsElement{
     position: fixed;
@@ -98,7 +95,7 @@ input{
 	function updateMenu()
 	{
 		var text = "<high><menu><b>";
-		text += makeJSLink("P"+viewingPriority, "priorityClicked()") + " </b></menu> | ";
+		text += makeJSLink("Priority "+viewingPriority, "priorityClicked()") + " </b></menu> | ";
 		var chText = makeJSLink(" * ", "channelClicked(null)" );
 		var showingAll = !(viewingChannels || ignoredChannels);
 		if(showingAll)

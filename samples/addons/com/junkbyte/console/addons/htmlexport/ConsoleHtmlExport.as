@@ -1,3 +1,27 @@
+/*
+* 
+* Copyright (c) 2008-2011 Lu Aye Oo
+* 
+* @author 		Lu Aye Oo
+* 
+* http://code.google.com/p/flash-console/
+* 
+*
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 1. The origin of this software must not be misrepresented; you must not
+* claim that you wrote the original software. If you use this software
+* in a product, an acknowledgment in the product documentation would be
+* appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+* misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+* 
+*/
 package com.junkbyte.console.addons.htmlexport {
 	import flash.text.StyleSheet;
 	import com.junkbyte.console.vos.Log;
@@ -6,10 +30,8 @@ package com.junkbyte.console.addons.htmlexport {
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	import flash.utils.ByteArray;
-	/**
-	 * @author LuAye
-	 */
-	public class ConsoleHtmlExport 
+	
+	public class ConsoleHtmlExport
 	{
 		[Embed(source="template.html", mimeType="application/octet-stream")]
 		private static var EmbeddedTemplate:Class;
@@ -19,34 +41,27 @@ package com.junkbyte.console.addons.htmlexport {
 		public static const REPLACE_STYLES:String = "#REPLACE_STYLES_FROM_FLASH{}";
 		public static const REPLACE_LOGS:String = "[{text:'REPLACE_LOGS_FROM_FLASH'}]";
 		
-		private var console:Console;
-		
-		public static function register(menuText:String = "export", console:Console = null):void
-		{
-			new ConsoleHtmlExport(menuText, console);
-		}
-		
-		public function ConsoleHtmlExport(menuText:String, console:Console)
+		public static function register(console:Console = null):void
 		{
 			if(console == null)
 			{
 				console = Cc.instance;
 			}
-			this.console = console;
 			if (console) 
 			{
-				console.addMenu(menuText, export);
+				var exporter:ConsoleHtmlExport = new ConsoleHtmlExport();
+				console.addMenu("export", exporter.export, new Array(console), "Export logs to HTML");
 			}
 		}
 		
-		private function export():void
+		public function export(console:Console):void
 		{
 			var html:String = String(new EmbeddedTemplate() as ByteArray);
 			
-			html = html.replace(REPLACE_BACKGROUND_COLOR, safeColor(console.config.style.backgroundColor.toString(16)));
-			html = html.replace(REPLACE_TEXT_COLOR, safeColor(console.config.style.menuColor.toString(16)));
-			html = html.replace(REPLACE_STYLES, getStylesReplacement());
-			html = html.replace(REPLACE_LOGS, getLogsReplacement());
+			html = html.replace(REPLACE_BACKGROUND_COLOR, safeColorString(console.config.style.backgroundColor.toString(16)));
+			html = html.replace(REPLACE_TEXT_COLOR, safeColorString(console.config.style.menuColor.toString(16)));
+			html = html.replace(REPLACE_STYLES, getStylesReplacement(console));
+			html = html.replace(REPLACE_LOGS, getLogsReplacement(console));
 			
 			var file:FileReference = new FileReference();
 			try
@@ -59,7 +74,7 @@ package com.junkbyte.console.addons.htmlexport {
 			}
 		}
 		
-		private function getLogsReplacement():String
+		private function getLogsReplacement(console:Console):String
 		{
 			var lines:Array = new Array();
 			var line:Log = console.logs.last;
@@ -76,7 +91,7 @@ package com.junkbyte.console.addons.htmlexport {
 			return JSON.encode(lines);
 		}
 		
-		private function getStylesReplacement():String
+		private function getStylesReplacement(console:Console):String
 		{
 			var result:String = "";
 			var css:StyleSheet = console.config.style.styleSheet;
@@ -84,34 +99,22 @@ package com.junkbyte.console.addons.htmlexport {
 			{
 				var style:Object = css.getStyle(styleName);
 				var parts:String = "";
-				for (var keyX:String in style)
+				for (var key:String in style)
 				{
-					var key:String = keyX;
 					var value:String = style[key];
-					if(key == "fontSize")
+					if(key == "color")
 					{
-						key = "font-size";
+						value = safeColorString(value.substring(1));
 					}
-					else if(key == "fontFamily")
-					{
-						key = "font-family";
-					}
-					else if(key == "fontWeight")
-					{
-						key = "font-weight";
-					}
-					else if(key == "color")
-					{
-						value = safeColor(value.substring(1));
-					}
+					key = key.replace(/([A-Z])/g,"-$1").toLowerCase();
 					parts += key+":"+value+"; ";
 				}
-				result += styleName + " {" +parts+"}\n";
+				result += styleName + " {" +parts+"}\r\n";
 			}
 			return result;
 		}
 		
-		private function safeColor(col:String):String
+		private function safeColorString(col:String):String
 		{
 			while(col.length < 6)
 			{
