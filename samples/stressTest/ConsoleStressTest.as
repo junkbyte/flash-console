@@ -31,7 +31,7 @@ package {
 			Cc.memoryMonitor = true;
 			Cc.config.commandLineAllowed = true;
 			Cc.remoting = true;
-			Cc.remotingPassword = null;
+			Cc.config.remotingPassword = "";
 			
 			initComponents();
 			addEventListener(Event.ENTER_FRAME, tick);

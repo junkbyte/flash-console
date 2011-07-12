@@ -733,16 +733,6 @@ package com.junkbyte.console {
 		public static function remotingSocket(host:String, port:int):void{
 			if(_console) _console.remotingSocket(host, port);
 		}
-		/**
-		 * Set Password required to connect from remote.
-		 * <p>
-		 * By default this is the same as the password used in Cc.start() / Cc.startOnStage();
-		 * If you set this to null, remote will no longer need a password to connect.
-		 * </p>
-		 */
-		public static function set remotingPassword(password:String):void{
-			if(_console) _console.remotingPassword = password;
-		}
 		//
 		// Others
 		//

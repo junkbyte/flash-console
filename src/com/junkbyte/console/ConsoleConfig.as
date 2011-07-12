@@ -26,6 +26,22 @@ package com.junkbyte.console {
 
 	public class ConsoleConfig {
 		
+		/**
+		 * 	Password sequence to toggle console's visibility. If password is set, console will start hidden. Set Cc.visible = ture to unhide at start.
+		 * 	Must be ASCII chars. Example passwords: ` OR debug.
+		 * 	Password will not trigger if you have focus on an input TextField.
+		 */
+		public var keystrokePassword:String;
+		
+		/**
+		 * Set Password required to connect from remote.
+		 * <p>
+		 * Set to null (deafult) to use keystrokePassword.
+		 * Set to "" (blank string), to disable remoting password.
+		 * </p>
+		 */
+		public var remotingPassword:String;
+		
 		//////////////////////
 		//                  //
 		//  LOGGING CONIFG  //

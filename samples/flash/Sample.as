@@ -24,13 +24,13 @@
 */
 package 
 {
-	import com.junkbyte.console.Console;
-	import flash.text.TextField;
 	import com.junkbyte.console.Cc;
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
 
 	import flash.display.*;
 	import flash.events.*;
+	import flash.text.TextField;
 	import flash.utils.*;
 
 	[SWF(width='640',height='480',backgroundColor='0xDDDDDD',frameRate='30')]
@@ -51,8 +51,7 @@ package
 			
 			Cc.config.commandLineAllowed = true; // enable advanced (but security risk) features.
 			Cc.config.tracing = true; // Also trace on flash's normal trace
-			
-			Cc.remotingPassword = null; // Just so that remote don't ask for password
+			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			Cc.remoting = true; // Start sending logs to remote (using LocalConnection)
 			
 			Cc.commandLine = true; // Show command line

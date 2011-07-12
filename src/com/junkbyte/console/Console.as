@@ -54,10 +54,10 @@ package com.junkbyte.console
 	 */
 	public class Console extends Sprite {
 
-		public static const VERSION:Number = 2.52;
+		public static const VERSION:Number = 2.53;
 		public static const VERSION_STAGE:String = "";
-		public static const BUILD:int = 593;
-		public static const BUILD_DATE:String = "2011/06/15 00:27";
+		public static const BUILD:int = 594;
+		public static const BUILD_DATE:String = "2011/07/13 00:07";
 		//
 		public static const LOG:uint = 1;
 		public static const INFO:uint = 3;
@@ -102,15 +102,18 @@ package com.junkbyte.console
 			name = "Console";
 			if(config == null) config = new ConsoleConfig();
 			_config = config;
+			if (password) {
+				_config.keystrokePassword = password;
+			}
 			//
-			_remoter = new Remoting(this, password);
+			_remoter = new Remoting(this);
 			_logs = new Logs(this);
 			_refs = new LogReferences(this);
 			_cl = new CommandLine(this);
 			_tools =  new ConsoleTools(this);
 			_graphing = new Graphing(this);
 			_mm = new MemoryMonitor(this);
-			_kb = new KeyBinder(this, password);
+			_kb = new KeyBinder(this);
 			
 			cl.addCLCmd("remotingSocket", function(str:String = ""):void{
 				var args:Array = str.split(/\s+|\:/);
@@ -355,9 +358,6 @@ package com.junkbyte.console
 		}
 		public function remotingSocket(host:String, port:int):void{
 			_remoter.remotingSocket(host, port);
-		}
-		public function set remotingPassword(password:String):void{
-			_remoter.remotingPassword = password;
 		}
 		//
 		//

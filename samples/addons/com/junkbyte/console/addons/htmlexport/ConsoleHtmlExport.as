@@ -21,8 +21,10 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 * 
+* REQUIRES JSON: com.adobe.serialization.json.JSON
 */
 package com.junkbyte.console.addons.htmlexport {
+	import com.junkbyte.console.ConsoleStyle;
 	import flash.text.StyleSheet;
 	import com.junkbyte.console.vos.Log;
 	import com.adobe.serialization.json.JSON;
@@ -31,6 +33,9 @@ package com.junkbyte.console.addons.htmlexport {
 	import com.junkbyte.console.Console;
 	import flash.utils.ByteArray;
 	
+	/*
+	 * REQUIRES JSON: com.adobe.serialization.json.JSON
+	 */
 	public class ConsoleHtmlExport
 	{
 		[Embed(source="template.html", mimeType="application/octet-stream")]
@@ -38,6 +43,9 @@ package com.junkbyte.console.addons.htmlexport {
 		
 		public static const REPLACE_BACKGROUND_COLOR:RegExp = /#BACKGROUND_COLOR/g;
 		public static const REPLACE_TEXT_COLOR:RegExp = /#TEXT_COLOR/g;
+		public static const REPLACE_VIWING_PRIORITY:String = "#VIWING_PRIORITY";
+		public static const REPLACE_VIEWING_CHANNELS:String = "#VIEWING_CHANNELS";
+		public static const REPLACE_IGNORED_CHANNELS:String = "#IGNORED_CHANNELS";
 		public static const REPLACE_STYLES:String = "#REPLACE_STYLES_FROM_FLASH{}";
 		public static const REPLACE_LOGS:String = "[{text:'REPLACE_LOGS_FROM_FLASH'}]";
 		
@@ -54,13 +62,37 @@ package com.junkbyte.console.addons.htmlexport {
 			}
 		}
 		
+		public var preserveStyle:Boolean = true;
+		
+		//public var preserveViewingChannels:Boolean;
+		public var preserveViewingPriority:Boolean;
+		
 		public function export(console:Console):void
 		{
 			var html:String = String(new EmbeddedTemplate() as ByteArray);
 			
-			html = html.replace(REPLACE_BACKGROUND_COLOR, safeColorString(console.config.style.backgroundColor.toString(16)));
-			html = html.replace(REPLACE_TEXT_COLOR, safeColorString(console.config.style.menuColor.toString(16)));
-			html = html.replace(REPLACE_STYLES, getStylesReplacement(console));
+			html = html.replace(REPLACE_VIWING_PRIORITY, preserveViewingPriority?console.panels.mainPanel.priority:0);
+			/*
+			// Can't support on current console build
+			if(preserveViewingChannels)
+			{
+				html = html.replace(REPLACE_VIEWING_CHANNELS, console.panels.mainPanel.viewingChannels.join(", "));
+				html = html.replace(REPLACE_IGNORED_CHANNELS, console.panels.mainPanel.ignoredChannels.join(", "));
+			}*/
+			html = html.replace(REPLACE_VIEWING_CHANNELS, "null");
+			html = html.replace(REPLACE_IGNORED_CHANNELS, "null");
+			
+			
+			var style:ConsoleStyle = console.config.style;
+			if(!preserveStyle)
+			{
+				style = new ConsoleStyle();
+				style.updateStyleSheet();
+			}
+			html = html.replace(REPLACE_BACKGROUND_COLOR, safeColorString(style.backgroundColor.toString(16)));
+			html = html.replace(REPLACE_TEXT_COLOR, safeColorString(style.menuColor.toString(16)));
+			html = html.replace(REPLACE_STYLES, getStylesReplacement(style.styleSheet));
+			
 			html = html.replace(REPLACE_LOGS, getLogsReplacement(console));
 			
 			var file:FileReference = new FileReference();
@@ -91,10 +123,9 @@ package com.junkbyte.console.addons.htmlexport {
 			return JSON.encode(lines);
 		}
 		
-		private function getStylesReplacement(console:Console):String
+		private function getStylesReplacement(css:StyleSheet):String
 		{
 			var result:String = "";
-			var css:StyleSheet = console.config.style.styleSheet;
 			for each(var styleName:String in css.styleNames)
 			{
 				var style:Object = css.getStyle(styleName);

@@ -74,6 +74,7 @@
 			<source-path path-element="${FLEX_HOME}/frameworks" />
 			<compiler.source-path path-element="${src.dir}" />
 			<compiler.source-path path-element="${samples.dir}/flash"/>
+			<compiler.source-path path-element="${samples.dir}/addons"/>
 			<default-size width="640" height="480" />
 		</mxmlc>
 	</target>

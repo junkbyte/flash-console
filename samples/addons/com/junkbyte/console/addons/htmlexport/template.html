@@ -40,8 +40,11 @@ menu{
 #logsElement{
     position: fixed;
     bottom: 0px;
+    left: 5px;
+    right: 0px;
 	padding-bottom:8px;
     overflow: auto;
+    word-wrap: break-word;
 	line-height:120%;
 }
 #REPLACE_STYLES_FROM_FLASH{}
@@ -54,9 +57,9 @@ menu{
 	var channels = new Object();
 	var priorities = new Object();
 	
-	var viewingPriority = 0;
-	var viewingChannels = null;
-	var ignoredChannels = null;
+	var viewingPriority = #VIWING_PRIORITY;
+	var viewingChannels = #VIEWING_CHANNELS;
+	var ignoredChannels = #IGNORED_CHANNELS;
 	var searchTerm = null;
 	var searchExp = false;
 	

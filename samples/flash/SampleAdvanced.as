@@ -24,6 +24,7 @@
 */
 package 
 {
+	import com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport;
 	import com.junkbyte.console.Cc;
 
 	import flash.display.*;
@@ -52,7 +53,7 @@ package
 			Cc.config.commandLineAllowed = true;
 			Cc.width = 700;
 			Cc.height = 300;
-			Cc.remotingPassword = null; // Just so that remote don't ask for password
+			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			Cc.remoting = true;
 			
 			Cc.addMenu("T1", Cc.log, ["Greetings 1"], "This is a test menu 1");
@@ -99,6 +100,12 @@ package
 			// but if you have debugger version of flash player installed,
 			// you can open memory monitor (M) and then press G in that panel to force garbage collect
 			// You will see "[C] GARBAGE COLLECTED 1 item(s): aSprite"
+			
+			
+			// register 'export' button, which exports logs to HTML. (This is an addon).
+			// source file located at samples/addons/  com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport
+			// requires JSON: com.adobe.serialization.json.JSON
+			ConsoleHtmlExport.register();
 			
 			
 			// Test of Cc.stack,  If you have debugger version installed you will see a stack trace like:
