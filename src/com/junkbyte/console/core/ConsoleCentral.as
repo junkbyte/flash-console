@@ -24,12 +24,12 @@
 */
 package com.junkbyte.console.core 
 {
+	import flash.events.EventDispatcher;
+	import flash.events.Event;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.view.ConsoleLayer;
 
-	import flash.events.Event;
-	import flash.events.KeyboardEvent;
 	import flash.net.SharedObject;
 	/**
 	 * Console is the main class. 
@@ -37,8 +37,10 @@ package com.junkbyte.console.core
 	 * @see http://code.google.com/p/flash-console/
 	 * @see com.junkbyte.console.Cc
 	 */
-	public class ConsoleCentral{
-
+	public class ConsoleCentral extends EventDispatcher{
+		
+		public static const PAUSED:String = "pause";
+		
 		//
 		private var _console:Console;
 		private var _config:ConsoleConfig;
@@ -70,24 +72,23 @@ package com.junkbyte.console.core
 			_console = console;
 			if(config == null) config = new ConsoleConfig();
 			_config = config;
-			var password:String = null; // TODO: password assigning
 			//
 			
 			_config.style.updateStyleSheet();
 			_panels = new ConsoleLayer(this);
 			
-			_remoter = new Remoting(this, password);
+			_remoter = new Remoting(this);
 			_logs = new Logs(this);
 			_refs = new LogReferences(this);
 			_cl = new CommandLine(this);
 			_tools =  new ConsoleTools(this);
 			_graphing = new Graphing(this);
 			_mm = new MemoryMonitor(this);
-			_kb = new KeyBinder(this, password);
+			_kb = new KeyBinder(this);
 			
 			cl.addCLCmd("remotingSocket", function(str:String = ""):void{
 				var args:Array = str.split(/\s+|\:/);
-				remotingSocket(args[0], args[1]);
+				console.remotingSocket(args[0], args[1]);
 			}, "Connect to socket remote. /remotingSocket ip port");
 			
 			if(_config.sharedObjectName){
@@ -98,15 +99,15 @@ package com.junkbyte.console.core
 					
 				}
 			}
-			if(password) _panels.visible = false;
+			if(config.keystrokePassword) _panels.visible = false;
 			_panels.start();
 		}
 		//
 		//
 		//
-		public function update(ms:uint = 0):void{
+		public function update(msDelta:uint = 0):void{
 			var hasNewLog:Boolean = _logs.update();
-			_refs.update();
+			_refs.update(msDelta);
 			_mm.update();
 			var graphsList:Array;
 			if(remoter.remoting != Remoting.RECIEVER)
@@ -134,21 +135,7 @@ package com.junkbyte.console.core
 			else report("Resumed", -1);
 			_paused = newV;
 			panels.mainPanel.setPaused(newV);
-		}
-		//
-		// REMOTING
-		//
-		public function get remoting():Boolean{
-			return _remoter.remoting == Remoting.SENDER;
-		}
-		public function set remoting(b:Boolean):void{
-			_remoter.remoting = b?Remoting.SENDER:Remoting.NONE;
-		}
-		public function remotingSocket(host:String, port:int):void{
-			_remoter.remotingSocket(host, port);
-		}
-		public function set remotingPassword(password:String):void{
-			_remoter.remotingPassword = password;
+			dispatchEvent(new Event(ConsoleCentral.PAUSED));
 		}
 		//
 		//

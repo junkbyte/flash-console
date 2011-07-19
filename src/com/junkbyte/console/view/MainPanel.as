@@ -51,19 +51,21 @@ package com.junkbyte.console.view
 	public class MainPanel extends ConsolePanel {
 		
 		public static const NAME:String = "mainPanel";
+		public static const FILTER_PRIORITY_CHANGED:String = "filterPriorityChanged";
+		public static const COMMAND_LINE_VISIBLITY_CHANGED:String = "commandLineVisibilityChanged";
 		
 		private static const CL_HISTORY:String = "clhistory";
 		private static const VIEWING_CH_HISTORY:String = "viewingChannels";
 		private static const IGNORED_CH_HISTORY:String = "ignoredChannels";
 		private static const PRIORITY_HISTORY:String = "priority";
 		
+		private var _menu:MainPanelMenu;
 		private var _traceField:TextField;
 		private var _cmdPrefx:TextField;
 		private var _cmdField:TextField;
 		private var _hintField:TextField;
 		private var _cmdBG:Shape;
 		private var _bottomLine:Shape;
-		private var _mini:Boolean;
 		private var _shift:Boolean;
 		private var _ctrl:Boolean;
 		private var _alt:Boolean;
@@ -99,8 +101,6 @@ package com.junkbyte.console.view
 		public function MainPanel(m:ConsoleCentral) {
 			super(m);
 			var fsize:int = style.menuFontSize;
-			//_viewingChannels = new Array();
-			//_ignoredChannels = new Array();
 			
 			central.cl.addCLCmd("filter", setFilterText, "Filter console logs to matching string. When done, click on the * (global channel) at top.", true);
 			central.cl.addCLCmd("filterexp", setFilterRegExp, "Filter console logs to matching regular expression", true);
@@ -117,11 +117,6 @@ package com.junkbyte.console.view
 			_traceField.addEventListener(Event.SCROLL, onTraceScroll);
 			addChild(_traceField);
 			//
-			txtField = makeTF("menuField");
-			txtField.height = fsize+6;
-			txtField.y = -2;
-			registerTFRoller(txtField, onMenuRollOver);
-			addChild(txtField);
 			//
 			_cmdBG = new Shape();
 			_cmdBG.name = "commandBackground";
@@ -192,8 +187,14 @@ package com.junkbyte.console.view
 			_cmdBG.visible = false;
 			updateCLScope("");
 			//
+			_menu = new MainPanelMenu(central, this);
+			_menu.y = -2;
+			_menu.addEventListener(Event.CHANGE, onMenuChanged);
+			//registerTFRoller(_menu, onMenuRollOver);
+			addChild(_menu);
+			//
 			init(640,100,true);
-			registerDragger(txtField);
+			registerDragger(_menu);
 			//
 			if(central.so[CL_HISTORY] is Array){
 				_cmdsHistory = central.so[CL_HISTORY];
@@ -416,7 +417,7 @@ package com.junkbyte.console.view
 			_lockScrollUpdate = false;
 			updateScroller();
 		}
-		private function lineShouldShow(line:Log):Boolean{
+		public function lineShouldShow(line:Log):Boolean{
 			return (
 				(
 					chShouldShow(line.ch)
@@ -627,8 +628,8 @@ package com.junkbyte.console.view
 		override public function set width(n:Number):void{
 			_lockScrollUpdate = true;
 			super.width = n;
+			_menu.width = n-6;
 			_traceField.width = n-4;
-			txtField.width = n-6;
 			_cmdField.width = width-15-_cmdField.x;
 			_cmdBG.width = n;
 			
@@ -648,12 +649,11 @@ package com.junkbyte.console.view
 			var fsize:int = style.menuFontSize;
 			var msize:Number = fsize+6+style.traceFontSize;
 			if(height != n){
-				_mini = n < (_cmdField.visible?(msize+fsize+4):msize);
+				_menu.mini = n < (_cmdField.visible?(msize+fsize+4):msize);
 			}
 			super.height = n;
-			var mini:Boolean = _mini || !style.topMenu;
-			_traceField.y = mini?0:fsize;
-			_traceField.height = n-(_cmdField.visible?(fsize+4):0)-(mini?0:fsize);
+			var mini:Boolean = _menu.mini || !style.topMenu;
+			updateTraceFHeight();
 			var cmdy:Number = n-(fsize+6);
 			_cmdField.y = cmdy;
 			_cmdPrefx.y = cmdy;
@@ -680,6 +680,11 @@ package com.junkbyte.console.view
 			_needUpdateTrace = true;
 			_lockScrollUpdate = false;
 		}
+		private function updateTraceFHeight():void{
+			var mini:Boolean = _menu.mini || !style.topMenu;
+			_traceField.y = mini?0:(_menu.y+_menu.height-6);
+			_traceField.height = height-(_cmdField.visible?(style.menuFontSize+4):0)-_traceField.y;
+		}
 		//
 		//
 		//
@@ -691,42 +696,10 @@ package com.junkbyte.console.view
 			}
 		}
 		private function _updateMenu():void{
-			var str:String = "<r><high>";
-			if(_mini || !style.topMenu){
-				str += "<menu><b> <a href=\"event:show\">‹</a>";
-			}else {
-				if(!central.panels.channelsPanel){
-					str += getChannelsLink(true);
-				}
-				str += "<menu> <b>";
-				
-				var extra:Boolean;
-				for (var X:String in _extraMenus){
-					str += "<a href=\"event:external_"+X+"\">"+X+"</a> ";
-					extra = true;
-				}
-				if(extra) str += "¦ ";
-				
-				str += doActive("<a href=\"event:fps\">F</a>", central.console.fpsMonitor>0);
-				str += doActive(" <a href=\"event:mm\">M</a>", central.console.memoryMonitor>0);
-				
-				str += doActive(" <a href=\"event:command\">CL</a>", commandLine);
-				
-				if(central.remoter.remoting != Remoting.RECIEVER){
-					if(config.displayRollerEnabled)
-					str += doActive(" <a href=\"event:roller\">Ro</a>", central.console.displayRoller);
-					if(config.rulerToolEnabled)
-					str += doActive(" <a href=\"event:ruler\">RL</a>", central.panels.rulerActive);
-				}
-				str += " ¦</b>";
-				str += " <a href=\"event:copy\">Sv</a>";
-				str += " <a href=\"event:priority\">P"+_priority+"</a>";
-				str += doActive(" <a href=\"event:pause\">P</a>", central.paused);
-				str += " <a href=\"event:clear\">C</a> <a href=\"event:close\">X</a> <a href=\"event:hide\">›</a>";
-			}
-			str += " </b></menu></high></r>";
-			txtField.htmlText = str;
-			txtField.scrollH = txtField.maxScrollH;
+			_menu.update();
+		}
+		private function onMenuChanged(e:Event):void{
+			updateTraceFHeight();
 		}
 		public function getChannelsLink(limited:Boolean = false):String{
 			var str:String = "<chs>";
@@ -743,10 +716,6 @@ package com.junkbyte.console.view
 				str += "<ch><a href=\"event:channels\"><b>"+(channels.length>len?"...":"")+"</b>^^ </a></ch>";
 			}
 			str += "</chs> ";
-			return str;
-		}
-		private function doActive(str:String, b:Boolean):String{
-			if(b) return "<menuHi>"+str+"</menuHi>";
 			return str;
 		}
 		public function onMenuRollOver(e:TextEvent, src:ConsolePanel = null):void{
@@ -791,7 +760,7 @@ package com.junkbyte.console.view
 			central.panels.tooltip(txt, src);
 		}
 		private function linkHandler(e:TextEvent):void{
-			txtField.setSelection(0, 0);
+			_menu.setSelection(0, 0);
 			stopDrag();
 			var t:String = e.text;
 			if(t == "pause"){
@@ -802,21 +771,11 @@ package com.junkbyte.console.view
 				}
 				central.panels.tooltip(null);
 			}else if(t == "hide"){
-				central.panels.tooltip();
-				_mini = true;
-				central.config.style.topMenu = false;
-				height = height;
-				updateMenu();
+				hideTopMenu();
 			}else if(t == "show"){
-				central.panels.tooltip();
-				_mini = false;
-				central.config.style.topMenu = true;
-				height = height;
-				updateMenu();
+				showTopMenu();
 			}else if(t == "close"){
-				central.panels.tooltip();
-				visible = false;
-				dispatchEvent(new Event(Event.CLOSE));
+				close();
 			}else if(t == "channels"){
 				central.panels.channelsPanel = !central.panels.channelsPanel;
 			}else if(t == "fps"){
@@ -866,8 +825,37 @@ package com.junkbyte.console.view
 				var menu:Array = _extraMenus[t.substring(9)];
 				if(menu) menu[0].apply(null, menu[1]);
 			}
-			txtField.setSelection(0, 0);
+			_menu.setSelection(0, 0);
 			e.stopPropagation();
+		}
+		override public function close():void{
+			central.panels.tooltip();
+			visible = false;
+			dispatchEvent(new Event(Event.CLOSE));
+		}
+		public function toggleTopMenu():void
+		{
+			if(_menu.mini){
+				showTopMenu();
+			}else{
+				hideTopMenu();
+			}
+		}
+		private function hideTopMenu():void
+		{
+			central.panels.tooltip();
+			_menu.mini = true;
+			central.config.style.topMenu = false;
+			height = height;
+			updateMenu();
+		}
+		private function showTopMenu():void
+		{
+			central.panels.tooltip();
+			_menu.mini = false;
+			central.config.style.topMenu = true;
+			height = height;
+			updateMenu();
 		}
 		public function onChannelPressed(chn:String):void{
 			var current:Array;
@@ -900,12 +888,13 @@ package com.junkbyte.console.view
 			central.so[PRIORITY_HISTORY] = _priority;
 			updateToBottom();
 			updateMenu();
+			dispatchEvent(new Event(FILTER_PRIORITY_CHANGED));
 		}
 		public function get priority():uint{
 			return _priority;
 		}
 		//
-		private function incPriority(down:Boolean):void{
+		public function incPriority(down:Boolean):void{
 			var top:uint = 10;
 			var bottom:uint;
 			var line:Log = central.logs.last;
@@ -1088,6 +1077,7 @@ package com.junkbyte.console.view
 			}
 			_needUpdateMenu = true;
 			this.height = height;
+			dispatchEvent(new Event(COMMAND_LINE_VISIBLITY_CHANGED));
 		}
 		public function get commandLine():Boolean{
 			return _cmdField.visible;

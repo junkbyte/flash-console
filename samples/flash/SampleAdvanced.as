@@ -52,7 +52,7 @@ package
 			Cc.config.commandLineAllowed = true;
 			Cc.width = 700;
 			Cc.height = 300;
-			Cc.remotingPassword = null; // Just so that remote don't ask for password
+			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			Cc.remoting = true;
 			
 			Cc.addMenu("T1", Cc.log, ["Greetings 1"], "This is a test menu 1");

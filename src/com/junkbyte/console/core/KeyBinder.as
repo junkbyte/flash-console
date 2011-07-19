@@ -35,15 +35,13 @@ package com.junkbyte.console.core
 	 */
 	public class KeyBinder extends ConsoleCore{
 		
-		private var _pass:String;
 		private var _passInd:int;
 		private var _binds:Object = {};
 		
 		private var _warns:uint;
 		
-		public function KeyBinder(console:ConsoleCentral, pass:String) {
+		public function KeyBinder(console:ConsoleCentral) {
 			super(console);
-			_pass = pass == ""?null:pass;
 			
 			console.cl.addCLCmd("keybinds", printBinds, "List all keybinds used");
 			
@@ -63,7 +61,7 @@ package com.junkbyte.console.core
 		}
 		
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
-			if(_pass && (!key.useKeyCode && key.key.charAt(0) == _pass.charAt(0))){
+			if(config.keystrokePassword && (!key.useKeyCode && key.key.charAt(0) == config.keystrokePassword.charAt(0))){
 				report("Error: KeyBind ["+key.key+"] is conflicting with Console password.",9);
 				return;
 			}
@@ -77,9 +75,9 @@ package com.junkbyte.console.core
 		}
 		public function keyDownHandler(e:KeyboardEvent):void{
 			var char:String = String.fromCharCode(e.charCode);
-			if(_pass != null && char && char == _pass.substring(_passInd,_passInd+1)){
+			if(config.keystrokePassword != null && char && char == config.keystrokePassword.substring(_passInd,_passInd+1)){
 				_passInd++;
-				if(_passInd >= _pass.length){
+				if(_passInd >= config.keystrokePassword.length){
 					_passInd = 0;
 					if(canTrigger()){
 						if(_central.panels.visible && !_central.panels.mainPanel.visible){

@@ -38,7 +38,6 @@ package com.junkbyte.console.core
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
-	import flash.utils.getTimer;
 
 	public class LogReferences extends ConsoleCore
 	{
@@ -55,7 +54,7 @@ package com.junkbyte.console.core
 		
 		private var _prevBank:Array = new Array();
 		private var _currentBank:Array = new Array();
-		private var _lastWithdraw:uint;
+		private var _msSinceWithdraw:uint;
 		
 		public function LogReferences(console:ConsoleCentral) {
 			super(console);
@@ -65,13 +64,13 @@ package com.junkbyte.console.core
 			});
 			remoter.registerCallback("focus", handleFocused);
 		}
-		public function update():void{
+		public function update(msDelta:uint):void{
 			if(_currentBank.length || _prevBank.length){
-				var time:int = getTimer();
-				if( time > _lastWithdraw+config.objectHardReferenceTimer*1000){
+				_msSinceWithdraw += msDelta;
+				if(_msSinceWithdraw >= config.objectHardReferenceTimer*1000){
 					_prevBank = _currentBank;
 					_currentBank = new Array();
-					_lastWithdraw = time;
+					_msSinceWithdraw = 0;
 				}
 			}
 		}

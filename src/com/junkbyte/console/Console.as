@@ -248,6 +248,9 @@ package com.junkbyte.console
 		//
 		// REMOTING
 		//
+		//
+		// REMOTING
+		//
 		public function get remoting():Boolean{
 			return _central.remoter.remoting == Remoting.SENDER;
 		}
@@ -256,9 +259,6 @@ package com.junkbyte.console
 		}
 		public function remotingSocket(host:String, port:int):void{
 			_central.remoter.remotingSocket(host, port);
-		}
-		public function set remotingPassword(password:String):void{
-			_central.remoter.remotingPassword = password;
 		}
 		//
 		//

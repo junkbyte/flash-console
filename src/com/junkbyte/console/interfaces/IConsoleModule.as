@@ -1,9 +1,9 @@
-package com.junkbyte.console.modules {
+package com.junkbyte.console.interfaces {
 	import com.junkbyte.console.Console;
 
 	public interface IConsoleModule {
 		
-		function initializeUsingConsole(consle:Console):void;
+		function initializeUsingConsole(console:Console):void;
 		
 		function getModuleName():String;
 		

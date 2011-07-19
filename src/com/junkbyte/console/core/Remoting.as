@@ -52,15 +52,13 @@ package com.junkbyte.console.core
 		private var _senders:Dictionary = new Dictionary();
 		
 		private var _lastLogin:String = "";
-		private var _password:String;
 		private var _loggedIn:Boolean;
 		
 		private var _sendID:String;
 		private var _lastReciever:String;
 		
-		public function Remoting(m:ConsoleCentral, pass:String) {
+		public function Remoting(m:ConsoleCentral) {
 			super(m);
-			_password = pass;
 			registerCallback("login", function(bytes:ByteArray):void{
 				login(bytes.readUTF());
 			});
@@ -203,10 +201,6 @@ package com.junkbyte.console.core
 				close();
 			}
 			_central.panels.updateMenu();
-		}
-		public function set remotingPassword(str:String):void{
-			_password = str;
-			if(_mode == SENDER && !str) login();
 		}
 		public function remotingSocket(host:String, port:int = 0):void{
 			if(_socket && _socket.connected){
@@ -353,9 +347,14 @@ package com.junkbyte.console.core
 				}
 			}
 		}
-		private function checkLogin(pass:String):Boolean{
-			return (!_password || _password == pass);
+		
+		private function checkLogin(pass : String) : Boolean {
+			return ((config.remotingPassword === null && config.keystrokePassword == pass) 
+					|| config.remotingPassword === "" 
+					|| config.remotingPassword == pass
+				);
 		}
+		
 		public function close():void{
 			if(_local){
 				try{
