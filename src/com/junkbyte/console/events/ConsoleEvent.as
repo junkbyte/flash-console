@@ -7,11 +7,11 @@ package com.junkbyte.console.events {
 	{
 		
 		public static const CONSOLE_STARTED:String = "consoleStarted";
+		public static const CONSOLE_SHOWN:String = "consoleShown";
+		public static const CONSOLE_HIDDEN:String = "consoleHidden";
 		
-		public static const MODEL_UPDATE:String = "modelUpdate";
-		public static const MODEL_UPDATED:String = "modelUpdated";
-		public static const VIEW_UPDATE:String = "viewUpdate";
-		public static const VIEW_UPDATED:String = "viewUpdated";
+		public static const UPDATE:String = "update";
+		public static const UPDATED:String = "updated";
 		
 		public function ConsoleEvent(type:String)
 		{

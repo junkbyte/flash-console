@@ -149,7 +149,7 @@ package com.junkbyte.console.core {
 			}
 		}
 		public function get fpsMonitor():Boolean{
-			if(remoter.remoting == Remoting.RECIEVER) return _central.panels.fpsMonitor;
+			if(remoter.remoting == Remoting.RECIEVER) return _central.display.fpsMonitor;
 			return _fpsGroup!=null;
 		}
 		public function set fpsMonitor(b:Boolean):void{
@@ -169,12 +169,12 @@ package com.junkbyte.console.core {
 					if(index>=0) _groups.splice(index, 1);
 					_fpsGroup = null;
 				}
-				_central.panels.mainPanel.updateMenu();
+				_central.display.mainPanel.updateMenu();
 			}
 		}
 		//
 		public function get memoryMonitor():Boolean{
-			if(remoter.remoting == Remoting.RECIEVER) return _central.panels.memoryMonitor;
+			if(remoter.remoting == Remoting.RECIEVER) return _central.display.memoryMonitor;
 			return _memGroup!=null;
 		}
 		public function set memoryMonitor(b:Boolean):void{
@@ -191,7 +191,7 @@ package com.junkbyte.console.core {
 					if(index>=0) _groups.splice(index, 1);
 					_memGroup = null;
 				}
-				_central.panels.mainPanel.updateMenu();
+				_central.display.mainPanel.updateMenu();
 			}
 		}
 		private function addSpecialGroup(type:int):GraphGroup{
@@ -271,9 +271,9 @@ package com.junkbyte.console.core {
 				while(bytes.bytesAvailable){
 					a.push(GraphGroup.FromBytes(bytes));
 				}
-				_central.panels.updateGraphs(a);
+				_central.display.updateGraphs(a);
 			}else{
-				_central.panels.updateGraphs(new Array());
+				_central.display.updateGraphs(new Array());
 			}
 		}
 	}

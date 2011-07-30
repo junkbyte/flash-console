@@ -44,7 +44,7 @@ package com.junkbyte.console.view {
 		{
 			super.registerConsole(console);
 			
-			this.mainPanel = console.central.panels.mainPanel;
+			this.mainPanel = console.central.display.mainPanel;
 			_textField.styleSheet = console.config.style.styleSheet;
 			
 			initBuildInMenus();
@@ -103,9 +103,13 @@ package com.junkbyte.console.view {
 		}
 		
 		public function addMenu(menu:IConsoleMenuItem):void{
-			moduleMenus.push(menu);
-			moduleMenus.sort(menuSorter);
-			menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
+			var index:int = moduleMenus.indexOf(menu);
+			if(index < 0)
+			{
+				moduleMenus.push(menu);
+				moduleMenus.sort(menuSorter);
+				menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
+			}
 		}
 		
 		public function removeMenu(menu:IConsoleMenuItem):void{
@@ -188,11 +192,11 @@ package com.junkbyte.console.view {
 				try{
 					file["save"](str,"log.txt");
 				}catch(err:Error) {
-					_central.report("Save to file is not supported in your flash player.", 8);
+					report("Save to file is not supported in your flash player.", 8);
 				}
 			}else{
 				System.setClipboard(str);
-				_central.report("Copied log to clipboard.", -1);
+				report("Copied log to clipboard.", -1);
 			}
 		}
 		
@@ -201,8 +205,8 @@ package com.junkbyte.console.view {
 			if(mini || !_central.config.style.topMenu){
 				str += "<a href=\"event:show\">‹</a>";
 			}else {
-				if(!_central.panels.channelsPanel){
-					str += _central.panels.mainPanel.getChannelsLink(true);
+				if(!_central.display.channelsPanel){
+					str += _central.display.mainPanel.getChannelsLink(true);
 				}
 				str += printMenus();
 			}
@@ -283,7 +287,7 @@ package com.junkbyte.console.view {
 				var menu:ConsoleMenuItem = getMenuForIndex(uint(t.substring(5)));
 				t = menu.getTooltip();
 			}
-			_central.panels.tooltip(t, _central.panels.mainPanel);
+			_central.display.tooltip(t, _central.display.mainPanel);
 		}
 	}
 }

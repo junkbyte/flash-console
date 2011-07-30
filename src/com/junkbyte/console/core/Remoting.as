@@ -200,7 +200,7 @@ package com.junkbyte.console.core
 			}else{
 				close();
 			}
-			_central.panels.updateMenu();
+			_central.display.updateMenu();
 		}
 		public function remotingSocket(host:String, port:int = 0):void{
 			if(_socket && _socket.connected){
@@ -315,7 +315,7 @@ package com.junkbyte.console.core
 		private function loginFail():void{
 			if(remoting != Remoting.RECIEVER) return;
 			report("Login Failed", 10);
-			_central.panels.mainPanel.requestLogin();
+			_central.display.mainPanel.requestLogin();
 		}
 		private function sendLoginSuccess():void{
 			_loggedIn = true;
@@ -332,7 +332,7 @@ package com.junkbyte.console.core
 			if(_lastLogin){
 				login(_lastLogin);
 			}else{
-				_central.panels.mainPanel.requestLogin();
+				_central.display.mainPanel.requestLogin();
 			}
 		}
 		public function login(pass:String = ""):void{

@@ -42,13 +42,11 @@ package com.junkbyte.console.modules.displayRoller
 
 	public class DisplayRoller extends ConsolePanel{
 		
-		public static const NAME:String = "rollerPanel";
-		
 		private var _settingKey:Boolean;
 		
 		public function DisplayRoller(m:ConsoleCentral) {
 			super(m);
-			name = NAME;
+			name = "rollerPanel";
 			init(60,100,false);
 			txtField = makeTF("rollerPrints");
 			txtField.multiline = true;
@@ -164,7 +162,7 @@ package com.junkbyte.console.modules.displayRoller
 			}else{
 				txt = null;
 			}
-			central.panels.tooltip(txt, this);
+			central.display.tooltip(txt, this);
 		}
 		protected function linkHandler(e:TextEvent):void{
 			TextField(e.currentTarget).setSelection(0, 0);
@@ -177,10 +175,10 @@ package com.junkbyte.console.modules.displayRoller
 					_settingKey = true;
 					stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
 				}
-				central.panels.tooltip(null);
+				central.display.tooltip(null);
 			}else if(e.text == "cancel"){
 				cancelCaptureKeySet();
-				central.panels.tooltip(null);
+				central.display.tooltip(null);
 			}
 			e.stopPropagation();
 		}
@@ -193,7 +191,7 @@ package com.junkbyte.console.modules.displayRoller
 			var char:String = String.fromCharCode(e.charCode);
 			cancelCaptureKeySet();
 			module.setRollerCaptureKey(char, e.shiftKey, e.ctrlKey, e.altKey);
-			central.panels.tooltip(null);
+			central.display.tooltip(null);
 		}
 	}
 }

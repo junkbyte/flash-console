@@ -52,9 +52,9 @@ package com.junkbyte.console.core
 		{
 			super.registerConsole(console);
 			
-			if(panels.stage){
+			if(display.stage){
 				stageAddedHandle();
-			}else panels.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			}else display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
 		
 		override public function unregisterConsole(console:Console):void
@@ -63,12 +63,12 @@ package com.junkbyte.console.core
 			
 			_central.cl.addCLCmd("keybinds", null, "");
 			
-			panels.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			panels.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			if(panels.stage)
+			display.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			display.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			if(display.stage)
 			{
-				panels.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-				panels.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+				display.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+				display.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			}
 		}
 		
@@ -84,17 +84,17 @@ package com.junkbyte.console.core
 		}
 		
 		private function stageAddedHandle(e:Event=null):void{
-			panels.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			panels.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			panels.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
-			panels.stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
+			display.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			display.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			display.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+			display.stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 		}
 		
 		private function stageRemovedHandle(e:Event=null):void{
-			panels.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			panels.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			panels.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-			panels.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			display.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			display.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+			display.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 		}
 
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
@@ -125,12 +125,7 @@ package com.junkbyte.console.core
 				if(_passInd >= config.keystrokePassword.length){
 					_passInd = 0;
 					if(canTrigger()){
-						if(_central.panels.visible && !_central.panels.mainPanel.visible){
-							_central.panels.mainPanel.visible = true;
-						}else {
-							_central.panels.visible = !_central.panels.visible;
-						}
-						_central.panels.mainPanel.moveBackSafePosition();
+						_central.display.toggleVisibility();
 					}else if(_warns < 3){
 						_warns++;
 						report("Password did not trigger because you have focus on an input TextField.", 8);
@@ -172,8 +167,8 @@ package com.junkbyte.console.core
 		private function canTrigger():Boolean{
 			// in try catch block incase the textfield is in another domain and we wont be able to access the type... (i think)
 			try {
-				if(_central.panels.stage && _central.panels.stage.focus is TextField){
-					var txt:TextField = _central.panels.stage.focus as TextField;
+				if(_central.display.stage && _central.display.stage.focus is TextField){
+					var txt:TextField = _central.display.stage.focus as TextField;
 					if(txt.type == TextFieldType.INPUT) {
 						return false;
 					}

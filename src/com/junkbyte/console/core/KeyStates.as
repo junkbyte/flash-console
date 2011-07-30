@@ -23,13 +23,13 @@ package com.junkbyte.console.core {
 		{
 			super.registerConsole(console);
 			
-			if(panels.stage)
+			if(display.stage)
 			{
 				stageAddedHandle();
 			}
 			else 
 			{
-				panels.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+				display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			}
 		}
 		
@@ -40,20 +40,20 @@ package com.junkbyte.console.core {
 		
 		protected function stageAddedHandle(e:Event=null):void
 		{
-			panels.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			panels.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			panels.stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true, 0, true);
-			panels.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
-			panels.stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
+			display.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			display.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			display.stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true, 0, true);
+			display.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+			display.stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 		}
 		
 		protected function stageRemovedHandle(e:Event=null):void
 		{
-			panels.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			panels.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			panels.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-			panels.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-			panels.stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true);
+			display.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			display.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+			display.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			display.stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true);
 		}
 
 		protected function onStageMouseDown(e : MouseEvent) : void

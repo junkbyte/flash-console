@@ -52,7 +52,7 @@ package com.junkbyte.console.modules
 		override public function registerConsole(console:Console):void
 		{
 			super.registerConsole(console);
-			_central.addEventListener(ConsoleEvent.MODEL_UPDATE, update);
+			_central.addEventListener(ConsoleEvent.UPDATE, update);
 		}
 	
 		override public function getModuleName():String

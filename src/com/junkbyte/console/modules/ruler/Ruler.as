@@ -23,6 +23,7 @@
 * 
 */
 package com.junkbyte.console.modules.ruler {
+	import flash.events.Event;
 	import com.junkbyte.console.ConsoleStyle;
 	import com.junkbyte.console.core.ConsoleCentral;
 
@@ -55,6 +56,7 @@ package com.junkbyte.console.modules.ruler {
 		
 		public function Ruler(central:ConsoleCentral) {
 			_central = central;
+			name = "ruler";
 			start();
 		}
 		
@@ -66,12 +68,12 @@ package com.junkbyte.console.modules.ruler {
 			addChild(_pointer);
 			var p:Point = new Point();
 			p = globalToLocal(p);
-			_area = new Rectangle(-_central.panels.stage.stageWidth*1.5+p.x, -_central.panels.stage.stageHeight*1.5+p.y, _central.panels.stage.stageWidth*3, _central.panels.stage.stageHeight*3);
+			_area = new Rectangle(-_central.display.stage.stageWidth*1.5+p.x, -_central.display.stage.stageHeight*1.5+p.y, _central.display.stage.stageWidth*3, _central.display.stage.stageHeight*3);
 			graphics.beginFill(_central.config.style.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
-			_posTxt = _central.panels.mainPanel.makeTF("positionText", true);
+			_posTxt = _central.display.mainPanel.makeTF("positionText", true);
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
 			addChild(_posTxt);
 			//
@@ -218,12 +220,11 @@ package com.junkbyte.console.modules.ruler {
 				exit();
 			}
 		}
-		public function exit():void{
-			if(_central.panels.contains(this)){
-				_central.panels.removeChild(this);
-			}
-			//_mainPanel.updateMenu();
+
+		public function exit() : void {
+			dispatchEvent(new Event(Event.CLOSE));
 		}
+		
 		private function makeTxtField(col:Number, b:Boolean = true):TextField{
 			var format:TextFormat = new TextFormat(_central.config.style.menuFont, _central.config.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
 			var txt:TextField = new TextField();

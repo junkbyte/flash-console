@@ -222,7 +222,7 @@ package com.junkbyte.console.core
 					if(prop) o = o[prop];
 					if(o){
 						if(str.indexOf("refe_")==0){
-							_central.console.explodech(_central.panels.mainPanel.reportChannel, o);
+							_central.console.explodech(_central.display.mainPanel.reportChannel, o);
 						}else{
 							focus(o, _dofull);
 						}

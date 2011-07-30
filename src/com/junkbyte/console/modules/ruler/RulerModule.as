@@ -40,17 +40,17 @@ package com.junkbyte.console.modules.ruler {
 		private function start():void
 		{
 			_ruler = new Ruler(_central);
-			_ruler.addEventListener(Event.COMPLETE, onExit, false, 0, true);
-			_central.panels.addChild(_ruler);
+			_ruler.addEventListener(Event.CLOSE, onExit, false, 0, true);
+			_central.display.addChild(_ruler);
 			menu.active = true;
 			menu.announceChanged();
 		}
 		
 		protected function onExit(event:Event):void
 		{
-			if(_ruler && _central.panels.contains(_ruler))
+			if(_ruler && _central.display.contains(_ruler))
 			{
-				_central.panels.removeChild(_ruler);
+				_central.display.removeChild(_ruler);
 			}
 			_ruler = null;
 			menu.active = false;

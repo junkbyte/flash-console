@@ -43,15 +43,15 @@ package
 			//
 			
 			Cc.start(this, "`"); // "`" - change for password. This will start hidden
-			Cc.visible = true; // show console, because having password hides console.
+			Cc.mainPanel.visible = true; // show console, because having password hides console.
 			Cc.commandLine = true; // enable command line
 			//Cc.memoryMonitor = true;
 			//Cc.fpsMonitor = true;
 			//Cc.displayRoller = true;
 			
 			Cc.config.commandLineAllowed = true;
-			Cc.width = 700;
-			Cc.height = 300;
+			Cc.mainPanel.width = 700;
+			Cc.mainPanel.height = 300;
 			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			Cc.remoting = true;
 			

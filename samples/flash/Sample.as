@@ -60,7 +60,7 @@ package
 			
 			Cc.commandLine = true; // Show command line
 			
-			Cc.height = 220; // change height. You can set x y width height to position/size the main panel
+			Cc.mainPanel.height = 220; // change height. You can set x y width height to position/size the main panel
 			//
 			// End of setup
 			//

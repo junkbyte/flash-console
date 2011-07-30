@@ -157,7 +157,7 @@ package com.junkbyte.console.core
 		//
 		//
 		public function update(msDelta:uint = 0):void{
-			dispatchEvent(ConsoleEvent.create(ConsoleEvent.MODEL_UPDATE));
+			dispatchEvent(ConsoleEvent.create(ConsoleEvent.UPDATE));
 			var hasNewLog:Boolean = _logs.update();
 			_refs.update(msDelta);
 			var graphsList:Array;
@@ -166,12 +166,12 @@ package com.junkbyte.console.core
 			 	graphsList = graphing.update(_panels.stage?_panels.stage.frameRate:0);
 			}
 			_remoter.update();
-			dispatchEvent(ConsoleEvent.create(ConsoleEvent.MODEL_UPDATED));
 			
-			dispatchEvent(ConsoleEvent.create(ConsoleEvent.VIEW_UPDATE));
+			dispatchEvent(ConsoleEvent.create(ConsoleEvent.UPDATED));
+			
 			_panels.update(paused, hasNewLog);
 			if(graphsList) _panels.updateGraphs(graphsList);
-			dispatchEvent(ConsoleEvent.create(ConsoleEvent.VIEW_UPDATED));
+			
 		}
 		
 		public function gc():void {
@@ -211,19 +211,19 @@ package com.junkbyte.console.core
 			if(newV) report("Paused", 10);
 			else report("Resumed", -1);
 			_paused = newV;
-			panels.mainPanel.setPaused(newV);
+			display.mainPanel.setPaused(newV);
 			dispatchEvent(new Event(ConsoleCentral.PAUSED));
 		}
 		//
 		//
 		public function report(obj:*, priority:int = 0, skipSafe:Boolean = true, channel:String = null):void{
-			if(!channel) channel = panels.mainPanel.reportChannel;
+			if(!channel) channel = display.mainPanel.reportChannel;
 			console.addLine([obj], priority, channel, false, skipSafe, 0);
 		}
 		//
 		public function get console():Console{return _console;}
 		public function get config():ConsoleConfig{return _config;}
-		public function get panels():ConsoleLayer{return _panels;}
+		public function get display():ConsoleLayer{return _panels;}
 		
 		public function get keyBinder():KeyBinder{return getModuleByName(KeyBinder.NAME) as KeyBinder;}
 		public function get keyStates():KeyStates{return getModuleByName(KeyStates.NAME) as KeyStates;}

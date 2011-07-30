@@ -267,7 +267,7 @@ package com.junkbyte.console.view
 			}
 		}
 		private function onCmdPrefRollOverOut(e : MouseEvent) : void {
-			central.panels.tooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", this);
+			central.display.tooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", this);
 		}
 		private function onCmdPrefMouseDown(e : MouseEvent) : void {
 			try{
@@ -455,7 +455,7 @@ package com.junkbyte.console.view
 				for each(var ch:String in a) _viewingChannels.push(ch);
 			}
 			updateToBottom();
-			central.panels.updateMenu();
+			central.display.updateMenu();
 		}
 		public function setIgnoredChannels(...channels:Array):void{
 			var a:Array = new Array();
@@ -471,7 +471,7 @@ package com.junkbyte.console.view
 				for each(var ch:String in a) _ignoredChannels.push(ch);
 			}
 			updateToBottom();
-			central.panels.updateMenu();
+			central.display.updateMenu();
 		}
 		//
 		private function setFilterText(str:String = ""):void{
@@ -755,14 +755,14 @@ package com.junkbyte.console.view
 				};
 				txt = obj[txt];
 			}
-			central.panels.tooltip(txt, src);
+			central.display.tooltip(txt, src);
 		}
 		private function linkHandler(e:TextEvent):void{
 			_menu.textField.setSelection(0, 0);
 			stopDrag();
 			var t:String = e.text;
 			if(t == "channels"){
-				central.panels.channelsPanel = !central.panels.channelsPanel;
+				central.display.channelsPanel = !central.display.channelsPanel;
 			}else if(t == "fps"){
 				central.console.fpsMonitor = !central.console.fpsMonitor;
 			}else if(t == "priority"){
@@ -792,7 +792,7 @@ package com.junkbyte.console.view
 			e.stopPropagation();
 		}
 		override public function close():void{
-			central.panels.tooltip();
+			central.display.tooltip();
 			visible = false;
 			dispatchEvent(new Event(Event.CLOSE));
 		}
@@ -806,7 +806,7 @@ package com.junkbyte.console.view
 		}
 		public function hideTopMenu():void
 		{
-			central.panels.tooltip();
+			central.display.tooltip();
 			_menu.mini = true;
 			central.config.style.topMenu = false;
 			height = height;
@@ -814,7 +814,7 @@ package com.junkbyte.console.view
 		}
 		public function showTopMenu():void
 		{
-			central.panels.tooltip();
+			central.display.tooltip();
 			_menu.mini = false;
 			central.config.style.topMenu = true;
 			height = height;

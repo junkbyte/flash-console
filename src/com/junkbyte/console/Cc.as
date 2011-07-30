@@ -23,6 +23,8 @@
 * 
 */
 package com.junkbyte.console {
+	import com.junkbyte.console.view.MainPanel;
+
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.LoaderInfo;
@@ -57,6 +59,18 @@ package com.junkbyte.console {
 			return _config;
 		}
 		
+		public static function get mainPanel():MainPanel{
+			if(_console) return _console.mainPanel;
+			return null;
+		}
+		public static function set visible(b:Boolean):void{
+			if(_console) _console.visible = b;
+		}
+		public static function get visible():Boolean{
+			if(_console) return _console.visible;
+			return false;
+		}
+		
 		/**
 		 * Start Console inside given Display.
 		 * <p>
@@ -73,11 +87,11 @@ package com.junkbyte.console {
 		 */
 		public static function start(container:DisplayObjectContainer, password:String = ""):void{
 			if(_console){
-				if(container && !_console.panels.parent) container.addChild(_console.panels);
+				if(container && !_console.display.parent) container.addChild(_console.display);
 			}else{
 				_console = new Console(password, config);
 				// if no parent display, console will always be hidden, but using Cc.remoting is still possible so its not the end.
-				if(container) container.addChild(_console.panels);
+				if(container) container.addChild(_console.display);
 			}
 		}
 		/**
@@ -99,7 +113,7 @@ package com.junkbyte.console {
 		 */
 		public static function startOnStage(display:DisplayObject, password:String = ""):void{
 			if(_console){
-				if(display && display.stage && _console.panels.parent != display.stage) display.stage.addChild(_console.panels);
+				if(display && display.stage && _console.display.parent != display.stage) display.stage.addChild(_console.display);
 			}else{
 				if(display && display.stage){
 					start(display.stage, password);
@@ -600,56 +614,6 @@ package com.junkbyte.console {
 			if(_console) _console.minimumPriority = level;
 		}
 		/**
-		 * width of main console panel
-		 */
-		public static function get width():Number{
-			if(_console) return _console.width;
-			return 0;
-		}
-		public static function set width(v:Number):void{
-			if(_console) _console.width = v;
-		}
-		/**
-		 * height of main console panel
-		 */
-		public static function get height():Number{
-			if(_console) return _console.height;
-			return 0;
-		}
-		public static function set height(v:Number):void{
-			if(_console) _console.height = v;
-		}
-		/**
-		 * x position of main console panel
-		 */
-		public static function get x():Number{
-			if(_console) return _console.x;
-			return 0;
-		}
-		public static function set x(v:Number):void{
-			if(_console) _console.x = v;
-		}
-		/**
-		 * y position of main console panel
-		 */
-		public static function get y():Number{
-			if(_console) return _console.y;
-			return 0;
-		}
-		public static function set y(v:Number):void{
-			if(_console) _console.y = v;
-		}
-		/**
-		 * visibility of all console panels
-		 */
-		public static function get visible():Boolean{
-			if(_console) return _console.panels.visible;
-			return false;
-		}
-		public static function set visible(v:Boolean):void{
-			if(_console) _console.visible = v;
-		}
-		/**
 		 * Start/stop FPS monitor graph.
 		 */
 		public static function get fpsMonitor():Boolean{
@@ -745,8 +709,8 @@ package com.junkbyte.console {
 		 */
 		public static function remove():void{
 			if(_console){
-				if(_console.panels.parent){
-					_console.panels.parent.removeChild(_console.panels);
+				if(_console.display.parent){
+					_console.display.parent.removeChild(_console.display);
 				}
 				_console = null;
 			}
@@ -780,8 +744,8 @@ package com.junkbyte.console {
 		private static function addedToStageHandle(e:Event):void{
 			var mc:DisplayObjectContainer = e.currentTarget as DisplayObjectContainer;
 			mc.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
-			if(_console && _console.panels.parent == null){
-				mc.stage.addChild(_console.panels);
+			if(_console && _console.display.parent == null){
+				mc.stage.addChild(_console.display);
 			}
 		}
 	}

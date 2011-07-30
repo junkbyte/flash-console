@@ -250,7 +250,7 @@ package com.junkbyte.console.view {
 				if(_type == FPS) central.console.fpsMonitor = false;
 				else if(_type == MEM) central.console.memoryMonitor = false;
 				else stop();
-				central.panels.removeGraph(_group);
+				central.display.removeGraph(_group);
 			}else if(e.text == "gc"){
 				central.gc();
 			} 
@@ -261,7 +261,7 @@ package com.junkbyte.console.view {
 			if(txt == "gc"){
 				txt = "Garbage collect::Requires debugger version of flash player";
 			}
-			central.panels.tooltip(txt, this);
+			central.display.tooltip(txt, this);
 		}
 	}
 }

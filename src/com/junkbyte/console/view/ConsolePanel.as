@@ -92,7 +92,7 @@ package com.junkbyte.console.view {
 		}
 		public function close():void {
 			stopDragging();
-			central.panels.tooltip();
+			central.display.tooltip();
 			if(parent){
 				parent.removeChild(this);
 			}

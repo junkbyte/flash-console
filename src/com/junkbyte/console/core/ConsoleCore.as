@@ -56,9 +56,9 @@ package com.junkbyte.console.core
 			return _central.config;
 		}
 		
-		public function get panels():ConsoleLayer
+		public function get display():ConsoleLayer
 		{
-			return _central.panels;
+			return _central.display;
 		}
 		
 		public function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void

@@ -51,7 +51,7 @@ package com.junkbyte.console.modules.displayRoller {
 		
 		protected function onRollerCaptureKey():void{
 			if(roller){
-				_central.report("Display Roller Capture:<br/>"+roller.getMapString(true), -1);
+				report("Display Roller Capture:<br/>"+roller.getMapString(true), -1);
 			}
 		}
 		
@@ -69,10 +69,10 @@ package com.junkbyte.console.modules.displayRoller {
 		{
 			if(roller) return;
 			roller = new DisplayRoller(_central);
-			roller.x = panels.mainPanel.x+panels.mainPanel.width-180;
-			roller.y = panels.mainPanel.y + 55;
+			roller.x = display.mainPanel.x+display.mainPanel.width-180;
+			roller.y = display.mainPanel.y + 55;
 			roller.addEventListener(Event.CLOSE, onClose, false, 0, true);
-			_central.panels.addPanel(roller);
+			_central.display.addPanel(roller);
 			menu.active = true;
 			menu.announceChanged();
 		}

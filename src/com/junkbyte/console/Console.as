@@ -24,6 +24,7 @@
 */
 package com.junkbyte.console 
 {
+	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.Remoting;
@@ -73,6 +74,10 @@ package com.junkbyte.console
 		public function Console(password:String = "", config:ConsoleConfig = null)
 		{
 			if(config == null) config = new ConsoleConfig();
+			
+			if (password) {
+				config.keystrokePassword = password;
+			}
 			
 			_central = createCentral(config);
 			_central.init();
@@ -139,7 +144,7 @@ package com.junkbyte.console
 		// WARNING: Add menu hard references the function and arguments.
 		//
 		public function addMenu(key:String, callback:Function, args:Array = null, rollover:String = null):void{
-			_central.panels.mainPanel.addMenu(key, callback, args, rollover);
+			_central.display.mainPanel.addMenu(key, callback, args, rollover);
 		}
 		//
 		// Panel settings
@@ -209,34 +214,36 @@ package com.junkbyte.console
 		//
 		//
 		//
+		/*
+		// USE Cc.display.x, Cc.display.width, etc
 		public function get width():Number{
-			return _central.panels.mainPanel.width;
+			return _central.display.mainPanel.width;
 		}
 		public function set width(newW:Number):void{
-			_central.panels.mainPanel.width = newW;
+			_central.display.mainPanel.width = newW;
 		}
 		public function set height(newW:Number):void{
-			_central.panels.mainPanel.height = newW;
+			_central.display.mainPanel.height = newW;
 		}
 		public function get height():Number{
-			return _central.panels.mainPanel.height;
+			return _central.display.mainPanel.height;
 		}
 		public function get x():Number{
-			return _central.panels.mainPanel.x;
+			return _central.display.mainPanel.x;
 		}
 		public function set x(newW:Number):void{
-			_central.panels.mainPanel.x = newW;
+			_central.display.mainPanel.x = newW;
 		}
 		public function set y(newW:Number):void{
-			_central.panels.mainPanel.y = newW;
+			_central.display.mainPanel.y = newW;
 		}
 		public function get y():Number{
-			return _central.panels.mainPanel.y;
+			return _central.display.mainPanel.y;
 		}
 		public function set visible(v:Boolean):void{
-			_central.panels.visible = v;
-			if(v) _central.panels.mainPanel.visible = true;
-		}
+			_central.display.visible = v;
+			if(v) _central.display.mainPanel.visible = true;
+		}*/
 		//
 		// REMOTING
 		//
@@ -256,13 +263,13 @@ package com.junkbyte.console
 		//
 		//
 		public function setViewingChannels(...channels:Array):void{
-			_central.panels.mainPanel.setViewingChannels.apply(this, channels);
+			_central.display.mainPanel.setViewingChannels.apply(this, channels);
 		}
 		public function setIgnoredChannels(...channels:Array):void{
-			_central.panels.mainPanel.setIgnoredChannels.apply(this, channels);
+			_central.display.mainPanel.setIgnoredChannels.apply(this, channels);
 		}
 		public function set minimumPriority(level:uint):void{
-			_central.panels.mainPanel.priority = level;
+			_central.display.mainPanel.priority = level;
 		}
 		public function addLine(strings:Array, priority:int = 0, channel:* = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
 			var txt:String = "";
@@ -282,10 +289,10 @@ package com.junkbyte.console
 		// COMMAND LINE
 		//
 		public function set commandLine(b:Boolean):void{
-			_central.panels.mainPanel.commandLine = b;
+			_central.display.mainPanel.commandLine = b;
 		}
 		public function get commandLine ():Boolean{
-			return _central.panels.mainPanel.commandLine;
+			return _central.display.mainPanel.commandLine;
 		}
 		public function addSlashCommand(name:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void{
 			_central.cl.addSlashCommand(name, callback, desc, alwaysAvailable, endOfArgsMarker);
@@ -303,7 +310,12 @@ package com.junkbyte.console
 			addLine([string], priority, channel, false, false, depth>=0?depth:_central.config.defaultStackDepth);
 		}
 		
-		
+		public function set visible(v:Boolean):void{
+			display.visible = v;
+		}
+		public function get visible():Boolean{
+			return display.visible;
+		}
 		
 		public function log(...strings):void{
 			addLine(strings, LOG);
@@ -366,8 +378,11 @@ package com.junkbyte.console
 		public function get central():ConsoleCentral{
 			return _central;
 		}
-		public function get panels():ConsoleLayer{
-			return _central.panels;
+		public function get display():ConsoleLayer{
+			return _central.display;
+		}
+		public function get mainPanel():MainPanel{
+			return display.mainPanel;
 		}
 		public function get config():ConsoleConfig{
 			return _central.config;
@@ -377,8 +392,8 @@ package com.junkbyte.console
 		//
 		public function clear(channel:String = null):void{
 			_central.logs.clear(channel);
-			if(!paused) _central.panels.mainPanel.updateToBottom();
-			_central.panels.updateMenu();
+			if(!paused) _central.display.mainPanel.updateToBottom();
+			_central.display.updateMenu();
 		}
 		public function getAllLog(splitter:String = "\r\n"):String{
 			return _central.logs.getLogsAsString(splitter);

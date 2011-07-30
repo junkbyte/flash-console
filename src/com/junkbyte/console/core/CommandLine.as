@@ -127,7 +127,7 @@ package com.junkbyte.console.core
 			}else{
 				var v:* = _central.refs.getRefById(id);
 				if(v) _central.cl.setReturned(v, true, false);
-				else _central.report("Reference no longer exist.", -2);
+				else report("Reference no longer exist.", -2);
 			}
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void {
@@ -404,10 +404,10 @@ package com.junkbyte.console.core
 		}
 		private function explodeCmd(param:String = "0"):void{
 			var depth:int = int(param);
-			_central.console.explodech(_central.panels.mainPanel.reportChannel, _scope, depth<=0?3:depth);
+			_central.console.explodech(_central.display.mainPanel.reportChannel, _scope, depth<=0?3:depth);
 		}
 		private function mapCmd(param:String = "0"):void{
-			_central.console.mapch(_central.panels.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
+			_central.console.mapch(_central.display.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
 		}
 		private function funCmd(param:String = ""):void{
 			var fakeFunction:FakeFunction = new FakeFunction(run, param);

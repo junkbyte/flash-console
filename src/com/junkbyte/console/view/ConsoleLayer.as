@@ -24,6 +24,7 @@
 */
 package com.junkbyte.console.view 
 {
+	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.vos.GraphGroup;
 
@@ -66,6 +67,49 @@ package com.junkbyte.console.view
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
+		
+		public function toggleVisibility():void
+		{
+			if(visible && !mainPanel.visible){
+				mainPanel.visible = true;
+			}else {
+				visible = !visible;
+			}
+			mainPanel.moveBackSafePosition();
+			
+		}
+		
+		override public function get width():Number{
+			return mainPanel.width;
+		}
+		override public function set width(newW:Number):void{
+			mainPanel.width = newW;
+		}
+		override public function set height(newW:Number):void{
+			mainPanel.height = newW;
+		}
+		override public function get height():Number{
+			return mainPanel.height;
+		}
+		override public function get x():Number{
+			return mainPanel.x;
+		}
+		override public function set x(newW:Number):void{
+			mainPanel.x = newW;
+		}
+		override public function set y(newW:Number):void{
+			mainPanel.y = newW;
+		}
+		override public function get y():Number{
+			return mainPanel.y;
+		}
+		override public function set visible(v:Boolean):void{
+			super.visible = v;
+			if(v) mainPanel.visible = true;
+			
+			_central.console.dispatchEvent(ConsoleEvent.create(visible ? ConsoleEvent.CONSOLE_SHOWN : ConsoleEvent.CONSOLE_HIDDEN));
+		}
+		
 		private function stageAddedHandle(e:Event=null):void{
 			if(_central.cl.base == null) _central.cl.base = parent;
 			if(loaderInfo){
