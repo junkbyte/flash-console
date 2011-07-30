@@ -24,12 +24,18 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.events.EventDispatcher;
-	import flash.events.Event;
+	import flash.system.System;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.modules.displayRoller.DisplayRollerModule;
+	import com.junkbyte.console.modules.ruler.RulerModule;
 	import com.junkbyte.console.view.ConsoleLayer;
+	import com.junkbyte.console.view.MainPanelMenu;
 
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.net.SharedObject;
 	/**
 	 * Console is the main class. 
@@ -39,17 +45,17 @@ package com.junkbyte.console.core
 	 */
 	public class ConsoleCentral extends EventDispatcher{
 		
+		
+		
 		public static const PAUSED:String = "pause";
+		
+		protected var _modulesByName:Object = new Object();
 		
 		//
 		private var _console:Console;
 		private var _config:ConsoleConfig;
 		private var _panels:ConsoleLayer;
-		private var _cl:CommandLine;
-		private var _kb:KeyBinder;
 		private var _refs:LogReferences;
-		private var _mm:MemoryMonitor;
-		private var _graphing:Graphing;
 		private var _remoter:Remoting;
 		private var _tools:ConsoleTools;
 		//
@@ -72,19 +78,19 @@ package com.junkbyte.console.core
 			_console = console;
 			if(config == null) config = new ConsoleConfig();
 			_config = config;
-			//
-			
+		}
+		
+		public function init():void
+		{
 			_config.style.updateStyleSheet();
 			_panels = new ConsoleLayer(this);
 			
 			_remoter = new Remoting(this);
 			_logs = new Logs(this);
 			_refs = new LogReferences(this);
-			_cl = new CommandLine(this);
+			registerModule(new CommandLine());
 			_tools =  new ConsoleTools(this);
-			_graphing = new Graphing(this);
-			_mm = new MemoryMonitor(this);
-			_kb = new KeyBinder(this);
+			registerModule(new Graphing());
 			
 			cl.addCLCmd("remotingSocket", function(str:String = ""):void{
 				var args:Array = str.split(/\s+|\:/);
@@ -101,23 +107,94 @@ package com.junkbyte.console.core
 			}
 			if(config.keystrokePassword) _panels.visible = false;
 			_panels.start();
+
+			
+			initBaseModules();
+			
+			//_central.remoter.registerCallback("gc", gc);
+			
+		}
+		
+		public function initBaseModules():void
+		{
+			registerModule(new KeyBinder());
+			registerModule(new KeyStates());
+			registerModule(new RulerModule());
+			registerModule(new DisplayRollerModule());
+		}
+		
+		public function getModuleByName(moduleName:String):IConsoleModule
+		{
+			return _modulesByName[moduleName];
+		}
+		
+		public function registerModule(module:IConsoleModule):void
+		{
+			var moduleName:String = module.getModuleName();
+			
+			var currentModule:IConsoleModule = _modulesByName[moduleName];
+			if(currentModule != module)
+			{
+				if(currentModule != null)
+				{
+					currentModule.unregisterConsole(console);
+				}
+				_modulesByName[moduleName] = module;
+				module.registerConsole(console);
+			}
+		}
+		
+		public function unregisterModule(module:IConsoleModule):void
+		{
+			var moduleName:String = module.getModuleName();
+			if(_modulesByName[moduleName] == module)
+			{
+				delete _modulesByName[moduleName];
+				module.unregisterConsole(console);
+			}
 		}
 		//
 		//
 		//
 		public function update(msDelta:uint = 0):void{
+			dispatchEvent(ConsoleEvent.create(ConsoleEvent.MODEL_UPDATE));
 			var hasNewLog:Boolean = _logs.update();
 			_refs.update(msDelta);
-			_mm.update();
 			var graphsList:Array;
 			if(remoter.remoting != Remoting.RECIEVER)
 			{
-			 	graphsList = _graphing.update(_panels.stage?_panels.stage.frameRate:0);
+			 	graphsList = graphing.update(_panels.stage?_panels.stage.frameRate:0);
 			}
 			_remoter.update();
+			dispatchEvent(ConsoleEvent.create(ConsoleEvent.MODEL_UPDATED));
 			
+			dispatchEvent(ConsoleEvent.create(ConsoleEvent.VIEW_UPDATE));
 			_panels.update(paused, hasNewLog);
 			if(graphsList) _panels.updateGraphs(graphsList);
+			dispatchEvent(ConsoleEvent.create(ConsoleEvent.VIEW_UPDATED));
+		}
+		
+		public function gc():void {
+			if(remoter.remoting == Remoting.RECIEVER){
+				try{
+					//report("Sending garbage collection request to client",-1);
+					remoter.send("gc");
+				}catch(e:Error){
+					report(e,10);
+				}
+			}else{
+				var ok:Boolean;
+				try{
+					// have to put in brackes cause some compilers will complain.
+					if(System["gc"] != null){
+						System["gc"]();
+						ok = true;
+					}
+				}catch(e:Error){ }
+				
+				var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
+				report(str,(ok?-1:10));
+			}
 		}
 		//
 		// Panel settings
@@ -147,14 +224,18 @@ package com.junkbyte.console.core
 		public function get console():Console{return _console;}
 		public function get config():ConsoleConfig{return _config;}
 		public function get panels():ConsoleLayer{return _panels;}
-		public function get cl():CommandLine{return _cl;}
+		
+		public function get keyBinder():KeyBinder{return getModuleByName(KeyBinder.NAME) as KeyBinder;}
+		public function get keyStates():KeyStates{return getModuleByName(KeyStates.NAME) as KeyStates;}
+		public function get mainPanelMenu():MainPanelMenu{return getModuleByName(MainPanelMenu.NAME) as MainPanelMenu;}
+		
+		public function get cl():CommandLine{return getModuleByName(CommandLine.NAME) as CommandLine;}
+		
 		public function get remoter():Remoting{return _remoter;}
-		public function get graphing():Graphing{return _graphing;}
+		public function get graphing():Graphing{return getModuleByName(Graphing.NAME) as Graphing;}
 		public function get refs():LogReferences{return _refs;}
 		public function get logs():Logs{return _logs;}
 		public function get tools():ConsoleTools{return _tools;}
-		public function get kb():KeyBinder{return _kb;}
-		public function get mm():MemoryMonitor{return _mm;}
 		
 		public function get so():Object{return _soData;}
 		public function updateSO(key:String = null):void{

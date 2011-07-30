@@ -24,6 +24,7 @@
 */
 package com.junkbyte.console.core 
 {
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.Cc;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -157,7 +158,17 @@ package com.junkbyte.console.core
 			var txt:String = "";
 			var lines:Array = str.split(/\n\sat\s/);
 			var len:int = lines.length;
-			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(ConsoleCentral)+"|"+getQualifiedClassName(Cc));
+			var classStrs:Array = new Array("Function", getQualifiedClassName(Console), getQualifiedClassName(Cc));
+			
+			if(config.stackTraceExitClasses)
+			{
+				for each(var obj:Object in config.stackTraceExitClasses)
+				{
+					classStrs.push(getQualifiedClassName(obj));
+				}
+			}
+			
+			var reg:RegExp = new RegExp(classStrs.join("|"));
 			var found:Boolean = false;
 			for (var i:int = 2; i < len; i++){
 				if(!found && (lines[i].search(reg) != 0)){

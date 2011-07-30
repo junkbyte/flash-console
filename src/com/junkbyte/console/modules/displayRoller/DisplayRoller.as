@@ -22,11 +22,13 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.view 
+package com.junkbyte.console.modules.displayRoller 
 {
 	import com.junkbyte.console.KeyBind;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.LogReferences;
+	import com.junkbyte.console.view.ConsolePanel;
+
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
@@ -38,13 +40,13 @@ package com.junkbyte.console.view
 	import flash.text.TextFieldAutoSize;
 	import flash.utils.Dictionary;
 
-	public class RollerPanel extends ConsolePanel{
+	public class DisplayRoller extends ConsolePanel{
 		
 		public static const NAME:String = "rollerPanel";
 		
 		private var _settingKey:Boolean;
 		
-		public function RollerPanel(m:ConsoleCentral) {
+		public function DisplayRoller(m:ConsoleCentral) {
 			super(m);
 			name = NAME;
 			init(60,100,false);
@@ -57,11 +59,18 @@ package com.junkbyte.console.view
 			addEventListener(Event.ENTER_FRAME, _onFrame);
 			addEventListener(Event.REMOVED_FROM_STAGE, removeListeners);
 		}
+		
+		public function get module():DisplayRollerModule 
+		{
+			return central.getModuleByName(DisplayRollerModule.NAME) as DisplayRollerModule;
+		}
+		
 		private function removeListeners(e:Event=null):void{
 			removeEventListener(Event.ENTER_FRAME, _onFrame);
 			removeEventListener(Event.REMOVED_FROM_STAGE, removeListeners);
 			if(stage) stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 		}
+		
 		private function _onFrame(e:Event):void{
 			if(!stage){
 				close();
@@ -77,11 +86,12 @@ package com.junkbyte.console.view
 			width = txtField.width+4;
 			height = txtField.height;
 		}
+		
 		public function getMapString(dolink:Boolean):String{
 			var stg:Stage = stage;
 			var str:String = "";
 			if(!dolink){
-				var key:String = central.console.rollerCaptureKey?central.console.rollerCaptureKey.key:"unassigned";
+				var key:String = module.rollerCaptureKey?module.rollerCaptureKey.key:"unassigned";
 				str = "<menu> <a href=\"event:close\"><b>X</b></a></menu> Capture key: <menu><a href=\"event:capture\">"+key+"</a></menu><br/>";
 			}
 			var p:Point = new Point(stg.mouseX, stg.mouseY);
@@ -137,14 +147,13 @@ package com.junkbyte.console.view
 			cancelCaptureKeySet();
 			removeListeners();
 			super.close();
-			central.panels.updateMenu(); // should be black boxed :/
 		}
 		private function onMenuRollOver(e:TextEvent):void{
 			var txt:String = e.text?e.text.replace("event:",""):"";
 			if(txt == "close"){
 				txt = "Close";
 			}else if(txt == "capture"){
-				var key:KeyBind = central.console.rollerCaptureKey;
+				var key:KeyBind = module.rollerCaptureKey;
 				if(key){
 					txt = "Unassign key ::"+key.key;
 				}else{
@@ -162,8 +171,8 @@ package com.junkbyte.console.view
 			if(e.text == "close"){
 				close();
 			}else if(e.text == "capture"){
-				if(central.console.rollerCaptureKey){
-					central.console.setRollerCaptureKey(null);
+				if(module.rollerCaptureKey){
+					module.setRollerCaptureKey(null);
 				}else{
 					_settingKey = true;
 					stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
@@ -183,7 +192,7 @@ package com.junkbyte.console.view
 			if(!e.charCode) return;
 			var char:String = String.fromCharCode(e.charCode);
 			cancelCaptureKeySet();
-			central.console.setRollerCaptureKey(char, e.shiftKey, e.ctrlKey, e.altKey);
+			module.setRollerCaptureKey(char, e.shiftKey, e.ctrlKey, e.altKey);
 			central.panels.tooltip(null);
 		}
 	}

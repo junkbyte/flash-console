@@ -12,6 +12,7 @@ package com.junkbyte.console.vos {
 		public var tooltip:String;
 		public var visible:Boolean;
 		public var active:Boolean;
+		public var sortPriority:int;
 		
 		public function ConsoleMenuItem(name : String, cb:Function = null, args:Array = null, tooltip:String = null) : void {
 			this.name = name;
@@ -36,10 +37,6 @@ package com.junkbyte.console.vos {
 			}
 		}
 		
-		public function isButton():Boolean{
-			return callback != null;
-		}
-		
 		// return true if you want it to be on active state (bold text)
 		public function isActive():Boolean{
 			return active;
@@ -47,6 +44,10 @@ package com.junkbyte.console.vos {
 		
 		public function getTooltip():String{
 			return tooltip;
+		}
+		
+		public function getSortPriority():int{
+			return sortPriority;
 		}
 		
 		public function announceChanged():void{

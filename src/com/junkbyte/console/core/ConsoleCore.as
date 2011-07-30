@@ -24,38 +24,75 @@
 */
 package com.junkbyte.console.core 
 {
+	import flash.events.Event;
+	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.view.ConsoleLayer;
 
 	import flash.events.EventDispatcher;
-	public class ConsoleCore extends EventDispatcher
+	public class ConsoleCore extends EventDispatcher implements IConsoleModule
 	{
-		
 		protected var _central:ConsoleCentral;
 		
-		public function ConsoleCore(c:ConsoleCentral){
+		public function ConsoleCore(c:ConsoleCentral = null)
+		{
 			_central = c;
 		}
 		
-		protected function get remoter():Remoting{
+		protected function get remoter():Remoting
+		{
 			return _central.remoter;
 		}
 		
-		protected function get console():Console{
+		protected function get console():Console
+		{
 			return _central.console;
 		}
 		
-		protected function get config():ConsoleConfig{
+		protected function get config():ConsoleConfig
+		{
 			return _central.config;
 		}
 		
-		public function get panels():ConsoleLayer{
+		public function get panels():ConsoleLayer
+		{
 			return _central.panels;
 		}
 		
-		public function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void{
+		public function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void
+		{
 			_central.report(obj, priority, skipSafe, ch);
+		}
+		
+		public function registerConsole(console:Console):void
+		{
+			_central = console.central;
+			if(console.started)
+			{
+				onConsoleStarted();
+			}
+			else {
+				console.addEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted, false, 0, true);
+			}
+			
+		}
+		
+		public function unregisterConsole(console:Console):void
+		{
+			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
+			_central = null;
+		}
+		
+		protected function onConsoleStarted(e:Event = null):void
+		{
+			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
+		}
+		
+		public function getModuleName():String
+		{
+			return null;
 		}
 	}
 }

@@ -252,7 +252,7 @@ package com.junkbyte.console.view {
 				else stop();
 				central.panels.removeGraph(_group);
 			}else if(e.text == "gc"){
-				central.console.gc();
+				central.gc();
 			} 
 			e.stopPropagation();
 		}

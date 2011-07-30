@@ -22,27 +22,44 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core 
+package com.junkbyte.console.modules 
 {
-	import flash.system.System;
+	import com.junkbyte.console.Console;
+	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleCore;
+	import com.junkbyte.console.events.ConsoleEvent;
+
+	import flash.events.Event;
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
 
-	public class MemoryMonitor extends ConsoleCore{
+	public class GarbageCollectionMonitor extends ConsoleCore{
+		
+		public static const NAME:String = "garbageCollectionMonitor";
 		
 		private var _namesList:Object;
 		private var _objectsList:Dictionary;
 		private var _count:uint;
 		//
 		//
-		public function MemoryMonitor(m:ConsoleCentral) {
+		public function GarbageCollectionMonitor(m:ConsoleCentral) {
 			super(m);
 			_namesList = new Object();
 			_objectsList = new Dictionary(true);
-			
-			_central.remoter.registerCallback("gc", gc);
 		}
+		
+		override public function registerConsole(console:Console):void
+		{
+			super.registerConsole(console);
+			_central.addEventListener(ConsoleEvent.MODEL_UPDATE, update);
+		}
+	
+		override public function getModuleName():String
+		{
+			return NAME;
+		}
+		
 		public function watch(obj:Object, n:String):String{
 			var className:String = getQualifiedClassName(obj);
 			if(!n) n = className+"@"+getTimer();
@@ -80,7 +97,7 @@ package com.junkbyte.console.core
 		//
 		//
 		//
-		public function update():void {
+		protected function update(event:Event):void {
 			if(_count == 0) return;
 			var arr:Array = new Array();
 			var o:Object = new Object();
@@ -99,29 +116,6 @@ package com.junkbyte.console.core
 		
 		public function get count():uint{
 			return _count;
-		}
-		
-		public function gc():void {
-			if(remoter.remoting == Remoting.RECIEVER){
-				try{
-					//report("Sending garbage collection request to client",-1);
-					remoter.send("gc");
-				}catch(e:Error){
-					report(e,10);
-				}
-			}else{
-				var ok:Boolean;
-				try{
-					// have to put in brackes cause some compilers will complain.
-					if(System["gc"] != null){
-						System["gc"]();
-						ok = true;
-					}
-				}catch(e:Error){ }
-				
-				var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
-				report(str,(ok?-1:10));
-			}
 		}
 	}
 }

@@ -24,6 +24,7 @@
 */
 package com.junkbyte.console.core 
 {
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
 
@@ -33,6 +34,8 @@ package com.junkbyte.console.core
 	import flash.utils.getQualifiedClassName;
 
 	public class CommandLine extends ConsoleCore{
+		
+		public static const NAME:String = "commandLine";
 		
 		private static const DISABLED:String = "<b>Advanced CommandLine is disabled.</b>\nEnable by setting `Cc.config.commandLineAllowed = true;´\nType <b>/commands</b> for permitted commands.";
 		
@@ -47,22 +50,10 @@ package com.junkbyte.console.core
 		
 		public var localCommands:Array = new Array("filter", "filterexp");
 		
-		public function CommandLine(m:ConsoleCentral) {
-			super(m);
+		public function CommandLine() {
+			super();
 			_saved = new WeakObject();
-			_scope = m;
 			_slashCmds = new Object();
-			_prevScope = new WeakRef(m);
-			_saved.set("C", m);
-			
-			remoter.registerCallback("cmd", function(bytes:ByteArray):void{
-				run(bytes.readUTF());
-			});
-			remoter.registerCallback("scope", function(bytes:ByteArray):void{
-				handleScopeEvent(bytes.readUnsignedInt());
-			});
-			remoter.registerCallback("cls", handleScopeString);
-			remoter.addEventListener(Event.CONNECT, sendCmdScope2Remote);
 			
 			addCLCmd("help", printHelp, "How to use command line");
 			addCLCmd("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
@@ -77,8 +68,41 @@ package com.junkbyte.console.core
 			addCLCmd("autoscope", autoscopeCmd, "Toggle autoscoping.");
 			addCLCmd("base", baseCmd, "Return to base scope");
 			addCLCmd("/", prevCmd, "Return to previous scope");
-			
 		}
+		
+		override public function registerConsole(console:Console):void
+		{
+			super.registerConsole(console);
+			
+			_scope = console;
+			_prevScope = new WeakRef(console);
+			_saved.set("C", console);
+			
+			remoter.registerCallback("cmd", function(bytes:ByteArray):void{
+				run(bytes.readUTF());
+			});
+			remoter.registerCallback("scope", function(bytes:ByteArray):void{
+				handleScopeEvent(bytes.readUnsignedInt());
+			});
+			remoter.registerCallback("cls", handleScopeString);
+			remoter.addEventListener(Event.CONNECT, sendCmdScope2Remote);
+		}
+		
+		override public function unregisterConsole(console:Console):void
+		{
+			super.unregisterConsole(console);
+			remoter.registerCallback("cmd", null);
+			remoter.registerCallback("scope", null);
+			remoter.registerCallback("cls", null);
+			remoter.removeEventListener(Event.CONNECT, sendCmdScope2Remote);
+		}
+		
+		override public function getModuleName():String
+		{
+			return NAME;
+		}
+		
+		
 		public function set base(obj:Object):void {
 			if (base) {
 				report("Set new commandLine base from "+base+ " to "+ obj, 10);
@@ -167,8 +191,12 @@ package com.junkbyte.console.core
 			var split:Array = n.split("|");
 			for(var i:int = 0; i<split.length; i++){
 				n = split[i];
-				_slashCmds[n] = new SlashCommand(n, callback, desc, false, allow, endOfArgsMarker);
-				if(i>0) _slashCmds.setPropertyIsEnumerable(n, false);
+				if(callback != null){
+					_slashCmds[n] = new SlashCommand(n, callback, desc, false, allow, endOfArgsMarker);
+					if(i>0) _slashCmds.setPropertyIsEnumerable(n, false);
+				}else{
+					delete _slashCmds[n];
+				}
 			}
 		}
 		public function addSlashCommand(n:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void{

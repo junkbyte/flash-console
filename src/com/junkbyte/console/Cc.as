@@ -481,25 +481,28 @@ package com.junkbyte.console {
 		// Memory management tools
 		//
 		/**
+		 * NO LONGER SUPPOPRTED. USE GarbageCollectionMonitor Module...
 		 * Watch an object to be notified in console when it is being garbage collected
 		 *
 		 * @param obj	Object to watch
 		 * @param name	Object's identification/name
 		 * 
 		 * @return	Name console used to identify the object - this can be different to param n if another object of the same name is already being watched
-		 */
+		 
 		public static function watch(obj:Object, name:String = null):String{
 			if(_console) return _console.watch(obj, name);
 			return null;
 		}
 		/**
+		 * NO LONGER SUPPOPRTED. USE GarbageCollectionMonitor Module...
 		 * Stop watching an object from garbage collection
 		 *
 		 * @param name	identification/name given to the object for watch
-		 */
+		
 		public static function unwatch(name:String):void{
 			if(_console) _console.unwatch(name);
 		}
+		 */
 		//
 		// Graphing utilites
 		//
@@ -677,8 +680,9 @@ package com.junkbyte.console {
 			if(_console) _console.commandLine = v;
 		}
 		/**
+		// NO LONGER SUPPOPRTED. USE DisplayRollerModule .start() ...
 		 * Start/stop Display Roller.
-		 */
+		
 		public static function get displayRoller():Boolean{
 			if(_console) return _console.displayRoller;
 			return false;
@@ -700,10 +704,9 @@ package com.junkbyte.console {
 		 * @param alt Set to true if ALT key press is required to trigger.
 		 * @param shift Set to true if SHIFT key press is required to trigger.
 		 * 
-		 */
 		public static function setRollerCaptureKey(character:String, ctrl:Boolean = false, alt:Boolean = false, shift:Boolean = false):void{
 			if(_console) _console.setRollerCaptureKey(character, shift, ctrl, alt);
-		}
+		} */
 		//
 		// Remoting
 		//

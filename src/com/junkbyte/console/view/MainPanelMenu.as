@@ -1,8 +1,10 @@
 package com.junkbyte.console.view {
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleCore;
+	import com.junkbyte.console.core.KeyStates;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
-
 	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.net.FileReference;
@@ -12,9 +14,11 @@ package com.junkbyte.console.view {
 	
 	
 	[Event(name="change", type="flash.events.Event")]
-	public class MainPanelMenu extends TextField {
+	public class MainPanelMenu extends ConsoleCore {
 		
-		private var central:ConsoleCentral;
+		public static const NAME:String = "mainPanelMenu";
+		
+		protected var _textField:TextField;
 		private var mainPanel:MainPanel;
 		
 		private var buildInMenus:Array;
@@ -27,20 +31,36 @@ package com.junkbyte.console.view {
 		
 		public var mini:Boolean;
 		
-		public function MainPanelMenu(central:ConsoleCentral, mainPanel:MainPanel) {
+		public function MainPanelMenu() {
 			super();
-			this.central = central;
-			this.mainPanel = mainPanel;
-			name = "menuField";
-			wordWrap = true;
-			multiline = true;
-			autoSize = TextFieldAutoSize.RIGHT;
-			styleSheet = central.config.style.styleSheet;
+			_textField = new TextField();
+			_textField.name = "menuField";
+			_textField.wordWrap = true;
+			_textField.multiline = true;
+			_textField.autoSize = TextFieldAutoSize.RIGHT;
+		}
+		
+		override public function registerConsole(console:Console):void
+		{
+			super.registerConsole(console);
+			
+			this.mainPanel = console.central.panels.mainPanel;
+			_textField.styleSheet = console.config.style.styleSheet;
 			
 			initBuildInMenus();
 			initModuleMenus();
 			
-			TextFieldRollOverHandle.registerTFRoller(this, textRollOverHandler, linkHandler);
+			TextFieldRollOverHandle.registerTFRoller(_textField, textRollOverHandler, linkHandler);
+		}
+		
+		override public function getModuleName():String
+		{
+			return NAME;
+		}
+		
+		public function get textField():TextField
+		{
+			return _textField;
 		}
 		
 		protected function initBuildInMenus():void
@@ -48,11 +68,11 @@ package com.junkbyte.console.view {
 			
 			minimizerMenu = new ConsoleMenuItem("", minimizerCB);
 			updateMinimizerState();
-			central.addEventListener(ConsoleCentral.PAUSED, updateMinimizerState, false, 0, true);
+			_central.addEventListener(ConsoleCentral.PAUSED, updateMinimizerState, false, 0, true);
 			
 			pauseMenu = new ConsoleMenuItem("P", pauseCB, null, "Close::Type password to show again");
 			updatePauseState();
-			central.addEventListener(ConsoleCentral.PAUSED, updatePauseState, false, 0, true);
+			_central.addEventListener(ConsoleCentral.PAUSED, updatePauseState, false, 0, true);
 			
 			priorityMenu = new ConsoleMenuItem("P0", priorityCB, null, "Priority filter::shift: previous priority\n(skips unused priorites)");
 			updatePriorityState();
@@ -68,7 +88,7 @@ package com.junkbyte.console.view {
 			
 			addBuildInMenu(minimizerMenu);
 			addBuildInMenu(new ConsoleMenuItem("X", mainPanel.close, null, "Close::Type password to show again"));
-			addBuildInMenu(new ConsoleMenuItem("C", central.console.clear, null, "Clear log"));
+			addBuildInMenu(new ConsoleMenuItem("C", _central.console.clear, null, "Clear log"));
 			addBuildInMenu(pauseMenu);
 			addBuildInMenu(new ConsoleMenuItem("Sv", saveLogs, null, "Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file"));
 			addBuildInMenu(priorityMenu);
@@ -78,7 +98,32 @@ package com.junkbyte.console.view {
 		
 		protected function addBuildInMenu(menu:IConsoleMenuItem):void{
 			buildInMenus.push(menu);
+			buildInMenus.sort(menuSorter);
 			menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
+		}
+		
+		public function addMenu(menu:IConsoleMenuItem):void{
+			moduleMenus.push(menu);
+			moduleMenus.sort(menuSorter);
+			menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
+		}
+		
+		public function removeMenu(menu:IConsoleMenuItem):void{
+			var index:int = moduleMenus.indexOf(menu);
+			if(index >= 0)
+			{
+				moduleMenus.splice(index, 1);
+				menu.removeEventListener(Event.CHANGE, onMenuChanged);
+			}
+		}
+		
+		protected function menuSorter(a:IConsoleMenuItem, b:IConsoleMenuItem):int
+		{
+			var pA:Number = a.getSortPriority();
+			var pB:Number = b.getSortPriority();
+			if(pA > pB) return 1;
+			else if(pA < pB) return -1;
+			return 0;
 		}
 		
 		protected function onMenuChanged(event:Event):void
@@ -92,13 +137,13 @@ package com.junkbyte.console.view {
 		}
 		
 		private function updatePauseState(e:Event = null):void{
-			pauseMenu.active = central.paused;
+			pauseMenu.active = _central.paused;
 			pauseMenu.tooltip = pauseMenu.active?"Resume updates":"Pause updates";
 			pauseMenu.announceChanged();
 		}
 		
 		private function pauseCB():void{
-			central.paused = !central.paused;
+			_central.paused = !_central.paused;
 		}
 		
 		private function updatePriorityState(e:Event = null):void{
@@ -136,42 +181,73 @@ package com.junkbyte.console.view {
 		
 		private function saveLogs():void
 		{
-			var _shift:Boolean = false; // TODO;
-			var _ctrl:Boolean = false; // TODO;
-			var _alt:Boolean = false; // TODO;
-			var str : String = central.logs.getLogsAsString("\r\n", !_shift, _ctrl?mainPanel.lineShouldShow:null);
-			if(_alt){
+			var keyStates:KeyStates = _central.keyStates;
+			var str : String = _central.logs.getLogsAsString("\r\n", !keyStates.shiftKeyDown, keyStates.ctrlKeyDown?mainPanel.lineShouldShow:null);
+			if(keyStates.altKeyDown){
 				var file:FileReference = new FileReference();
 				try{
 					file["save"](str,"log.txt");
 				}catch(err:Error) {
-					central.report("Save to file is not supported in your flash player.", 8);
+					_central.report("Save to file is not supported in your flash player.", 8);
 				}
 			}else{
 				System.setClipboard(str);
-				central.report("Copied log to clipboard.", -1);
+				_central.report("Copied log to clipboard.", -1);
 			}
 		}
 		
 		public function update():void{
-			var str:String = "<r><high>";
-			if(mini || !central.config.style.topMenu){
-				str += "<menu><b> <a href=\"event:show\">‹</a>";
+			var str:String = "<r><high><menu><b> ";
+			if(mini || !_central.config.style.topMenu){
+				str += "<a href=\"event:show\">‹</a>";
 			}else {
-				if(!central.panels.channelsPanel){
-					str += central.panels.mainPanel.getChannelsLink(true);
+				if(!_central.panels.channelsPanel){
+					str += _central.panels.mainPanel.getChannelsLink(true);
 				}
-				str += "<menu> <b>";
-				
-				for (var i:int = buildInMenus.length-1; i >= 0; i--){
-					str += createMenuString(buildInMenus[i], i);
+				str += printMenus();
+			}
+			str += " </b></menu></high></r>";
+			_textField.htmlText = str;
+			_textField.scrollH = _textField.maxScrollH;
+			dispatchEvent(new Event(Event.CHANGE));
+		}
+		
+		protected function createMenuString(menu:IConsoleMenuItem, index:uint):String
+		{
+			var str:String = " <a href=\"event:menu_"+index+"\">" + menu.getName() + "</a>";
+			if(menu.isActive())
+			{
+				return "<menuHi>"+str+"</menuHi>";
+			}
+			return str;
+		}
+		
+		private function linkHandler(e:TextEvent):void{
+			_textField.setSelection(0, 0);
+			var t:String = e.text;
+			if(t.substring(0, 5) == "menu_"){
+				var menu:ConsoleMenuItem = getMenuForIndex(uint(t.substring(5)));
+				if (menu) {
+					menu.onClick();
 				}
+			}
+		}
+		
+		private function printMenus():String
+		{
+			var str:String = "";
+			var modulesLen:uint = moduleMenus.length;
+			
+			for (var i:int = modulesLen-1; i >= 0; i--){
+				str += createMenuString(moduleMenus[i], i);
+			}
 				
-				for (i = moduleMenus.length-1; i >= 0; i--){
-					str += createMenuString(moduleMenus[i], i);
-				}
+			str += " ¦ ";
 				
-				/*
+			for (i = buildInMenus.length-1; i >= 0; i--){
+				str += createMenuString(buildInMenus[i], i+modulesLen);
+			}
+			/*
 				var extra:Boolean;
 				for (var X:String in _extraMenus){
 					str += "<a href=\"event:external_"+X+"\">"+X+"</a> ";
@@ -191,44 +267,23 @@ package com.junkbyte.console.view {
 					str += doActive(" <a href=\"event:ruler\">RL</a>", central.panels.rulerActive);
 				}
 				str += " ¦</b>";
-				*/
-			}
-			str += " </b></menu></high></r>";
-			htmlText = str;
-			scrollH = maxScrollH;
-			dispatchEvent(new Event(Event.CHANGE));
-		}
-		
-		protected function createMenuString(menu:IConsoleMenuItem, index:uint):String
-		{
-			var str:String = " <a href=\"event:menu_"+index+"\">" + menu.getName() + "</a>";
-			if(menu.isActive())
-			{
-				return "<menuHi>"+str+"</menuHi>";
-			}
+			*/
 			return str;
 		}
 		
-		private function linkHandler(e:TextEvent):void{
-			setSelection(0, 0);
-			var t:String = e.text;
-			if(t.substring(0, 5) == "menu_"){
-				var menui:uint = uint(t.substring(5));
-				var menu:ConsoleMenuItem = buildInMenus[menui];
-				if (menu) {
-					menu.onClick();
-				}
-			}
+		private function getMenuForIndex(index:uint):ConsoleMenuItem
+		{
+			if(index >= moduleMenus.length ) return buildInMenus[index-moduleMenus.length];
+			return moduleMenus[index];
 		}
 		
 		private function textRollOverHandler(e:TextEvent):void{
 			var t:String = e.text?e.text.replace("event:",""):"";
 			if(t.substring(0, 5) == "menu_"){
-				var menui:uint = uint(t.substring(5));
-				var menu : ConsoleMenuItem = buildInMenus[menui];
+				var menu:ConsoleMenuItem = getMenuForIndex(uint(t.substring(5)));
 				t = menu.getTooltip();
 			}
-			central.panels.tooltip(t, central.panels.mainPanel);
+			_central.panels.tooltip(t, _central.panels.mainPanel);
 		}
 	}
 }

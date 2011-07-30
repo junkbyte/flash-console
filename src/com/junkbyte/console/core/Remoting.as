@@ -306,7 +306,11 @@ package com.junkbyte.console.core
 			return true;
 		}
 		public function registerCallback(key:String, fun:Function, latestOnly:Boolean = false):void{
-			_callbacks[key] = {fun:fun, latest:latestOnly};
+			if(fun != null){
+				_callbacks[key] = {fun:fun, latest:latestOnly};
+			}else{
+				delete _callbacks[key];
+			}
 		}
 		private function loginFail():void{
 			if(remoting != Remoting.RECIEVER) return;

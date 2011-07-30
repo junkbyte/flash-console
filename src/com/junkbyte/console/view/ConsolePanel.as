@@ -26,23 +26,24 @@ package com.junkbyte.console.view {
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.ConsoleStyle;
 	import com.junkbyte.console.core.ConsoleCentral;
+
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
-	import flash.events.TextEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 
+	[Event(name="close", type="flash.events.Event")]
 	public class ConsolePanel extends Sprite {
 		
 		public static const DRAGGING:String = "DRAGGING";
 		public static const SCALING:String = "SCALING";
 		
 		//[Event(name="TEXT_ROLL", type="flash.events.TextEvent")]
-		private static const TEXT_ROLL:String = "TEXT_ROLL";
+		//private static const TEXT_ROLL:String = "TEXT_ROLL";
 		
 		private var _snaps:Array;
 		private var _dragOffset:Point;
@@ -95,6 +96,7 @@ package com.junkbyte.console.view {
 			if(parent){
 				parent.removeChild(this);
 			}
+			dispatchEvent(new Event(Event.CLOSE));
 		}
 		//
 		// SIZE

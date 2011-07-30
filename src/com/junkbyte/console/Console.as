@@ -24,17 +24,18 @@
 */
 package com.junkbyte.console 
 {
-	import com.junkbyte.console.view.RollerPanel;
-	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.ConsoleCentral;
-	import com.junkbyte.console.core.ConsoleCore;
+	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.Remoting;
+	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.vos.Log;
 
 	import flash.display.DisplayObjectContainer;
 	import flash.display.LoaderInfo;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.geom.Rectangle;
 	import flash.system.Capabilities;
@@ -44,7 +45,7 @@ package com.junkbyte.console
 	 * @see http://code.google.com/p/flash-console/
 	 * @see com.junkbyte.console.Cc
 	 */
-	public class Console extends ConsoleCore{
+	public class Console extends EventDispatcher{
 
 		public static const VERSION:Number = 2.6;
 		public static const VERSION_STAGE:String = "IN DEV";
@@ -58,7 +59,7 @@ package com.junkbyte.console
 		public static const ERROR:uint = 9;
 		public static const FATAL:uint = 10;
 		//
-		private var _rollerKey:KeyBind;
+		protected var _central:ConsoleCentral;
 		
 		/**
 		 * Console is the main class. However please use Cc for singleton Console adapter.
@@ -69,13 +70,20 @@ package com.junkbyte.console
 		 * @see com.junkbyte.console.Cc
 		 * @see http://code.google.com/p/flash-console/
 		 */
-		public function Console(password:String = "", config:ConsoleConfig = null) {
-			
+		public function Console(password:String = "", config:ConsoleConfig = null)
+		{
 			if(config == null) config = new ConsoleConfig();
 			
-			super(createCentral(config));
-			
-			report("<b>Console v"+VERSION+VERSION_STAGE+"</b> build "+BUILD+". "+Capabilities.playerType+" "+Capabilities.version+".", -2);
+			_central = createCentral(config);
+			_central.init();
+			_central.report("<b>Console v"+VERSION+VERSION_STAGE+"</b> build "+BUILD+". "+Capabilities.playerType+" "+Capabilities.version+".", -2);
+
+			dispatchEvent(ConsoleEvent.create(ConsoleEvent.CONSOLE_STARTED));
+		}
+		
+		public function get started():Boolean
+		{
+			return true;
 		}
 		
 		protected function createCentral(config:ConsoleConfig):ConsoleCentral
@@ -106,7 +114,7 @@ package com.junkbyte.console
 			if(!str){
 				str = String(error);
 			}
-			report(str, FATAL, false);
+			_central.report(str, FATAL, false);
 		}
 		
 
@@ -125,43 +133,27 @@ package com.junkbyte.console
 		// This should only be used for development purposes only.
 		//
 		public function bindKey(key:KeyBind, callback:Function ,args:Array = null):void{
-			if(key) _central.kb.bindKey(key, callback, args);
+			if(key) _central.keyBinder.bindKey(key, callback, args);
 		}
 		//
 		// WARNING: Add menu hard references the function and arguments.
 		//
 		public function addMenu(key:String, callback:Function, args:Array = null, rollover:String = null):void{
-			panels.mainPanel.addMenu(key, callback, args, rollover);
+			_central.panels.mainPanel.addMenu(key, callback, args, rollover);
 		}
 		//
 		// Panel settings
-		// basically passing through to panels manager to save lines
+		/* 
+		// NO LONGER SUPPOPRTED. USE DisplayRollerModule .start() ...
 		//
 		public function get displayRoller():Boolean{
-			return panels.displayRoller;
+			return _central.panels.displayRoller;
 		}
 		public function set displayRoller(b:Boolean):void{
-			panels.displayRoller = b;
+			_central.panels.displayRoller = b;
 		}
-
-		public function setRollerCaptureKey(char:String, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false):void{
-			if(_rollerKey){
-				_central.kb.bindKey(_rollerKey, null);
-				_rollerKey = null;
-			}
-			if(char && char.length==1) {
-				_rollerKey = new KeyBind(char, shift, ctrl, alt);
-				_central.kb.bindKey(_rollerKey, onRollerCaptureKey);
-			}
-		}
-		private function onRollerCaptureKey():void{
-			if(displayRoller){
-				report("Display Roller Capture:<br/>"+RollerPanel(panels.getPanel(RollerPanel.NAME)).getMapString(true), -1);
-			}
-		}
-		public function get rollerCaptureKey():KeyBind{
-			return _rollerKey;
-		}
+		*/
+		
 		//
 		public function get fpsMonitor():Boolean{
 			return _central.graphing.fpsMonitor;
@@ -177,16 +169,16 @@ package com.junkbyte.console
 			_central.graphing.memoryMonitor = b;
 		}
 		
-		//
+		/*
+		// NO LONGER SUPPOPRTED. USE GarbageCollectionMonitor Module...
 		public function watch(object:Object,name:String = null):String{
 			return _central.mm.watch(object, name);
 		}
 		public function unwatch(name:String):void{
 			_central.mm.unwatch(name);
-		}
-		public function gc():void{
-			_central.mm.gc();
-		}
+		}*/
+		
+		
 		public function store(name:String, obj:Object, strong:Boolean = false):void{
 			_central.cl.store(name, obj, strong);
 		}
@@ -218,32 +210,32 @@ package com.junkbyte.console
 		//
 		//
 		public function get width():Number{
-			return panels.mainPanel.width;
+			return _central.panels.mainPanel.width;
 		}
 		public function set width(newW:Number):void{
-			panels.mainPanel.width = newW;
+			_central.panels.mainPanel.width = newW;
 		}
 		public function set height(newW:Number):void{
-			panels.mainPanel.height = newW;
+			_central.panels.mainPanel.height = newW;
 		}
 		public function get height():Number{
-			return panels.mainPanel.height;
+			return _central.panels.mainPanel.height;
 		}
 		public function get x():Number{
-			return panels.mainPanel.x;
+			return _central.panels.mainPanel.x;
 		}
 		public function set x(newW:Number):void{
-			panels.mainPanel.x = newW;
+			_central.panels.mainPanel.x = newW;
 		}
 		public function set y(newW:Number):void{
-			panels.mainPanel.y = newW;
+			_central.panels.mainPanel.y = newW;
 		}
 		public function get y():Number{
-			return panels.mainPanel.y;
+			return _central.panels.mainPanel.y;
 		}
 		public function set visible(v:Boolean):void{
-			panels.visible = v;
-			if(v) panels.mainPanel.visible = true;
+			_central.panels.visible = v;
+			if(v) _central.panels.mainPanel.visible = true;
 		}
 		//
 		// REMOTING
@@ -264,13 +256,13 @@ package com.junkbyte.console
 		//
 		//
 		public function setViewingChannels(...channels:Array):void{
-			panels.mainPanel.setViewingChannels.apply(this, channels);
+			_central.panels.mainPanel.setViewingChannels.apply(this, channels);
 		}
 		public function setIgnoredChannels(...channels:Array):void{
-			panels.mainPanel.setIgnoredChannels.apply(this, channels);
+			_central.panels.mainPanel.setIgnoredChannels.apply(this, channels);
 		}
 		public function set minimumPriority(level:uint):void{
-			panels.mainPanel.priority = level;
+			_central.panels.mainPanel.priority = level;
 		}
 		public function addLine(strings:Array, priority:int = 0, channel:* = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
 			var txt:String = "";
@@ -279,7 +271,7 @@ package com.junkbyte.console
 				txt += (i?" ":"")+_central.refs.makeString(strings[i], null, html);
 			}
 			
-			if(priority >= config.autoStackPriority && stacks<0) stacks = config.defaultStackDepth;
+			if(priority >= _central.config.autoStackPriority && stacks<0) stacks = _central.config.defaultStackDepth;
 			
 			if(!html && stacks>0){
 				txt += _central.tools.getStack(stacks, priority);
@@ -290,10 +282,10 @@ package com.junkbyte.console
 		// COMMAND LINE
 		//
 		public function set commandLine(b:Boolean):void{
-			panels.mainPanel.commandLine = b;
+			_central.panels.mainPanel.commandLine = b;
 		}
 		public function get commandLine ():Boolean{
-			return panels.mainPanel.commandLine;
+			return _central.panels.mainPanel.commandLine;
 		}
 		public function addSlashCommand(name:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void{
 			_central.cl.addSlashCommand(name, callback, desc, alwaysAvailable, endOfArgsMarker);
@@ -305,10 +297,10 @@ package com.junkbyte.console
 			addLine([string], priority, Logs.DEFAULT_CHANNEL, isRepeating);
 		}
 		public function stack(string:*, depth:int = -1, priority:int = 5):void{
-			addLine([string], priority, Logs.DEFAULT_CHANNEL, false, false, depth>=0?depth:config.defaultStackDepth);
+			addLine([string], priority, Logs.DEFAULT_CHANNEL, false, false, depth>=0?depth:_central.config.defaultStackDepth);
 		}
 		public function stackch(channel:*, string:*, depth:int = -1, priority:int = 5):void{
-			addLine([string], priority, channel, false, false, depth>=0?depth:config.defaultStackDepth);
+			addLine([string], priority, channel, false, false, depth>=0?depth:_central.config.defaultStackDepth);
 		}
 		
 		
@@ -374,13 +366,19 @@ package com.junkbyte.console
 		public function get central():ConsoleCentral{
 			return _central;
 		}
+		public function get panels():ConsoleLayer{
+			return _central.panels;
+		}
+		public function get config():ConsoleConfig{
+			return _central.config;
+		}
 		//
 		//
 		//
 		public function clear(channel:String = null):void{
 			_central.logs.clear(channel);
-			if(!paused) panels.mainPanel.updateToBottom();
-			panels.updateMenu();
+			if(!paused) _central.panels.mainPanel.updateToBottom();
+			_central.panels.updateMenu();
 		}
 		public function getAllLog(splitter:String = "\r\n"):String{
 			return _central.logs.getLogsAsString(splitter);

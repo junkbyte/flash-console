@@ -22,19 +22,16 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.view {
-	import com.junkbyte.console.Console;
-	import com.junkbyte.console.ConsoleConfig;
+package com.junkbyte.console.modules.ruler {
 	import com.junkbyte.console.ConsoleStyle;
 	import com.junkbyte.console.core.ConsoleCentral;
-	import com.junkbyte.console.interfaces.IConsoleModule;
+
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.BlendMode;
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
-	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -45,9 +42,9 @@ package com.junkbyte.console.view {
 	import flash.text.TextFormatAlign;
 	import flash.ui.Mouse;
 
-	public class Ruler extends Sprite implements IConsoleModule{
+	public class Ruler extends Sprite{
 		
-		private var _master:ConsoleCentral;
+		private var _central:ConsoleCentral;
 		private var _area:Rectangle;
 		private var _pointer:Shape;
 		
@@ -56,27 +53,25 @@ package com.junkbyte.console.view {
 		
 		private var _points:Array;
 		
-		public function Ruler(console:ConsoleCentral) {
-			initializeUsingConsole(console.console);
+		public function Ruler(central:ConsoleCentral) {
+			_central = central;
 			start();
 		}
-
-		public function initializeUsingConsole(console : Console) : void {
-			_master = console.central;
-		}
-		public function start():void{
+		
+		public function start():void
+		{
 			buttonMode = true;
 			_points = new Array();
 			_pointer = new Shape();
 			addChild(_pointer);
 			var p:Point = new Point();
 			p = globalToLocal(p);
-			_area = new Rectangle(-_master.panels.stage.stageWidth*1.5+p.x, -_master.panels.stage.stageHeight*1.5+p.y, _master.panels.stage.stageWidth*3, _master.panels.stage.stageHeight*3);
-			graphics.beginFill(_master.config.style.backgroundColor, 0.2);
+			_area = new Rectangle(-_central.panels.stage.stageWidth*1.5+p.x, -_central.panels.stage.stageHeight*1.5+p.y, _central.panels.stage.stageWidth*3, _central.panels.stage.stageHeight*3);
+			graphics.beginFill(_central.config.style.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
-			_posTxt = _master.panels.mainPanel.makeTF("positionText", true);
+			_posTxt = _central.panels.mainPanel.makeTF("positionText", true);
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
 			addChild(_posTxt);
 			//
@@ -87,8 +82,8 @@ package com.junkbyte.console.view {
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
 			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, false, 0, true);
 			onMouseMove();
-			if(_master.config.rulerHidesMouse) Mouse.hide();
-			_master.report("<b>Ruler started. Click on two locations to measure.</b>", -1);
+			if(_central.config.rulerHidesMouse) Mouse.hide();
+			_central.report("<b>Ruler started. Click on two locations to measure.</b>", -1);
 		}
 		private function onMouseMove(e:MouseEvent = null):void{
 			_pointer.graphics.clear();
@@ -128,7 +123,7 @@ package com.junkbyte.console.view {
 		private function onMouseClick(e:MouseEvent):void{
 			e.stopPropagation();
 			var p:Point;
-			var style : ConsoleStyle = _master.config.style;
+			var style : ConsoleStyle = _central.config.style;
 			if(_points.length==0){
 				p = new Point(e.localX, e.localY);
 				graphics.lineStyle(1, 0xFF0000);
@@ -136,7 +131,7 @@ package com.junkbyte.console.view {
 				_points.push(p);
 			}else if(_points.length==1){
 				_zoom.bitmapData = null;
-				if(_master.config.rulerHidesMouse) Mouse.show();
+				if(_central.config.rulerHidesMouse) Mouse.show();
 				removeChild(_pointer);
 				removeChild(_posTxt);
 				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
@@ -213,24 +208,24 @@ package com.junkbyte.console.view {
 				graphics.moveTo(p.x, p.y);
 				graphics.lineTo(p2.x, p2.y);
 				//
-				_master.report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", -2);
-				_master.report("Distance: <b>"+round(d,100) +"</b>", -2);
-				_master.report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", -2);
-				_master.report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", -2);
-				_master.report("Angle from first point (red): <b>"+a1+"°</b>", -2);
-				_master.report("Angle from second point (orange): <b>"+a2+"°</b>", -2);
+				_central.report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", -2);
+				_central.report("Distance: <b>"+round(d,100) +"</b>", -2);
+				_central.report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", -2);
+				_central.report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", -2);
+				_central.report("Angle from first point (red): <b>"+a1+"°</b>", -2);
+				_central.report("Angle from second point (orange): <b>"+a2+"°</b>", -2);
 			}else{
 				exit();
 			}
 		}
 		public function exit():void{
-			if(_master.panels.contains(this)){
-				_master.panels.removeChild(this);
+			if(_central.panels.contains(this)){
+				_central.panels.removeChild(this);
 			}
 			//_mainPanel.updateMenu();
 		}
 		private function makeTxtField(col:Number, b:Boolean = true):TextField{
-			var format:TextFormat = new TextFormat(_master.config.style.menuFont, _master.config.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
+			var format:TextFormat = new TextFormat(_central.config.style.menuFont, _central.config.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
 			var txt:TextField = new TextField();
 			txt.autoSize = TextFieldAutoSize.RIGHT;
 			txt.selectable = false;
@@ -276,10 +271,6 @@ package com.junkbyte.console.view {
 		}
 		private function getPointOnCircle(radius:Number, rad:Number):Point {
 			return new Point(radius * Math.cos(rad),radius * Math.sin(rad));
-		}
-
-		public function getModuleName() : String {
-			return "Ruler";
 		}
 		
 	}

@@ -74,6 +74,12 @@ package com.junkbyte.console {
 		 */
 		public var defaultStackDepth:int = 2;
 		
+		/**
+		 * Stack trace exit classes.
+		 * Stack tracing will stop on reaching one of the first classes in the array.
+		 */
+		public var stackTraceExitClasses:Array = null;
+		
 		/** 
 		 * Object linking allows you click on individual objects you have logged to inspect the detials in a specific view.
 		 * The down side is that it will take a little more memory to keep a WEAK reference to all objects pass for logging.

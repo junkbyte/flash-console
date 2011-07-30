@@ -3,7 +3,8 @@ package com.junkbyte.console.interfaces {
 
 	public interface IConsoleModule {
 		
-		function initializeUsingConsole(console:Console):void;
+		function registerConsole(console:Console):void;
+		function unregisterConsole(console:Console):void;
 		
 		function getModuleName():String;
 		

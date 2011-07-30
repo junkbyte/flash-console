@@ -24,8 +24,10 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.events.Event;
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.KeyBind;
+
+	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldType;
@@ -35,31 +37,66 @@ package com.junkbyte.console.core
 	 */
 	public class KeyBinder extends ConsoleCore{
 		
+		public static const NAME:String = "keyBinder";
+		
 		private var _passInd:int;
 		private var _binds:Object = {};
 		
 		private var _warns:uint;
 		
-		public function KeyBinder(console:ConsoleCentral) {
-			super(console);
-			
-			console.cl.addCLCmd("keybinds", printBinds, "List all keybinds used");
+		public function KeyBinder() {
+			super();
+		}
+		
+		override public function registerConsole(console:Console):void
+		{
+			super.registerConsole(console);
 			
 			if(panels.stage){
 				stageAddedHandle();
 			}else panels.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
+		
+		override public function unregisterConsole(console:Console):void
+		{
+			super.unregisterConsole(console);
+			
+			_central.cl.addCLCmd("keybinds", null, "");
+			
+			panels.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+			panels.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
+			if(panels.stage)
+			{
+				panels.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+				panels.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			}
+		}
+		
+		override public function getModuleName():String
+		{
+			return NAME;
+		}
+		
+		override protected function onConsoleStarted(e:Event = null):void
+		{
+			super.onConsoleStarted(e);
+			_central.cl.addCLCmd("keybinds", printBinds, "List all keybinds used");
+		}
+		
 		private function stageAddedHandle(e:Event=null):void{
 			panels.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			panels.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			panels.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+			panels.stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 		}
+		
 		private function stageRemovedHandle(e:Event=null):void{
 			panels.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			panels.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			panels.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+			panels.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 		}
-		
+
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
 			if(config.keystrokePassword && (!key.useKeyCode && key.key.charAt(0) == config.keystrokePassword.charAt(0))){
 				report("Error: KeyBind ["+key.key+"] is conflicting with Console password.",9);
@@ -67,15 +104,23 @@ package com.junkbyte.console.core
 			}
 			if(fun == null){
 				delete _binds[key.key];
-				//if(!config.quiet) report("Unbined key "+key.key+".", -1);
 			}else{
 				_binds[key.key] = [fun, args];
-				//if(!config.quiet) report("Bined key "+key.key+" to a function."+(config.keyBindsEnabled?"":" (will not trigger while key binding is disabled in config)"), -1);
 			}
 		}
+
 		public function keyDownHandler(e:KeyboardEvent):void{
+			handleKeyEvent(e, false);
+		}
+		
+		public function keyUpHandler(e:KeyboardEvent):void{
+			handleKeyEvent(e, true);
+		}
+		
+		private function handleKeyEvent(e:KeyboardEvent, isKeyUp:Boolean):void
+		{
 			var char:String = String.fromCharCode(e.charCode);
-			if(config.keystrokePassword != null && char && char == config.keystrokePassword.substring(_passInd,_passInd+1)){
+			if(isKeyUp && config.keystrokePassword != null && char && char == config.keystrokePassword.substring(_passInd,_passInd+1)){
 				_passInd++;
 				if(_passInd >= config.keystrokePassword.length){
 					_passInd = 0;
@@ -94,11 +139,11 @@ package com.junkbyte.console.core
 			}
 			else
 			{
-				_passInd = 0;
-				var bind:KeyBind = new KeyBind(e.keyCode, e.shiftKey, e.ctrlKey, e.altKey);
+				if(!isKeyUp) _passInd = 0;
+				var bind:KeyBind = new KeyBind(e.keyCode, e.shiftKey, e.ctrlKey, e.altKey, isKeyUp);
 				tryRunKey(bind.key);
 				if(char){
-					bind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey);
+					bind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey, isKeyUp);
 					tryRunKey(bind.key);
 				}
 			}

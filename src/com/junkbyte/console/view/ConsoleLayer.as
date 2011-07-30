@@ -24,9 +24,10 @@
 */
 package com.junkbyte.console.view 
 {
-	import flash.display.Sprite;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.vos.GraphGroup;
+
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
@@ -36,7 +37,6 @@ package com.junkbyte.console.view
 		
 		private var _central:ConsoleCentral;
 		private var _mainPanel:MainPanel;
-		private var _ruler:Ruler;
 		
 		private var _chsPanel:ChannelsPanel;
 		private var _fpsPanel:GraphingPanel;
@@ -61,6 +61,7 @@ package com.junkbyte.console.view
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
 			_tooltipField.multiline = true;
 			addPanel(_mainPanel);
+			_mainPanel.start();
 			
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
@@ -118,7 +119,7 @@ package com.junkbyte.console.view
 			panel.addEventListener(ConsolePanel.DRAGGING, onPanelStartDragScale, false,0, true);
 			panel.addEventListener(ConsolePanel.SCALING, onPanelStartDragScale, false,0, true);
 		}
-		public function removePanel(n:String):void{
+		public function removePanelByName(n:String):void{
 			var panel:ConsolePanel = getChildByName(n) as ConsolePanel;
 			if(panel){
 				// this removes it self from parent. this way each individual panel can clean up before closing.  
@@ -222,7 +223,7 @@ package com.junkbyte.console.view
 				}
 				_fpsPanel.update(fpsGroup, _canDraw);
 			}else if(_fpsPanel!=null){
-				removePanel(GraphingPanel.FPS);
+				removePanelByName(GraphingPanel.FPS);
 				_fpsPanel = null;
 			}
 			//
@@ -238,7 +239,7 @@ package com.junkbyte.console.view
 				}
 				_memPanel.update(memGroup, _canDraw);
 			}else if(_memPanel!=null){
-				removePanel(GraphingPanel.MEM);
+				removePanelByName(GraphingPanel.MEM);
 				_memPanel = null;
 			}
 			_canDraw = false;
@@ -262,29 +263,6 @@ package com.junkbyte.console.view
 		//
 		//
 		//
-		public function get displayRoller():Boolean{
-			return (getPanel(RollerPanel.NAME) as RollerPanel)?true:false;
-		}
-		public function set displayRoller(n:Boolean):void{
-			if(displayRoller != n){
-				if(n){
-					if(_central.config.displayRollerEnabled){
-						var roller:RollerPanel = new RollerPanel(_central);
-						roller.x = _mainPanel.x+_mainPanel.width-180;
-						roller.y = _mainPanel.y+55;
-						addPanel(roller);
-					}else{
-						_central.report("Display roller is disabled in config.", 9);
-					}
-				}else{
-					removePanel(RollerPanel.NAME);
-				}
-				_mainPanel.updateMenu();
-			}
-		}
-		//
-		//
-		//
 		public function get channelsPanel():Boolean{
 			return _chsPanel!=null;
 		}
@@ -299,7 +277,7 @@ package com.junkbyte.console.view
 					_chsPanel.update();
 					updateMenu();
 				}else {
-					removePanel(ChannelsPanel.NAME);
+					removePanelByName(ChannelsPanel.NAME);
 					_chsPanel = null;
 				}
 				updateMenu();
@@ -318,7 +296,7 @@ package com.junkbyte.console.view
 		//
 		//
 		public function tooltip(str:String = null, panel:ConsolePanel = null):void{
-			if(str && !rulerActive){
+			if(str){
 				var split:Array = str.split("::");
 				str = split[0];
 				if(split.length > 1) str += "<br/><low>"+split[1]+"</low>";
@@ -353,28 +331,6 @@ package com.junkbyte.console.view
 			}else if(contains(_tooltipField)){
 				removeChild(_tooltipField);
 			}
-		}
-		//
-		//
-		//
-		public function startRuler():void{
-			if(rulerActive){
-				return;
-			}
-			_ruler = new Ruler(_central);
-			_ruler.addEventListener(Event.COMPLETE, onRulerExit, false, 0, true);
-			addChild(_ruler);
-			_mainPanel.updateMenu();
-		}
-		public function get rulerActive():Boolean{
-			return (_ruler && contains(_ruler))?true:false;
-		}
-		private function onRulerExit(e:Event):void{
-			if(_ruler && contains(_ruler)){
-				removeChild(_ruler);
-			}
-			_ruler = null;
-			_mainPanel.updateMenu();
 		}
 		//
 		//

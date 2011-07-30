@@ -24,11 +24,12 @@
 */
 package com.junkbyte.console.view 
 {
-	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.LogReferences;
+	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.vos.Log;
+
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -38,10 +39,8 @@ package com.junkbyte.console.view
 	import flash.events.TextEvent;
 	import flash.geom.ColorTransform;
 	import flash.geom.Rectangle;
-	import flash.net.FileReference;
 	import flash.system.Security;
 	import flash.system.SecurityPanel;
-	import flash.system.System;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFieldType;
@@ -100,6 +99,10 @@ package com.junkbyte.console.view
 		
 		public function MainPanel(m:ConsoleCentral) {
 			super(m);
+		}
+		
+		public function start():void
+		{
 			var fsize:int = style.menuFontSize;
 			
 			central.cl.addCLCmd("filter", setFilterText, "Filter console logs to matching string. When done, click on the * (global channel) at top.", true);
@@ -187,14 +190,15 @@ package com.junkbyte.console.view
 			_cmdBG.visible = false;
 			updateCLScope("");
 			//
-			_menu = new MainPanelMenu(central, this);
-			_menu.y = -2;
+			_menu = new MainPanelMenu();
+			central.registerModule(_menu);
+			_menu.textField.y = -2;
 			_menu.addEventListener(Event.CHANGE, onMenuChanged);
 			//registerTFRoller(_menu, onMenuRollOver);
-			addChild(_menu);
+			addChild(_menu.textField);
 			//
 			init(640,100,true);
-			registerDragger(_menu);
+			registerDragger(_menu.textField);
 			//
 			if(central.so[CL_HISTORY] is Array){
 				_cmdsHistory = central.so[CL_HISTORY];
@@ -628,7 +632,7 @@ package com.junkbyte.console.view
 		override public function set width(n:Number):void{
 			_lockScrollUpdate = true;
 			super.width = n;
-			_menu.width = n-6;
+			_menu.textField.width = n-6;
 			_traceField.width = n-4;
 			_cmdField.width = width-15-_cmdField.x;
 			_cmdBG.width = n;
@@ -682,7 +686,7 @@ package com.junkbyte.console.view
 		}
 		private function updateTraceFHeight():void{
 			var mini:Boolean = _menu.mini || !style.topMenu;
-			_traceField.y = mini?0:(_menu.y+_menu.height-6);
+			_traceField.y = mini?0:(_menu.textField.y+_menu.textField.height-6);
 			_traceField.height = height-(_cmdField.visible?(style.menuFontSize+4):0)-_traceField.y;
 		}
 		//
@@ -746,12 +750,6 @@ package com.junkbyte.console.view
 				var obj:Object = {
 					fps:"Frames Per Second",
 					mm:"Memory Monitor",
-					roller:"Display Roller::Map the display list under your mouse",
-					ruler:"Screen Ruler::Measure the distance and angle between two points on screen.",
-					command:"Command Line",
-					copy:"Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file",
-					clear:"Clear log",
-					priority:"Priority filter::shift: previous priority\n(skips unused priorites)",
 					channels:"Expand channels",
 					close:"Close"
 				};
@@ -760,23 +758,10 @@ package com.junkbyte.console.view
 			central.panels.tooltip(txt, src);
 		}
 		private function linkHandler(e:TextEvent):void{
-			_menu.setSelection(0, 0);
+			_menu.textField.setSelection(0, 0);
 			stopDrag();
 			var t:String = e.text;
-			if(t == "pause"){
-				if(central.paused){
-					central.paused = false;
-				}else{
-					central.paused = true;
-				}
-				central.panels.tooltip(null);
-			}else if(t == "hide"){
-				hideTopMenu();
-			}else if(t == "show"){
-				showTopMenu();
-			}else if(t == "close"){
-				close();
-			}else if(t == "channels"){
+			if(t == "channels"){
 				central.panels.channelsPanel = !central.panels.channelsPanel;
 			}else if(t == "fps"){
 				central.console.fpsMonitor = !central.console.fpsMonitor;
@@ -784,28 +769,6 @@ package com.junkbyte.console.view
 				incPriority(_shift);
 			}else if(t == "mm"){
 				central.console.memoryMonitor = !central.console.memoryMonitor;
-			}else if(t == "roller"){
-				central.console.displayRoller = !central.console.displayRoller;
-			}else if(t == "ruler"){
-				central.panels.tooltip();
-				central.panels.startRuler();
-			}else if(t == "command"){
-				commandLine = !commandLine;
-			} else if (t == "copy") {
-				var str : String = central.logs.getLogsAsString("\r\n", !_shift, _ctrl?lineShouldShow:null);
-				if(_alt){
-					var file:FileReference = new FileReference();
-					try{
-						file["save"](str,"log.txt");
-					}catch(err:Error) {
-						central.report("Save to file is not supported in your flash player.", 8);
-					}
-				}else{
-					System.setClipboard(str);
-					central.report("Copied log to clipboard.", -1);
-				}
-			}else if(t == "clear"){
-				central.console.clear();
 			}else if(t == "settings"){
 				central.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", -1);
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
@@ -825,7 +788,7 @@ package com.junkbyte.console.view
 				var menu:Array = _extraMenus[t.substring(9)];
 				if(menu) menu[0].apply(null, menu[1]);
 			}
-			_menu.setSelection(0, 0);
+			_menu.textField.setSelection(0, 0);
 			e.stopPropagation();
 		}
 		override public function close():void{
@@ -841,7 +804,7 @@ package com.junkbyte.console.view
 				hideTopMenu();
 			}
 		}
-		private function hideTopMenu():void
+		public function hideTopMenu():void
 		{
 			central.panels.tooltip();
 			_menu.mini = true;
@@ -849,7 +812,7 @@ package com.junkbyte.console.view
 			height = height;
 			updateMenu();
 		}
-		private function showTopMenu():void
+		public function showTopMenu():void
 		{
 			central.panels.tooltip();
 			_menu.mini = false;

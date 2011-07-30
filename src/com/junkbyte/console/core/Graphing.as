@@ -26,12 +26,15 @@ package com.junkbyte.console.core {
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
 
+	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.system.System;
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
 
 	public class Graphing extends ConsoleCore{
+		
+		public static const NAME:String = "graphing";
 		
 		private var _groups:Array = [];
 		private var _map:Object = {};
@@ -42,8 +45,18 @@ package com.junkbyte.console.core {
 		private var _hadGraph:Boolean;
 		private var _previousTime:Number = -1;
 		
-		public function Graphing(m:ConsoleCentral){
-			super(m);
+		public function Graphing(){
+			super();
+		}
+		
+		override public function getModuleName():String
+		{
+			return NAME;
+		}
+		
+		override protected function onConsoleStarted(e:Event = null):void
+		{
+			super.onConsoleStarted(e);
 			remoter.registerCallback("fps", function(bytes:ByteArray):void{
 				fpsMonitor = bytes.readBoolean();
 			});
@@ -54,8 +67,8 @@ package com.junkbyte.console.core {
 				removeGroup(bytes.readUTF());
 			});;
 			remoter.registerCallback("graph", handleRemoteGraph, true);
-			
 		}
+		
 		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
 			if(obj == null) {
 				report("ERROR: Graph ["+n+"] received a null object to graph property ["+prop+"].", 10);
