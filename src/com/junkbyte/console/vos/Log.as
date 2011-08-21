@@ -45,8 +45,10 @@ package com.junkbyte.console.vos {
 			html = ishtml;
 		}
 		public function toBytes(bytes:ByteArray):void{
-			bytes.writeUnsignedInt(text.length);
-			bytes.writeUTFBytes(text); // because writeUTF can't accept more than 65535
+			var t:ByteArray = new ByteArray();
+			t.writeUTFBytes(text);// because writeUTF can't accept more than 65535
+			bytes.writeUnsignedInt(t.length);
+			bytes.writeBytes(t); 
 			bytes.writeUTF(ch);
 			bytes.writeInt(priority);
 			bytes.writeBoolean(repeat);
