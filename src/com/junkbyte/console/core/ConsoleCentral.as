@@ -24,10 +24,10 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.system.System;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.displayRoller.DisplayRollerModule;
 	import com.junkbyte.console.modules.ruler.RulerModule;
@@ -37,15 +37,12 @@ package com.junkbyte.console.core
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.net.SharedObject;
-	/**
-	 * Console is the main class. 
-	 * Please see com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
-	 * @see http://code.google.com/p/flash-console/
-	 * @see com.junkbyte.console.Cc
-	 */
+	import flash.system.System;
+	
+	[Event(name="moduleAdded", type="com.junkbyte.console.events.ConsoleModuleEvent")]
+	[Event(name="moduleRemoved", type="com.junkbyte.console.events.ConsoleModuleEvent")]
+	
 	public class ConsoleCentral extends EventDispatcher{
-		
-		
 		
 		public static const PAUSED:String = "pause";
 		
@@ -137,10 +134,11 @@ package com.junkbyte.console.core
 			{
 				if(currentModule != null)
 				{
-					currentModule.unregisterConsole(console);
+					unregisterModule(currentModule);
 				}
 				_modulesByName[moduleName] = module;
 				module.registerConsole(console);
+				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_ADDED, module));
 			}
 		}
 		
@@ -151,6 +149,7 @@ package com.junkbyte.console.core
 			{
 				delete _modulesByName[moduleName];
 				module.unregisterConsole(console);
+				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REMOVED, module));
 			}
 		}
 		//

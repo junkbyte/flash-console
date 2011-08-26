@@ -47,10 +47,10 @@ package
 			Cc.config.commandLineAllowed = true;
 			
 			// Start remote service.
-			Cc.instance.central.remoter.remoting = Remoting.RECIEVER;
+			Cc.central.remoter.remoting = Remoting.RECIEVER;
 			// Disable scaling and moving
-			Cc.instance.display.mainPanel.moveable = false;
-			Cc.instance.display.mainPanel.scalable = false;
+			Cc.display.mainPanel.moveable = false;
+			Cc.display.mainPanel.scalable = false;
 			//
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -59,8 +59,8 @@ package
 			onStageResize();
 		}
 		private function onStageResize(e : Event = null) : void {
-			Cc.width = stage.stageWidth;
-			Cc.height = stage.stageHeight;
+			Cc.display.width = stage.stageWidth;
+			Cc.display.height = stage.stageHeight;
 		}
 	}
 }

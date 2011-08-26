@@ -24,6 +24,7 @@
 */
 package com.junkbyte.console 
 {
+	import flash.display.DisplayObject;
 	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.Logs;
@@ -61,21 +62,20 @@ package com.junkbyte.console
 		public static const FATAL:uint = 10;
 		//
 		protected var _central:ConsoleCentral;
+		protected var _config:ConsoleConfig;
 		
-		/**
-		 * Console is the main class. However please use Cc for singleton Console adapter.
-		 * Using Console through Cc will also make sure you can remove console in a later date
-		 * by simply removing Cc.start() or Cc.startOnStage()
-	 	 * See com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
-		 * 
-		 * @see com.junkbyte.console.Cc
-		 * @see http://code.google.com/p/flash-console/
-		 */
-		public function Console(password:String = "", config:ConsoleConfig = null)
+		
+		[Event(name="consoleStarted", type="com.junkbyte.console.events.ConsoleEvent")]
+		public function Console()
 		{
-			if(config == null) config = new ConsoleConfig();
+		}
+		
+		public function start(container:DisplayObjectContainer = null, password:String = ""):void
+		{
+			if(started) throw new Error("Console already started.");
 			
-			if (password) {
+			if (password)
+			{
 				config.keystrokePassword = password;
 			}
 			
@@ -83,12 +83,44 @@ package com.junkbyte.console
 			_central.init();
 			_central.report("<b>Console v"+VERSION+VERSION_STAGE+"</b> build "+BUILD+". "+Capabilities.playerType+" "+Capabilities.version+".", -2);
 
+			if(container) 
+			{
+				container.addChild(display);
+			}
 			dispatchEvent(ConsoleEvent.create(ConsoleEvent.CONSOLE_STARTED));
+		}
+		
+		public function startOnStage(target:DisplayObject, password:String = ""):void{
+			if (password)
+			{
+				config.keystrokePassword = password;
+			}
+			if(!started)
+			{
+				start();
+			}
+			if(target)
+			{
+				if(target.stage) 
+				{
+					target.stage.addChild(display);
+				}
+				else 
+				{
+					target.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle, false, 0, true);
+				}
+			}
+		}
+		
+		private function addedToStageHandle(e:Event):void{
+			var mc:DisplayObjectContainer = e.currentTarget as DisplayObjectContainer;
+			mc.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
+			mc.stage.addChild(display);
 		}
 		
 		public function get started():Boolean
 		{
-			return true;
+			return _central != null;
 		}
 		
 		protected function createCentral(config:ConsoleConfig):ConsoleCentral
@@ -124,12 +156,15 @@ package com.junkbyte.console
 		
 
 		public function addGraph(name:String, obj:Object, property:String, color:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
+			throwErrorIfNotStarted("addGraph()");
 			_central.graphing.add(name, obj, property, color, key, rect, inverse);
 		}
 		public function fixGraphRange(name:String, min:Number = NaN, max:Number = NaN):void{
+			throwErrorIfNotStarted("fixGraphRange()");
 			_central.graphing.fixRange(name, min, max);
 		}
 		public function removeGraph(name:String, obj:Object = null, property:String = null):void{
+			throwErrorIfNotStarted("removeGraph()");
 			_central.graphing.remove(name, obj, property);
 		}
 		
@@ -138,12 +173,14 @@ package com.junkbyte.console
 		// This should only be used for development purposes only.
 		//
 		public function bindKey(key:KeyBind, callback:Function ,args:Array = null):void{
+			throwErrorIfNotStarted("bindKey()");
 			if(key) _central.keyBinder.bindKey(key, callback, args);
 		}
 		//
 		// WARNING: Add menu hard references the function and arguments.
 		//
 		public function addMenu(key:String, callback:Function, args:Array = null, rollover:String = null):void{
+			throwErrorIfNotStarted("addMenu()");
 			_central.display.mainPanel.addMenu(key, callback, args, rollover);
 		}
 		//
@@ -161,16 +198,20 @@ package com.junkbyte.console
 		
 		//
 		public function get fpsMonitor():Boolean{
+			throwErrorIfNotStarted("fpsMonitor");
 			return _central.graphing.fpsMonitor;
 		}
 		public function set fpsMonitor(b:Boolean):void{
+			throwErrorIfNotStarted("fpsMonitor");
 			_central.graphing.fpsMonitor = b;
 		}
 		//
 		public function get memoryMonitor():Boolean{
+			throwErrorIfNotStarted("memoryMonitor");
 			return _central.graphing.memoryMonitor;
 		}
 		public function set memoryMonitor(b:Boolean):void{
+			throwErrorIfNotStarted("memoryMonitor");
 			_central.graphing.memoryMonitor = b;
 		}
 		
@@ -185,18 +226,23 @@ package com.junkbyte.console
 		
 		
 		public function store(name:String, obj:Object, strong:Boolean = false):void{
+			throwErrorIfNotStarted("store()");
 			_central.cl.store(name, obj, strong);
 		}
 		public function map(container:DisplayObjectContainer, maxstep:uint = 0):void{
+			throwErrorIfNotStarted("map()");
 			_central.tools.map(container, maxstep, Logs.DEFAULT_CHANNEL);
 		}
 		public function mapch(channel:*, container:DisplayObjectContainer, maxstep:uint = 0):void{
+			throwErrorIfNotStarted("mapch()");
 			_central.tools.map(container, maxstep, ConsoleCentral.MakeChannelName(channel));
 		}
 		public function inspect(obj:Object, showInherit:Boolean = true):void{
+			throwErrorIfNotStarted("inspect()");
 			_central.refs.inspect(obj, showInherit, Logs.DEFAULT_CHANNEL);
 		}
 		public function inspectch(channel:*, obj:Object, showInherit:Boolean = true):void{
+			throwErrorIfNotStarted("inspectch()");
 			_central.refs.inspect(obj, showInherit, ConsoleCentral.MakeChannelName(channel));
 		}
 		public function explode(obj:Object, depth:int = 3):void{
@@ -206,9 +252,11 @@ package com.junkbyte.console
 			addLine(new Array(_central.tools.explode(obj, depth)), 1, channel, false, true);
 		}
 		public function get paused():Boolean{
+			throwErrorIfNotStarted("minimumPriority");
 			return _central.paused;
 		}
 		public function set paused(newV:Boolean):void{
+			throwErrorIfNotStarted("minimumPriority");
 			_central.paused = newV;
 		}
 		//
@@ -251,27 +299,35 @@ package com.junkbyte.console
 		// REMOTING
 		//
 		public function get remoting():Boolean{
+			throwErrorIfNotStarted("minimumPriority");
 			return _central.remoter.remoting == Remoting.SENDER;
 		}
 		public function set remoting(b:Boolean):void{
+			throwErrorIfNotStarted("minimumPriority");
 			_central.remoter.remoting = b?Remoting.SENDER:Remoting.NONE;
 		}
 		public function remotingSocket(host:String, port:int):void{
+			throwErrorIfNotStarted("minimumPriority");
 			_central.remoter.remotingSocket(host, port);
 		}
 		//
 		//
 		//
 		public function setViewingChannels(...channels:Array):void{
+			throwErrorIfNotStarted("minimumPriority");
 			_central.display.mainPanel.setViewingChannels.apply(this, channels);
 		}
 		public function setIgnoredChannels(...channels:Array):void{
+			throwErrorIfNotStarted("minimumPriority");
 			_central.display.mainPanel.setIgnoredChannels.apply(this, channels);
 		}
 		public function set minimumPriority(level:uint):void{
+			throwErrorIfNotStarted("minimumPriority");
 			_central.display.mainPanel.priority = level;
 		}
 		public function addLine(strings:Array, priority:int = 0, channel:* = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
+			throwErrorIfNotStarted();
+			
 			var txt:String = "";
 			var len:int = strings.length;
 			for(var i:int = 0; i < len; i++){
@@ -376,26 +432,43 @@ package com.junkbyte.console
 		
 		//
 		public function get central():ConsoleCentral{
+			throwErrorIfNotStarted("central");
 			return _central;
 		}
 		public function get display():ConsoleLayer{
+			throwErrorIfNotStarted("display");
 			return _central.display;
 		}
 		public function get mainPanel():MainPanel{
+			throwErrorIfNotStarted("mainPanel");
 			return display.mainPanel;
 		}
 		public function get config():ConsoleConfig{
-			return _central.config;
+			if(_config == null) _config = new ConsoleConfig();
+			return _config;
+		}
+		
+		private function throwErrorIfNotStarted(propName:String = null):void{
+			if(!started)
+			{
+				if(propName)
+				{
+					propName = "\""+propName+"\"";
+				}
+				throw new Error("Call to console "+propName+" before Console have started.");
+			}
 		}
 		//
 		//
 		//
 		public function clear(channel:String = null):void{
+			if(!started) return;
 			_central.logs.clear(channel);
 			if(!paused) _central.display.mainPanel.updateToBottom();
 			_central.display.updateMenu();
 		}
 		public function getAllLog(splitter:String = "\r\n"):String{
+			throwErrorIfNotStarted("getAllLog()");
 			return _central.logs.getLogsAsString(splitter);
 		}
 		

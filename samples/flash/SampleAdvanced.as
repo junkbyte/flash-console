@@ -64,7 +64,7 @@ package
 			Cc.log("Lets try some object linking...");
 			Cc.info("Here is a link to stage: ", stage);
 			Cc.info("Here is a link to Cc class", Cc);
-			Cc.info("Here is a link to Console instance", Cc.instance);
+			Cc.info("Here is a link to Console instance", Cc);
 			//
 			// HTML text
 			Cc.addHTML("Here is HTML <font color='#ff00ff'>purple <b>bold</b> <b><i>and</i></b> <i>italic</i></font> text.");
