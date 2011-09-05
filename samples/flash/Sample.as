@@ -27,7 +27,8 @@ package
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
-
+	import com.junkbyte.console.ConsoleVersion;
+	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
@@ -122,7 +123,7 @@ package
 			screenClip = new ScreenClipClass();
 			addChild(screenClip);
 			getScreenChild("mcBunny").head.stop();
-			TextField(getScreenChild("version")).text = "v"+Console.VERSION+Console.VERSION_STAGE;
+			TextField(getScreenChild("version")).text = "v"+ConsoleVersion.VERSION+ConsoleVersion.STAGE;
 			TextField(getScreenChild("txtPriority")).restrict = "0-9";
 			TextField(getScreenChild("txtPriority2")).restrict = "0-9";
 			setUpButton("btnInterval", "Start interval");

@@ -24,10 +24,11 @@
 */
 package com.junkbyte.console.view 
 {
-	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.vos.GraphGroup;
-
+	
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
@@ -138,7 +139,7 @@ package com.junkbyte.console.view
 				if(_central.config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
 					_topTries--;
 					parent.addChild(this);
-					_central.report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
+					_central.report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.", ConsoleLevel.CONSOLE_STATUS);
 				}
 			}
 		}

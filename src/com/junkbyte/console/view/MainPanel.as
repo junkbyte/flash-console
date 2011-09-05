@@ -24,12 +24,13 @@
 */
 package com.junkbyte.console.view 
 {
+	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.vos.Log;
-
+	
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -303,8 +304,8 @@ package com.junkbyte.console.view
 			var ct:ColorTransform = new ColorTransform();
 			if(on){
 				central.console.commandLine = true;
-				central.report("//", -2);
-				central.report("// <b>Enter remoting password</b> in CommandLine below...", -2);
+				central.report("//", ConsoleLevel.CONSOLE_EVENT);
+				central.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
 				updateCLScope("Password");
 				ct.color = style.controlColor;
 				_cmdBG.transform.colorTransform = ct;
@@ -770,7 +771,7 @@ package com.junkbyte.console.view
 			}else if(t == "mm"){
 				central.console.memoryMonitor = !central.console.memoryMonitor;
 			}else if(t == "settings"){
-				central.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", -1);
+				central.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
 			}else if(t == "remote"){
 				central.remoter.remoting = Remoting.RECIEVER;

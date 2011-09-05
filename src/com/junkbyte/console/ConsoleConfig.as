@@ -67,7 +67,7 @@ package com.junkbyte.console {
 		 * Auto stack trace logs for this priority and above
 		 * default priortiy = 10; fatal level
 		 */
-		public var autoStackPriority:int = Console.FATAL;
+		public var autoStackPriority:int = ConsoleLevel.FATAL;
 		
 		/**
 		 * Default stack trace depth

@@ -24,15 +24,15 @@
 */
 package com.junkbyte.console 
 {
-	import flash.display.DisplayObject;
-	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.view.ConsoleLayer;
+	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.vos.Log;
-
+	
+	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.LoaderInfo;
 	import flash.events.ErrorEvent;
@@ -48,19 +48,7 @@ package com.junkbyte.console
 	 * @see com.junkbyte.console.Cc
 	 */
 	public class Console extends EventDispatcher{
-
-		public static const VERSION:Number = 2.6;
-		public static const VERSION_STAGE:String = "IN DEV";
-		public static const BUILD:int = 593;
-		public static const BUILD_DATE:String = "2011/06/15 00:27";
-		//
-		public static const LOG:uint = 1;
-		public static const INFO:uint = 3;
-		public static const DEBUG:uint = 6;
-		public static const WARN:uint = 8;
-		public static const ERROR:uint = 9;
-		public static const FATAL:uint = 10;
-		//
+		
 		protected var _central:ConsoleCentral;
 		protected var _config:ConsoleConfig;
 		
@@ -81,7 +69,7 @@ package com.junkbyte.console
 			
 			_central = createCentral(config);
 			_central.init();
-			_central.report("<b>Console v"+VERSION+VERSION_STAGE+"</b> build "+BUILD+". "+Capabilities.playerType+" "+Capabilities.version+".", -2);
+			_central.report("<b>Console v"+ConsoleVersion.VERSION+ConsoleVersion.STAGE+"</b> build "+ConsoleVersion.BUILD+". "+Capabilities.playerType+" "+Capabilities.version+".", ConsoleLevel.CONSOLE_EVENT);
 
 			if(container) 
 			{
@@ -151,7 +139,7 @@ package com.junkbyte.console
 			if(!str){
 				str = String(error);
 			}
-			_central.report(str, FATAL, false);
+			_central.report(str, ConsoleLevel.FATAL, false);
 		}
 		
 
@@ -374,43 +362,43 @@ package com.junkbyte.console
 		}
 		
 		public function log(...strings):void{
-			addLine(strings, LOG);
+			addLine(strings, ConsoleLevel.LOG);
 		}
 		public function info(...strings):void{
-			addLine(strings, INFO);
+			addLine(strings, ConsoleLevel.INFO);
 		}
 		public function debug(...strings):void{
-			addLine(strings, DEBUG);
+			addLine(strings, ConsoleLevel.DEBUG);
 		}
 		public function warn(...strings):void{
-			addLine(strings, WARN);
+			addLine(strings, ConsoleLevel.WARN);
 		}
 		public function error(...strings):void{
-			addLine(strings, ERROR);
+			addLine(strings, ConsoleLevel.ERROR);
 		}
 		public function fatal(...strings):void{
-			addLine(strings, FATAL);
+			addLine(strings, ConsoleLevel.FATAL);
 		}
 		public function ch(channel:*, string:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			addLine([string], priority, channel, isRepeating);
 		}
 		public function logch(channel:*, ...strings):void{
-			addLine(strings, LOG, channel);
+			addLine(strings, ConsoleLevel.LOG, channel);
 		}
 		public function infoch(channel:*, ...strings):void{
-			addLine(strings, INFO, channel);
+			addLine(strings, ConsoleLevel.INFO, channel);
 		}
 		public function debugch(channel:*, ...strings):void{
-			addLine(strings, DEBUG, channel);
+			addLine(strings, ConsoleLevel.DEBUG, channel);
 		}
 		public function warnch(channel:*, ...strings):void{
-			addLine(strings, WARN, channel);
+			addLine(strings, ConsoleLevel.WARN, channel);
 		}
 		public function errorch(channel:*, ...strings):void{
-			addLine(strings, ERROR, channel);
+			addLine(strings, ConsoleLevel.ERROR, channel);
 		}
 		public function fatalch(channel:*, ...strings):void{
-			addLine(strings, FATAL, channel);
+			addLine(strings, ConsoleLevel.FATAL, channel);
 		}
 		public function addCh(channel:*, strings:Array, priority:int = 2, isRepeating:Boolean = false):void{
 			addLine(strings, priority, channel, isRepeating);

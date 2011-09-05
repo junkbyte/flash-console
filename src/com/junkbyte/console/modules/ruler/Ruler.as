@@ -23,16 +23,17 @@
 * 
 */
 package com.junkbyte.console.modules.ruler {
-	import flash.events.Event;
+	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.ConsoleStyle;
 	import com.junkbyte.console.core.ConsoleCentral;
-
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.BlendMode;
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
+	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -85,7 +86,7 @@ package com.junkbyte.console.modules.ruler {
 			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, false, 0, true);
 			onMouseMove();
 			if(_central.config.rulerHidesMouse) Mouse.hide();
-			_central.report("<b>Ruler started. Click on two locations to measure.</b>", -1);
+			_central.report("<b>Ruler started. Click on two locations to measure.</b>", ConsoleLevel.CONSOLE_STATUS);
 		}
 		private function onMouseMove(e:MouseEvent = null):void{
 			_pointer.graphics.clear();
@@ -210,12 +211,12 @@ package com.junkbyte.console.modules.ruler {
 				graphics.moveTo(p.x, p.y);
 				graphics.lineTo(p2.x, p2.y);
 				//
-				_central.report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", -2);
-				_central.report("Distance: <b>"+round(d,100) +"</b>", -2);
-				_central.report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", -2);
-				_central.report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", -2);
-				_central.report("Angle from first point (red): <b>"+a1+"°</b>", -2);
-				_central.report("Angle from second point (orange): <b>"+a2+"°</b>", -2);
+				_central.report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", ConsoleLevel.CONSOLE_EVENT);
+				_central.report("Distance: <b>"+round(d,100) +"</b>", ConsoleLevel.CONSOLE_EVENT);
+				_central.report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", ConsoleLevel.CONSOLE_EVENT);
+				_central.report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", ConsoleLevel.CONSOLE_EVENT);
+				_central.report("Angle from first point (red): <b>"+a1+"°</b>", ConsoleLevel.CONSOLE_EVENT);
+				_central.report("Angle from second point (orange): <b>"+a2+"°</b>", ConsoleLevel.CONSOLE_EVENT);
 			}else{
 				exit();
 			}

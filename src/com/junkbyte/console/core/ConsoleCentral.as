@@ -26,6 +26,7 @@ package com.junkbyte.console.core
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
@@ -33,7 +34,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.modules.ruler.RulerModule;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.view.MainPanelMenu;
-
+	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.net.SharedObject;
@@ -179,7 +180,7 @@ package com.junkbyte.console.core
 					//report("Sending garbage collection request to client",-1);
 					remoter.send("gc");
 				}catch(e:Error){
-					report(e,10);
+					report(e, ConsoleLevel.ERROR);
 				}
 			}else{
 				var ok:Boolean;
@@ -192,7 +193,7 @@ package com.junkbyte.console.core
 				}catch(e:Error){ }
 				
 				var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
-				report(str,(ok?-1:10));
+				report(str,(ok?ConsoleLevel.CONSOLE_STATUS:ConsoleLevel.ERROR));
 			}
 		}
 		//
@@ -207,8 +208,8 @@ package com.junkbyte.console.core
 		}
 		public function set paused(newV:Boolean):void{
 			if(_paused == newV) return;
-			if(newV) report("Paused", 10);
-			else report("Resumed", -1);
+			if(newV) report("Paused", ConsoleLevel.ERROR);
+			else report("Resumed", ConsoleLevel.CONSOLE_STATUS);
 			_paused = newV;
 			display.mainPanel.setPaused(newV);
 			dispatchEvent(new Event(ConsoleCentral.PAUSED));

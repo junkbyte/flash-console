@@ -8,7 +8,7 @@
 	<property name="samples.dir" value="${basedir}/samples" />
 	<property name="wiki.dir" value="./../wiki" />
 	<property name="temp.dir" value="${basedir}/temp" />
-	<property name="src.ver.file" value="${src.dir}/com/junkbyte/console/Console.as" />
+	<property name="src.ver.file" value="${src.dir}/com/junkbyte/console/ConsoleVersion.as" />
 	<property name="src.air.config.file" value="${samples.dir}/remote_air/ConsoleRemoteAIR-app.xml" />
 	
 	<property name="swc.classes" value="com.junkbyte.console.Cc com.junkbyte.console.ConsoleChannel" />
@@ -63,9 +63,9 @@
 		<property file="${build.dir}/project.properties"/>
 		<echo>"Version ${build.version}${build.stage}. build ${build.number} @ ${build.date}"</echo>
 		<replaceregexp file="${src.ver.file}" match="(VERSION:Number\s*=\s*).+;" replace="\1${build.version};" />
-		<replaceregexp file="${src.ver.file}" match="(VERSION_STAGE:String\s*=\s*).+;" replace='\1"${build.stage}";' />
+		<replaceregexp file="${src.ver.file}" match="(STAGE:String\s*=\s*).+;" replace='\1"${build.stage}";' />
 		<replaceregexp file="${src.ver.file}" match="(BUILD:int\s*=\s*).+;" replace="\1${build.number};" />
-		<replaceregexp file="${src.ver.file}" match="(BUILD_DATE:String\s*=\s*).+;" replace='\1"${build.date}";' />
+		<replaceregexp file="${src.ver.file}" match="(DATE:String\s*=\s*).+;" replace='\1"${build.date}";' />
 		<replaceregexp file="${src.air.config.file}" match="(&lt;version&gt;)\d+\.\d+(&lt;/version&gt;)" replace='\1${build.version}\2' />
 	</target>
 
