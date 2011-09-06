@@ -24,24 +24,27 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.events.Event;
-	import com.junkbyte.console.events.ConsoleEvent;
-	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.view.ConsoleLayer;
-
+	
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	public class ConsoleCore extends EventDispatcher implements IConsoleModule
+
+	public class ConsoleModule extends EventDispatcher implements IConsoleModule
 	{
 		protected var _central:ConsoleCentral;
+		protected var _moduleRegisteryCallbacks:Vector.<ModuleRegisteryCallback>;
 		
-		public function ConsoleCore(c:ConsoleCentral = null)
+		public function ConsoleModule(c:ConsoleCentral = null)
 		{
 			_central = c;
 		}
 		
-		protected function get remoter():Remoting
+		protected function get remoter():IRemoter
 		{
 			return _central.remoter;
 		}
@@ -66,7 +69,12 @@ package com.junkbyte.console.core
 			_central.report(obj, priority, skipSafe, ch);
 		}
 		
-		public function registerConsole(console:Console):void
+		public function getModuleName():String
+		{
+			return null;
+		}
+		
+		public function registeredToConsole(console:Console):void
 		{
 			_central = console.central;
 			if(console.started)
@@ -79,10 +87,20 @@ package com.junkbyte.console.core
 			
 		}
 		
-		public function unregisterConsole(console:Console):void
+		public function unregisteredFromConsole(console:Console):void
 		{
 			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
 			_central = null;
+		}
+		
+		public function interestModuleRegistered(module:IConsoleModule):void
+		{
+			
+		}
+		
+		public function interestModuleUnregistered(module:IConsoleModule):void
+		{
+			
 		}
 		
 		protected function onConsoleStarted(e:Event = null):void
@@ -90,9 +108,5 @@ package com.junkbyte.console.core
 			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
 		}
 		
-		public function getModuleName():String
-		{
-			return null;
-		}
 	}
 }

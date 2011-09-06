@@ -24,15 +24,16 @@
 */
 package com.junkbyte.console.core 
 {
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.Cc;
+	import com.junkbyte.console.Console;
+
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.utils.ByteArray;
 	import flash.utils.describeType;
 	import flash.utils.getQualifiedClassName;
 
-	public class ConsoleTools extends ConsoleCore{
+	public class ConsoleTools extends ConsoleModule{
 		
 		public function ConsoleTools(console:ConsoleCentral) {
 			super(console);

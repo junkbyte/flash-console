@@ -1,12 +1,17 @@
-package com.junkbyte.console.interfaces {
+package com.junkbyte.console.interfaces
+{
 	import com.junkbyte.console.Console;
 
-	public interface IConsoleModule {
+	public interface IConsoleModule
+	{
 		
-		function registerConsole(console:Console):void;
-		function unregisterConsole(console:Console):void;
+		function getModuleName():String; // can be null if other modules don't depend on this module
 		
-		function getModuleName():String;
+		function registeredToConsole(console:Console):void;
+		function unregisteredFromConsole(console:Console):void;
+		
+		function interestModuleRegistered(module:IConsoleModule):void;
+		function interestModuleUnregistered(module:IConsoleModule):void;
 		
 	}
 }

@@ -22,7 +22,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core {
+package com.junkbyte.console.core
+{
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
 
@@ -32,7 +33,7 @@ package com.junkbyte.console.core {
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
 
-	public class Graphing extends ConsoleCore{
+	public class Graphing extends ConsoleModule{
 		
 		public static const NAME:String = "graphing";
 		
@@ -137,7 +138,7 @@ package com.junkbyte.console.core {
 			}
 		}
 		private function removeGroup(n:String):void{
-			if(remoter.remoting == Remoting.RECIEVER) {
+			if(!remoter.isSender) {
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeUTF(n);
 				remoter.send("removeGroup", bytes);
@@ -149,11 +150,11 @@ package com.junkbyte.console.core {
 			}
 		}
 		public function get fpsMonitor():Boolean{
-			if(remoter.remoting == Remoting.RECIEVER) return _central.display.fpsMonitor;
+			if(!remoter.isSender) return _central.display.fpsMonitor;
 			return _fpsGroup!=null;
 		}
 		public function set fpsMonitor(b:Boolean):void{
-			if(remoter.remoting == Remoting.RECIEVER) {
+			if(!remoter.isSender) {
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeBoolean(b);
 				remoter.send("fps", bytes);
@@ -174,11 +175,11 @@ package com.junkbyte.console.core {
 		}
 		//
 		public function get memoryMonitor():Boolean{
-			if(remoter.remoting == Remoting.RECIEVER) return _central.display.memoryMonitor;
+			if(!remoter.isSender) return _central.display.memoryMonitor;
 			return _memGroup!=null;
 		}
 		public function set memoryMonitor(b:Boolean):void{
-			if(remoter.remoting == Remoting.RECIEVER) {
+			if(!remoter.isSender) {
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeBoolean(b);
 				remoter.send("mem", bytes);
@@ -253,7 +254,7 @@ package com.junkbyte.console.core {
 					}
 				}
 			}
-			if(remoter.canSend && (_hadGraph || _groups.length)){
+			if(remoter.isSender && remoter.connected &&(_hadGraph || _groups.length)){
 				var len:uint = _groups.length;
 				var ga:ByteArray = new ByteArray();
 				for(var j:uint = 0; j<len; j++){

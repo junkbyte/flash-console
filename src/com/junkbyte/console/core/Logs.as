@@ -24,11 +24,16 @@
 */
 package com.junkbyte.console.core 
 {
+	import com.junkbyte.console.Console;
+	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.vos.Log;
+	
 	import flash.events.Event;
 	import flash.utils.ByteArray;
 
-	public class Logs extends ConsoleCore{
+	public class Logs extends ConsoleModule{
 		
 		public static const GLOBAL_CHANNEL:String = " * ";
 		public static const DEFAULT_CHANNEL:String = "-";
@@ -48,28 +53,60 @@ package com.junkbyte.console.core
 		private var _length:uint;
 		//private var _lines:uint; // number of lines since start.
 		
-		public function Logs(console:ConsoleCentral){
-			super(console);
+		public function Logs(){
+			super();
 			_channels = new Object();
-			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
-			remoter.registerCallback("log", function(bytes:ByteArray):void{
-				add(Log.FromBytes(bytes));
-			});
 		}
-		private function onRemoteConnection(e:Event):void{
+		
+		override public function registeredToConsole(console:Console):void
+		{
+			super.registeredToConsole(console);
+			
+			_central.addModuleInterestCallback(ConsoleModuleNames.REMOTING, this);
+		}
+		
+		override public function interestModuleRegistered(module:IConsoleModule):void
+		{
+			if(module is IRemoter)
+			{
+				var remoter:IRemoter = module as IRemoter;
+				remoter.addEventListener(Event.CONNECT, onRemoteConnection);
+				remoter.registerCallback("log", function(bytes:ByteArray):void{
+					add(Log.FromBytes(bytes));
+				});
+				if(remoter.connected)
+				{
+					onRemoteConnection();
+				}
+			}
+		}
+		
+		override public function interestModuleUnregistered(module:IConsoleModule):void
+		{
+			if(module is IRemoter)
+			{
+				var remoter:IRemoter = module as IRemoter;
+				remoter.removeEventListener(Event.CONNECT, onRemoteConnection);
+				remoter.registerCallback("log", null);
+			}
+		}
+		
+		protected function onRemoteConnection(e:Event = null):void{
 			var log:Log = first;
 			while(log){
 				send2Remote(log);
 				log = log.next;
 			}
 		}
+		
 		private function send2Remote(line:Log):void{
-			if(remoter.canSend) {
+			if(remoter.isSender && remoter.connected) {
 				var bytes:ByteArray = new ByteArray();
 				line.toBytes(bytes);
 				remoter.send("log", bytes);
 			}
 		}
+		
 		public function update():Boolean{
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){

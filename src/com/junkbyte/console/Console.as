@@ -122,14 +122,6 @@ package com.junkbyte.console
 		}
 		
 		//
-		// WARNING: key binding hard references the function and arguments.
-		// This should only be used for development purposes only.
-		//
-		public function bindKey(key:KeyBind, callback:Function ,args:Array = null):void{
-			throwErrorIfNotStarted("bindKey()");
-			if(key) _central.keyBinder.bindKey(key, callback, args);
-		}
-		//
 		// WARNING: Add menu hard references the function and arguments.
 		//
 		public function addMenu(key:String, callback:Function, args:Array = null, rollover:String = null):void{
@@ -205,63 +197,12 @@ package com.junkbyte.console
 			addLine(new Array(_central.tools.explode(obj, depth)), 1, channel, false, true);
 		}
 		public function get paused():Boolean{
-			throwErrorIfNotStarted("minimumPriority");
+			throwErrorIfNotStarted("paused");
 			return _central.paused;
 		}
 		public function set paused(newV:Boolean):void{
-			throwErrorIfNotStarted("minimumPriority");
+			throwErrorIfNotStarted("paused");
 			_central.paused = newV;
-		}
-		//
-		//
-		//
-		/*
-		// USE Cc.display.x, Cc.display.width, etc
-		public function get width():Number{
-			return _central.display.mainPanel.width;
-		}
-		public function set width(newW:Number):void{
-			_central.display.mainPanel.width = newW;
-		}
-		public function set height(newW:Number):void{
-			_central.display.mainPanel.height = newW;
-		}
-		public function get height():Number{
-			return _central.display.mainPanel.height;
-		}
-		public function get x():Number{
-			return _central.display.mainPanel.x;
-		}
-		public function set x(newW:Number):void{
-			_central.display.mainPanel.x = newW;
-		}
-		public function set y(newW:Number):void{
-			_central.display.mainPanel.y = newW;
-		}
-		public function get y():Number{
-			return _central.display.mainPanel.y;
-		}
-		public function set visible(v:Boolean):void{
-			_central.display.visible = v;
-			if(v) _central.display.mainPanel.visible = true;
-		}*/
-		//
-		// REMOTING
-		//
-		//
-		// REMOTING
-		//
-		public function get remoting():Boolean{
-			throwErrorIfNotStarted("minimumPriority");
-			return _central.remoter.remoting == Remoting.SENDER;
-		}
-		public function set remoting(b:Boolean):void{
-			throwErrorIfNotStarted("minimumPriority");
-			_central.remoter.remoting = b?Remoting.SENDER:Remoting.NONE;
-		}
-		public function remotingSocket(host:String, port:int):void{
-			throwErrorIfNotStarted("minimumPriority");
-			_central.remoter.remotingSocket(host, port);
 		}
 		//
 		//

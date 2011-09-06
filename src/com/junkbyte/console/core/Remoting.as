@@ -24,6 +24,11 @@
 */
 package com.junkbyte.console.core 
 {
+	import com.junkbyte.console.Console;
+	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.remoting.IRemoter;
+	
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -37,7 +42,7 @@ package com.junkbyte.console.core
 	import flash.utils.Dictionary;
 
 	[Event(name="CONNECT", type="flash.events.Event")]
-	public class Remoting extends ConsoleCore{
+	public class Remoting extends ConsoleModule implements IRemoter{
 		
 		public static const NONE:uint = 0;
 		public static const SENDER:uint = 1;
@@ -57,8 +62,8 @@ package com.junkbyte.console.core
 		private var _sendID:String;
 		private var _lastReciever:String;
 		
-		public function Remoting(m:ConsoleCentral) {
-			super(m);
+		public function Remoting() {
+			super();
 			registerCallback("login", function(bytes:ByteArray):void{
 				login(bytes.readUTF());
 			});
@@ -66,6 +71,24 @@ package com.junkbyte.console.core
 			registerCallback("loginFail", loginFail);
 			registerCallback("loginSuccess", loginSuccess);
 		}
+		
+		override public function registeredToConsole(console:Console):void
+		{
+			super.registeredToConsole(console);
+			_central.addEventListener(ConsoleEvent.UPDATED, onConsoleUpdated);
+		}
+		
+		override public function unregisteredFromConsole(console:Console):void
+		{
+			super.unregisteredFromConsole(console);
+			_central.removeEventListener(ConsoleEvent.UPDATED, onConsoleUpdated);
+		}
+		
+		protected function onConsoleUpdated(e:Event):void
+		{
+			update();
+		}
+		
 		public function update():void{
 			if(_sendBuffer.length){
 				if(_socket && _socket.connected){
@@ -166,6 +189,17 @@ package com.junkbyte.console.core
 		public function get canSend():Boolean{
 			return _mode == SENDER && _loggedIn;
 		}
+		
+		public function get connected():Boolean
+		{
+			return _loggedIn;
+		}
+		
+		public function get isSender():Boolean
+		{
+			return _mode == SENDER;
+		}
+		
 		public function set remoting(newMode:uint):void{
 			if(newMode == _mode) return;
 			_sendID = generateId();
@@ -335,7 +369,7 @@ package com.junkbyte.console.core
 				_central.display.mainPanel.requestLogin();
 			}
 		}
-		public function login(pass:String = ""):void{
+		public function login(pass:String):void{
 			if(remoting == Remoting.RECIEVER){
 				_lastLogin = pass;
 				report("Attempting to login...", -1);
@@ -370,6 +404,11 @@ package com.junkbyte.console.core
 			_mode = NONE;
 			_sendBuffer = new ByteArray();
 			_local = null;
+		}
+		
+		override public function getModuleName():String
+		{
+			return ConsoleModuleNames.REMOTING;
 		}
 	}
 }

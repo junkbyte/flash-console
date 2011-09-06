@@ -27,8 +27,9 @@ package com.junkbyte.console.modules.displayRoller
 	import com.junkbyte.console.KeyBind;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.LogReferences;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ConsolePanel;
-
+	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
@@ -39,13 +40,15 @@ package com.junkbyte.console.modules.displayRoller
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	import flash.utils.Dictionary;
-
+	
 	public class DisplayRoller extends ConsolePanel{
 		
 		private var _settingKey:Boolean;
+		private var module:DisplayRollerModule;
 		
-		public function DisplayRoller(m:ConsoleCentral) {
+		public function DisplayRoller(m:ConsoleCentral, module:DisplayRollerModule) {
 			super(m);
+			this.module = module;
 			name = "rollerPanel";
 			init(60,100,false);
 			txtField = makeTF("rollerPrints");
@@ -56,11 +59,6 @@ package com.junkbyte.console.modules.displayRoller
 			addChild(txtField);
 			addEventListener(Event.ENTER_FRAME, _onFrame);
 			addEventListener(Event.REMOVED_FROM_STAGE, removeListeners);
-		}
-		
-		public function get module():DisplayRollerModule 
-		{
-			return central.getModuleByName(DisplayRollerModule.NAME) as DisplayRollerModule;
 		}
 		
 		private function removeListeners(e:Event=null):void{
@@ -90,7 +88,12 @@ package com.junkbyte.console.modules.displayRoller
 			var str:String = "";
 			if(!dolink){
 				var key:String = module.rollerCaptureKey?module.rollerCaptureKey.key:"unassigned";
-				str = "<menu> <a href=\"event:close\"><b>X</b></a></menu> Capture key: <menu><a href=\"event:capture\">"+key+"</a></menu><br/>";
+				str = "<menu> <a href=\"event:close\"><b>X</b></a></menu>";
+				if(module.hasKeyBinder())
+				{
+					str += " Capture key: <menu><a href=\"event:capture\">"+key+"</a>"
+				}
+				str += "</menu><br/>";
 			}
 			var p:Point = new Point(stg.mouseX, stg.mouseY);
 			if(stg.areInaccessibleObjectsUnderPoint(p)){

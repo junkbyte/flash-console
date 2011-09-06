@@ -25,15 +25,18 @@
 package com.junkbyte.console.core 
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
-
+	
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
 
-	public class CommandLine extends ConsoleCore{
+	public class CommandLine extends ConsoleModule{
 		
 		public static const NAME:String = "commandLine";
 		
@@ -70,31 +73,44 @@ package com.junkbyte.console.core
 			addCLCmd("/", prevCmd, "Return to previous scope");
 		}
 		
-		override public function registerConsole(console:Console):void
+		override public function registeredToConsole(console:Console):void
 		{
-			super.registerConsole(console);
+			super.registeredToConsole(console);
 			
 			_scope = console;
 			_prevScope = new WeakRef(console);
 			_saved.set("C", console);
 			
-			remoter.registerCallback("cmd", function(bytes:ByteArray):void{
-				run(bytes.readUTF());
-			});
-			remoter.registerCallback("scope", function(bytes:ByteArray):void{
-				handleScopeEvent(bytes.readUnsignedInt());
-			});
-			remoter.registerCallback("cls", handleScopeString);
-			remoter.addEventListener(Event.CONNECT, sendCmdScope2Remote);
+			_central.addModuleInterestCallback(ConsoleModuleNames.REMOTING, this);
 		}
 		
-		override public function unregisterConsole(console:Console):void
+		override public function interestModuleRegistered(module:IConsoleModule):void
 		{
-			super.unregisterConsole(console);
-			remoter.registerCallback("cmd", null);
-			remoter.registerCallback("scope", null);
-			remoter.registerCallback("cls", null);
-			remoter.removeEventListener(Event.CONNECT, sendCmdScope2Remote);
+			if(module is IRemoter)
+			{
+				var remoter:IRemoter = module as IRemoter;
+				
+				remoter.registerCallback("cmd", function(bytes:ByteArray):void{
+					run(bytes.readUTF());
+				});
+				remoter.registerCallback("scope", function(bytes:ByteArray):void{
+					handleScopeEvent(bytes.readUnsignedInt());
+				});
+				remoter.registerCallback("cls", handleScopeString);
+				remoter.addEventListener(Event.CONNECT, sendCmdScope2Remote);
+			}
+		}
+		
+		override public function interestModuleUnregistered(module:IConsoleModule):void
+		{
+			if(module is IRemoter)
+			{
+				var remoter:IRemoter = module as IRemoter;
+				remoter.registerCallback("cmd", null);
+				remoter.registerCallback("scope", null);
+				remoter.registerCallback("cls", null);
+				remoter.removeEventListener(Event.CONNECT, sendCmdScope2Remote);
+			}
 		}
 		
 		override public function getModuleName():String
@@ -120,7 +136,7 @@ package com.junkbyte.console.core
 			_scopeStr = bytes.readUTF();
 		}
 		public function handleScopeEvent(id:uint):void{
-			if(remoter.remoting == Remoting.RECIEVER){
+			if(!remoter.isSender){
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeUnsignedInt(id);
 				remoter.send("scope", bytes);
@@ -213,7 +229,7 @@ package com.junkbyte.console.core
 		public function run(str:String, saves:Object = null):* {
 			if(!str) return;
 			str = str.replace(/\s*/,"");
-			if(remoter.remoting == Remoting.RECIEVER){
+			if(!remoter.isSender){
 				if(str.charAt(0) == "~"){
 					str = str.substring(1);
 				}else if(str.search(new RegExp("\/"+localCommands.join("|\/"))) != 0){
@@ -316,7 +332,7 @@ package com.junkbyte.console.core
 					// scope changed
 					_prevScope.reference = _scope;
 					_scope = returned;
-					if(remoter.remoting != Remoting.RECIEVER){
+					if(remoter.isSender){
 						_scopeStr = LogReferences.ShortClassName(_scope, false);
 						sendCmdScope2Remote();
 					}

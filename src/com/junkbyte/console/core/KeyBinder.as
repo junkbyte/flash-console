@@ -26,18 +26,17 @@ package com.junkbyte.console.core
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.KeyBind;
-
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldType;
 
 	/**
-	 * Suppse this could be 'view' ?
+	 * Suppose this could be 'view' ?
 	 */
-	public class KeyBinder extends ConsoleCore{
-		
-		public static const NAME:String = "keyBinder";
+	public class KeyBinder extends ConsoleModule{
 		
 		private var _passInd:int;
 		private var _binds:Object = {};
@@ -48,18 +47,18 @@ package com.junkbyte.console.core
 			super();
 		}
 		
-		override public function registerConsole(console:Console):void
+		override public function registeredToConsole(console:Console):void
 		{
-			super.registerConsole(console);
+			super.registeredToConsole(console);
 			
 			if(display.stage){
 				stageAddedHandle();
 			}else display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
 		
-		override public function unregisterConsole(console:Console):void
+		override public function unregisteredFromConsole(console:Console):void
 		{
-			super.unregisterConsole(console);
+			super.unregisteredFromConsole(console);
 			
 			_central.cl.addCLCmd("keybinds", null, "");
 			
@@ -74,7 +73,7 @@ package com.junkbyte.console.core
 		
 		override public function getModuleName():String
 		{
-			return NAME;
+			return ConsoleModuleNames.KEYBINDER;
 		}
 		
 		override protected function onConsoleStarted(e:Event = null):void

@@ -28,6 +28,8 @@ package
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
+	import com.junkbyte.console.core.Remoting;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
@@ -59,11 +61,16 @@ package
 			Cc.config.tracing = true; // Also trace on flash's normal trace
 			
 			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
-			Cc.remoting = true; // Start sending logs to remote (using LocalConnection)
+			//Cc.remoting = true; // Start sending logs to remote (using LocalConnection)
 			
 			Cc.commandLine = true; // Show command line
 			
 			Cc.mainPanel.height = 220; // change height. You can set x y width height to position/size the main panel
+			
+			
+			// TODO.
+			Remoting(Cc.central.getModuleByName(ConsoleModuleNames.REMOTING)).remoting = Remoting.SENDER;
+			
 			//
 			// End of setup
 			//

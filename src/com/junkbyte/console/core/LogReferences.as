@@ -39,7 +39,7 @@ package com.junkbyte.console.core
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 
-	public class LogReferences extends ConsoleCore
+	public class LogReferences extends ConsoleModule
 	{
 		
 		private var _refMap:WeakObject = new WeakObject();
@@ -188,7 +188,7 @@ package com.junkbyte.console.core
 			}
 		}
 		public function handleRefEvent(str:String):void{
-			if(remoter.remoting == Remoting.RECIEVER){
+			if(!remoter.isSender){
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeUTF(str);
 				remoter.send("ref", bytes);
@@ -257,7 +257,7 @@ package com.junkbyte.console.core
 			_dofull = false;
 			_history = null;
 			_hisIndex = 0;
-			if(remoter.remoting == Remoting.SENDER){
+			if(remoter.isSender){
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeUTF("refexit");
 				remoter.send("ref", bytes);

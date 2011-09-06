@@ -774,7 +774,7 @@ package com.junkbyte.console.view
 				central.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
 			}else if(t == "remote"){
-				central.remoter.remoting = Remoting.RECIEVER;
+				//central.remoter.remoting = Remoting.RECIEVER;
 			}else if(t.indexOf("ref")==0){
 				central.refs.handleRefEvent(t);
 			}else if(t.indexOf("channel_")==0){
@@ -970,7 +970,7 @@ package com.junkbyte.console.view
 		}
 		private function updateCmdHint(e:Event = null):void{
 			var str:String = _cmdField.text;
-			if(str && config.commandLineAutoCompleteEnabled && central.remoter.remoting != Remoting.RECIEVER){
+			if(str && config.commandLineAutoCompleteEnabled && central.remoter.isSender){
 				try{
 					setHints(central.cl.getHintsFor(str, 5));
 					return;

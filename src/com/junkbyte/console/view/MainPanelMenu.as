@@ -1,10 +1,13 @@
-package com.junkbyte.console.view {
+package com.junkbyte.console.view
+{
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleCentral;
-	import com.junkbyte.console.core.ConsoleCore;
+	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.KeyStates;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
+	
 	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.net.FileReference;
@@ -14,7 +17,7 @@ package com.junkbyte.console.view {
 	
 	
 	[Event(name="change", type="flash.events.Event")]
-	public class MainPanelMenu extends ConsoleCore {
+	public class MainPanelMenu extends ConsoleModule {
 		
 		public static const NAME:String = "mainPanelMenu";
 		
@@ -40,9 +43,9 @@ package com.junkbyte.console.view {
 			_textField.autoSize = TextFieldAutoSize.RIGHT;
 		}
 		
-		override public function registerConsole(console:Console):void
+		override public function registeredToConsole(console:Console):void
 		{
-			super.registerConsole(console);
+			super.registeredToConsole(console);
 			
 			this.mainPanel = console.central.display.mainPanel;
 			_textField.styleSheet = console.config.style.styleSheet;
@@ -185,7 +188,8 @@ package com.junkbyte.console.view {
 		
 		private function saveLogs():void
 		{
-			var keyStates:KeyStates = _central.keyStates;
+			var keyStates:KeyStates = _central.getModuleByName(ConsoleModuleNames.KEY_STATES) as KeyStates;
+			
 			var str : String = _central.logs.getLogsAsString("\r\n", !keyStates.shiftKeyDown, keyStates.ctrlKeyDown?mainPanel.lineShouldShow:null);
 			if(keyStates.altKeyDown){
 				var file:FileReference = new FileReference();

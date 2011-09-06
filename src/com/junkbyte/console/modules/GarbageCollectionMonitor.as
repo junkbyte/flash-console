@@ -26,7 +26,7 @@ package com.junkbyte.console.modules
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleCentral;
-	import com.junkbyte.console.core.ConsoleCore;
+	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.events.ConsoleEvent;
 
 	import flash.events.Event;
@@ -34,7 +34,7 @@ package com.junkbyte.console.modules
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
 
-	public class GarbageCollectionMonitor extends ConsoleCore{
+	public class GarbageCollectionMonitor extends ConsoleModule{
 		
 		public static const NAME:String = "garbageCollectionMonitor";
 		
@@ -49,9 +49,9 @@ package com.junkbyte.console.modules
 			_objectsList = new Dictionary(true);
 		}
 		
-		override public function registerConsole(console:Console):void
+		override public function registeredToConsole(console:Console):void
 		{
-			super.registerConsole(console);
+			super.registeredToConsole(console);
 			_central.addEventListener(ConsoleEvent.UPDATE, update);
 		}
 	

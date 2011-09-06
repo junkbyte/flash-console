@@ -32,6 +32,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.UnCaughtErrorsListenerModule;
 	import com.junkbyte.console.modules.displayRoller.DisplayRollerModule;
+	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.modules.ruler.RulerModule;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.view.MainPanelMenu;
@@ -48,14 +49,15 @@ package com.junkbyte.console.core
 		
 		public static const PAUSED:String = "pause";
 		
+		protected var _modules:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
 		protected var _modulesByName:Object = new Object();
-		
+		protected var _moduleInterestCallbacks:Vector.<ModuleRegisteryCallback> = new Vector.<ModuleRegisteryCallback>();
 		//
 		private var _console:Console;
 		private var _config:ConsoleConfig;
 		private var _panels:ConsoleLayer;
 		private var _refs:LogReferences;
-		private var _remoter:Remoting;
+		private var _remoter:IRemoter;
 		private var _tools:ConsoleTools;
 		//
 		private var _logs:Logs;
@@ -84,17 +86,21 @@ package com.junkbyte.console.core
 			_config.style.updateStyleSheet();
 			_panels = new ConsoleLayer(this);
 			
-			_remoter = new Remoting(this);
-			_logs = new Logs(this);
+			_remoter = new Remoting();
+			registerModule(_remoter as IConsoleModule);
+			_logs = new Logs();
+			registerModule(_logs);
 			_refs = new LogReferences(this);
 			registerModule(new CommandLine());
 			_tools =  new ConsoleTools(this);
 			registerModule(new Graphing());
 			
+			/*
 			cl.addCLCmd("remotingSocket", function(str:String = ""):void{
 				var args:Array = str.split(/\s+|\:/);
 				console.remotingSocket(args[0], args[1]);
 			}, "Connect to socket remote. /remotingSocket ip port");
+			*/
 			
 			if(_config.sharedObjectName){
 				try{
@@ -114,7 +120,7 @@ package com.junkbyte.console.core
 			
 		}
 		
-		public function initBaseModules():void
+		protected function initBaseModules():void
 		{
 			registerModule(new KeyBinder());
 			registerModule(new KeyStates());
@@ -128,31 +134,114 @@ package com.junkbyte.console.core
 			return _modulesByName[moduleName];
 		}
 		
+		public function findModuleByClass(moduleClass:Class):IConsoleModule
+		{
+			var len:uint = _modules.length;
+			for (var i:int = _modules.length-1; i>=0; i--)
+			{
+				if(_modules[i] is moduleClass)
+				{
+					return _modules[i];
+				}
+			}
+			return null;
+		}
+		
 		public function registerModule(module:IConsoleModule):void
 		{
-			var moduleName:String = module.getModuleName();
-			
-			var currentModule:IConsoleModule = _modulesByName[moduleName];
-			if(currentModule != module)
+			if(!isModuleRegistered(module))
 			{
-				if(currentModule != null)
+				var moduleName:String = module.getModuleName();
+				if(moduleName != null)
 				{
-					unregisterModule(currentModule);
+					var currentModule:IConsoleModule = _modulesByName[moduleName];
+					if(currentModule != null)
+					{
+						unregisterModule(currentModule);
+					}
+					_modulesByName[moduleName] = module;
 				}
-				_modulesByName[moduleName] = module;
-				module.registerConsole(console);
-				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_ADDED, module));
+				_modules.push(module);
+				module.registeredToConsole(console);
+				callModuleCallbacks(module, true);
+				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
 			}
+		}
+		
+		public function isModuleRegistered(module:IConsoleModule):Boolean
+		{
+			return _modules.indexOf(module) >= 0;
 		}
 		
 		public function unregisterModule(module:IConsoleModule):void
 		{
-			var moduleName:String = module.getModuleName();
-			if(_modulesByName[moduleName] == module)
+			var index:int = _modules.indexOf(module);
+			if(index >= 0)
 			{
-				delete _modulesByName[moduleName];
-				module.unregisterConsole(console);
-				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REMOVED, module));
+				var moduleName:String = module.getModuleName();
+				if(moduleName != null)
+				{
+					if(_modulesByName[moduleName] == module)
+					{
+						delete _modulesByName[moduleName];
+					}
+				}
+				_modules.splice(index, 1);
+				removeModuleCallbacksAddedByModule(module);
+				module.unregisteredFromConsole(console);
+				callModuleCallbacks(module, false);
+				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_UNREGISTERED, module));
+			}
+		}
+		
+		public function addModuleInterestCallback(interestedModuleName:String, callbackModule:IConsoleModule, callOnSelfUnregiser:Boolean = true):void
+		{
+			var cb:ModuleRegisteryCallback = new ModuleRegisteryCallback(interestedModuleName, callbackModule, callOnSelfUnregiser);
+			_moduleInterestCallbacks.push(cb);
+			
+			var interestedModule:IConsoleModule = getModuleByName(interestedModuleName);
+			if(interestedModule != null)
+			{
+				callbackModule.interestModuleRegistered(interestedModule);
+			}
+		}
+		
+		protected function callModuleCallbacks(module:IConsoleModule, isRegistered:Boolean):void
+		{
+			var moduleName:String = module.getModuleName();
+			for (var i:int = _moduleInterestCallbacks.length-1; i>=0; i--)
+			{
+				var cb:ModuleRegisteryCallback = _moduleInterestCallbacks[i];
+				if(cb.interestedModuleName == moduleName)
+				{
+					if(isRegistered)
+					{
+						cb.callbackModule.interestModuleRegistered(module);
+					}
+					else
+					{
+						cb.callbackModule.interestModuleUnregistered(module);
+					}
+				}
+			}
+		}
+		
+		
+		protected function removeModuleCallbacksAddedByModule(module:IConsoleModule):void
+		{
+			var moduleName:String = module.getModuleName();
+			for (var i:int = _moduleInterestCallbacks.length-1; i>=0; i--)
+			{
+				var cb:ModuleRegisteryCallback = _moduleInterestCallbacks[i];
+				if(cb.callbackModule == module)
+				{
+					_moduleInterestCallbacks.splice(i, 1);
+					var interestedModule:IConsoleModule = getModuleByName(cb.interestedModuleName);
+					if(interestedModule != null)
+					{
+						cb.callbackModule.interestModuleUnregistered(module);
+					}
+				}
 			}
 		}
 		//
@@ -163,11 +252,10 @@ package com.junkbyte.console.core
 			var hasNewLog:Boolean = _logs.update();
 			_refs.update(msDelta);
 			var graphsList:Array;
-			if(remoter.remoting != Remoting.RECIEVER)
+			if(remoter.isSender)
 			{
 			 	graphsList = graphing.update(_panels.stage?_panels.stage.frameRate:0);
 			}
-			_remoter.update();
 			
 			dispatchEvent(ConsoleEvent.create(ConsoleEvent.UPDATED));
 			
@@ -177,7 +265,7 @@ package com.junkbyte.console.core
 		}
 		
 		public function gc():void {
-			if(remoter.remoting == Remoting.RECIEVER){
+			if(!remoter.isSender){
 				try{
 					//report("Sending garbage collection request to client",-1);
 					remoter.send("gc");
@@ -227,13 +315,11 @@ package com.junkbyte.console.core
 		public function get config():ConsoleConfig{return _config;}
 		public function get display():ConsoleLayer{return _panels;}
 		
-		public function get keyBinder():KeyBinder{return getModuleByName(KeyBinder.NAME) as KeyBinder;}
-		public function get keyStates():KeyStates{return getModuleByName(KeyStates.NAME) as KeyStates;}
 		public function get mainPanelMenu():MainPanelMenu{return getModuleByName(MainPanelMenu.NAME) as MainPanelMenu;}
 		
 		public function get cl():CommandLine{return getModuleByName(CommandLine.NAME) as CommandLine;}
 		
-		public function get remoter():Remoting{return _remoter;}
+		public function get remoter():IRemoter{return _remoter;}
 		public function get graphing():Graphing{return getModuleByName(Graphing.NAME) as Graphing;}
 		public function get refs():LogReferences{return _refs;}
 		public function get logs():Logs{return _logs;}

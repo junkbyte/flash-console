@@ -1,13 +1,14 @@
 package com.junkbyte.console.core {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.ui.Keyboard;
-	public class KeyStates extends ConsoleCore
+
+	public class KeyStates extends ConsoleModule
 	{
-		
-		public static const NAME:String = "keyStates";
 		
 		protected var _shift:Boolean;
 		protected var _ctrl:Boolean;
@@ -19,9 +20,9 @@ package com.junkbyte.console.core {
 			
 		}
 		
-		override public function registerConsole(console:Console):void
+		override public function registeredToConsole(console:Console):void
 		{
-			super.registerConsole(console);
+			super.registeredToConsole(console);
 			
 			if(display.stage)
 			{
@@ -35,7 +36,7 @@ package com.junkbyte.console.core {
 		
 		override public function getModuleName():String
 		{
-			return NAME;
+			return ConsoleModuleNames.KEY_STATES;
 		}
 		
 		protected function stageAddedHandle(e:Event=null):void

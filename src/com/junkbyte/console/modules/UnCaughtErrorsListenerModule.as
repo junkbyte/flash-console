@@ -2,22 +2,22 @@ package com.junkbyte.console.modules
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleLevel;
-	import com.junkbyte.console.core.ConsoleCore;
-	
+	import com.junkbyte.console.core.ConsoleModule;
+
 	import flash.display.LoaderInfo;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 
-	public class UnCaughtErrorsListenerModule extends ConsoleCore
+	public class UnCaughtErrorsListenerModule extends ConsoleModule
 	{
 		public function UnCaughtErrorsListenerModule()
 		{
 		}
 		
-		override public function registerConsole(console:Console):void
+		override public function registeredToConsole(console:Console):void
 		{
-			super.registerConsole(console);
+			super.registeredToConsole(console);
 			if(console.display.parent != null)
 			{
 				onConsoleAddedToDisplay();

@@ -1,13 +1,14 @@
-package com.junkbyte.console.modules.ruler {
+package com.junkbyte.console.modules.ruler
+{
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.core.ConsoleCore;
+	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
 
 	import flash.events.Event;
 	/**
 	 * @author LuAye
 	 */
-	public class RulerModule extends ConsoleCore{
+	public class RulerModule extends ConsoleModule{
 		
 		public static const NAME:String = "ruler";
 		
@@ -20,16 +21,16 @@ package com.junkbyte.console.modules.ruler {
 			menu = new ConsoleMenuItem("RL", start, null, "Screen Ruler::Measure the distance and angle between two points on screen.");
 		}
 		
-		override public function registerConsole(console:Console):void
+		override public function registeredToConsole(console:Console):void
 		{
-			super.registerConsole(console);
+			super.registeredToConsole(console);
 			_central.mainPanelMenu.addMenu(menu);
 		}
 		
-		override public function unregisterConsole(console:Console):void
+		override public function unregisteredFromConsole(console:Console):void
 		{
 			_central.mainPanelMenu.removeMenu(menu);
-			super.unregisterConsole(console);
+			super.unregisteredFromConsole(console);
 		}
 		
 		override public function getModuleName() : String 

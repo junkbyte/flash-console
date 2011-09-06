@@ -5,8 +5,8 @@ package com.junkbyte.console.events {
 
 	public class ConsoleModuleEvent extends Event {
 		
-		public static const MODULE_ADDED:String = "moduleAdded";
-		public static const MODULE_REMOVED:String = "moduleRemoved";
+		public static const MODULE_REGISTERED:String = "moduleRegistered";
+		public static const MODULE_UNREGISTERED:String = "moduleUnregistered";
 		
 		public var module:IConsoleModule;
 		
