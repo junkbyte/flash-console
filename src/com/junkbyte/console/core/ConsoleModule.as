@@ -37,7 +37,6 @@ package com.junkbyte.console.core
 	public class ConsoleModule extends EventDispatcher implements IConsoleModule
 	{
 		protected var _central:ConsoleCentral;
-		protected var _moduleRegisteryCallbacks:Vector.<ModuleRegisteryCallback>;
 		
 		public function ConsoleModule(c:ConsoleCentral = null)
 		{

@@ -51,7 +51,7 @@ package com.junkbyte.console.core
 		
 		protected var _modules:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
 		protected var _modulesByName:Object = new Object();
-		protected var _moduleInterestCallbacks:Vector.<ModuleRegisteryCallback> = new Vector.<ModuleRegisteryCallback>();
+		protected var _moduleInterestCallbacks:Vector.<ModuleInterestCallback> = new Vector.<ModuleInterestCallback>();
 		//
 		private var _console:Console;
 		private var _config:ConsoleConfig;
@@ -196,7 +196,7 @@ package com.junkbyte.console.core
 		
 		public function addModuleInterestCallback(interestedModuleName:String, callbackModule:IConsoleModule, callOnSelfUnregiser:Boolean = true):void
 		{
-			var cb:ModuleRegisteryCallback = new ModuleRegisteryCallback(interestedModuleName, callbackModule, callOnSelfUnregiser);
+			var cb:ModuleInterestCallback = new ModuleInterestCallback(interestedModuleName, callbackModule, callOnSelfUnregiser);
 			_moduleInterestCallbacks.push(cb);
 			
 			var interestedModule:IConsoleModule = getModuleByName(interestedModuleName);
@@ -211,7 +211,7 @@ package com.junkbyte.console.core
 			var moduleName:String = module.getModuleName();
 			for (var i:int = _moduleInterestCallbacks.length-1; i>=0; i--)
 			{
-				var cb:ModuleRegisteryCallback = _moduleInterestCallbacks[i];
+				var cb:ModuleInterestCallback = _moduleInterestCallbacks[i];
 				if(cb.interestedModuleName == moduleName)
 				{
 					if(isRegistered)
@@ -232,14 +232,17 @@ package com.junkbyte.console.core
 			var moduleName:String = module.getModuleName();
 			for (var i:int = _moduleInterestCallbacks.length-1; i>=0; i--)
 			{
-				var cb:ModuleRegisteryCallback = _moduleInterestCallbacks[i];
+				var cb:ModuleInterestCallback = _moduleInterestCallbacks[i];
 				if(cb.callbackModule == module)
 				{
 					_moduleInterestCallbacks.splice(i, 1);
-					var interestedModule:IConsoleModule = getModuleByName(cb.interestedModuleName);
-					if(interestedModule != null)
+					if(cb.callOnSelfUnregiser)
 					{
-						cb.callbackModule.interestModuleUnregistered(module);
+						var interestedModule:IConsoleModule = getModuleByName(cb.interestedModuleName);
+						if(interestedModule != null)
+						{
+							cb.callbackModule.interestModuleUnregistered(module);
+						}
 					}
 				}
 			}
