@@ -58,14 +58,9 @@ package com.junkbyte.console
 		{
 		}
 		
-		public function start(container:DisplayObjectContainer = null, password:String = ""):void
+		public function start(container:DisplayObjectContainer = null):void
 		{
 			if(started) throw new Error("Console already started.");
-			
-			if (password)
-			{
-				config.keystrokePassword = password;
-			}
 			
 			_central = createCentral(config);
 			_central.init();
@@ -78,11 +73,7 @@ package com.junkbyte.console
 			dispatchEvent(ConsoleEvent.create(ConsoleEvent.CONSOLE_STARTED));
 		}
 		
-		public function startOnStage(target:DisplayObject, password:String = ""):void{
-			if (password)
-			{
-				config.keystrokePassword = password;
-			}
+		public function startOnStage(target:DisplayObject):void{
 			if(!started)
 			{
 				start();
@@ -114,32 +105,6 @@ package com.junkbyte.console
 		protected function createCentral(config:ConsoleConfig):ConsoleCentral
 		{
 			return new ConsoleCentral(this, config);
-		}
-		
-		// requires flash player target to be 10.1
-		public function listenUncaughtErrors(loaderinfo:LoaderInfo):void {
-			try{
-				var uncaughtErrorEvents:IEventDispatcher = loaderinfo["uncaughtErrorEvents"];
-				if(uncaughtErrorEvents){
-					uncaughtErrorEvents.addEventListener("uncaughtError", uncaughtErrorHandle, false, 0, true);
-				}
-			}catch(err:Error){
-				// seems uncaughtErrorEvents is not avaviable on this player/target, which is fine.
-			}
-		}
-		
-		private function uncaughtErrorHandle(e:Event):void{
-			var error:* = e.hasOwnProperty("error")?e["error"]:e; // for flash 9 compatibility
-			var str:String;
-			if (error is Error){
-				str = _central.refs.makeString(error);
-			}else if (error is ErrorEvent){
-				str = ErrorEvent(error).text;
-			}
-			if(!str){
-				str = String(error);
-			}
-			_central.report(str, ConsoleLevel.FATAL, false);
 		}
 		
 

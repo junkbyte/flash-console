@@ -113,9 +113,6 @@ package com.junkbyte.console.view
 		
 		private function stageAddedHandle(e:Event=null):void{
 			if(_central.cl.base == null) _central.cl.base = parent;
-			if(loaderInfo){
-				_central.console.listenUncaughtErrors(loaderInfo);
-			}
 			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);

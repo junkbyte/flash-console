@@ -50,7 +50,9 @@ package
 			//
 			// SET UP - only required once
 			//
-			Cc.startOnStage(this, "`"); // "`" - change for password. This will start hidden
+			Cc.config.keystrokePassword = "`";
+			
+			Cc.startOnStage(this); // "`" - change for password. This will start hidden
 			Cc.visible = true; // Show console, because having password hides console.
 			
 			Cc.config.commandLineAllowed = true; // enable advanced (but security risk) features.

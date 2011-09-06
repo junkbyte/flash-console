@@ -30,6 +30,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.modules.UnCaughtErrorsListenerModule;
 	import com.junkbyte.console.modules.displayRoller.DisplayRollerModule;
 	import com.junkbyte.console.modules.ruler.RulerModule;
 	import com.junkbyte.console.view.ConsoleLayer;
@@ -119,6 +120,7 @@ package com.junkbyte.console.core
 			registerModule(new KeyStates());
 			registerModule(new RulerModule());
 			registerModule(new DisplayRollerModule());
+			registerModule(new UnCaughtErrorsListenerModule());
 		}
 		
 		public function getModuleByName(moduleName:String):IConsoleModule
