@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.modules 
+package com.junkbyte.console.modules.garbageCollectionMonitor 
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleCentral;

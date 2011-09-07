@@ -1,5 +1,6 @@
-package com.junkbyte.console.core {
+package com.junkbyte.console.modules.keyStates {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	
 	import flash.events.Event;
@@ -7,17 +8,14 @@ package com.junkbyte.console.core {
 	import flash.events.MouseEvent;
 	import flash.ui.Keyboard;
 
-	public class KeyStates extends ConsoleModule
+	public class KeyStates extends ConsoleModule implements IKeyStates
 	{
 		
-		protected var _shift:Boolean;
-		protected var _ctrl:Boolean;
-		protected var _alt:Boolean;
+		protected var _keyDownsByKeyCode:Object = new Object();
 		
 		public function KeyStates()
 		{
 			super();
-			
 		}
 		
 		override public function registeredToConsole(console:Console):void
@@ -59,38 +57,51 @@ package com.junkbyte.console.core {
 
 		protected function onStageMouseDown(e : MouseEvent) : void
 		{
-			_shift = e.shiftKey;
-			_ctrl = e.ctrlKey;
-			_alt = e.altKey;
+			setKeyCodeState(Keyboard.CONTROL, e.ctrlKey);
+			setKeyCodeState(Keyboard.SHIFT, e.shiftKey);
+			setKeyCodeState(18, e.altKey);
 		}
 		
-		public function get altKeyDown():Boolean
+		protected function setKeyCodeState(keyCode:uint, isDown:Boolean):void
 		{
-			return _alt;
-		}
-		
-		public function get ctrlKeyDown():Boolean
-		{
-			return _ctrl;
-		}
-		
-		public function get shiftKeyDown():Boolean
-		{
-			return _shift;
+			if(isDown)
+			{
+				_keyDownsByKeyCode[keyCode] = true;
+			}
+			else
+			{
+				delete _keyDownsByKeyCode[keyCode];
+			}
 		}
 
 		protected function keyDownHandler(e:KeyboardEvent):void
 		{
-			if(e.keyCode == Keyboard.SHIFT) _shift = true;
-			if (e.keyCode == Keyboard.CONTROL) _ctrl = true;
-			if (e.keyCode == 18) _alt = true; //Keyboard.ALTERNATE not supported in flash 9
+			setKeyCodeState(e.keyCode, true);
 		}
 		
 		protected function keyUpHandler(e:KeyboardEvent):void
 		{
-			if(e.keyCode == Keyboard.SHIFT) _shift = false;
-			else if(e.keyCode == Keyboard.CONTROL) _ctrl = false;
-			else if (e.keyCode == 18) _alt = false;
+			setKeyCodeState(e.keyCode, false);
+		}
+		
+		public function get altKeyDown():Boolean
+		{
+			return isKeyCodeDown(18); //Keyboard.ALTERNATE not supported in flash 9
+		}
+		
+		public function get ctrlKeyDown():Boolean
+		{
+			return isKeyCodeDown(Keyboard.CONTROL);
+		}
+		
+		public function get shiftKeyDown():Boolean
+		{
+			return isKeyCodeDown(Keyboard.SHIFT);
+		}
+		
+		public function isKeyCodeDown(keyCode:uint):Boolean
+		{
+			return _keyDownsByKeyCode[keyCode] == true;
 		}
 	}
 }

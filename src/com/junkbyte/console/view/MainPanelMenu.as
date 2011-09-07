@@ -3,9 +3,10 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.core.KeyStates;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.keyStates.IKeyStates;
+	import com.junkbyte.console.modules.keyStates.KeyStates;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
 	
 	import flash.events.Event;
@@ -188,7 +189,7 @@ package com.junkbyte.console.view
 		
 		private function saveLogs():void
 		{
-			var keyStates:KeyStates = _central.getModuleByName(ConsoleModuleNames.KEY_STATES) as KeyStates;
+			var keyStates:IKeyStates = _central.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
 			
 			var str : String = _central.logs.getLogsAsString("\r\n", !keyStates.shiftKeyDown, keyStates.ctrlKeyDown?mainPanel.lineShouldShow:null);
 			if(keyStates.altKeyDown){

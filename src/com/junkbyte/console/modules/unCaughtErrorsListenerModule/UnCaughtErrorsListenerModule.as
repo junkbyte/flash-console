@@ -1,4 +1,4 @@
-package com.junkbyte.console.modules
+package com.junkbyte.console.modules.unCaughtErrorsListenerModule
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleLevel;

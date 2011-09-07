@@ -30,10 +30,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.modules.UnCaughtErrorsListenerModule;
-	import com.junkbyte.console.modules.displayRoller.DisplayRollerModule;
 	import com.junkbyte.console.modules.remoting.IRemoter;
-	import com.junkbyte.console.modules.ruler.RulerModule;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.view.MainPanelMenu;
 	
@@ -41,6 +38,7 @@ package com.junkbyte.console.core
 	import flash.events.EventDispatcher;
 	import flash.net.SharedObject;
 	import flash.system.System;
+	import com.junkbyte.console.modules.keyStates.KeyStates;
 	
 	[Event(name="moduleAdded", type="com.junkbyte.console.events.ConsoleModuleEvent")]
 	[Event(name="moduleRemoved", type="com.junkbyte.console.events.ConsoleModuleEvent")]
@@ -123,10 +121,6 @@ package com.junkbyte.console.core
 		protected function initBaseModules():void
 		{
 			registerModule(new KeyBinder());
-			registerModule(new KeyStates());
-			registerModule(new RulerModule());
-			registerModule(new DisplayRollerModule());
-			registerModule(new UnCaughtErrorsListenerModule());
 		}
 		
 		public function getModuleByName(moduleName:String):IConsoleModule
@@ -147,6 +141,18 @@ package com.junkbyte.console.core
 			return null;
 		}
 		
+		public function registerModules(modules:Vector.<IConsoleModule>):void
+		{
+			for (var i:int = 0; i < modules.length; i++)
+			{
+				var module:IConsoleModule = modules[i];
+				if(module != null)
+				{
+					registerModule(module);
+				}
+			}
+		}
+		
 		public function registerModule(module:IConsoleModule):void
 		{
 			if(!isModuleRegistered(module))
@@ -163,8 +169,12 @@ package com.junkbyte.console.core
 				}
 				_modules.push(module);
 				module.registeredToConsole(console);
-				callModuleCallbacks(module, true);
-				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
+				// this is incase module unregister it self straight away
+				if(isModuleRegistered(module))
+				{
+					callModuleCallbacks(module, true);
+					dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
+				}
 			}
 		}
 		
@@ -187,8 +197,8 @@ package com.junkbyte.console.core
 					}
 				}
 				_modules.splice(index, 1);
-				removeModuleCallbacksAddedByModule(module);
 				module.unregisteredFromConsole(console);
+				removeModuleCallbacksAddedByModule(module);
 				callModuleCallbacks(module, false);
 				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_UNREGISTERED, module));
 			}

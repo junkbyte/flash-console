@@ -107,20 +107,6 @@ package com.junkbyte.console
 			return new ConsoleCentral(this, config);
 		}
 		
-
-		public function addGraph(name:String, obj:Object, property:String, color:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
-			throwErrorIfNotStarted("addGraph()");
-			_central.graphing.add(name, obj, property, color, key, rect, inverse);
-		}
-		public function fixGraphRange(name:String, min:Number = NaN, max:Number = NaN):void{
-			throwErrorIfNotStarted("fixGraphRange()");
-			_central.graphing.fixRange(name, min, max);
-		}
-		public function removeGraph(name:String, obj:Object = null, property:String = null):void{
-			throwErrorIfNotStarted("removeGraph()");
-			_central.graphing.remove(name, obj, property);
-		}
-		
 		//
 		// WARNING: Add menu hard references the function and arguments.
 		//
@@ -128,18 +114,6 @@ package com.junkbyte.console
 			throwErrorIfNotStarted("addMenu()");
 			_central.display.mainPanel.addMenu(key, callback, args, rollover);
 		}
-		//
-		// Panel settings
-		/* 
-		// NO LONGER SUPPOPRTED. USE DisplayRollerModule .start() ...
-		//
-		public function get displayRoller():Boolean{
-			return _central.panels.displayRoller;
-		}
-		public function set displayRoller(b:Boolean):void{
-			_central.panels.displayRoller = b;
-		}
-		*/
 		
 		//
 		public function get fpsMonitor():Boolean{
@@ -159,16 +133,6 @@ package com.junkbyte.console
 			throwErrorIfNotStarted("memoryMonitor");
 			_central.graphing.memoryMonitor = b;
 		}
-		
-		/*
-		// NO LONGER SUPPOPRTED. USE GarbageCollectionMonitor Module...
-		public function watch(object:Object,name:String = null):String{
-			return _central.mm.watch(object, name);
-		}
-		public function unwatch(name:String):void{
-			_central.mm.unwatch(name);
-		}*/
-		
 		
 		public function store(name:String, obj:Object, strong:Boolean = false):void{
 			throwErrorIfNotStarted("store()");
@@ -219,6 +183,7 @@ package com.junkbyte.console
 			throwErrorIfNotStarted("minimumPriority");
 			_central.display.mainPanel.priority = level;
 		}
+		
 		public function addLine(strings:Array, priority:int = 0, channel:* = null,isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void{
 			throwErrorIfNotStarted();
 			
