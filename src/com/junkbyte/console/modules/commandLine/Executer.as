@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core 
+package com.junkbyte.console.modules.commandLine 
 {
 	import com.junkbyte.console.vos.WeakObject;
 

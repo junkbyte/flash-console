@@ -27,6 +27,8 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.stage.StageModule;
 	import com.junkbyte.console.vos.GraphGroup;
 	
 	import flash.display.Sprite;
@@ -68,6 +70,7 @@ package com.junkbyte.console.view
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
+		
 		
 		public function toggleVisibility():void
 		{
@@ -116,13 +119,35 @@ package com.junkbyte.console.view
 			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
+			
+			registerStageModule();
 		}
 		private function stageRemovedHandle(e:Event=null):void{
 			_central.cl.base = null;
 			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
+			
+			unregisterStageModule();
 		}
+		
+		protected function registerStageModule():void
+		{
+			if(_central.getModuleByName(ConsoleModuleNames.STAGE) == null)
+			{
+				_central.registerModule(new StageModule(stage));
+			}
+		}
+		
+		protected function unregisterStageModule():void
+		{
+			var stageMod:StageModule = _central.getModuleByName(ConsoleModuleNames.STAGE) as StageModule;
+			if(stageMod != null)
+			{
+				_central.unregisterModule(stageMod);
+			}
+		}
+		
 		private function onStageMouseLeave(e:Event):void{
 			tooltip(null);
 		}

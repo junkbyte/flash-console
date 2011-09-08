@@ -1,8 +1,11 @@
 package com.junkbyte.console.modules.keyStates {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.stage.StageModule;
 	
+	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
@@ -22,37 +25,34 @@ package com.junkbyte.console.modules.keyStates {
 		{
 			super.registeredToConsole(console);
 			
-			if(display.stage)
+			addModuleInterestCallback(ConsoleModuleNames.STAGE);
+		}
+		
+		override public function interestModuleRegistered(module:IConsoleModule):void
+		{
+			if(module is StageModule)
 			{
-				stageAddedHandle();
+				var stage:Stage = StageModule(module).stage;
+				stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true, 0, true);
+				stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+				stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 			}
-			else 
+		}
+		
+		override public function interestModuleUnregistered(module:IConsoleModule):void
+		{
+			if(module is StageModule)
 			{
-				display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+				var stage:Stage = StageModule(module).stage;
+				stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+				stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true);
 			}
 		}
 		
 		override public function getModuleName():String
 		{
 			return ConsoleModuleNames.KEY_STATES;
-		}
-		
-		protected function stageAddedHandle(e:Event=null):void
-		{
-			display.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			display.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			display.stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true, 0, true);
-			display.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
-			display.stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
-		}
-		
-		protected function stageRemovedHandle(e:Event=null):void
-		{
-			display.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			display.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-			display.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-			display.stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true);
 		}
 
 		protected function onStageMouseDown(e : MouseEvent) : void

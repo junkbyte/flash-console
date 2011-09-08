@@ -6,9 +6,8 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.keyStates.IKeyStates;
-	import com.junkbyte.console.modules.keyStates.KeyStates;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
-	
+
 	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.net.FileReference;

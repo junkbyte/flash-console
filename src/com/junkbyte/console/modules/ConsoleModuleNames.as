@@ -7,5 +7,6 @@ package com.junkbyte.console.modules
 		
 		public static const DISPLAY_ROLLER:String = "displayRoller";
 		public static const REMOTING:String = "remoting";
+		public static const STAGE:String = "stage";
 	}
 }

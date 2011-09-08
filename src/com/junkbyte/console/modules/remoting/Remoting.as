@@ -22,12 +22,11 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core 
+package com.junkbyte.console.modules.remoting 
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.remoting.IRemoter;
 	
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
@@ -40,6 +39,7 @@ package com.junkbyte.console.core
 	import flash.system.Security;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import com.junkbyte.console.core.ConsoleModule;
 
 	[Event(name="CONNECT", type="flash.events.Event")]
 	public class Remoting extends ConsoleModule implements IRemoter{

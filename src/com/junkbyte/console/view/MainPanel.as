@@ -28,7 +28,7 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Logs;
-	import com.junkbyte.console.core.Remoting;
+	import com.junkbyte.console.modules.remoting.Remoting;
 	import com.junkbyte.console.vos.Log;
 	
 	import flash.display.Shape;

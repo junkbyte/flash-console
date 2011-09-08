@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core
+package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
@@ -32,6 +32,7 @@ package com.junkbyte.console.core
 	import flash.system.System;
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
+	import com.junkbyte.console.core.ConsoleModule;
 
 	public class Graphing extends ConsoleModule{
 		

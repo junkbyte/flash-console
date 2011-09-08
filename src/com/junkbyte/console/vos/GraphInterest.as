@@ -23,7 +23,7 @@
 * 
 */package com.junkbyte.console.vos {
 	import flash.utils.ByteArray;
-	import com.junkbyte.console.core.Executer;
+	import com.junkbyte.console.modules.commandLine.Executer;
 	import com.junkbyte.console.vos.WeakRef;
 
 	public class GraphInterest {

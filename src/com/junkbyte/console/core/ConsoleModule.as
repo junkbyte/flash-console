@@ -107,5 +107,10 @@ package com.junkbyte.console.core
 			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
 		}
 		
+		
+		public function addModuleInterestCallback(interestedModuleName:String, callOnSelfUnregiser:Boolean = true):void
+		{
+			_central.addModuleInterestCallback(interestedModuleName, this, callOnSelfUnregiser);
+		}
 	}
 }

@@ -27,9 +27,8 @@ package com.junkbyte.console.modules.displayRoller
 	import com.junkbyte.console.KeyBind;
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.LogReferences;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ConsolePanel;
-	
+
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
@@ -91,7 +90,7 @@ package com.junkbyte.console.modules.displayRoller
 				str = "<menu> <a href=\"event:close\"><b>X</b></a></menu>";
 				if(module.hasKeyBinder())
 				{
-					str += " Capture key: <menu><a href=\"event:capture\">"+key+"</a>"
+					str += " Capture key: <menu><a href=\"event:capture\">"+key+"</a>";
 				}
 				str += "</menu><br/>";
 			}

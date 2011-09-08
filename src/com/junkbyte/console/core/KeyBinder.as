@@ -26,8 +26,12 @@ package com.junkbyte.console.core
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.KeyBind;
+	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.commandLine.ICommandLine;
+	import com.junkbyte.console.modules.stage.StageModule;
 	
+	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.text.TextField;
@@ -50,25 +54,7 @@ package com.junkbyte.console.core
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
-			
-			if(display.stage){
-				stageAddedHandle();
-			}else display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-		}
-		
-		override public function unregisteredFromConsole(console:Console):void
-		{
-			super.unregisteredFromConsole(console);
-			
-			_central.cl.addCLCmd("keybinds", null, "");
-			
-			display.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			display.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			if(display.stage)
-			{
-				display.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-				display.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-			}
+			addModuleInterestCallback(ConsoleModuleNames.STAGE);
 		}
 		
 		override public function getModuleName():String
@@ -76,24 +62,32 @@ package com.junkbyte.console.core
 			return ConsoleModuleNames.KEYBINDER;
 		}
 		
-		override protected function onConsoleStarted(e:Event = null):void
+		override public function interestModuleRegistered(module:IConsoleModule):void
 		{
-			super.onConsoleStarted(e);
-			_central.cl.addCLCmd("keybinds", printBinds, "List all keybinds used");
+			if(module is StageModule)
+			{
+				var stage:Stage = StageModule(module).stage;
+				stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+				stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
+			}
+			if(module is ICommandLine)
+			{
+				ICommandLine(module).addCLCmd("keybinds", printBinds, "List all keybinds used");
+			}
 		}
 		
-		private function stageAddedHandle(e:Event=null):void{
-			display.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			display.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			display.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
-			display.stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
-		}
-		
-		private function stageRemovedHandle(e:Event=null):void{
-			display.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			display.addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			display.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-			display.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+		override public function interestModuleUnregistered(module:IConsoleModule):void
+		{
+			if(module is StageModule)
+			{
+				var stage:Stage = StageModule(module).stage;
+				stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+				stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			}
+			if(module is ICommandLine)
+			{
+				ICommandLine(module).addCLCmd("keybinds", null);
+			}
 		}
 
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
