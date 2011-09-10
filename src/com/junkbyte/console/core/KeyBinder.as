@@ -30,6 +30,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.ICommandLine;
 	import com.junkbyte.console.modules.stage.StageModule;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.display.Stage;
 	import flash.events.Event;
@@ -51,15 +52,16 @@ package com.junkbyte.console.core
 			super();
 		}
 		
-		override public function registeredToConsole(console:Console):void
-		{
-			super.registeredToConsole(console);
-			addModuleInterestCallback(ConsoleModuleNames.STAGE);
-		}
-		
 		override public function getModuleName():String
 		{
 			return ConsoleModuleNames.KEYBINDER;
+		}
+		
+		override public function getInterestedModules():Vector.<ConsoleModuleMatch>
+		{
+			var vect:Vector.<ConsoleModuleMatch> = super.getInterestedModules();
+			vect.push(ConsoleModuleMatch.createForName(ConsoleModuleNames.STAGE));
+			return vect;
 		}
 		
 		override public function interestModuleRegistered(module:IConsoleModule):void

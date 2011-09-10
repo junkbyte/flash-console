@@ -4,14 +4,9 @@ package com.junkbyte.console.interfaces
 
 	public interface IConsoleModule
 	{
-		
 		function getModuleName():String; // can be null if other modules don't depend on this module
 		
 		function registeredToConsole(console:Console):void;
 		function unregisteredFromConsole(console:Console):void;
-		
-		function interestModuleRegistered(module:IConsoleModule):void;
-		function interestModuleUnregistered(module:IConsoleModule):void;
-		
 	}
 }

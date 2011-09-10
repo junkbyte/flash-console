@@ -30,9 +30,10 @@ package com.junkbyte.console.modules.commandLine
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
-
+	
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.utils.ByteArray;
@@ -78,8 +79,13 @@ package com.junkbyte.console.modules.commandLine
 			_scope = console;
 			_prevScope = new WeakRef(console);
 			_saved.set("C", console);
-
-			addModuleInterestCallback(ConsoleModuleNames.REMOTING);
+		}
+		
+		override public function getInterestedModules():Vector.<ConsoleModuleMatch>
+		{
+			var vect:Vector.<ConsoleModuleMatch> = super.getInterestedModules();
+			vect.push(ConsoleModuleMatch.createForName(ConsoleModuleNames.REMOTING));
+			return vect;
 		}
 
 		override public function interestModuleRegistered(module:IConsoleModule):void

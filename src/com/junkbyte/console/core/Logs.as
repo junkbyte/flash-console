@@ -28,6 +28,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.Log;
 	
 	import flash.events.Event;
@@ -61,8 +62,13 @@ package com.junkbyte.console.core
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
-			
-			_central.addModuleInterestCallback(ConsoleModuleNames.REMOTING, this);
+		}
+		
+		override public function getInterestedModules():Vector.<ConsoleModuleMatch>
+		{
+			var vect:Vector.<ConsoleModuleMatch> = super.getInterestedModules();
+			vect.push(ConsoleModuleMatch.createForName(ConsoleModuleNames.REMOTING));
+			return vect;
 		}
 		
 		override public function interestModuleRegistered(module:IConsoleModule):void

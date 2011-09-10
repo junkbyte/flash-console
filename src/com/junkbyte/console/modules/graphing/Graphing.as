@@ -24,15 +24,17 @@
 */
 package com.junkbyte.console.modules.graphing
 {
+	import com.junkbyte.console.Console;
+	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
-
+	
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.system.System;
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
-	import com.junkbyte.console.core.ConsoleModule;
 
 	public class Graphing extends ConsoleModule{
 		
@@ -56,9 +58,28 @@ package com.junkbyte.console.modules.graphing
 			return NAME;
 		}
 		
-		override protected function onConsoleStarted(e:Event = null):void
+		
+		override public function registeredToConsole(console:Console):void
 		{
-			super.onConsoleStarted(e);
+			super.registeredToConsole(console);
+			if(console.started)
+			{
+				onConsoleStarted();
+			}
+			else {
+				console.addEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted, false, 0, true);
+			}
+		}
+		
+		override public function unregisteredFromConsole(console:Console):void
+		{
+			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
+			super.unregisteredFromConsole(console);
+		}
+		
+		
+		protected function onConsoleStarted(e:Event = null):void
+		{
 			remoter.registerCallback("fps", function(bytes:ByteArray):void{
 				fpsMonitor = bytes.readBoolean();
 			});

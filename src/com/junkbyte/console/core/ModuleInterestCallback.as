@@ -1,18 +1,18 @@
 package com.junkbyte.console.core
 {
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.interfaces.IDependentConsoleModule;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 
 	public class ModuleInterestCallback
 	{
-		public var interestedModuleName:String;
-		public var callbackModule:IConsoleModule;
-		public var callOnSelfUnregiser:Boolean;
+		public var moduleMatch:ConsoleModuleMatch;
+		public var dependentModule:IDependentConsoleModule;
 		
-		public function ModuleInterestCallback(interestedModuleName:String, callbackModule:IConsoleModule, callOnSelfUnregiser:Boolean):void
+		public function ModuleInterestCallback(interestedModule:ConsoleModuleMatch, callbackModule:IDependentConsoleModule):void
 		{
-			this.interestedModuleName = interestedModuleName;
-			this.callbackModule = callbackModule;
-			this.callOnSelfUnregiser = callOnSelfUnregiser;
+			this.moduleMatch = interestedModule;
+			this.dependentModule = callbackModule;
 		}
 	}
 }

@@ -4,6 +4,7 @@ package com.junkbyte.console.modules.keyStates {
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.stage.StageModule;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.display.Stage;
 	import flash.events.Event;
@@ -24,8 +25,13 @@ package com.junkbyte.console.modules.keyStates {
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
-			
-			addModuleInterestCallback(ConsoleModuleNames.STAGE);
+		}
+		
+		override public function getInterestedModules():Vector.<ConsoleModuleMatch>
+		{
+			var vect:Vector.<ConsoleModuleMatch> = super.getInterestedModules();
+			vect.push(ConsoleModuleMatch.createForName(ConsoleModuleNames.STAGE));
+			return vect;
 		}
 		
 		override public function interestModuleRegistered(module:IConsoleModule):void

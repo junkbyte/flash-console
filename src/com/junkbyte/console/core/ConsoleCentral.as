@@ -30,16 +30,19 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.interfaces.IDependentConsoleModule;
 	import com.junkbyte.console.modules.commandLine.CommandLine;
+	import com.junkbyte.console.modules.graphing.Graphing;
 	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.modules.remoting.Remoting;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.view.MainPanelMenu;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.net.SharedObject;
 	import flash.system.System;
-	import com.junkbyte.console.modules.remoting.Remoting;
-	import com.junkbyte.console.modules.graphing.Graphing;
 
 	[Event(name="moduleAdded", type="com.junkbyte.console.events.ConsoleModuleEvent")]
 	[Event(name="moduleRemoved", type="com.junkbyte.console.events.ConsoleModuleEvent")]
@@ -48,7 +51,7 @@ package com.junkbyte.console.core
 		public static const PAUSED:String = "pause";
 		protected var _modules:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
 		protected var _modulesByName:Object = new Object();
-		protected var _moduleInterestCallbacks:Vector.<ModuleInterestCallback> = new Vector.<ModuleInterestCallback>();
+		protected var _moduleDependencies:Vector.<ModuleInterestCallback> = new Vector.<ModuleInterestCallback>();
 		//
 		private var _console:Console;
 		private var _config:ConsoleConfig;
@@ -127,13 +130,13 @@ package com.junkbyte.console.core
 		{
 			return _modulesByName[moduleName];
 		}
-
-		public function findModuleByClass(moduleClass:Class):IConsoleModule
+		
+		public function findModuleByMatcher(matcher:ConsoleModuleMatch):IConsoleModule
 		{
 			var len:uint = _modules.length;
 			for (var i:int = _modules.length - 1; i >= 0; i--)
 			{
-				if (_modules[i] is moduleClass)
+				if (matcher.matches(_modules[i]))
 				{
 					return _modules[i];
 				}
@@ -172,7 +175,11 @@ package com.junkbyte.console.core
 				// this is incase module unregister it self straight away
 				if (isModuleRegistered(module))
 				{
-					callModuleCallbacks(module, true);
+					if(module is IDependentConsoleModule)
+					{
+						registerModuleDependences(module as IDependentConsoleModule);
+					}
+					announceToDependingModules(module, true);
 					dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
 				}
 			}
@@ -198,60 +205,72 @@ package com.junkbyte.console.core
 				}
 				_modules.splice(index, 1);
 				module.unregisteredFromConsole(console);
-				removeModuleCallbacksAddedByModule(module);
-				callModuleCallbacks(module, false);
+				if(module is IDependentConsoleModule)
+				{
+					unregisterModuleDependecies(module as IDependentConsoleModule);
+				}
+				announceToDependingModules(module, false);
 				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_UNREGISTERED, module));
 			}
 		}
-
-		public function addModuleInterestCallback(interestedModuleName:String, callbackModule:IConsoleModule, callOnSelfUnregiser:Boolean = true):void
+		
+		protected function registerModuleDependences(module:IDependentConsoleModule):void
 		{
-			var cb:ModuleInterestCallback = new ModuleInterestCallback(interestedModuleName, callbackModule, callOnSelfUnregiser);
-			_moduleInterestCallbacks.push(cb);
-
-			var interestedModule:IConsoleModule = getModuleByName(interestedModuleName);
-			if (interestedModule != null)
+			var dependentModules:Vector.<ConsoleModuleMatch> = module.getInterestedModules();
+			if(dependentModules == null)
 			{
-				callbackModule.interestModuleRegistered(interestedModule);
+				return;
 			}
-		}
-
-		protected function callModuleCallbacks(module:IConsoleModule, isRegistered:Boolean):void
-		{
-			var moduleName:String = module.getModuleName();
-			for (var i:int = _moduleInterestCallbacks.length - 1; i >= 0; i--)
+			
+			var len:int = dependentModules.length;
+			for each(var dependentModule:ConsoleModuleMatch in dependentModules)
 			{
-				var cb:ModuleInterestCallback = _moduleInterestCallbacks[i];
-				if (cb.interestedModuleName == moduleName)
+				if(dependentModule != null)
 				{
-					if (isRegistered)
+					var cb:ModuleInterestCallback = new ModuleInterestCallback(dependentModule, module);
+					_moduleDependencies.push(cb);
+					
+					var interestedModule:IConsoleModule = findModuleByMatcher(dependentModule);
+					if (interestedModule != null)
 					{
-						cb.callbackModule.interestModuleRegistered(module);
-					}
-					else
-					{
-						cb.callbackModule.interestModuleUnregistered(module);
+						module.interestModuleRegistered(interestedModule);
 					}
 				}
 			}
 		}
-
-		protected function removeModuleCallbacksAddedByModule(module:IConsoleModule):void
+		
+		protected function unregisterModuleDependecies(module:IDependentConsoleModule):void
 		{
-			var moduleName:String = module.getModuleName();
-			for (var i:int = _moduleInterestCallbacks.length - 1; i >= 0; i--)
+			for (var i:int = _moduleDependencies.length - 1; i >= 0; i--)
 			{
-				var cb:ModuleInterestCallback = _moduleInterestCallbacks[i];
-				if (cb.callbackModule == module)
+				var cb:ModuleInterestCallback = _moduleDependencies[i];
+				if (cb.dependentModule == module)
 				{
-					_moduleInterestCallbacks.splice(i, 1);
-					if (cb.callOnSelfUnregiser)
+					_moduleDependencies.splice(i, 1);
+					
+					var dependingModule:IConsoleModule = findModuleByMatcher(cb.moduleMatch);
+					if (dependingModule != null)
 					{
-						var interestedModule:IConsoleModule = getModuleByName(cb.interestedModuleName);
-						if (interestedModule != null)
-						{
-							cb.callbackModule.interestModuleUnregistered(module);
-						}
+						module.interestModuleUnregistered(dependingModule);
+					}
+				}
+			}
+		}
+		
+		protected function announceToDependingModules(module:IConsoleModule, isRegistered:Boolean):void
+		{
+			for (var i:int = _moduleDependencies.length - 1; i >= 0; i--)
+			{
+				var cb:ModuleInterestCallback = _moduleDependencies[i];
+				if (cb.moduleMatch.matches(module))
+				{
+					if (isRegistered)
+					{
+						cb.dependentModule.interestModuleRegistered(module);
+					}
+					else
+					{
+						cb.dependentModule.interestModuleUnregistered(module);
 					}
 				}
 			}

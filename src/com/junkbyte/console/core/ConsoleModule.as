@@ -28,13 +28,15 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.interfaces.IDependentConsoleModule;
 	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.view.ConsoleLayer;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 
-	public class ConsoleModule extends EventDispatcher implements IConsoleModule
+	public class ConsoleModule extends EventDispatcher implements IConsoleModule, IDependentConsoleModule
 	{
 		protected var _central:ConsoleCentral;
 		
@@ -76,20 +78,17 @@ package com.junkbyte.console.core
 		public function registeredToConsole(console:Console):void
 		{
 			_central = console.central;
-			if(console.started)
-			{
-				onConsoleStarted();
-			}
-			else {
-				console.addEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted, false, 0, true);
-			}
 			
 		}
 		
 		public function unregisteredFromConsole(console:Console):void
 		{
-			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
 			_central = null;
+		}
+		
+		public function getInterestedModules():Vector.<ConsoleModuleMatch>
+		{
+			return new Vector.<ConsoleModuleMatch>();
 		}
 		
 		public function interestModuleRegistered(module:IConsoleModule):void
@@ -100,17 +99,6 @@ package com.junkbyte.console.core
 		public function interestModuleUnregistered(module:IConsoleModule):void
 		{
 			
-		}
-		
-		protected function onConsoleStarted(e:Event = null):void
-		{
-			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
-		}
-		
-		
-		public function addModuleInterestCallback(interestedModuleName:String, callOnSelfUnregiser:Boolean = true):void
-		{
-			_central.addModuleInterestCallback(interestedModuleName, this, callOnSelfUnregiser);
 		}
 	}
 }
