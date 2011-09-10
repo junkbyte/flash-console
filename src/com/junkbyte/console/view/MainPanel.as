@@ -28,7 +28,10 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.core.ConsoleCentral;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Logs;
+	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.remoting.Remoting;
+	import com.junkbyte.console.modules.userdata.IConsoleUserData;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.Log;
 	
 	import flash.display.Shape;
@@ -48,7 +51,7 @@ package com.junkbyte.console.view
 	import flash.text.TextFormat;
 	import flash.ui.Keyboard;
 
-	public class MainPanel extends ConsolePanel {
+	public class MainPanel extends ConsoleModulePanel {
 		
 		public static const NAME:String = "mainPanel";
 		public static const FILTER_PRIORITY_CHANGED:String = "filterPriorityChanged";
@@ -94,6 +97,7 @@ package com.junkbyte.console.view
 		private var _atBottom:Boolean = true;
 		private var _enteringLogin:Boolean;
 		
+		private var _userInfo:IConsoleUserData;
 		private var _hint:String;
 		
 		private var _cmdsHistory:Array;
@@ -113,6 +117,10 @@ package com.junkbyte.console.view
 			name = NAME;
 			minWidth = 50;
 			minHeight = 18;
+			
+			_cmdsHistory = new Array();
+			_viewingChannels = new Array();
+			_ignoredChannels = new Array();
 			
 			_traceField = makeTF("traceField");
 			_traceField.wordWrap = true;
@@ -201,33 +209,61 @@ package com.junkbyte.console.view
 			init(640,100,true);
 			registerDragger(_menu.textField);
 			//
-			if(central.so[CL_HISTORY] is Array){
-				_cmdsHistory = central.so[CL_HISTORY];
-			}else{
-				central.so[CL_HISTORY] = _cmdsHistory = new Array();
-			}
-			//
-			if(config.rememberFilterSettings && central.so[VIEWING_CH_HISTORY] is Array){
-				_viewingChannels = central.so[VIEWING_CH_HISTORY];
-			}else{
-				central.so[VIEWING_CH_HISTORY] = _viewingChannels = new Array();
-			}
-			if(config.rememberFilterSettings && central.so[IGNORED_CH_HISTORY] is Array){
-				_ignoredChannels = central.so[IGNORED_CH_HISTORY];
-			}
-			if(_viewingChannels.length > 0 || _ignoredChannels == null){
-				central.so[IGNORED_CH_HISTORY] = _ignoredChannels = new Array();
-			}
-			if(config.rememberFilterSettings && central.so[PRIORITY_HISTORY] is uint)
-			{
-				_priority = central.so[PRIORITY_HISTORY];
-			}
 			//
 			addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel, false, 0, true);
 			addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle, false, 0, true);
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
 		}
+		
+		
+		
+		override public function getDependentModules():Vector.<ConsoleModuleMatch>
+		{
+			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
+			vect.push(ConsoleModuleMatch.createForClass(IConsoleUserData));
+			return vect;
+		}
+		
+		override public function dependentModuleRegistered(module:IConsoleModule):void
+		{
+			if (module is IConsoleUserData)
+			{
+				_userInfo = module as IConsoleUserData;
+				if(_userInfo.data[CL_HISTORY] is Array){
+					_cmdsHistory = _userInfo.data[CL_HISTORY];
+				}else{
+					_userInfo.data[CL_HISTORY] = _cmdsHistory = new Array();
+				}
+				//
+				if(config.rememberFilterSettings && _userInfo.data[VIEWING_CH_HISTORY] is Array){
+					_viewingChannels = _userInfo.data[VIEWING_CH_HISTORY];
+				}else{
+					_userInfo.data[VIEWING_CH_HISTORY] = _viewingChannels = new Array();
+				}
+				if(config.rememberFilterSettings && _userInfo.data[IGNORED_CH_HISTORY] is Array){
+					_ignoredChannels = _userInfo.data[IGNORED_CH_HISTORY];
+				}
+				if(_viewingChannels.length > 0 || _ignoredChannels == null){
+					_userInfo.data[IGNORED_CH_HISTORY] = _ignoredChannels = new Array();
+				}
+				if(config.rememberFilterSettings && _userInfo.data[PRIORITY_HISTORY] is uint)
+				{
+					_priority = _userInfo.data[PRIORITY_HISTORY];
+				}
+			}
+		}
+		
+		override public function dependentModuleUnregistered(module:IConsoleModule):void
+		{
+			if (module is IConsoleUserData)
+			{
+				_userInfo = null;
+			}
+		}
+		
+		
+		
 		public function addMenu(key:String, f:Function, args:Array, rollover:String):void{
 			if(key){
 				key = key.replace(/[^\w]*/g, "");
@@ -849,7 +885,7 @@ package com.junkbyte.console.view
 		}
 		public function set priority(p:uint):void{
 			_priority = p;
-			central.so[PRIORITY_HISTORY] = _priority;
+			//central.so[PRIORITY_HISTORY] = _priority;
 			updateToBottom();
 			updateMenu();
 			dispatchEvent(new Event(FILTER_PRIORITY_CHANGED));
@@ -888,8 +924,11 @@ package com.junkbyte.console.view
 		private function clearCommandLineHistory(...args:Array):void
 		{
 			_cmdsInd = -1;
-			central.updateSO();
-			_cmdsHistory = new Array();
+			_cmdsHistory.splice(0, _cmdsHistory.length);
+			if(_userInfo)
+			{
+				_userInfo.updateData();
+			}
 		}
 		private function commandKeyDown(e:KeyboardEvent):void{
 			e.stopPropagation();
@@ -924,7 +963,10 @@ package com.junkbyte.console.view
 						if(_cmdsHistory.length>20){
 							_cmdsHistory.splice(20);
 						}
-						central.updateSO(CL_HISTORY);
+						if(_userInfo)
+						{
+							_userInfo.updateData(CL_HISTORY);
+						}
 					}
 					_cmdField.text = "";
 					if(config.commandLineInputPassThrough != null){

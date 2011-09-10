@@ -41,7 +41,6 @@ package com.junkbyte.console.modules.commandLine
 
 	public class CommandLine extends ConsoleModule implements ICommandLine
 	{
-		public static const NAME:String = "commandLine";
 		private static const DISABLED:String = "<b>Advanced CommandLine is disabled.</b>\nEnable by setting `Cc.config.commandLineAllowed = true;´\nType <b>/commands</b> for permitted commands.";
 		private static const RESERVED:Array = [Executer.RETURNED, "base", "C"];
 		private var _saved:WeakObject;
@@ -121,7 +120,7 @@ package com.junkbyte.console.modules.commandLine
 
 		override public function getModuleName():String
 		{
-			return NAME;
+			return ConsoleModuleNames.COMMAND_LINE;
 		}
 
 		public function set base(obj:Object):void

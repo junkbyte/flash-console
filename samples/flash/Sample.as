@@ -28,8 +28,9 @@ package
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
-	import com.junkbyte.console.core.Remoting;
+	import com.junkbyte.console.modules.remoting.Remoting;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.StandardConsoleModules;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
@@ -67,6 +68,7 @@ package
 			
 			Cc.mainPanel.height = 220; // change height. You can set x y width height to position/size the main panel
 			
+			StandardConsoleModules.registerToConsole();
 			
 			// TODO.
 			Remoting(Cc.central.getModuleByName(ConsoleModuleNames.REMOTING)).remoting = Remoting.SENDER;

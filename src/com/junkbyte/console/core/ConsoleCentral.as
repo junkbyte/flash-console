@@ -31,6 +31,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IDependentConsoleModule;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.CommandLine;
 	import com.junkbyte.console.modules.graphing.Graphing;
 	import com.junkbyte.console.modules.remoting.IRemoter;
@@ -62,8 +63,6 @@ package com.junkbyte.console.core
 		//
 		private var _logs:Logs;
 		private var _paused:Boolean;
-		private var _so:SharedObject;
-		private var _soData:Object = {};
 
 		/**
 		 * Console is the main class. However please use Cc for singleton Console adapter.
@@ -101,18 +100,6 @@ package com.junkbyte.console.core
 			console.remotingSocket(args[0], args[1]);
 			}, "Connect to socket remote. /remotingSocket ip port");
 			 */
-
-			if (_config.sharedObjectName)
-			{
-				try
-				{
-					_so = SharedObject.getLocal(_config.sharedObjectName, _config.sharedObjectPath);
-					_soData = _so.data;
-				}
-				catch(e:Error)
-				{
-				}
-			}
 			if (config.keystrokePassword) _panels.visible = false;
 			_panels.start();
 
@@ -384,7 +371,7 @@ package com.junkbyte.console.core
 
 		public function get cl():CommandLine
 		{
-			return getModuleByName(CommandLine.NAME) as CommandLine;
+			return getModuleByName(ConsoleModuleNames.COMMAND_LINE) as CommandLine;
 		}
 
 		public function get remoter():IRemoter
@@ -410,20 +397,6 @@ package com.junkbyte.console.core
 		public function get tools():ConsoleTools
 		{
 			return _tools;
-		}
-
-		public function get so():Object
-		{
-			return _soData;
-		}
-
-		public function updateSO(key:String = null):void
-		{
-			if (_so)
-			{
-				if (key) _so.setDirty(key);
-				else _so.clear();
-			}
 		}
 
 		//

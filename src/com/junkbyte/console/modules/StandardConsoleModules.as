@@ -6,24 +6,26 @@ package com.junkbyte.console.modules
 	import com.junkbyte.console.modules.keyStates.KeyStates;
 	import com.junkbyte.console.modules.ruler.RulerModule;
 	import com.junkbyte.console.modules.unCaughtErrorsListenerModule.UnCaughtErrorsListenerModule;
+	import com.junkbyte.console.modules.userdata.UserData;
 
 	public class StandardConsoleModules
 	{
-		public static function registerToConsole(targetConsole:Console = null):void
+		public static function registerToConsole(console:Console = null):void
 		{
-			if(targetConsole == null)
+			if(console == null)
 			{
-				targetConsole = Cc;
+				console = Cc;
 			}
-			if(targetConsole == null)
+			if(console == null)
 			{
 				return;
 			}
 			
-			targetConsole.central.registerModule(new KeyStates());
-			targetConsole.central.registerModule(new RulerModule());
-			targetConsole.central.registerModule(new DisplayRollerModule());
-			targetConsole.central.registerModule(new UnCaughtErrorsListenerModule());
+			console.central.registerModule(new UserData());
+			console.central.registerModule(new KeyStates());
+			console.central.registerModule(new RulerModule());
+			console.central.registerModule(new DisplayRollerModule());
+			console.central.registerModule(new UnCaughtErrorsListenerModule());
 		}
 	}
 }

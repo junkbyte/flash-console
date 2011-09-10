@@ -62,6 +62,8 @@ package com.junkbyte.console.view
 		public function start():void{
 			
 			_mainPanel = new MainPanel(_central);
+			_central.registerModule(_mainPanel);
+			
 			_tooltipField = mainPanel.makeTF("tooltip", true);
 			_tooltipField.mouseEnabled = false;
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
