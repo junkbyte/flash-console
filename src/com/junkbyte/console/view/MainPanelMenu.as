@@ -189,9 +189,20 @@ package com.junkbyte.console.view
 		private function saveLogs():void
 		{
 			var keyStates:IKeyStates = _central.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
-			
-			var str : String = _central.logs.getLogsAsString("\r\n", !keyStates.shiftKeyDown, keyStates.ctrlKeyDown?mainPanel.lineShouldShow:null);
-			if(keyStates.altKeyDown){
+			if(keyStates == null)
+			{
+				saveLogsWOpts();
+			}
+			else
+			{
+				saveLogsWOpts(!keyStates.shiftKeyDown, keyStates.altKeyDown, keyStates.ctrlKeyDown ? mainPanel.lineShouldShow : null);
+			}
+		}
+		
+		protected function saveLogsWOpts(incChNames:Boolean = true, makeFile:Boolean = false, filterFunction:Function = null):void
+		{
+			var str : String = _central.logs.getLogsAsString("\r\n", incChNames, filterFunction);
+			if(makeFile){
 				var file:FileReference = new FileReference();
 				try{
 					file["save"](str,"log.txt");

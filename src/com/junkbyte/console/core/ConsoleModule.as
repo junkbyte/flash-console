@@ -26,14 +26,12 @@ package com.junkbyte.console.core
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
-	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IDependentConsoleModule;
 	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
 
 	public class ConsoleModule extends EventDispatcher implements IConsoleModule, IDependentConsoleModule
@@ -86,17 +84,17 @@ package com.junkbyte.console.core
 			_central = null;
 		}
 		
-		public function getInterestedModules():Vector.<ConsoleModuleMatch>
+		public function getDependentModules():Vector.<ConsoleModuleMatch>
 		{
 			return new Vector.<ConsoleModuleMatch>();
 		}
 		
-		public function interestModuleRegistered(module:IConsoleModule):void
+		public function dependentModuleRegistered(module:IConsoleModule):void
 		{
 			
 		}
 		
-		public function interestModuleUnregistered(module:IConsoleModule):void
+		public function dependentModuleUnregistered(module:IConsoleModule):void
 		{
 			
 		}

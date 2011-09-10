@@ -57,14 +57,14 @@ package com.junkbyte.console.core
 			return ConsoleModuleNames.KEYBINDER;
 		}
 		
-		override public function getInterestedModules():Vector.<ConsoleModuleMatch>
+		override public function getDependentModules():Vector.<ConsoleModuleMatch>
 		{
-			var vect:Vector.<ConsoleModuleMatch> = super.getInterestedModules();
-			vect.push(ConsoleModuleMatch.createForName(ConsoleModuleNames.STAGE));
+			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
+			vect.push(ConsoleModuleMatch.createForClass(StageModule));
 			return vect;
 		}
 		
-		override public function interestModuleRegistered(module:IConsoleModule):void
+		override public function dependentModuleRegistered(module:IConsoleModule):void
 		{
 			if(module is StageModule)
 			{
@@ -78,7 +78,7 @@ package com.junkbyte.console.core
 			}
 		}
 		
-		override public function interestModuleUnregistered(module:IConsoleModule):void
+		override public function dependentModuleUnregistered(module:IConsoleModule):void
 		{
 			if(module is StageModule)
 			{

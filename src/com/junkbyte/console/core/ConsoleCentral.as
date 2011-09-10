@@ -51,7 +51,7 @@ package com.junkbyte.console.core
 		public static const PAUSED:String = "pause";
 		protected var _modules:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
 		protected var _modulesByName:Object = new Object();
-		protected var _moduleDependencies:Vector.<ModuleInterestCallback> = new Vector.<ModuleInterestCallback>();
+		protected var _moduleDependencies:Vector.<ModuleDependentCallback> = new Vector.<ModuleDependentCallback>();
 		//
 		private var _console:Console;
 		private var _config:ConsoleConfig;
@@ -216,7 +216,7 @@ package com.junkbyte.console.core
 		
 		protected function registerModuleDependences(module:IDependentConsoleModule):void
 		{
-			var dependentModules:Vector.<ConsoleModuleMatch> = module.getInterestedModules();
+			var dependentModules:Vector.<ConsoleModuleMatch> = module.getDependentModules();
 			if(dependentModules == null)
 			{
 				return;
@@ -227,13 +227,13 @@ package com.junkbyte.console.core
 			{
 				if(dependentModule != null)
 				{
-					var cb:ModuleInterestCallback = new ModuleInterestCallback(dependentModule, module);
+					var cb:ModuleDependentCallback = new ModuleDependentCallback(dependentModule, module);
 					_moduleDependencies.push(cb);
 					
 					var interestedModule:IConsoleModule = findModuleByMatcher(dependentModule);
 					if (interestedModule != null)
 					{
-						module.interestModuleRegistered(interestedModule);
+						module.dependentModuleRegistered(interestedModule);
 					}
 				}
 			}
@@ -243,7 +243,7 @@ package com.junkbyte.console.core
 		{
 			for (var i:int = _moduleDependencies.length - 1; i >= 0; i--)
 			{
-				var cb:ModuleInterestCallback = _moduleDependencies[i];
+				var cb:ModuleDependentCallback = _moduleDependencies[i];
 				if (cb.dependentModule == module)
 				{
 					_moduleDependencies.splice(i, 1);
@@ -251,7 +251,7 @@ package com.junkbyte.console.core
 					var dependingModule:IConsoleModule = findModuleByMatcher(cb.moduleMatch);
 					if (dependingModule != null)
 					{
-						module.interestModuleUnregistered(dependingModule);
+						module.dependentModuleUnregistered(dependingModule);
 					}
 				}
 			}
@@ -261,16 +261,16 @@ package com.junkbyte.console.core
 		{
 			for (var i:int = _moduleDependencies.length - 1; i >= 0; i--)
 			{
-				var cb:ModuleInterestCallback = _moduleDependencies[i];
+				var cb:ModuleDependentCallback = _moduleDependencies[i];
 				if (cb.moduleMatch.matches(module))
 				{
 					if (isRegistered)
 					{
-						cb.dependentModule.interestModuleRegistered(module);
+						cb.dependentModule.dependentModuleRegistered(module);
 					}
 					else
 					{
-						cb.dependentModule.interestModuleUnregistered(module);
+						cb.dependentModule.dependentModuleUnregistered(module);
 					}
 				}
 			}

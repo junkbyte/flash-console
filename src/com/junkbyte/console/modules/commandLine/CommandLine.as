@@ -81,14 +81,14 @@ package com.junkbyte.console.modules.commandLine
 			_saved.set("C", console);
 		}
 		
-		override public function getInterestedModules():Vector.<ConsoleModuleMatch>
+		override public function getDependentModules():Vector.<ConsoleModuleMatch>
 		{
-			var vect:Vector.<ConsoleModuleMatch> = super.getInterestedModules();
-			vect.push(ConsoleModuleMatch.createForName(ConsoleModuleNames.REMOTING));
+			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
+			vect.push(ConsoleModuleMatch.createForClass(IRemoter));
 			return vect;
 		}
 
-		override public function interestModuleRegistered(module:IConsoleModule):void
+		override public function dependentModuleRegistered(module:IConsoleModule):void
 		{
 			if (module is IRemoter)
 			{
@@ -107,7 +107,7 @@ package com.junkbyte.console.modules.commandLine
 			}
 		}
 
-		override public function interestModuleUnregistered(module:IConsoleModule):void
+		override public function dependentModuleUnregistered(module:IConsoleModule):void
 		{
 			if (module is IRemoter)
 			{

@@ -42,6 +42,8 @@ package com.junkbyte.console.view
 		private var _central:ConsoleCentral;
 		private var _mainPanel:MainPanel;
 		
+		private var _stageModule:StageModule;
+		
 		private var _chsPanel:ChannelsPanel;
 		private var _fpsPanel:GraphingPanel;
 		private var _memPanel:GraphingPanel;
@@ -133,18 +135,19 @@ package com.junkbyte.console.view
 		
 		protected function registerStageModule():void
 		{
-			if(_central.getModuleByName(ConsoleModuleNames.STAGE) == null)
+			if(_stageModule == null)
 			{
-				_central.registerModule(new StageModule(stage));
+				_stageModule = new StageModule(stage);
+				_central.registerModule(_stageModule);
 			}
 		}
 		
 		protected function unregisterStageModule():void
 		{
-			var stageMod:StageModule = _central.getModuleByName(ConsoleModuleNames.STAGE) as StageModule;
-			if(stageMod != null)
+			if(_stageModule != null)
 			{
-				_central.unregisterModule(stageMod);
+				_central.unregisterModule(_stageModule);
+				_stageModule = null;
 			}
 		}
 		

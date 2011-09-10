@@ -4,12 +4,12 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.interfaces.IDependentConsoleModule;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 
-	public class ModuleInterestCallback
+	public class ModuleDependentCallback
 	{
 		public var moduleMatch:ConsoleModuleMatch;
 		public var dependentModule:IDependentConsoleModule;
 		
-		public function ModuleInterestCallback(interestedModule:ConsoleModuleMatch, callbackModule:IDependentConsoleModule):void
+		public function ModuleDependentCallback(interestedModule:ConsoleModuleMatch, callbackModule:IDependentConsoleModule):void
 		{
 			this.moduleMatch = interestedModule;
 			this.dependentModule = callbackModule;
