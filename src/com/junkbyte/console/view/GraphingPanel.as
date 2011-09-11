@@ -86,7 +86,7 @@ package com.junkbyte.console.view {
 			init(W,H,true);
 		}
 		private function stop():void {
-			if(_group) central.graphing.remove(_group.name);
+			//if(_group) central.graphing.remove(_group.name);
 		}
 		public function get group():GraphGroup{
 			return _group;
@@ -247,9 +247,11 @@ package com.junkbyte.console.view {
 			if(e.text == "reset"){
 				reset();
 			}else if(e.text == "close"){
-				if(_type == FPS) central.console.fpsMonitor = false;
-				else if(_type == MEM) central.console.memoryMonitor = false;
-				else stop();
+				//if(_type == FPS) central.console.fpsMonitor = false;
+				//else if(_type == MEM) central.console.memoryMonitor = false;
+				//else stop();
+				stop();
+				//
 				central.display.removeGraph(_group);
 			}else if(e.text == "gc"){
 				central.gc();

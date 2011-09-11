@@ -33,6 +33,7 @@ package com.junkbyte.console.core
 	
 	import flash.events.Event;
 	import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
 
 	public class Logs extends ConsoleModule{
 		
@@ -106,6 +107,7 @@ package com.junkbyte.console.core
 		}
 		
 		private function send2Remote(line:Log):void{
+			if(remoter == null) return;
 			if(remoter.isSender && remoter.connected) {
 				var bytes:ByteArray = new ByteArray();
 				line.toBytes(bytes);
@@ -125,6 +127,60 @@ package com.junkbyte.console.core
 			_hasNewLog = false;
 			return b;
 		}
+		
+		public function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
+		{
+			var txt:String = "";
+			var len:int = strings.length;
+			for (var i:int = 0; i < len; i++)
+			{
+				txt += (i ? " " : "") + _central.refs.makeString(strings[i], null, html);
+			}
+			
+			if (priority >= _central.config.autoStackPriority && stacks < 0) stacks = _central.config.defaultStackDepth;
+			
+			if (!html && stacks > 0)
+			{
+				txt += getStack(stacks, priority);
+			}
+			_central.logs.add(new Log(txt, ConsoleModules.MakeChannelName(channel), priority, isRepeating, html));
+		}
+		
+		public function getStack(depth:int, priority:int):String{
+			var e:Error = new Error();
+			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
+			if(!str) return "";
+			var txt:String = "";
+			var lines:Array = str.split(/\n\sat\s/);
+			var len:int = lines.length;
+			var classStrs:Array = new Array("Function", getQualifiedClassName(Console), getQualifiedClassName(Logs));
+			
+			if(config.stackTraceExitClasses)
+			{
+				for each(var obj:Object in config.stackTraceExitClasses)
+				{
+					classStrs.push(getQualifiedClassName(obj));
+				}
+			}
+			
+			var reg:RegExp = new RegExp(classStrs.join("|"));
+			var found:Boolean = false;
+			for (var i:int = 2; i < len; i++){
+				if(!found && (lines[i].search(reg) != 0)){
+					found = true;
+				}
+				if(found){
+					txt += "\n<p"+priority+"> @ "+lines[i]+"</p"+priority+">";
+					if(priority>0) priority--;
+					depth--;
+					if(depth<=0){
+						break;
+					}
+				}
+			}
+			return txt;
+		}
+		
 		public function add(line:Log):void{
 			_hasNewLog = true;
 			addChannel(line.ch);

@@ -797,12 +797,8 @@ package com.junkbyte.console.view
 			var t:String = e.text;
 			if(t == "channels"){
 				central.display.channelsPanel = !central.display.channelsPanel;
-			}else if(t == "fps"){
-				central.console.fpsMonitor = !central.console.fpsMonitor;
 			}else if(t == "priority"){
 				incPriority(_shift);
-			}else if(t == "mm"){
-				central.console.memoryMonitor = !central.console.memoryMonitor;
 			}else if(t == "settings"){
 				central.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);

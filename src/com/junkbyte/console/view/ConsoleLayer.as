@@ -29,7 +29,6 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.stage.StageModule;
-	import com.junkbyte.console.vos.GraphGroup;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -45,10 +44,10 @@ package com.junkbyte.console.view
 		private var _stageModule:StageModule;
 		
 		private var _chsPanel:ChannelsPanel;
-		private var _fpsPanel:GraphingPanel;
-		private var _memPanel:GraphingPanel;
-		private var _graphsMap:Object = {};
-		private var _graphPlaced:uint = 0;
+		//private var _fpsPanel:GraphingPanel;
+		//private var _memPanel:GraphingPanel;
+		//private var _graphsMap:Object = {};
+		//private var _graphPlaced:uint = 0;
 		
 		private var _tooltipField:TextField;
 		private var _canDraw:Boolean;
@@ -231,6 +230,7 @@ package com.junkbyte.console.view
 			var chpanel:ChannelsPanel = getPanel(ChannelsPanel.NAME) as ChannelsPanel;
 			if(chpanel) chpanel.update();
 		}
+		/*
 		public function updateGraphs(graphs:Array):void{
 			if(!visible || !parent){
 				return;
@@ -331,7 +331,7 @@ package com.junkbyte.console.view
 					delete _graphsMap[group.name];
 				}
 			}
-		}
+		}*/
 		//
 		//
 		//
@@ -354,15 +354,6 @@ package com.junkbyte.console.view
 				}
 				updateMenu();
 			}
-		}
-		//
-		//
-		//
-		public function get memoryMonitor():Boolean{
-			return _memPanel!=null;
-		}
-		public function get fpsMonitor():Boolean{
-			return _fpsPanel!=null;
 		}
 		//
 		//

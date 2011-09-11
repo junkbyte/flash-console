@@ -111,32 +111,6 @@ package com.junkbyte.console
 			_central.display.mainPanel.addMenu(key, callback, args, rollover);
 		}
 
-		//
-		public function get fpsMonitor():Boolean
-		{
-			throwErrorIfNotStarted("fpsMonitor");
-			return _central.graphing.fpsMonitor;
-		}
-
-		public function set fpsMonitor(b:Boolean):void
-		{
-			throwErrorIfNotStarted("fpsMonitor");
-			_central.graphing.fpsMonitor = b;
-		}
-
-		//
-		public function get memoryMonitor():Boolean
-		{
-			throwErrorIfNotStarted("memoryMonitor");
-			return _central.graphing.memoryMonitor;
-		}
-
-		public function set memoryMonitor(b:Boolean):void
-		{
-			throwErrorIfNotStarted("memoryMonitor");
-			_central.graphing.memoryMonitor = b;
-		}
-
 		public function store(name:String, obj:Object, strong:Boolean = false):void
 		{
 			throwErrorIfNotStarted("store()");
@@ -210,59 +184,12 @@ package com.junkbyte.console
 			_central.display.mainPanel.priority = level;
 		}
 
-		public function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
+		protected function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
 		{
-			throwErrorIfNotStarted();
-
-			var txt:String = "";
-			var len:int = strings.length;
-			for (var i:int = 0; i < len; i++)
+			if(started)
 			{
-				txt += (i ? " " : "") + _central.refs.makeString(strings[i], null, html);
+				_central.logs.addLine(strings, priority, channel, isRepeating, html, stacks);
 			}
-
-			if (priority >= _central.config.autoStackPriority && stacks < 0) stacks = _central.config.defaultStackDepth;
-
-			if (!html && stacks > 0)
-			{
-				txt += getStack(stacks, priority);
-			}
-			_central.logs.add(new Log(txt, ConsoleModules.MakeChannelName(channel), priority, isRepeating, html));
-		}
-		
-		public function getStack(depth:int, priority:int):String{
-			var e:Error = new Error();
-			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
-			if(!str) return "";
-			var txt:String = "";
-			var lines:Array = str.split(/\n\sat\s/);
-			var len:int = lines.length;
-			var classStrs:Array = new Array("Function", getQualifiedClassName(Console), getQualifiedClassName(Cc));
-			
-			if(config.stackTraceExitClasses)
-			{
-				for each(var obj:Object in config.stackTraceExitClasses)
-				{
-					classStrs.push(getQualifiedClassName(obj));
-				}
-			}
-			
-			var reg:RegExp = new RegExp(classStrs.join("|"));
-			var found:Boolean = false;
-			for (var i:int = 2; i < len; i++){
-				if(!found && (lines[i].search(reg) != 0)){
-					found = true;
-				}
-				if(found){
-					txt += "\n<p"+priority+"> @ "+lines[i]+"</p"+priority+">";
-					if(priority>0) priority--;
-					depth--;
-					if(depth<=0){
-						break;
-					}
-				}
-			}
-			return txt;
 		}
 
 		public function addSlashCommand(name:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void

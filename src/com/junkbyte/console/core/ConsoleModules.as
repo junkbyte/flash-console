@@ -33,7 +33,6 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.interfaces.IDependentConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.CommandLine;
-	import com.junkbyte.console.modules.graphing.Graphing;
 	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.modules.remoting.Remoting;
 	import com.junkbyte.console.view.ConsoleLayer;
@@ -89,8 +88,9 @@ package com.junkbyte.console.core
 			_logs = new Logs();
 			registerModule(_logs);
 			_refs = new LogReferences(this);
+			registerModule(_refs);
 			registerModule(new CommandLine());
-			registerModule(new Graphing());
+			//registerModule(new Graphing());
 
 			/*
 			cl.addCLCmd("remotingSocket", function(str:String = ""):void{
@@ -269,16 +269,18 @@ package com.junkbyte.console.core
 			dispatchEvent(ConsoleEvent.create(ConsoleEvent.UPDATE));
 			var hasNewLog:Boolean = _logs.update();
 			_refs.update(msDelta);
+			/*
 			var graphsList:Array;
+			
 			if (remoter.isSender)
 			{
 				graphsList = graphing.update(_panels.stage ? _panels.stage.frameRate : 0);
-			}
+			}*/
 
 			dispatchEvent(ConsoleEvent.create(ConsoleEvent.UPDATED));
 
 			_panels.update(paused, hasNewLog);
-			if (graphsList) _panels.updateGraphs(graphsList);
+			//if (graphsList) _panels.updateGraphs(graphsList);
 		}
 
 		public function gc():void
@@ -343,7 +345,7 @@ package com.junkbyte.console.core
 		public function report(obj:*, priority:int = 0, skipSafe:Boolean = true, channel:String = null):void
 		{
 			if (!channel) channel = display.mainPanel.reportChannel;
-			console.addLine([obj], priority, channel, false, skipSafe, 0);
+			_logs.addLine([obj], priority, channel, false, skipSafe, 0);
 		}
 
 		//
@@ -375,11 +377,6 @@ package com.junkbyte.console.core
 		public function get remoter():IRemoter
 		{
 			return _remoter;
-		}
-
-		public function get graphing():Graphing
-		{
-			return getModuleByName(Graphing.NAME) as Graphing;
 		}
 
 		public function get refs():LogReferences
