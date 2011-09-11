@@ -27,6 +27,9 @@ package com.junkbyte.console.modules.graphing
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
 	
@@ -58,38 +61,45 @@ package com.junkbyte.console.modules.graphing
 			return NAME;
 		}
 		
-		
-		override public function registeredToConsole(console:Console):void
+		override public function getDependentModules():Vector.<ConsoleModuleMatch>
 		{
-			super.registeredToConsole(console);
-			if(console.started)
+			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
+			vect.push(ConsoleModuleMatch.createForClass(IRemoter));
+			return vect;
+		}
+		
+		override public function dependentModuleRegistered(module:IConsoleModule):void
+		{
+			if(module is IRemoter)
 			{
-				onConsoleStarted();
-			}
-			else {
-				console.addEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted, false, 0, true);
+				var remoter:IRemoter = module as IRemoter;
+				remoter.registerCallback("fps", function(bytes:ByteArray):void{
+					fpsMonitor = bytes.readBoolean();
+				});
+				remoter.registerCallback("mem", function(bytes:ByteArray):void{
+					memoryMonitor = bytes.readBoolean();
+				});
+				remoter.registerCallback("removeGroup", function(bytes:ByteArray):void{
+					removeGroup(bytes.readUTF());
+				});;
+				remoter.registerCallback("graph", handleRemoteGraph, true);
 			}
 		}
 		
-		override public function unregisteredFromConsole(console:Console):void
+		override public function dependentModuleUnregistered(module:IConsoleModule):void
 		{
-			console.removeEventListener(ConsoleEvent.CONSOLE_STARTED, onConsoleStarted);
-			super.unregisteredFromConsole(console);
+			if(module is IRemoter)
+			{
+				var remoter:IRemoter = module as IRemoter;
+				remoter.registerCallback("fps", null);
+				remoter.registerCallback("mem", null);
+				remoter.registerCallback("removeGroup", null);;
+				remoter.registerCallback("graph", null);
+			}
 		}
-		
 		
 		protected function onConsoleStarted(e:Event = null):void
 		{
-			remoter.registerCallback("fps", function(bytes:ByteArray):void{
-				fpsMonitor = bytes.readBoolean();
-			});
-			remoter.registerCallback("mem", function(bytes:ByteArray):void{
-				memoryMonitor = bytes.readBoolean();
-			});
-			remoter.registerCallback("removeGroup", function(bytes:ByteArray):void{
-				removeGroup(bytes.readUTF());
-			});;
-			remoter.registerCallback("graph", handleRemoteGraph, true);
 		}
 		
 		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{

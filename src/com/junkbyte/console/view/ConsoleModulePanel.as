@@ -1,14 +1,14 @@
 package com.junkbyte.console.view
 {
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IDependentConsoleModule;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	public class ConsoleModulePanel extends ConsolePanel implements IConsoleModule, IDependentConsoleModule
 	{
-		public function ConsoleModulePanel(m:ConsoleCentral)
+		public function ConsoleModulePanel(m:ConsoleModules)
 		{
 			super(m);
 		}
@@ -20,7 +20,7 @@ package com.junkbyte.console.view
 		
 		public function registeredToConsole(console:Console):void
 		{
-			central = console.central;
+			central = console.modules;
 		}
 		
 		public function unregisteredFromConsole(console:Console):void

@@ -24,18 +24,21 @@
  */
 package com.junkbyte.console
 {
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.utils.explodeObjectsInConsole;
+	import com.junkbyte.console.utils.mapDisplayListInConsole;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.vos.Log;
-
+	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.system.Capabilities;
+	import flash.utils.getQualifiedClassName;
 
 	/**
 	 * Console is the main class. 
@@ -45,7 +48,7 @@ package com.junkbyte.console
 	 */
 	public class Console extends EventDispatcher
 	{
-		protected var _central:ConsoleCentral;
+		protected var _central:ConsoleModules;
 		protected var _config:ConsoleConfig;
 
 		[Event(name="consoleStarted", type="com.junkbyte.console.events.ConsoleEvent")]
@@ -57,7 +60,7 @@ package com.junkbyte.console
 		{
 			if (started) throw new Error("Console already started.");
 
-			_central = createCentral(config);
+			_central = new ConsoleModules(this, config);
 			_central.init();
 			_central.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
 
@@ -97,11 +100,6 @@ package com.junkbyte.console
 		public function get started():Boolean
 		{
 			return _central != null;
-		}
-
-		protected function createCentral(config:ConsoleConfig):ConsoleCentral
-		{
-			return new ConsoleCentral(this, config);
 		}
 
 		//
@@ -148,13 +146,13 @@ package com.junkbyte.console
 		public function map(container:DisplayObjectContainer, maxstep:uint = 0):void
 		{
 			throwErrorIfNotStarted("map()");
-			_central.tools.map(container, maxstep, Logs.DEFAULT_CHANNEL);
+			mapDisplayListInConsole(this, container, maxstep, Logs.DEFAULT_CHANNEL);
 		}
 
 		public function mapch(channel:*, container:DisplayObjectContainer, maxstep:uint = 0):void
 		{
 			throwErrorIfNotStarted("mapch()");
-			_central.tools.map(container, maxstep, ConsoleCentral.MakeChannelName(channel));
+			mapDisplayListInConsole(this, container, maxstep, ConsoleModules.MakeChannelName(channel));
 		}
 
 		public function inspect(obj:Object, showInherit:Boolean = true):void
@@ -166,17 +164,17 @@ package com.junkbyte.console
 		public function inspectch(channel:*, obj:Object, showInherit:Boolean = true):void
 		{
 			throwErrorIfNotStarted("inspectch()");
-			_central.refs.inspect(obj, showInherit, ConsoleCentral.MakeChannelName(channel));
+			_central.refs.inspect(obj, showInherit, ConsoleModules.MakeChannelName(channel));
 		}
 
 		public function explode(obj:Object, depth:int = 3):void
 		{
-			addLine(new Array(_central.tools.explode(obj, depth)), 1, null, false, true);
+			addLine(new Array(explodeObjectsInConsole(this, obj, depth)), 1, null, false, true);
 		}
 
 		public function explodech(channel:*, obj:Object, depth:int = 3):void
 		{
-			addLine(new Array(_central.tools.explode(obj, depth)), 1, channel, false, true);
+			addLine(new Array(explodeObjectsInConsole(this, obj, depth)), 1, channel, false, true);
 		}
 
 		public function get paused():Boolean
@@ -227,29 +225,51 @@ package com.junkbyte.console
 
 			if (!html && stacks > 0)
 			{
-				txt += _central.tools.getStack(stacks, priority);
+				txt += getStack(stacks, priority);
 			}
-			_central.logs.add(new Log(txt, ConsoleCentral.MakeChannelName(channel), priority, isRepeating, html));
+			_central.logs.add(new Log(txt, ConsoleModules.MakeChannelName(channel), priority, isRepeating, html));
 		}
-
-		//
-		// COMMAND LINE
-		//
-		public function set commandLine(b:Boolean):void
-		{
-			_central.display.mainPanel.commandLine = b;
-		}
-
-		public function get commandLine():Boolean
-		{
-			return _central.display.mainPanel.commandLine;
+		
+		public function getStack(depth:int, priority:int):String{
+			var e:Error = new Error();
+			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
+			if(!str) return "";
+			var txt:String = "";
+			var lines:Array = str.split(/\n\sat\s/);
+			var len:int = lines.length;
+			var classStrs:Array = new Array("Function", getQualifiedClassName(Console), getQualifiedClassName(Cc));
+			
+			if(config.stackTraceExitClasses)
+			{
+				for each(var obj:Object in config.stackTraceExitClasses)
+				{
+					classStrs.push(getQualifiedClassName(obj));
+				}
+			}
+			
+			var reg:RegExp = new RegExp(classStrs.join("|"));
+			var found:Boolean = false;
+			for (var i:int = 2; i < len; i++){
+				if(!found && (lines[i].search(reg) != 0)){
+					found = true;
+				}
+				if(found){
+					txt += "\n<p"+priority+"> @ "+lines[i]+"</p"+priority+">";
+					if(priority>0) priority--;
+					depth--;
+					if(depth<=0){
+						break;
+					}
+				}
+			}
+			return txt;
 		}
 
 		public function addSlashCommand(name:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void
 		{
 			_central.cl.addSlashCommand(name, callback, desc, alwaysAvailable, endOfArgsMarker);
 		}
-
+		
 		//
 		// LOGGING
 		//
@@ -266,16 +286,6 @@ package com.junkbyte.console
 		public function stackch(channel:*, string:*, depth:int = -1, priority:int = 5):void
 		{
 			addLine([string], priority, channel, false, false, depth >= 0 ? depth : _central.config.defaultStackDepth);
-		}
-
-		public function set visible(v:Boolean):void
-		{
-			display.visible = v;
-		}
-
-		public function get visible():Boolean
-		{
-			return display.visible;
 		}
 
 		public function log(...strings):void
@@ -373,9 +383,9 @@ package com.junkbyte.console
 		}
 
 		//
-		public function get central():ConsoleCentral
+		public function get modules():ConsoleModules
 		{
-			throwErrorIfNotStarted("central");
+			throwErrorIfNotStarted("modules");
 			return _central;
 		}
 
@@ -383,12 +393,6 @@ package com.junkbyte.console
 		{
 			throwErrorIfNotStarted("display");
 			return _central.display;
-		}
-
-		public function get mainPanel():MainPanel
-		{
-			throwErrorIfNotStarted("mainPanel");
-			return display.mainPanel;
 		}
 
 		public function get config():ConsoleConfig

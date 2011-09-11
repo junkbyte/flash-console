@@ -47,7 +47,7 @@ package com.junkbyte.console.core
 
 	[Event(name="moduleAdded", type="com.junkbyte.console.events.ConsoleModuleEvent")]
 	[Event(name="moduleRemoved", type="com.junkbyte.console.events.ConsoleModuleEvent")]
-	public class ConsoleCentral extends EventDispatcher
+	public class ConsoleModules extends EventDispatcher
 	{
 		public static const PAUSED:String = "pause";
 		protected var _modules:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
@@ -59,7 +59,6 @@ package com.junkbyte.console.core
 		private var _panels:ConsoleLayer;
 		private var _refs:LogReferences;
 		private var _remoter:IRemoter;
-		private var _tools:ConsoleTools;
 		//
 		private var _logs:Logs;
 		private var _paused:Boolean;
@@ -73,7 +72,7 @@ package com.junkbyte.console.core
 		 * @see com.junkbyte.console.Cc
 		 * @see http://code.google.com/p/flash-console/
 		 */
-		public function ConsoleCentral(console:Console, config:ConsoleConfig = null)
+		public function ConsoleModules(console:Console, config:ConsoleConfig = null)
 		{
 			_console = console;
 			if (config == null) config = new ConsoleConfig();
@@ -91,7 +90,6 @@ package com.junkbyte.console.core
 			registerModule(_logs);
 			_refs = new LogReferences(this);
 			registerModule(new CommandLine());
-			_tools = new ConsoleTools(this);
 			registerModule(new Graphing());
 
 			/*
@@ -337,7 +335,7 @@ package com.junkbyte.console.core
 			else report("Resumed", ConsoleLevel.CONSOLE_STATUS);
 			_paused = newV;
 			display.mainPanel.setPaused(newV);
-			dispatchEvent(new Event(ConsoleCentral.PAUSED));
+			dispatchEvent(new Event(ConsoleModules.PAUSED));
 		}
 
 		//
@@ -392,11 +390,6 @@ package com.junkbyte.console.core
 		public function get logs():Logs
 		{
 			return _logs;
-		}
-
-		public function get tools():ConsoleTools
-		{
-			return _tools;
 		}
 
 		//

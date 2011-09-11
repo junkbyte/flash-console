@@ -25,7 +25,7 @@
 package com.junkbyte.console.modules.ruler {
 	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.ConsoleStyle;
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -46,7 +46,7 @@ package com.junkbyte.console.modules.ruler {
 
 	public class Ruler extends Sprite{
 		
-		private var _central:ConsoleCentral;
+		private var _central:ConsoleModules;
 		private var _area:Rectangle;
 		private var _pointer:Shape;
 		
@@ -55,7 +55,7 @@ package com.junkbyte.console.modules.ruler {
 		
 		private var _points:Array;
 		
-		public function Ruler(central:ConsoleCentral) {
+		public function Ruler(central:ConsoleModules) {
 			_central = central;
 			name = "ruler";
 			start();

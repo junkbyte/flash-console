@@ -56,7 +56,7 @@ package com.junkbyte.console.core
 		private var _currentBank:Array = new Array();
 		private var _msSinceWithdraw:uint;
 		
-		public function LogReferences(console:ConsoleCentral) {
+		public function LogReferences(console:ConsoleModules) {
 			super(console);
 			
 			remoter.registerCallback("ref", function(bytes:ByteArray):void{

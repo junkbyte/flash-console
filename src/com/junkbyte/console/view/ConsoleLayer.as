@@ -25,7 +25,7 @@
 package com.junkbyte.console.view 
 {
 	import com.junkbyte.console.ConsoleLevel;
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.stage.StageModule;
@@ -39,7 +39,7 @@ package com.junkbyte.console.view
 
 	public class ConsoleLayer extends Sprite{
 		
-		private var _central:ConsoleCentral;
+		private var _central:ConsoleModules;
 		private var _mainPanel:MainPanel;
 		
 		private var _stageModule:StageModule;
@@ -54,7 +54,7 @@ package com.junkbyte.console.view
 		private var _canDraw:Boolean;
 		private var _topTries:int = 50;
 		
-		public function ConsoleLayer(master:ConsoleCentral) {
+		public function ConsoleLayer(master:ConsoleModules) {
 			name = "Console";
 			_central = master;
 		}

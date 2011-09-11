@@ -25,7 +25,7 @@
 package com.junkbyte.console.view {
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.ConsoleStyle;
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
@@ -50,7 +50,7 @@ package com.junkbyte.console.view {
 		
 		private var _resizeTxt:TextField;
 		//
-		protected var central:ConsoleCentral;
+		protected var central:ConsoleModules;
 		protected var bg:Sprite;
 		protected var scaler:Sprite;
 		protected var txtField:TextField;
@@ -60,7 +60,7 @@ package com.junkbyte.console.view {
 		private var _movedFrom:Point;
 		public var moveable:Boolean = true;
 		
-		public function ConsolePanel(m:ConsoleCentral) {
+		public function ConsolePanel(m:ConsoleModules) {
 			central = m;
 			bg = new Sprite();
 			bg.name = "background";

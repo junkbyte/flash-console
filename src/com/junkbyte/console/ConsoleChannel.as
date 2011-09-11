@@ -24,7 +24,7 @@
 */
 package com.junkbyte.console {
 	import com.junkbyte.console.core.Logs;
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import flash.display.DisplayObjectContainer;
 	
 	public class ConsoleChannel {
@@ -40,8 +40,8 @@ package com.junkbyte.console {
 		 * @param String Name of channel
 		 * @param String (optional) instance of Console, leave blank to use C.
 		 */
-		public function ConsoleChannel(n:*, c:ConsoleCentral = null){
-			_name = ConsoleCentral.MakeChannelName(n);
+		public function ConsoleChannel(n:*, c:ConsoleModules = null){
+			_name = ConsoleModules.MakeChannelName(n);
 			if (_name == Logs.GLOBAL_CHANNEL) _name = Logs.DEFAULT_CHANNEL;
 			// allowed to pass in Console here incase you want to use a different console instance from whats used in Cc
 			_c = c?c:Cc;

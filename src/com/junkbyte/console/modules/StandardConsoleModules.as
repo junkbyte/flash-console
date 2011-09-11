@@ -21,11 +21,11 @@ package com.junkbyte.console.modules
 				return;
 			}
 			
-			console.central.registerModule(new UserData());
-			console.central.registerModule(new KeyStates());
-			console.central.registerModule(new RulerModule());
-			console.central.registerModule(new DisplayRollerModule());
-			console.central.registerModule(new UnCaughtErrorsListenerModule());
+			console.modules.registerModule(new UserData());
+			console.modules.registerModule(new KeyStates());
+			console.modules.registerModule(new RulerModule());
+			console.modules.registerModule(new DisplayRollerModule());
+			console.modules.registerModule(new UnCaughtErrorsListenerModule());
 		}
 	}
 }

@@ -23,7 +23,7 @@
 * 
 */
 package com.junkbyte.console.view {
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import flash.events.TextEvent;
 	import flash.text.TextFieldAutoSize;
 
@@ -31,7 +31,7 @@ package com.junkbyte.console.view {
 		
 		public static const NAME:String = "channelsPanel";
 		
-		public function ChannelsPanel(m:ConsoleCentral) {
+		public function ChannelsPanel(m:ConsoleModules) {
 			super(m);
 			name = NAME;
 			init(10,10,false);

@@ -36,9 +36,9 @@ package com.junkbyte.console.core
 
 	public class ConsoleModule extends EventDispatcher implements IConsoleModule, IDependentConsoleModule
 	{
-		protected var _central:ConsoleCentral;
+		protected var _central:ConsoleModules;
 		
-		public function ConsoleModule(c:ConsoleCentral = null)
+		public function ConsoleModule(c:ConsoleModules = null)
 		{
 			_central = c;
 		}
@@ -75,7 +75,7 @@ package com.junkbyte.console.core
 		
 		public function registeredToConsole(console:Console):void
 		{
-			_central = console.central;
+			_central = console.modules;
 			
 		}
 		

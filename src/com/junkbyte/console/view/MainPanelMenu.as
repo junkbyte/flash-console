@@ -1,7 +1,7 @@
 package com.junkbyte.console.view
 {
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
@@ -47,7 +47,7 @@ package com.junkbyte.console.view
 		{
 			super.registeredToConsole(console);
 			
-			this.mainPanel = console.central.display.mainPanel;
+			this.mainPanel = console.modules.display.mainPanel;
 			_textField.styleSheet = console.config.style.styleSheet;
 			
 			initBuildInMenus();
@@ -71,11 +71,11 @@ package com.junkbyte.console.view
 			
 			minimizerMenu = new ConsoleMenuItem("", minimizerCB);
 			updateMinimizerState();
-			_central.addEventListener(ConsoleCentral.PAUSED, updateMinimizerState, false, 0, true);
+			_central.addEventListener(ConsoleModules.PAUSED, updateMinimizerState, false, 0, true);
 			
 			pauseMenu = new ConsoleMenuItem("P", pauseCB, null, "Close::Type password to show again");
 			updatePauseState();
-			_central.addEventListener(ConsoleCentral.PAUSED, updatePauseState, false, 0, true);
+			_central.addEventListener(ConsoleModules.PAUSED, updatePauseState, false, 0, true);
 			
 			priorityMenu = new ConsoleMenuItem("P0", priorityCB, null, "Priority filter::shift: previous priority\n(skips unused priorites)");
 			updatePriorityState();

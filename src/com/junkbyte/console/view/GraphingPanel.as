@@ -23,7 +23,7 @@
 * 
 */
 package com.junkbyte.console.view {
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
 	import flash.display.Graphics;
@@ -51,7 +51,7 @@ package com.junkbyte.console.view {
 		//
 		public var startOffset:int = 5;
 		//
-		public function GraphingPanel(m:ConsoleCentral, W:int, H:int, type:String = null) {
+		public function GraphingPanel(m:ConsoleModules, W:int, H:int, type:String = null) {
 			super(m);
 			_type = type;
 			registerDragger(bg);

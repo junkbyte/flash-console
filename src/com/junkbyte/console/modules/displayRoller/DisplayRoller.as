@@ -25,7 +25,7 @@
 package com.junkbyte.console.modules.displayRoller 
 {
 	import com.junkbyte.console.KeyBind;
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.view.ConsolePanel;
 
@@ -45,7 +45,7 @@ package com.junkbyte.console.modules.displayRoller
 		private var _settingKey:Boolean;
 		private var module:DisplayRollerModule;
 		
-		public function DisplayRoller(m:ConsoleCentral, module:DisplayRollerModule) {
+		public function DisplayRoller(m:ConsoleModules, module:DisplayRollerModule) {
 			super(m);
 			this.module = module;
 			name = "rollerPanel";

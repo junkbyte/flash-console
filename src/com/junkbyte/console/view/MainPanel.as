@@ -25,7 +25,7 @@
 package com.junkbyte.console.view 
 {
 	import com.junkbyte.console.ConsoleLevel;
-	import com.junkbyte.console.core.ConsoleCentral;
+	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.interfaces.IConsoleModule;
@@ -102,7 +102,7 @@ package com.junkbyte.console.view
 		
 		private var _cmdsHistory:Array;
 		
-		public function MainPanel(m:ConsoleCentral) {
+		public function MainPanel(m:ConsoleModules) {
 			super(m);
 		}
 		
@@ -194,9 +194,6 @@ package com.junkbyte.console.view
 			_scroll.addChild(_scroller);
 			addChild(_scroll);
 			//
-			_cmdField.visible = false;
-			_cmdPrefx.visible = false;
-			_cmdBG.visible = false;
 			updateCLScope("");
 			//
 			_menu = new MainPanelMenu();
@@ -339,7 +336,7 @@ package com.junkbyte.console.view
 		public function requestLogin(on:Boolean = true):void{
 			var ct:ColorTransform = new ColorTransform();
 			if(on){
-				central.console.commandLine = true;
+				commandLine = true;
 				central.report("//", ConsoleLevel.CONSOLE_EVENT);
 				central.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
 				updateCLScope("Password");
@@ -481,7 +478,7 @@ package com.junkbyte.console.view
 		}*/
 		public function setViewingChannels(...channels:Array):void{
 			var a:Array = new Array();
-			for each(var item:Object in channels) a.push(ConsoleCentral.MakeChannelName(item));
+			for each(var item:Object in channels) a.push(ConsoleModules.MakeChannelName(item));
 			
 			if(_viewingChannels[0] == Logs.INSPECTING_CHANNEL && (!a || a[0] != _viewingChannels[0])){
 				central.refs.exitFocus();
@@ -496,7 +493,7 @@ package com.junkbyte.console.view
 		}
 		public function setIgnoredChannels(...channels:Array):void{
 			var a:Array = new Array();
-			for each(var item:Object in channels) a.push(ConsoleCentral.MakeChannelName(item));
+			for each(var item:Object in channels) a.push(ConsoleModules.MakeChannelName(item));
 			
 			if(_viewingChannels[0] == Logs.INSPECTING_CHANNEL){
 				central.refs.exitFocus();
