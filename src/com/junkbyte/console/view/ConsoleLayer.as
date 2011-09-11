@@ -28,7 +28,6 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.stage.StageModule;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;

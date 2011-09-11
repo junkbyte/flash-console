@@ -3,7 +3,7 @@ package com.junkbyte.console.modules.keyStates {
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.stage.StageModule;
+	import com.junkbyte.console.view.StageModule;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.display.Stage;

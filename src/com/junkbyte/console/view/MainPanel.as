@@ -28,8 +28,6 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.core.ConsoleModules;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
-	import com.junkbyte.console.modules.remoting.Remoting;
 	import com.junkbyte.console.modules.userdata.IConsoleUserData;
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;

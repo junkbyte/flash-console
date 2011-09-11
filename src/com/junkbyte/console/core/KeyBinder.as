@@ -29,7 +29,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.ICommandLine;
-	import com.junkbyte.console.modules.stage.StageModule;
+	import com.junkbyte.console.view.StageModule;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.display.Stage;

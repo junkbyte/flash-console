@@ -1,4 +1,4 @@
-package com.junkbyte.console.modules.stage
+package com.junkbyte.console.view
 {
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
