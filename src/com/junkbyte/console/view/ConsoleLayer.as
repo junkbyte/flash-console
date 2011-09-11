@@ -70,7 +70,6 @@ package com.junkbyte.console.view
 			addPanel(_mainPanel);
 			_mainPanel.start();
 			
-			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
 		
@@ -123,6 +122,8 @@ package com.junkbyte.console.view
 			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
 			
+			_central.console.addEventListener(ConsoleEvent.UPDATE_DATA, _onDataUpdated);
+			
 			registerStageModule();
 		}
 		private function stageRemovedHandle(e:Event=null):void{
@@ -130,6 +131,8 @@ package com.junkbyte.console.view
 			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
+			
+			_central.console.removeEventListener(ConsoleEvent.UPDATE_DATA, _onDataUpdated);
 			
 			unregisterStageModule();
 		}
@@ -158,21 +161,18 @@ package com.junkbyte.console.view
 		//
 		//
 		//
-		private function _onEnterFrame(e:Event):void{
-			_central.update();
-			
-			if(visible && parent){
-				if(_central.config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
-					_topTries--;
-					parent.addChild(this);
-					_central.report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.", ConsoleLevel.CONSOLE_STATUS);
-				}
-			}
-		}
-		public function update(paused:Boolean):void{
+		private function _onDataUpdated(e:ConsoleEvent):void
+		{
 			if(!visible || !parent){
 				return;
 			}
+			
+			if(_central.config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
+				_topTries--;
+				parent.addChild(this);
+				_central.report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.", ConsoleLevel.CONSOLE_STATUS);
+			}
+			var paused:Boolean = _central.paused;
 			var lineAdded:Boolean = _central.logs.newLogsSincesLastUpdate;
 			_canDraw = !paused;
 			_mainPanel.update(!paused && lineAdded);

@@ -75,13 +75,13 @@ package com.junkbyte.console.modules.remoting
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
-			_central.addEventListener(ConsoleEvent.UPDATED, onConsoleUpdated);
+			_central.addEventListener(ConsoleEvent.DATA_UPDATED, onConsoleUpdated);
 		}
 		
 		override public function unregisteredFromConsole(console:Console):void
 		{
 			super.unregisteredFromConsole(console);
-			_central.removeEventListener(ConsoleEvent.UPDATED, onConsoleUpdated);
+			_central.removeEventListener(ConsoleEvent.DATA_UPDATED, onConsoleUpdated);
 		}
 		
 		protected function onConsoleUpdated(e:Event):void

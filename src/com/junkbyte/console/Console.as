@@ -39,6 +39,7 @@ package com.junkbyte.console
 	import flash.events.EventDispatcher;
 	import flash.system.Capabilities;
 	import flash.utils.getQualifiedClassName;
+	import flash.utils.getTimer;
 
 	/**
 	 * Console is the main class. 
@@ -46,12 +47,18 @@ package com.junkbyte.console
 	 * @see http://code.google.com/p/flash-console/
 	 * @see com.junkbyte.console.Cc
 	 */
+	[Event(name="consoleStarted", type="com.junkbyte.console.events.ConsoleEvent")]
+	[Event(name="consoleShown", type="com.junkbyte.console.events.ConsoleEvent")]
+	[Event(name="consoleHidden", type="com.junkbyte.console.events.ConsoleEvent")]
+	[Event(name="updateData", type="com.junkbyte.console.events.ConsoleEvent")]
+	[Event(name="dataUpdated", type="com.junkbyte.console.events.ConsoleEvent")]
 	public class Console extends EventDispatcher
 	{
 		protected var _central:ConsoleModules;
 		protected var _config:ConsoleConfig;
+		
+		protected var _lastTimer:Number;
 
-		[Event(name="consoleStarted", type="com.junkbyte.console.events.ConsoleEvent")]
 		public function Console()
 		{
 		}
@@ -63,7 +70,9 @@ package com.junkbyte.console
 			_central = new ConsoleModules(this, config);
 			_central.init();
 			_central.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
-
+			
+			_central.display.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			
 			if (container)
 			{
 				container.addChild(display);
@@ -101,7 +110,22 @@ package com.junkbyte.console
 		{
 			return _central != null;
 		}
-
+		
+		protected function _onEnterFrame(e:Event):void
+		{
+			var timeNow:Number = getTimer();
+			var msDelta:uint = timeNow - _lastTimer;
+			_lastTimer = timeNow;
+			//update data
+			var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.UPDATE_DATA);
+			event.msDelta = msDelta;
+			dispatchEvent(event);
+			//update view
+			event = ConsoleEvent.create(ConsoleEvent.DATA_UPDATED);
+			event.msDelta = msDelta;
+			dispatchEvent(event);
+		}
+		
 		//
 		// WARNING: Add menu hard references the function and arguments.
 		//

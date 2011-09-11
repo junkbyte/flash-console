@@ -259,21 +259,6 @@ package com.junkbyte.console.core
 			}
 		}
 
-		//
-		//
-		//
-		public function update(msDelta:uint = 0):void
-		{
-			var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.UPDATE);
-			event.msDelta = msDelta;
-			dispatchEvent(event);
-
-			dispatchEvent(ConsoleEvent.create(ConsoleEvent.UPDATED));
-
-			_panels.update(paused);
-			//if (graphsList) _panels.updateGraphs(graphsList);
-		}
-
 		public function gc():void
 		{
 			if (!remoter.isSender)

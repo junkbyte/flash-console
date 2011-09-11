@@ -60,13 +60,13 @@ package com.junkbyte.console.modules.referencing
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
-			_central.addEventListener(ConsoleEvent.UPDATE, update);
+			console.addEventListener(ConsoleEvent.UPDATE_DATA, update);
 		}
 		
 		override public function unregisteredFromConsole(console:Console):void
 		{
 			super.unregisteredFromConsole(console);
-			_central.removeEventListener(ConsoleEvent.UPDATE, update);
+			console.removeEventListener(ConsoleEvent.UPDATE_DATA, update);
 		}
 		
 		protected function update(event:ConsoleEvent):void

@@ -7,11 +7,12 @@ package com.junkbyte.console.events {
 	{
 		
 		public static const CONSOLE_STARTED:String = "consoleStarted";
+		
 		public static const CONSOLE_SHOWN:String = "consoleShown";
 		public static const CONSOLE_HIDDEN:String = "consoleHidden";
 		
-		public static const UPDATE:String = "update";
-		public static const UPDATED:String = "updated";
+		public static const UPDATE_DATA:String = "updateData";
+		public static const DATA_UPDATED:String = "dataUpdated";
 		
 		public var msDelta:uint;
 		

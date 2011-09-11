@@ -52,7 +52,7 @@ package com.junkbyte.console.modules.garbageCollectionMonitor
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
-			_central.addEventListener(ConsoleEvent.UPDATE, update);
+			console.addEventListener(ConsoleEvent.UPDATE_DATA, update);
 		}
 	
 		override public function getModuleName():String

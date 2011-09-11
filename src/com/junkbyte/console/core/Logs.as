@@ -49,6 +49,7 @@ package com.junkbyte.console.core
 		private var _lastRepeat:Log;
 		private var _newRepeat:Log;
 		private var _hasNewLog:Boolean;
+		private var _hadNewLog:Boolean;
 		
 		private var first:Log;
 		public var last:Log;
@@ -63,13 +64,13 @@ package com.junkbyte.console.core
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
-			_central.addEventListener(ConsoleEvent.UPDATE, update);
+			console.addEventListener(ConsoleEvent.UPDATE_DATA, update);
 		}
 		
 		override public function unregisteredFromConsole(console:Console):void
 		{
 			super.unregisteredFromConsole(console);
-			_central.removeEventListener(ConsoleEvent.UPDATE, update);
+			console.removeEventListener(ConsoleEvent.UPDATE_DATA, update);
 		}
 		
 		override public function getDependentModules():Vector.<ConsoleModuleMatch>
@@ -125,6 +126,7 @@ package com.junkbyte.console.core
 		
 		protected function update(event:ConsoleEvent):void
 		{
+			_hadNewLog = _hasNewLog;
 			_hasNewLog = false;
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){
@@ -137,7 +139,7 @@ package com.junkbyte.console.core
 		
 		public function get newLogsSincesLastUpdate():Boolean
 		{
-			return _hasNewLog;
+			return _hadNewLog;
 		}
 		
 		public function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
