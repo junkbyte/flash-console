@@ -26,11 +26,12 @@ package com.junkbyte.console.view
 {
 	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.core.ConsoleModules;
-	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.modules.remoting.Remoting;
 	import com.junkbyte.console.modules.userdata.IConsoleUserData;
+	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.Log;
 	
@@ -480,9 +481,12 @@ package com.junkbyte.console.view
 			var a:Array = new Array();
 			for each(var item:Object in channels) a.push(ConsoleModules.MakeChannelName(item));
 			
+			/*
+			TODO
 			if(_viewingChannels[0] == Logs.INSPECTING_CHANNEL && (!a || a[0] != _viewingChannels[0])){
 				central.refs.exitFocus();
-			}
+			}*/
+			
 			_ignoredChannels.splice(0);
 			_viewingChannels.splice(0);
 			if(a.indexOf(Logs.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
@@ -495,9 +499,11 @@ package com.junkbyte.console.view
 			var a:Array = new Array();
 			for each(var item:Object in channels) a.push(ConsoleModules.MakeChannelName(item));
 			
+			/*
+			TODO
 			if(_viewingChannels[0] == Logs.INSPECTING_CHANNEL){
 				central.refs.exitFocus();
-			}
+			}*/
 			
 			_ignoredChannels.splice(0);
 			_viewingChannels.splice(0);
@@ -511,7 +517,7 @@ package com.junkbyte.console.view
 		private function setFilterText(str:String = ""):void{
 			if(str){
 				_filterRegExp = null;
-				_filterText = LogReferences.EscHTML(str.toLowerCase());
+				_filterText = EscHTML(str.toLowerCase());
 				startFilter();
 			}else{
 				endFilter();
@@ -520,7 +526,7 @@ package com.junkbyte.console.view
 		private function setFilterRegExp(expstr:String = ""):void{
 			if(expstr){
 				_filterText = null;
-				_filterRegExp = new RegExp(LogReferences.EscHTML(expstr), "gi");
+				_filterRegExp = new RegExp(EscHTML(expstr), "gi");
 				startFilter();
 			}else{
 				endFilter();
@@ -804,8 +810,8 @@ package com.junkbyte.console.view
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
 			}else if(t == "remote"){
 				//central.remoter.remoting = Remoting.RECIEVER;
-			}else if(t.indexOf("ref")==0){
-				central.refs.handleRefEvent(t);
+			//} else if(t.indexOf("ref")==0){
+			//	central.refs.handleRefEvent(t);
 			}else if(t.indexOf("channel_")==0){
 				onChannelPressed(t.substring(8));
 			}else if(t.indexOf("cl_")==0){
@@ -1005,7 +1011,7 @@ package com.junkbyte.console.view
 		}
 		private function updateCmdHint(e:Event = null):void{
 			var str:String = _cmdField.text;
-			if(str && config.commandLineAutoCompleteEnabled && central.remoter.isSender){
+			if(str && config.commandLineAutoCompleteEnabled && central.remoter != null && central.remoter.isSender){
 				try{
 					setHints(central.cl.getHintsFor(str, 5));
 					return;

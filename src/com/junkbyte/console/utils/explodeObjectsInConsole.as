@@ -1,7 +1,7 @@
 package com.junkbyte.console.utils
 {
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.core.LogReferences;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	
 	import flash.utils.ByteArray;
 	import flash.utils.describeType;
@@ -13,7 +13,7 @@ package com.junkbyte.console.utils
 			// could be null, undefined, NaN, 0, etc. all should be printed as is
 			return "<p-2>"+obj+"</p-2>";
 		}else if(obj is String){
-			return '"'+LogReferences.EscHTML(obj as String)+'"';
+			return '"'+EscHTML(obj as String)+'"';
 		}else if(t != "object" || depth == 0 || obj is ByteArray){
 			return console.modules.refs.makeString(obj);
 		}
@@ -49,6 +49,6 @@ package com.junkbyte.console.utils
 				list.push(stepExp(console, obj, X, depth, p));
 			}
 		}catch(e:Error){}
-		return "<p"+p+">{"+LogReferences.ShortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
+		return "<p"+p+">{"+ConsoleReferencingModule.ShortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
 	}
 }

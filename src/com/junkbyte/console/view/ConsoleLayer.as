@@ -169,10 +169,11 @@ package com.junkbyte.console.view
 				}
 			}
 		}
-		public function update(paused:Boolean, lineAdded:Boolean):void{
+		public function update(paused:Boolean):void{
 			if(!visible || !parent){
 				return;
 			}
+			var lineAdded:Boolean = _central.logs.newLogsSincesLastUpdate;
 			_canDraw = !paused;
 			_mainPanel.update(!paused && lineAdded);
 			if(!paused) {

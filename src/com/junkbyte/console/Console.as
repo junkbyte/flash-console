@@ -129,18 +129,6 @@ package com.junkbyte.console
 			mapDisplayListInConsole(this, container, maxstep, ConsoleModules.MakeChannelName(channel));
 		}
 
-		public function inspect(obj:Object, showInherit:Boolean = true):void
-		{
-			throwErrorIfNotStarted("inspect()");
-			_central.refs.inspect(obj, showInherit, Logs.DEFAULT_CHANNEL);
-		}
-
-		public function inspectch(channel:*, obj:Object, showInherit:Boolean = true):void
-		{
-			throwErrorIfNotStarted("inspectch()");
-			_central.refs.inspect(obj, showInherit, ConsoleModules.MakeChannelName(channel));
-		}
-
 		public function explode(obj:Object, depth:int = 3):void
 		{
 			addLine(new Array(explodeObjectsInConsole(this, obj, depth)), 1, null, false, true);

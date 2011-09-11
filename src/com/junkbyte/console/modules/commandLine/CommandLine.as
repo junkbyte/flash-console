@@ -26,10 +26,11 @@ package com.junkbyte.console.modules.commandLine
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
@@ -62,7 +63,7 @@ package com.junkbyte.console.modules.commandLine
 			addCLCmd("saved|stored", savedCmd, "Show a list of all saved references");
 			addCLCmd("string", stringCmd, "Create String, useful to paste complex strings without worrying about \" or \'", false, null);
 			addCLCmd("commands", cmdsCmd, "Show a list of all slash commands", true);
-			addCLCmd("inspect", inspectCmd, "Inspect current scope");
+			//addCLCmd("inspect", inspectCmd, "Inspect current scope");
 			addCLCmd("explode", explodeCmd, "Explode current scope to its properties and values (similar to JSON)");
 			addCLCmd("map", mapCmd, "Get display list map starting from current scope");
 			addCLCmd("function", funCmd, "Create function. param is the commandline string to create as function. (experimental)");
@@ -133,7 +134,7 @@ package com.junkbyte.console.modules.commandLine
 			{
 				_prevScope.reference = _scope;
 				_scope = obj;
-				_scopeStr = LogReferences.ShortClassName(obj, false);
+				_scopeStr = ConsoleReferencingModule.ShortClassName(obj, false);
 			}
 			_saved.set("base", obj);
 		}
@@ -150,7 +151,7 @@ package com.junkbyte.console.modules.commandLine
 
 		public function handleScopeEvent(id:uint):void
 		{
-			if (!remoter.isSender)
+			if (remoter != null && !remoter.isSender)
 			{
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeUnsignedInt(id);
@@ -203,11 +204,11 @@ package com.junkbyte.console.modules.commandLine
 			{
 				for (var Y:String in _saved)
 				{
-					all.push(["$" + Y, LogReferences.ShortClassName(_saved.get(Y))]);
+					all.push(["$" + Y, ConsoleReferencingModule.ShortClassName(_saved.get(Y))]);
 				}
 				if (_scope)
 				{
-					all.push(["this", LogReferences.ShortClassName(_scope)]);
+					all.push(["this", ConsoleReferencingModule.ShortClassName(_scope)]);
 					all = all.concat(_central.refs.getPossibleCalls(_scope));
 				}
 			}
@@ -269,14 +270,14 @@ package com.junkbyte.console.modules.commandLine
 				}
 			}
 			if (callback == null) delete _slashCmds[n];
-			else _slashCmds[n] = new SlashCommand(n, callback, LogReferences.EscHTML(desc), true, alwaysAvailable, endOfArgsMarker);
+			else _slashCmds[n] = new SlashCommand(n, callback, EscHTML(desc), true, alwaysAvailable, endOfArgsMarker);
 		}
 
 		public function run(str:String, saves:Object = null):*
 		{
 			if (!str) return;
 			str = str.replace(/\s*/, "");
-			if (!remoter.isSender)
+			if (remoter != null && !remoter.isSender)
 			{
 				if (str.charAt(0) == "~")
 				{
@@ -417,9 +418,9 @@ package com.junkbyte.console.modules.commandLine
 					// scope changed
 					_prevScope.reference = _scope;
 					_scope = returned;
-					if (remoter.isSender)
+					if (remoter != null && remoter.isSender)
 					{
-						_scopeStr = LogReferences.ShortClassName(_scope, false);
+						_scopeStr = ConsoleReferencingModule.ShortClassName(_scope, false);
 						sendCmdScope2Remote();
 					}
 					report("Changed to " + _central.refs.makeRefTyped(returned), -1);
@@ -528,12 +529,12 @@ package com.junkbyte.console.modules.commandLine
 				}
 			}
 		}
-
+/*
 		private function inspectCmd(...args:Array):void
 		{
 			_central.refs.focus(_scope);
 		}
-
+*/
 		private function explodeCmd(param:String = "0"):void
 		{
 			var depth:int = int(param);

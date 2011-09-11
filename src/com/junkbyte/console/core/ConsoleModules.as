@@ -34,15 +34,15 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.CommandLine;
 	import com.junkbyte.console.modules.remoting.IRemoter;
-	import com.junkbyte.console.modules.remoting.Remoting;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.view.MainPanelMenu;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.net.SharedObject;
 	import flash.system.System;
+	import com.junkbyte.console.vos.ModuleDependentCallback;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 
 	[Event(name="moduleAdded", type="com.junkbyte.console.events.ConsoleModuleEvent")]
 	[Event(name="moduleRemoved", type="com.junkbyte.console.events.ConsoleModuleEvent")]
@@ -56,7 +56,7 @@ package com.junkbyte.console.core
 		private var _console:Console;
 		private var _config:ConsoleConfig;
 		private var _panels:ConsoleLayer;
-		private var _refs:LogReferences;
+		private var _refs:ConsoleReferencingModule;
 		private var _remoter:IRemoter;
 		//
 		private var _logs:Logs;
@@ -83,11 +83,9 @@ package com.junkbyte.console.core
 			_config.style.updateStyleSheet();
 			_panels = new ConsoleLayer(this);
 
-			_remoter = new Remoting();
-			registerModule(_remoter as IConsoleModule);
 			_logs = new Logs();
 			registerModule(_logs);
-			_refs = new LogReferences(this);
+			_refs = new ConsoleReferencingModule();
 			registerModule(_refs);
 			registerModule(new CommandLine());
 			//registerModule(new Graphing());
@@ -266,20 +264,13 @@ package com.junkbyte.console.core
 		//
 		public function update(msDelta:uint = 0):void
 		{
-			dispatchEvent(ConsoleEvent.create(ConsoleEvent.UPDATE));
-			var hasNewLog:Boolean = _logs.update();
-			_refs.update(msDelta);
-			/*
-			var graphsList:Array;
-			
-			if (remoter.isSender)
-			{
-				graphsList = graphing.update(_panels.stage ? _panels.stage.frameRate : 0);
-			}*/
+			var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.UPDATE);
+			event.msDelta = msDelta;
+			dispatchEvent(event);
 
 			dispatchEvent(ConsoleEvent.create(ConsoleEvent.UPDATED));
 
-			_panels.update(paused, hasNewLog);
+			_panels.update(paused);
 			//if (graphsList) _panels.updateGraphs(graphsList);
 		}
 
@@ -379,7 +370,7 @@ package com.junkbyte.console.core
 			return _remoter;
 		}
 
-		public function get refs():LogReferences
+		public function get refs():ConsoleReferencingModule
 		{
 			return _refs;
 		}
@@ -395,7 +386,7 @@ package com.junkbyte.console.core
 		public static function MakeChannelName(obj:*):String
 		{
 			if (obj is String) return obj as String;
-			else if (obj) return LogReferences.ShortClassName(obj);
+			else if (obj) return ConsoleReferencingModule.ShortClassName(obj);
 			return Logs.DEFAULT_CHANNEL;
 		}
 	}

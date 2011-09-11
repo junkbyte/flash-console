@@ -13,6 +13,10 @@ package com.junkbyte.console.modules.stage
 		public function StageModule(stage:Stage)
 		{
 			super();
+			if(stage == null)
+			{
+				throw new Error("StageModule requires that stage is not null.");
+			}
 			_stage = stage;
 		}
 		

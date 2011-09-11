@@ -26,7 +26,7 @@ package com.junkbyte.console.modules.displayRoller
 {
 	import com.junkbyte.console.KeyBind;
 	import com.junkbyte.console.core.ConsoleModules;
-	import com.junkbyte.console.core.LogReferences;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.view.ConsolePanel;
 
 	import flash.display.DisplayObject;
@@ -126,7 +126,7 @@ package com.junkbyte.console.modules.displayRoller
 							ind = central.refs.setLogRef(obj);
 							n = "<a href='event:cl_"+ind+"'>"+n+"</a> "+central.refs.makeRefTyped(obj);
 						}
-						else n = n+" ("+LogReferences.ShortClassName(obj)+")";
+						else n = n+" ("+ConsoleReferencingModule.ShortClassName(obj)+")";
 			
 						if(obj == stg){
 							ind = central.refs.setLogRef(stg);

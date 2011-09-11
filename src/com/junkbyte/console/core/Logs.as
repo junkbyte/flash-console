@@ -25,6 +25,7 @@
 package com.junkbyte.console.core 
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.remoting.IRemoter;
@@ -59,10 +60,16 @@ package com.junkbyte.console.core
 			super();
 			_channels = new Object();
 		}
-		
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
+			_central.addEventListener(ConsoleEvent.UPDATE, update);
+		}
+		
+		override public function unregisteredFromConsole(console:Console):void
+		{
+			super.unregisteredFromConsole(console);
+			_central.removeEventListener(ConsoleEvent.UPDATE, update);
 		}
 		
 		override public function getDependentModules():Vector.<ConsoleModuleMatch>
@@ -115,7 +122,10 @@ package com.junkbyte.console.core
 			}
 		}
 		
-		public function update():Boolean{
+		
+		protected function update(event:ConsoleEvent):void
+		{
+			_hasNewLog = false;
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){
 				if(_lastRepeat) remove(_lastRepeat);
@@ -123,9 +133,11 @@ package com.junkbyte.console.core
 				_newRepeat = null;
 				push(_lastRepeat);
 			}
-			var b:Boolean = _hasNewLog;
-			_hasNewLog = false;
-			return b;
+		}
+		
+		public function get newLogsSincesLastUpdate():Boolean
+		{
+			return _hasNewLog;
 		}
 		
 		public function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void

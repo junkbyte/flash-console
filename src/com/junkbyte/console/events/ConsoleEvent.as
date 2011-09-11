@@ -13,6 +13,8 @@ package com.junkbyte.console.events {
 		public static const UPDATE:String = "update";
 		public static const UPDATED:String = "updated";
 		
+		public var msDelta:uint;
+		
 		public function ConsoleEvent(type:String)
 		{
             super(type, false, false);

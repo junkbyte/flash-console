@@ -1,8 +1,7 @@
-package com.junkbyte.console.core
+package com.junkbyte.console.vos
 {
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IDependentConsoleModule;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
 
 	public class ModuleDependentCallback
 	{

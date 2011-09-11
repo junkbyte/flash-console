@@ -67,11 +67,7 @@ package
 			Cc.display.mainPanel.height = 220; // change height. You can set x y width height to position/size the main panel
 			
 			StandardConsoleModules.registerToConsole();
-			
-			// TODO.
-			Remoting(Cc.modules.getModuleByName(ConsoleModuleNames.REMOTING)).remoting = Remoting.SENDER;
-			
-			//
+						//
 			// End of setup
 			//
 			
