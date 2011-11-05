@@ -25,7 +25,7 @@
 package com.junkbyte.console.modules.garbageCollectionMonitor 
 {
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.core.ConsoleModules;
+	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.events.ConsoleEvent;
 
@@ -43,7 +43,7 @@ package com.junkbyte.console.modules.garbageCollectionMonitor
 		private var _count:uint;
 		//
 		//
-		public function GarbageCollectionMonitor(m:ConsoleModules) {
+		public function GarbageCollectionMonitor(m:ConsoleModulesManager) {
 			super(m);
 			_namesList = new Object();
 			_objectsList = new Dictionary(true);

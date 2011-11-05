@@ -1,6 +1,7 @@
 package com.junkbyte.console.modules.ruler
 {
-	import com.junkbyte.console.Console;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.interfaces.IMainMenu;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
 
@@ -19,18 +20,18 @@ package com.junkbyte.console.modules.ruler
 		public function RulerModule()
 		{
 			menu = new ConsoleMenuItem("RL", start, null, "Screen Ruler::Measure the distance and angle between two points on screen.");
+			
+			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
 		}
 		
-		override public function registeredToConsole(console:Console):void
+		protected function onMainMenuRegistered(module:IMainMenu):void
 		{
-			super.registeredToConsole(console);
-			_central.mainPanelMenu.addMenu(menu);
+			module.addMenu(menu);
 		}
 		
-		override public function unregisteredFromConsole(console:Console):void
+		protected function onMainMenuUnregistered(module:IMainMenu):void
 		{
-			_central.mainPanelMenu.removeMenu(menu);
-			super.unregisteredFromConsole(console);
+			module.removeMenu(menu);
 		}
 		
 		override public function getModuleName() : String 
@@ -40,18 +41,18 @@ package com.junkbyte.console.modules.ruler
 		
 		private function start():void
 		{
-			_ruler = new Ruler(_central);
+			_ruler = new Ruler(modules);
 			_ruler.addEventListener(Event.CLOSE, onExit, false, 0, true);
-			_central.display.addChild(_ruler);
+			layer.addChild(_ruler);
 			menu.active = true;
 			menu.announceChanged();
 		}
 		
 		protected function onExit(event:Event):void
 		{
-			if(_ruler && _central.display.contains(_ruler))
+			if(_ruler && layer.contains(_ruler))
 			{
-				_central.display.removeChild(_ruler);
+				layer.removeChild(_ruler);
 			}
 			_ruler = null;
 			menu.active = false;

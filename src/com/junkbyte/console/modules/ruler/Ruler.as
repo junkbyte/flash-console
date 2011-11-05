@@ -25,7 +25,7 @@
 package com.junkbyte.console.modules.ruler {
 	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.ConsoleStyle;
-	import com.junkbyte.console.core.ConsoleModules;
+	import com.junkbyte.console.core.ConsoleModulesManager;
 	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -46,7 +46,7 @@ package com.junkbyte.console.modules.ruler {
 
 	public class Ruler extends Sprite{
 		
-		private var _central:ConsoleModules;
+		private var _central:ConsoleModulesManager;
 		private var _area:Rectangle;
 		private var _pointer:Shape;
 		
@@ -55,7 +55,7 @@ package com.junkbyte.console.modules.ruler {
 		
 		private var _points:Array;
 		
-		public function Ruler(central:ConsoleModules) {
+		public function Ruler(central:ConsoleModulesManager) {
 			_central = central;
 			name = "ruler";
 			start();
@@ -74,7 +74,10 @@ package com.junkbyte.console.modules.ruler {
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
-			_posTxt = _central.display.mainPanel.makeTF("positionText", true);
+			_posTxt = new TextField();
+			_posTxt.name = "positionText";
+			_posTxt.styleSheet = _central.config.style.styleSheet;
+			
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
 			addChild(_posTxt);
 			//
@@ -222,7 +225,8 @@ package com.junkbyte.console.modules.ruler {
 			}
 		}
 
-		public function exit() : void {
+		public function exit() : void
+		{
 			dispatchEvent(new Event(Event.CLOSE));
 		}
 		

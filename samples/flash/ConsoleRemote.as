@@ -25,7 +25,7 @@
 package 
 {
 	import com.junkbyte.console.Cc;
-	import com.junkbyte.console.modules.remoting.Remoting;
+	import com.junkbyte.console.modules.remoting.LocalRemoting;
 
 	import flash.display.*;
 	import flash.events.*;
@@ -47,10 +47,10 @@ package
 			Cc.config.commandLineAllowed = true;
 			
 			// Start remote service.
-			Cc.modules.remoter.remoting = Remoting.RECIEVER;
+			Cc.modules.remoter.remoting = LocalRemoting.RECIEVER;
 			// Disable scaling and moving
-			Cc.display.mainPanel.moveable = false;
-			Cc.display.mainPanel.scalable = false;
+			Cc.layer.mainPanel.moveable = false;
+			Cc.layer.mainPanel.resizable = false;
 			//
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -59,8 +59,8 @@ package
 			onStageResize();
 		}
 		private function onStageResize(e : Event = null) : void {
-			Cc.display.width = stage.stageWidth;
-			Cc.display.height = stage.stageHeight;
+			Cc.layer.width = stage.stageWidth;
+			Cc.layer.height = stage.stageHeight;
 		}
 	}
 }

@@ -24,16 +24,13 @@
 */
 package com.junkbyte.console.core 
 {
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.KeyBind;
-	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.ICommandLine;
 	import com.junkbyte.console.view.StageModule;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
-	
+
 	import flash.display.Stage;
-	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldType;
@@ -50,46 +47,37 @@ package com.junkbyte.console.core
 		
 		public function KeyBinder() {
 			super();
+			
+			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(StageModule), stageRegistered, stageUnregistered);
+			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
 		}
 		
 		override public function getModuleName():String
 		{
 			return ConsoleModuleNames.KEYBINDER;
 		}
-		
-		override public function getDependentModules():Vector.<ConsoleModuleMatch>
+		protected function stageRegistered(module:StageModule):void
 		{
-			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
-			vect.push(ConsoleModuleMatch.createForClass(StageModule));
-			return vect;
+			var stage:Stage = module.stage;
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 		}
 		
-		override public function dependentModuleRegistered(module:IConsoleModule):void
+		protected function stageUnregistered(module:StageModule):void
 		{
-			if(module is StageModule)
-			{
-				var stage:Stage = StageModule(module).stage;
-				stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
-				stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
-			}
-			if(module is ICommandLine)
-			{
-				ICommandLine(module).addCLCmd("keybinds", printBinds, "List all keybinds used");
-			}
+			var stage:Stage = module.stage;
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+			stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 		}
 		
-		override public function dependentModuleUnregistered(module:IConsoleModule):void
+		protected function commandLineRegistered(module:ICommandLine):void
 		{
-			if(module is StageModule)
-			{
-				var stage:Stage = StageModule(module).stage;
-				stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-				stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-			}
-			if(module is ICommandLine)
-			{
-				ICommandLine(module).addCLCmd("keybinds", null);
-			}
+			module.addInternalSlashCommand("keybinds", printBinds, "List all keybinds used");
+		}
+		
+		protected function commandLineUnregistered(module:ICommandLine):void
+		{
+			module.addInternalSlashCommand("keybinds", null);
 		}
 
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
@@ -120,7 +108,7 @@ package com.junkbyte.console.core
 				if(_passInd >= config.keystrokePassword.length){
 					_passInd = 0;
 					if(canTrigger()){
-						_central.display.toggleVisibility();
+						layer.toggleVisibility();
 					}else if(_warns < 3){
 						_warns++;
 						report("Password did not trigger because you have focus on an input TextField.", 8);
@@ -162,8 +150,8 @@ package com.junkbyte.console.core
 		private function canTrigger():Boolean{
 			// in try catch block incase the textfield is in another domain and we wont be able to access the type... (i think)
 			try {
-				if(_central.display.stage && _central.display.stage.focus is TextField){
-					var txt:TextField = _central.display.stage.focus as TextField;
+				if(layer.stage && layer.stage.focus is TextField){
+					var txt:TextField = layer.stage.focus as TextField;
 					if(txt.type == TextFieldType.INPUT) {
 						return false;
 					}

@@ -1,13 +1,11 @@
-package com.junkbyte.console.modules.keyStates {
-	import com.junkbyte.console.Console;
+package com.junkbyte.console.modules.keyStates
+{
 	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.StageModule;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
-	
+
 	import flash.display.Stage;
-	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.ui.Keyboard;
@@ -20,40 +18,24 @@ package com.junkbyte.console.modules.keyStates {
 		public function KeyStates()
 		{
 			super();
+			
+			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(StageModule), stageModuleRegistered, stageModuleUnregistered);
 		}
 		
-		override public function registeredToConsole(console:Console):void
+		protected function stageModuleRegistered(module:StageModule):void
 		{
-			super.registeredToConsole(console);
+			var stage:Stage = module.stage;
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true, 0, true);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
+			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
 		}
 		
-		override public function getDependentModules():Vector.<ConsoleModuleMatch>
+		protected function stageModuleUnregistered(module:StageModule):void
 		{
-			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
-			vect.push(ConsoleModuleMatch.createForClass(StageModule));
-			return vect;
-		}
-		
-		override public function dependentModuleRegistered(module:IConsoleModule):void
-		{
-			if(module is StageModule)
-			{
-				var stage:Stage = StageModule(module).stage;
-				stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true, 0, true);
-				stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
-				stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true);
-			}
-		}
-		
-		override public function dependentModuleUnregistered(module:IConsoleModule):void
-		{
-			if(module is StageModule)
-			{
-				var stage:Stage = StageModule(module).stage;
-				stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
-				stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true);
-			}
+			var stage:Stage = module.stage;
+			stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
+			stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			stage.removeEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown, true);
 		}
 		
 		override public function getModuleName():String

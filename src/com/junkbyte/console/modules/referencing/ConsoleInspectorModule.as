@@ -1,7 +1,7 @@
 package com.junkbyte.console.modules.referencing
 {
 	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.core.ConsoleModules;
+	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.remoting.IRemoter;
@@ -95,7 +95,7 @@ package com.junkbyte.console.modules.referencing
 		private function handleString(str:String):void{
 			if(str == "refexit"){
 				exitFocus();
-				_central.console.setViewingChannels();
+				console.setViewingChannels();
 			}else if(str == "refprev"){
 				historyInc(-2);
 			}else if(str == "reffwd"){
@@ -118,7 +118,7 @@ package com.junkbyte.console.modules.referencing
 					if(prop) o = o[prop];
 					if(o){
 						if(str.indexOf("refe_")==0){
-							_central.console.explodech(_central.display.mainPanel.reportChannel, o);
+							console.explodech(layer.mainPanel.reportChannel, o);
 						}else{
 							focus(o, _dofull);
 						}
@@ -134,8 +134,8 @@ package com.junkbyte.console.modules.referencing
 			{
 				remoter.send("focus");
 			}
-			_central.console.clear(Logs.INSPECTING_CHANNEL);
-			_central.console.setViewingChannels(Logs.INSPECTING_CHANNEL);
+			console.clear(Logs.INSPECTING_CHANNEL);
+			console.setViewingChannels(Logs.INSPECTING_CHANNEL);
 			
 			if(!_history) _history = new Array();
 			
@@ -149,8 +149,8 @@ package com.junkbyte.console.modules.referencing
 			inspect(o, _dofull);
 		}
 		private function handleFocused():void{
-			_central.console.clear(Logs.INSPECTING_CHANNEL);
-			_central.console.setViewingChannels(Logs.INSPECTING_CHANNEL);
+			console.clear(Logs.INSPECTING_CHANNEL);
+			console.setViewingChannels(Logs.INSPECTING_CHANNEL);
 		}
 		public function exitFocus():void{
 			_current = null;
@@ -162,7 +162,7 @@ package com.junkbyte.console.modules.referencing
 				bytes.writeUTF("refexit");
 				remoter.send("ref", bytes);
 			}
-			_central.console.clear(Logs.INSPECTING_CHANNEL);
+			console.clear(Logs.INSPECTING_CHANNEL);
 		}
 		
 		public function inspect(obj:*, viewAll:Boolean= true, ch:String = null):void {

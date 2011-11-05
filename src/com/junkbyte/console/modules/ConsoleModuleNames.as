@@ -9,6 +9,7 @@ package com.junkbyte.console.modules
 		public static const USER_INFO:String = "userInfo";
 		public static const DISPLAY_ROLLER:String = "displayRoller";
 		public static const REMOTING:String = "remoting";
+		public static const GARBAGE_COLLECTOR:String = "garbageCollector";
 		public static const STAGE:String = "stage";
 		
 	}

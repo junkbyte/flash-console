@@ -23,48 +23,65 @@
 * 
 */
 package com.junkbyte.console.view {
-	import com.junkbyte.console.core.ConsoleModules;
+	import com.junkbyte.console.core.ConsoleModulesManager;
+	
 	import flash.events.TextEvent;
+	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 
 	public class ChannelsPanel extends ConsolePanel{
 		
 		public static const NAME:String = "channelsPanel";
 		
-		public function ChannelsPanel(m:ConsoleModules) {
-			super(m);
-			name = NAME;
-			init(10,10,false);
-			txtField = makeTF("channelsField");
+		protected var txtField:TextField;
+		
+		public function ChannelsPanel() {
+			super();
+			sprite.name = NAME;
+		}
+		
+		
+		
+		override protected function initToConsole():void
+		{
+			super.initToConsole();
+			
+			txtField = new TextField();
+			txtField.name = "channelsField";
+			txtField.styleSheet = style.styleSheet;
 			txtField.wordWrap = true;
 			txtField.width = 160;
 			txtField.multiline = true;
 			txtField.autoSize = TextFieldAutoSize.LEFT;
-			registerTFRoller(txtField, onMenuRollOver, linkHandler);
-			registerDragger(txtField);
+			
+			TextFieldRollOverHandle.registerTFRoller(txtField, onMenuRollOver, linkHandler);
+			registerMoveDragger(txtField);
+			
 			addChild(txtField);
 		}
+		
 		public function update():void{
 			txtField.wordWrap = false;
 			txtField.width = 80;
-			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> "+ central.display.mainPanel.getChannelsLink();
+			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> "+ modules.display.mainPanel.traces.getChannelsLink();
 			txtField.htmlText = str+"</high>";
 			if(txtField.width>160){
 				txtField.wordWrap = true;
 				txtField.width = 160;
 			}
-			width = txtField.width+4;
-			height = txtField.height;
+			setPanelSize(txtField.width+4, txtField.height);
 		}
-		private function onMenuRollOver(e:TextEvent):void{
-			central.display.mainPanel.onMenuRollOver(e, this);
+		private function onMenuRollOver(e:TextEvent):void
+		{
+			//modules.display.mainPanel.onMenuRollOver(e, this);
 		}
 		protected function linkHandler(e:TextEvent):void{
 			txtField.setSelection(0, 0);
 			if(e.text == "close"){
-				central.display.channelsPanel = false;
+				close();
+				modules.display.channelsPanel = false;
 			}else if(e.text.substring(0,8) == "channel_"){
-				central.display.mainPanel.onChannelPressed(e.text.substring(8));
+				modules.display.mainPanel.traces.onChannelPressed(e.text.substring(8));
 			}
 			txtField.setSelection(0, 0);
 			e.stopPropagation();

@@ -29,6 +29,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.Log;
 	
@@ -37,6 +38,8 @@ package com.junkbyte.console.core
 	import flash.utils.getQualifiedClassName;
 
 	public class Logs extends ConsoleModule{
+		
+		public static const CHANNELS_CHANGED:String = "channelsChanged";
 		
 		public static const GLOBAL_CHANNEL:String = " * ";
 		public static const DEFAULT_CHANNEL:String = "-";
@@ -60,50 +63,38 @@ package com.junkbyte.console.core
 		public function Logs(){
 			super();
 			_channels = new Object();
+			
+			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IRemoter), onRemoterRegistered, onRemoterUnregistered);
 		}
-		override public function registeredToConsole(console:Console):void
+		
+		override protected function registeredToConsole():void
 		{
-			super.registeredToConsole(console);
+			super.registeredToConsole();
 			console.addEventListener(ConsoleEvent.UPDATE_DATA, update);
 		}
 		
-		override public function unregisteredFromConsole(console:Console):void
+		override protected function unregisteredFromConsole():void
 		{
-			super.unregisteredFromConsole(console);
+			super.unregisteredFromConsole();
 			console.removeEventListener(ConsoleEvent.UPDATE_DATA, update);
 		}
 		
-		override public function getDependentModules():Vector.<ConsoleModuleMatch>
+		protected function onRemoterRegistered(remoter:IRemoter):void
 		{
-			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
-			vect.push(ConsoleModuleMatch.createForClass(IRemoter));
-			return vect;
-		}
-		
-		override public function dependentModuleRegistered(module:IConsoleModule):void
-		{
-			if(module is IRemoter)
+			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
+			remoter.registerCallback("log", function(bytes:ByteArray):void{
+				add(Log.FromBytes(bytes));
+			});
+			if(remoter.connected)
 			{
-				var remoter:IRemoter = module as IRemoter;
-				remoter.addEventListener(Event.CONNECT, onRemoteConnection);
-				remoter.registerCallback("log", function(bytes:ByteArray):void{
-					add(Log.FromBytes(bytes));
-				});
-				if(remoter.connected)
-				{
-					onRemoteConnection();
-				}
+				onRemoteConnection();
 			}
 		}
 		
-		override public function dependentModuleUnregistered(module:IConsoleModule):void
+		protected function onRemoterUnregistered(remoter:IRemoter):void
 		{
-			if(module is IRemoter)
-			{
-				var remoter:IRemoter = module as IRemoter;
-				remoter.removeEventListener(Event.CONNECT, onRemoteConnection);
-				remoter.registerCallback("log", null);
-			}
+			remoter.removeEventListener(Event.CONNECT, onRemoteConnection);
+			remoter.registerCallback("log", null);
 		}
 		
 		protected function onRemoteConnection(e:Event = null):void{
@@ -148,16 +139,16 @@ package com.junkbyte.console.core
 			var len:int = strings.length;
 			for (var i:int = 0; i < len; i++)
 			{
-				txt += (i ? " " : "") + _central.refs.makeString(strings[i], null, html);
+				txt += (i ? " " : "") + modules.refs.makeString(strings[i], null, html);
 			}
 			
-			if (priority >= _central.config.autoStackPriority && stacks < 0) stacks = _central.config.defaultStackDepth;
+			if (priority >= config.autoStackPriority && stacks < 0) stacks = config.defaultStackDepth;
 			
 			if (!html && stacks > 0)
 			{
 				txt += getStack(stacks, priority);
 			}
-			_central.logs.add(new Log(txt, ConsoleModules.MakeChannelName(channel), priority, isRepeating, html));
+			modules.logs.add(new Log(txt, makeConsoleChannel(channel), priority, isRepeating, html));
 		}
 		
 		public function getStack(depth:int, priority:int):String{
@@ -237,6 +228,11 @@ package com.junkbyte.console.core
 				_length = 0;
 				_channels = new Object();
 			}
+			announceChannelChanged()
+		}
+		private function announceChannelChanged():void
+		{
+			dispatchEvent(new Event(CHANNELS_CHANGED));
 		}
 		public function getLogsAsString(splitter:String, incChNames:Boolean = true, filter:Function = null):String{
 			var str:String = "";
@@ -274,7 +270,11 @@ package com.junkbyte.console.core
 			}
 		}
 		public function addChannel(n:String):void{
-			_channels[n] = null;
+			if(_channels[n] === undefined)
+			{
+				_channels[n] = null;
+				announceChannelChanged();
+			}
 		}
 		//
 		// Log chain controls

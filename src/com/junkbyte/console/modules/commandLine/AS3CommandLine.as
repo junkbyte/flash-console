@@ -1,4 +1,4 @@
-﻿/*
+/*
  * 
  * Copyright (c) 2008-2010 Lu Aye Oo
  * 
@@ -31,6 +31,7 @@ package com.junkbyte.console.modules.commandLine
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.utils.EscHTML;
+	import com.junkbyte.console.utils.getQualifiedShortClassName;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
@@ -38,9 +39,10 @@ package com.junkbyte.console.modules.commandLine
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.utils.ByteArray;
+	import flash.utils.describeType;
 	import flash.utils.getQualifiedClassName;
 
-	public class CommandLine extends ConsoleModule implements ICommandLine
+	public class AS3CommandLine extends ConsoleModule implements ICommandLine
 	{
 		private static const DISABLED:String = "<b>Advanced CommandLine is disabled.</b>\nEnable by setting `Cc.config.commandLineAllowed = true;´\nType <b>/commands</b> for permitted commands.";
 		private static const RESERVED:Array = [Executer.RETURNED, "base", "C"];
@@ -51,25 +53,25 @@ package com.junkbyte.console.modules.commandLine
 		private var _slashCmds:Object;
 		public var localCommands:Array = new Array("filter", "filterexp");
 
-		public function CommandLine()
+		public function AS3CommandLine()
 		{
 			super();
 			_saved = new WeakObject();
 			_slashCmds = new Object();
 
-			addCLCmd("help", printHelp, "How to use command line");
-			addCLCmd("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
-			addCLCmd("savestrong|storestrong", saveStrongCmd, "Save current scope as strong reference");
-			addCLCmd("saved|stored", savedCmd, "Show a list of all saved references");
-			addCLCmd("string", stringCmd, "Create String, useful to paste complex strings without worrying about \" or \'", false, null);
-			addCLCmd("commands", cmdsCmd, "Show a list of all slash commands", true);
+			addInternalSlashCommand("help", printHelp, "How to use command line");
+			addInternalSlashCommand("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
+			addInternalSlashCommand("savestrong|storestrong", saveStrongCmd, "Save current scope as strong reference");
+			addInternalSlashCommand("saved|stored", savedCmd, "Show a list of all saved references");
+			addInternalSlashCommand("string", stringCmd, "Create String, useful to paste complex strings without worrying about \" or \'", false, null);
+			addInternalSlashCommand("commands", cmdsCmd, "Show a list of all slash commands", true);
 			//addCLCmd("inspect", inspectCmd, "Inspect current scope");
-			addCLCmd("explode", explodeCmd, "Explode current scope to its properties and values (similar to JSON)");
-			addCLCmd("map", mapCmd, "Get display list map starting from current scope");
-			addCLCmd("function", funCmd, "Create function. param is the commandline string to create as function. (experimental)");
-			addCLCmd("autoscope", autoscopeCmd, "Toggle autoscoping.");
-			addCLCmd("base", baseCmd, "Return to base scope");
-			addCLCmd("/", prevCmd, "Return to previous scope");
+			addInternalSlashCommand("explode", explodeCmd, "Explode current scope to its properties and values (similar to JSON)");
+			addInternalSlashCommand("map", mapCmd, "Get display list map starting from current scope");
+			addInternalSlashCommand("function", funCmd, "Create function. param is the commandline string to create as function. (experimental)");
+			addInternalSlashCommand("autoscope", autoscopeCmd, "Toggle autoscoping.");
+			addInternalSlashCommand("base", baseCmd, "Return to base scope");
+			addInternalSlashCommand("/", prevCmd, "Return to previous scope");
 		}
 
 		override public function registeredToConsole(console:Console):void
@@ -134,7 +136,7 @@ package com.junkbyte.console.modules.commandLine
 			{
 				_prevScope.reference = _scope;
 				_scope = obj;
-				_scopeStr = ConsoleReferencingModule.ShortClassName(obj, false);
+				_scopeStr = getQualifiedShortClassName(obj);
 			}
 			_saved.set("base", obj);
 		}
@@ -159,8 +161,8 @@ package com.junkbyte.console.modules.commandLine
 			}
 			else
 			{
-				var v:* = _central.refs.getRefById(id);
-				if (v) _central.cl.setReturned(v, true, false);
+				var v:* = modules.refs.getRefById(id);
+				if (v) modules.cl.setReturned(v, true, false);
 				else report("Reference no longer exist.", -2);
 			}
 		}
@@ -204,12 +206,12 @@ package com.junkbyte.console.modules.commandLine
 			{
 				for (var Y:String in _saved)
 				{
-					all.push(["$" + Y, ConsoleReferencingModule.ShortClassName(_saved.get(Y))]);
+					all.push(["$" + Y, EscHTML(getQualifiedShortClassName(_saved.get(Y)))]);
 				}
 				if (_scope)
 				{
-					all.push(["this", ConsoleReferencingModule.ShortClassName(_scope)]);
-					all = all.concat(_central.refs.getPossibleCalls(_scope));
+					all.push(["this", EscHTML(getQualifiedShortClassName(_scope))]);
+					all = all.concat(getPossibleCalls(_scope));
 				}
 			}
 			str = str.toLowerCase();
@@ -234,13 +236,41 @@ package com.junkbyte.console.modules.commandLine
 			}
 			return hints;
 		}
+		
+		protected function getPossibleCalls(obj:*):Array
+		{
+			var list:Array = new Array();
+			var V:XML = describeType(obj);
+			var nodes:XMLList = V.method;
+			for each (var methodX:XML in nodes)
+			{
+				var params:Array = [];
+				var mparamsList:XMLList = methodX.parameter;
+				for each (var paraX:XML in mparamsList)
+				{
+					params.push(paraX.@optional == "true" ? ("<i>" + paraX.@type + "</i>") : paraX.@type);
+				}
+				list.push([ methodX.@name + "(", params.join(", ") + " ):" + methodX.@returnType ]);
+			}
+			nodes = V.accessor;
+			for each (var accessorX:XML in nodes)
+			{
+				list.push([ String(accessorX.@name), String(accessorX.@type)]);
+			}
+			nodes = V.variable;
+			for each (var variableX:XML in nodes)
+			{
+				list.push([ String(variableX.@name), String(variableX.@type)]);
+			}
+			return list;
+		}
 
 		public function get scopeString():String
 		{
 			return config.commandLineAllowed ? _scopeStr : "";
 		}
 
-		public function addCLCmd(n:String, callback:Function, desc:String = "", allow:Boolean = false, endOfArgsMarker:String = ";"):void
+		public function addInternalSlashCommand(n:String, callback:Function, desc:String = "", allow:Boolean = false, endOfArgsMarker:String = ";"):void
 		{
 			var split:Array = n.split("|");
 			for (var i:int = 0; i < split.length; i++)
@@ -289,7 +319,7 @@ package com.junkbyte.console.modules.commandLine
 
 					var bytes:ByteArray = new ByteArray();
 					bytes.writeUTF(str);
-					if (!_central.remoter.send("cmd", bytes))
+					if (remoter == null || !remoter.send("cmd", bytes))
 					{
 						report("Command could not be sent to client.", 10);
 					}
@@ -420,14 +450,14 @@ package com.junkbyte.console.modules.commandLine
 					_scope = returned;
 					if (remoter != null && remoter.isSender)
 					{
-						_scopeStr = ConsoleReferencingModule.ShortClassName(_scope, false);
+						_scopeStr = getQualifiedShortClassName(_scope);
 						sendCmdScope2Remote();
 					}
-					report("Changed to " + _central.refs.makeRefTyped(returned), -1);
+					report("Changed to " + modules.refs.makeRefTyped(returned), -1);
 				}
 				else
 				{
-					if (say) report("Returned " + _central.refs.makeString(returned), -1);
+					if (say) report("Returned " + modules.refs.makeString(returned), -1);
 				}
 			}
 			else
@@ -440,12 +470,12 @@ package com.junkbyte.console.modules.commandLine
 		{
 			var bytes:ByteArray = new ByteArray();
 			bytes.writeUTF(_scopeStr);
-			_central.remoter.send("cls", bytes);
+			remoter.send("cls", bytes);
 		}
 
 		private function reportError(e:Error):void
 		{
-			var str:String = _central.refs.makeString(e);
+			var str:String = modules.refs.makeString(e);
 			var lines:Array = str.split(/\n\s*/);
 			var p:int = 10;
 			var internalerrs:int = 0;
@@ -490,7 +520,7 @@ package com.junkbyte.console.modules.commandLine
 				var ref:WeakRef = _saved.getWeakRef(X);
 				sii++;
 				if (ref.reference == null) sii2++;
-				report((ref.strong ? "strong" : "weak") + " <b>$" + X + "</b> = " + _central.refs.makeString(ref.reference), -2);
+				report((ref.strong ? "strong" : "weak") + " <b>$" + X + "</b> = " + modules.refs.makeString(ref.reference), -2);
 			}
 			report("Found " + sii + " item(s), " + sii2 + " empty.", -1);
 		}
@@ -538,12 +568,12 @@ package com.junkbyte.console.modules.commandLine
 		private function explodeCmd(param:String = "0"):void
 		{
 			var depth:int = int(param);
-			_central.console.explodech(_central.display.mainPanel.reportChannel, _scope, depth <= 0 ? 3 : depth);
+			console.explodech(layer.mainPanel.reportChannel, _scope, depth <= 0 ? 3 : depth);
 		}
 
 		private function mapCmd(param:String = "0"):void
 		{
-			_central.console.mapch(_central.display.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
+			console.mapch(layer.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
 		}
 
 		private function funCmd(param:String = ""):void

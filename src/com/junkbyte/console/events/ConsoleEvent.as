@@ -6,10 +6,13 @@ package com.junkbyte.console.events {
 	public class ConsoleEvent extends Event
 	{
 		
-		public static const CONSOLE_STARTED:String = "consoleStarted";
+		public static const STARTED:String = "started";
 		
-		public static const CONSOLE_SHOWN:String = "consoleShown";
-		public static const CONSOLE_HIDDEN:String = "consoleHidden";
+		public static const SHOWN:String = "shown";
+		public static const HIDDEN:String = "hidden";
+		
+		public static const PAUSED:String = "paused";
+		public static const RESUMED:String = "resumed";
 		
 		public static const UPDATE_DATA:String = "updateData";
 		public static const DATA_UPDATED:String = "dataUpdated";

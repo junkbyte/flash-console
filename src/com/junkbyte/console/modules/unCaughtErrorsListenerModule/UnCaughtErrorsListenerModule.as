@@ -15,25 +15,25 @@ package com.junkbyte.console.modules.unCaughtErrorsListenerModule
 		{
 		}
 		
-		override public function registeredToConsole(console:Console):void
+		override protected function registeredToConsole():void
 		{
-			super.registeredToConsole(console);
-			if(console.display.parent != null)
+			super.registeredToConsole();
+			if(console.layer.parent != null)
 			{
 				onConsoleAddedToDisplay();
 			}
 			else
 			{
-				console.display.addEventListener(Event.ADDED, onConsoleAddedToDisplay, false, 0, true);
+				console.layer.addEventListener(Event.ADDED, onConsoleAddedToDisplay, false, 0, true);
 			}
 		}
 		
 		protected function onConsoleAddedToDisplay(e:Event = null):void
 		{
-			console.display.removeEventListener(Event.ADDED, onConsoleAddedToDisplay);
-			if(console.display.loaderInfo != null)
+			console.layer.removeEventListener(Event.ADDED, onConsoleAddedToDisplay);
+			if(console.layer.loaderInfo != null)
 			{
-				listen(console.display.loaderInfo);
+				listen(console.layer.loaderInfo);
 			}
 		}
 		
@@ -53,14 +53,14 @@ package com.junkbyte.console.modules.unCaughtErrorsListenerModule
 			var error:* = e.hasOwnProperty("error")?e["error"]:e; // for flash 9 compatibility
 			var str:String;
 			if (error is Error){
-				str = _central.refs.makeString(error);
+				str = modules.refs.makeString(error);
 			}else if (error is ErrorEvent){
 				str = ErrorEvent(error).text;
 			}
 			if(!str){
 				str = String(error);
 			}
-			_central.report("Uncaught Error:"+str, ConsoleLevel.FATAL, false);
+			modules.report("Uncaught Error:"+str, ConsoleLevel.FATAL, false);
 		}
 	}
 }

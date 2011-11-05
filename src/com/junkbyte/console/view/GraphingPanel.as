@@ -23,15 +23,18 @@
 * 
 */
 package com.junkbyte.console.view {
-	import com.junkbyte.console.core.ConsoleModules;
+	import com.junkbyte.console.core.ConsoleModulesManager;
+	import com.junkbyte.console.interfaces.IConsoleOnDemandModule;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
+	
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.events.TextEvent;
 	import flash.text.TextField;
 
-	public class GraphingPanel extends ConsolePanel {
+	public class GraphingPanel extends ConsoleModulePanel {
 		//
 		public static const FPS:String = "fpsPanel";
 		public static const MEM:String = "memoryPanel";
@@ -51,7 +54,7 @@ package com.junkbyte.console.view {
 		//
 		public var startOffset:int = 5;
 		//
-		public function GraphingPanel(m:ConsoleModules, W:int, H:int, type:String = null) {
+		public function GraphingPanel(m:ConsoleModulesManager, W:int, H:int, type:String = null) {
 			super(m);
 			_type = type;
 			registerDragger(bg);
@@ -71,7 +74,7 @@ package com.junkbyte.console.view {
 			txtField = makeTF("menuField");
 			txtField.height = style.menuFontSize+4;
 			txtField.y = -3;
-			registerTFRoller(txtField, onMenuRollOver, linkHandler);
+			TextFieldRollOverHandle.registerTFRoller(txtField, onMenuRollOver, linkHandler);
 			registerDragger(txtField); // so that we can still drag from textfield
 			addChild(txtField);
 			//
@@ -83,7 +86,7 @@ package com.junkbyte.console.view {
 			graph.y = style.menuFontSize;
 			addChild(graph);
 			//
-			init(W,H,true);
+			initPanel(W,H,true);
 		}
 		private function stop():void {
 			//if(_group) central.graphing.remove(_group.name);
@@ -113,26 +116,23 @@ package com.junkbyte.console.view {
 		public function get showBoundsText():Boolean{
 			return lowTxt.visible;
 		}*/
-		override public function set height(n:Number):void{
-			super.height = n;
-			lowTxt.y = n-style.menuFontSize;
+		override protected function resizePanel(w:Number, h:Number):void
+		{
+			lowTxt.y = h-style.menuFontSize;
 			_needRedraw = true;
 			
 			var g:Graphics = underlay.graphics;
 			g.clear();
 			g.lineStyle(1,style.controlColor, 0.6);
 			g.moveTo(0, graph.y);
-			g.lineTo(width-startOffset, graph.y);
-			g.lineTo(width-startOffset, n);
-		}
-		override public function set width(n:Number):void{
-			super.width = n;
-			lowTxt.width = n;
-			highTxt.width = n;
-			txtField.width = n;
+			g.lineTo(panelWidth-startOffset, graph.y);
+			g.lineTo(panelWidth-startOffset, h);
+			
+			lowTxt.width = w;
+			highTxt.width = w;
+			txtField.width = w;
 			txtField.scrollH = txtField.maxScrollH;
 			graph.graphics.clear();
-			_needRedraw = true;
 		}
 		//
 		//
@@ -147,8 +147,8 @@ package com.junkbyte.console.view {
 			if(_needRedraw) draw = true;
 			_needRedraw = false;
 			var interests:Array = group.interests;
-			var W:int = width-startOffset;
-			var H:int = height-graph.y;
+			var W:int = panelWidth-startOffset;
+			var H:int = panelHeight-graph.y;
 			var lowest:Number = group.low;
 			var highest:Number = group.hi;
 			var diffGraph:Number = highest-lowest;
@@ -199,7 +199,7 @@ package com.junkbyte.console.view {
 						if(Y<0)Y=0;
 						if(Y>H)Y=H;
 						if(i==1){
-							graph.graphics.moveTo(width, Y);
+							graph.graphics.moveTo(panelWidth, Y);
 						}
 						graph.graphics.lineTo((W-i), Y);
 					}
@@ -252,9 +252,13 @@ package com.junkbyte.console.view {
 				//else stop();
 				stop();
 				//
-				central.display.removeGraph(_group);
+				modules.display.removeGraph(_group);
 			}else if(e.text == "gc"){
-				central.gc();
+				var gc:IConsoleOnDemandModule = modules.getModuleByName(ConsoleModuleNames.GARBAGE_COLLECTOR) as IConsoleOnDemandModule;
+				if(gc != null)
+				{
+					gc.run();
+				}
 			} 
 			e.stopPropagation();
 		}
@@ -263,7 +267,7 @@ package com.junkbyte.console.view {
 			if(txt == "gc"){
 				txt = "Garbage collect::Requires debugger version of flash player";
 			}
-			central.display.tooltip(txt, this);
+			modules.display.tooltip(txt, this);
 		}
 	}
 }

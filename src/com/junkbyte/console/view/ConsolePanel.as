@@ -1,11 +1,11 @@
 ﻿/*
-* 
+*
 * Copyright (c) 2008-2010 Lu Aye Oo
-* 
+*
 * @author 		Lu Aye Oo
-* 
+*
 * http://code.google.com/p/flash-console/
-* 
+*
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,265 +20,146 @@
 * 2. Altered source versions must be plainly marked as such, and must not be
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
-* 
+*
 */
-package com.junkbyte.console.view {
-	import com.junkbyte.console.ConsoleConfig;
-	import com.junkbyte.console.ConsoleStyle;
-	import com.junkbyte.console.core.ConsoleModules;
+package com.junkbyte.console.view
+{
+	import com.junkbyte.console.events.ConsolePanelEvent;
 
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.text.TextField;
-	import flash.text.TextFieldAutoSize;
 
-	[Event(name="close", type="flash.events.Event")]
-	public class ConsolePanel extends Sprite {
-		
-		public static const DRAGGING:String = "DRAGGING";
-		public static const SCALING:String = "SCALING";
-		
-		//[Event(name="TEXT_ROLL", type="flash.events.TextEvent")]
-		//private static const TEXT_ROLL:String = "TEXT_ROLL";
-		
-		private var _snaps:Array;
-		private var _dragOffset:Point;
-		
-		private var _resizeTxt:TextField;
-		//
-		protected var central:ConsoleModules;
-		protected var bg:Sprite;
-		protected var scaler:Sprite;
-		protected var txtField:TextField;
-		protected var minWidth:int = 18;
-		protected var minHeight:int = 18;
-		
-		private var _movedFrom:Point;
-		public var moveable:Boolean = true;
-		
-		public function ConsolePanel(m:ConsoleModules) {
-			central = m;
-			bg = new Sprite();
-			bg.name = "background";
-			addChild(bg);
-		}
-		
-		protected function get config() : ConsoleConfig {
-			return central.config;
-		}
-		
-		protected function get style() : ConsoleStyle {
-			return central.config.style;
-		}
-		
-		protected function init(w:Number,h:Number,resizable:Boolean = false, col:Number = -1, a:Number = -1, rounding:int = -1):void{
-			
-			bg.graphics.clear();
-			bg.graphics.beginFill(col>=0?col:style.backgroundColor, a>=0?a:style.backgroundAlpha);
-			if(rounding < 0) rounding = style.roundBorder;
-			if(rounding <= 0) bg.graphics.drawRect(0, 0, 100, 100);
-			else {
-				bg.graphics.drawRoundRect(0, 0, rounding+10, rounding+10, rounding, rounding);
-				bg.scale9Grid = new Rectangle(rounding*0.5, rounding*0.5, 10, 10);
-			}
-			
-			scalable = resizable;
-			width = w;
-			height = h;
-		}
-		public function close():void {
-			stopDragging();
-			central.display.tooltip();
-			if(parent){
-				parent.removeChild(this);
-			}
-			dispatchEvent(new Event(Event.CLOSE));
-		}
-		//
-		// SIZE
-		//
-		override public function set width(n:Number):void{
-			if(n < minWidth) n = minWidth;
-			if(scaler) scaler.x = n;
-			bg.width = n;
-		}
-		override public function set height(n:Number):void{
-			if(n < minHeight) n = minHeight;
-			if(scaler) scaler.y = n;
-			bg.height = n;
-		}
-		override public function get width():Number{
-			return bg.width;
-		}
-		override public function get height():Number{
-			return bg.height;
-		}
-		//
-		// MOVING
-		//
-		public function registerSnaps(X:Array, Y:Array):void{
-			_snaps = [X,Y];
-		}
-		protected function registerDragger(mc:DisplayObject, dereg:Boolean = false):void{
-			if(dereg){
-				mc.removeEventListener(MouseEvent.MOUSE_DOWN, onDraggerMouseDown);
-			}else{
-				mc.addEventListener(MouseEvent.MOUSE_DOWN, onDraggerMouseDown, false, 0, true);
-			}
-		}
-		private function onDraggerMouseDown(e:MouseEvent):void{
-			if(!stage || !moveable) return;
-			//
-			_resizeTxt = makeTF("positioningField", true);
-			_resizeTxt.mouseEnabled = false;
-			_resizeTxt.autoSize = TextFieldAutoSize.LEFT;
-			addChild(_resizeTxt);
-			updateDragText();
-			//
-			_movedFrom = new Point(x, y);
-			_dragOffset = new Point(mouseX,mouseY); // using this way instead of startDrag, so that it can control snapping.
-			_snaps = [[],[]];
-			dispatchEvent(new Event(DRAGGING));
-			stage.addEventListener(MouseEvent.MOUSE_UP, onDraggerMouseUp, false, 0, true);
-			stage.addEventListener(MouseEvent.MOUSE_MOVE, onDraggerMouseMove, false, 0, true);
-		}
-		private function onDraggerMouseMove(e:MouseEvent = null):void{
-			if(style.panelSnapping==0) return;
-			// YEE HA, SNAPPING!
-			var p:Point = returnSnappedFor(parent.mouseX-_dragOffset.x, parent.mouseY-_dragOffset.y);
-			x = p.x;
-			y = p.y;
-			updateDragText();
-		}
-		private function updateDragText():void{
-			_resizeTxt.text = "<low>"+x+","+y+"</low>";
-		}
-		private function onDraggerMouseUp(e:MouseEvent):void{
-			stopDragging();
-		}
-		private function stopDragging():void{
-			_snaps = null;
-			if(stage){
-				stage.removeEventListener(MouseEvent.MOUSE_UP, onDraggerMouseUp);
-				stage.removeEventListener(MouseEvent.MOUSE_MOVE, onDraggerMouseMove);
-			}
-			if(_resizeTxt && _resizeTxt.parent){
-				_resizeTxt.parent.removeChild(_resizeTxt);
-			}
-			_resizeTxt = null;
-		}
-		public function moveBackSafePosition():void{
-			if(_movedFrom != null){
-				// This will only work if stage size is not altered OR stage.align is top left
-				if(x+width<10 || (stage && stage.stageWidth<x+10) || y+height<10 || (stage && stage.stageHeight<y+20)) {
-					x = _movedFrom.x;
-					y = _movedFrom.y;
-				}
-				_movedFrom = null;
-			}
-		}
-		//
-		// SCALING
-		//
-		public function get scalable():Boolean{
-			return scaler?true:false;
-		}
-		public function set scalable(b:Boolean):void{
-			if(b && !scaler){
-				scaler = new Sprite();
-				scaler.name = "scaler";
-				scaler.graphics.beginFill(0, 0);
-				scaler.graphics.drawRect(-10, -18, 10, 18);
-	            scaler.graphics.endFill();
-				scaler.graphics.beginFill(style.controlColor, style.backgroundAlpha);
-	            scaler.graphics.moveTo(0, 0);
-	            scaler.graphics.lineTo(-10, 0);
-	            scaler.graphics.lineTo(0, -10);
-	            scaler.graphics.endFill();
-				scaler.buttonMode = true;
-				scaler.doubleClickEnabled = true;
-				scaler.addEventListener(MouseEvent.MOUSE_DOWN,onScalerMouseDown, false, 0, true);
-	            addChild(scaler);
-			}else if(!b && scaler){
-				if(contains(scaler)){
-					removeChild(scaler);
-				}
-				scaler = null;
-			}
-		}
-		private function onScalerMouseDown(e:Event):void{
-			_resizeTxt = makeTF("resizingField", true);
-			_resizeTxt.mouseEnabled = false;
-			_resizeTxt.autoSize = TextFieldAutoSize.RIGHT;
-			_resizeTxt.x = -4;
-			_resizeTxt.y = -17;
-			scaler.addChild(_resizeTxt);
-			updateScaleText();
-			_dragOffset = new Point(scaler.mouseX,scaler.mouseY); // using this way instead of startDrag, so that it can control snapping.
-			_snaps = [[],[]];
-			scaler.stage.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp, false, 0, true);
-			scaler.stage.addEventListener(MouseEvent.MOUSE_MOVE,updateScale, false, 0, true);
-			dispatchEvent(new Event(SCALING));
-		}
-		private function updateScale(e:Event = null):void{
-			var p:Point = returnSnappedFor(x+mouseX-_dragOffset.x, y+mouseY-_dragOffset.x);
-			p.x-=x;
-			p.y-=y;
-			width = p.x<minWidth?minWidth:p.x;
-			height = p.y<minHeight?minHeight:p.y;
-			updateScaleText();
-		}
-		private function updateScaleText():void{
-			_resizeTxt.text = "<low>"+width+","+height+"</low>";
-		}
-		public function stopScaling():void{
-			onScalerMouseUp(null);
-		}
-		private function onScalerMouseUp(e:Event):void{
-			scaler.stage.removeEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp);
-			scaler.stage.removeEventListener(MouseEvent.MOUSE_MOVE,updateScale);
-			updateScale();
-			_snaps = null;
-			if(_resizeTxt && _resizeTxt.parent){
-				_resizeTxt.parent.removeChild(_resizeTxt);
-			}
-			_resizeTxt = null;
-		}
-		//
-		//
-		public function makeTF(n:String, back:Boolean = false):TextField
-		{
-			var txt:TextField = new TextField();
-			txt.name = n;
-			txt.styleSheet = style.styleSheet;
-			if(back){
-          	 	txt.background = true;
-            	txt.backgroundColor = style.backgroundColor;
-			}
-			return txt;
-		}
-		//
-		//
-		private function returnSnappedFor(X:Number,Y:Number):Point{
-			return new Point(getSnapOf(X, true),getSnapOf(Y, false));
-		}
-		private function getSnapOf(v:Number, isX:Boolean):Number{
-			var end:Number = v+width;
-			var a:Array = _snaps[isX?0:1];
-			var s:int = style.panelSnapping;
-			for each(var ii:Number in a){
-				if(Math.abs(ii-v)<s) return ii;
-				if(Math.abs(ii-end)<s) return ii-width;
-			}
-			return v;
-		}
-		
-		protected function registerTFRoller(field:TextField, overhandle:Function, linkHandler:Function = null):void{
-			TextFieldRollOverHandle.registerTFRoller(field, overhandle, linkHandler);
-		}
-	}
+    [Event(name = "close", type = "flash.events.Event")]
+    [Event(name = "startedMoving", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+    [Event(name = "stoppedMoving", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+    [Event(name = "startedScaling", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+    [Event(name = "stoppedScaling", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+    [Event(name = "panelResized", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+    public class ConsolePanel extends ConsoleDisplayModule
+    {
+        protected var panelMover:PanelMover;
+
+        protected var background:Sprite;
+
+        protected var minSize:Point = new Point(18, 18);
+
+        public function ConsolePanel()
+        {
+            super();
+
+            createBackground();
+        }
+
+        // override for init
+        override protected function initToConsole():void
+        {
+            drawBackground();
+        }
+
+        protected function createBackground():void
+        {
+            background = new Sprite();
+            background.name = "background";
+            addChild(background);
+        }
+
+        protected function drawBackground(col:Number = -1, a:Number = -1, rounding:int = -1):void
+        {
+        	if(background == null)
+        	{
+        		return;
+        	}
+            background.graphics.clear();
+            background.graphics.beginFill(col >= 0 ? col : style.backgroundColor, a >= 0 ? a : style.backgroundAlpha);
+            if (rounding < 0)
+                rounding = style.roundBorder;
+            if (rounding <= 0)
+                background.graphics.drawRect(0, 0, 100, 100);
+            else
+            {
+                background.graphics.drawRoundRect(0, 0, rounding + 10, rounding + 10, rounding, rounding);
+                background.scale9Grid = new Rectangle(rounding * 0.5, rounding * 0.5, 10, 10);
+            }
+        }
+
+        public function close():void
+        {
+            dispatchEvent(new Event(Event.CLOSE));
+            if (parent != null)
+            {
+                parent.removeChild(sprite);
+            }
+        }
+
+        public function get width():Number
+        {
+            return background.width;
+        }
+
+        public function set width(n:Number):void
+        {
+            setPanelSize(n, height);
+        }
+
+        public function get height():Number
+        {
+            return background.height;
+        }
+
+        public function set height(n:Number):void
+        {
+            setPanelSize(width, n);
+        }
+
+        public function setPanelSize(w:Number, h:Number):void
+        {
+            if (w < minSize.x)
+            {
+                w = minSize.x;
+            }
+            if (h < minSize.y)
+            {
+                h = minSize.y;
+            }
+            resizePanel(w, h);
+        }
+
+        protected function resizePanel(w:Number, h:Number):void
+        {
+            background.width = w;
+            background.height = h;
+
+            dispatchEvent(ConsolePanelEvent.create(ConsolePanelEvent.PANEL_RESIZED));
+        }
+
+        public function registerMoveDragger(mc:DisplayObject):void
+        {
+            if (panelMover == null)
+            {
+                panelMover = createMoveDragger();
+            }
+            panelMover.registerDragger(mc);
+        }
+
+        public function unregisterMoveDragger(mc:DisplayObject):void
+        {
+            if (panelMover != null)
+            {
+                panelMover.unregisterDragger(mc);
+            }
+        }
+
+        protected function createMoveDragger():PanelMover
+        {
+            return new PanelMover(this);
+        }
+
+        protected function startPanelResizer():void
+        {
+            new PanelResizer(this);
+        }
+    }
 }

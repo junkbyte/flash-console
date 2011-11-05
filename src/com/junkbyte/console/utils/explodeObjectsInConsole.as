@@ -49,6 +49,6 @@ package com.junkbyte.console.utils
 				list.push(stepExp(console, obj, X, depth, p));
 			}
 		}catch(e:Error){}
-		return "<p"+p+">{"+ConsoleReferencingModule.ShortClassName(obj)+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
+		return "<p"+p+">{"+EscHTML(getQualifiedShortClassName(obj))+"</p"+p+"> "+list.join(", ")+"<p"+p+">}</p"+p+">";
 	}
 }

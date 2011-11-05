@@ -21,9 +21,9 @@ package com.junkbyte.console.modules.userdata
 			return ConsoleModuleNames.USER_INFO;
 		}
 		
-		override public function registeredToConsole(console:Console):void
+		override protected function registeredToConsole():void
 		{
-			super.registeredToConsole(console);
+			super.registeredToConsole();
 			
 			if (config.sharedObjectName)
 			{

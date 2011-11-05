@@ -1,6 +1,5 @@
 package com.junkbyte.console.vos
 {
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 
 	public class ConsoleModuleMatch

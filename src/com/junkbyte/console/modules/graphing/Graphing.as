@@ -182,7 +182,7 @@ package com.junkbyte.console.modules.graphing
 			}
 		}
 		public function get fpsMonitor():Boolean{
-			if(!remoter.isSender) return _central.display.fpsMonitor;
+			if(!remoter.isSender) return layer.fpsMonitor;
 			return _fpsGroup!=null;
 		}
 		public function set fpsMonitor(b:Boolean):void{
@@ -202,12 +202,12 @@ package com.junkbyte.console.modules.graphing
 					if(index>=0) _groups.splice(index, 1);
 					_fpsGroup = null;
 				}
-				_central.display.mainPanel.updateMenu();
+				layer.mainPanel.updateMenu();
 			}
 		}
 		//
 		public function get memoryMonitor():Boolean{
-			if(!remoter.isSender) return _central.display.memoryMonitor;
+			if(!remoter.isSender) return layer.memoryMonitor;
 			return _memGroup!=null;
 		}
 		public function set memoryMonitor(b:Boolean):void{
@@ -224,7 +224,7 @@ package com.junkbyte.console.modules.graphing
 					if(index>=0) _groups.splice(index, 1);
 					_memGroup = null;
 				}
-				_central.display.mainPanel.updateMenu();
+				layer.mainPanel.updateMenu();
 			}
 		}
 		private function addSpecialGroup(type:int):GraphGroup{
@@ -304,9 +304,9 @@ package com.junkbyte.console.modules.graphing
 				while(bytes.bytesAvailable){
 					a.push(GraphGroup.FromBytes(bytes));
 				}
-				_central.display.updateGraphs(a);
+				layer.updateGraphs(a);
 			}else{
-				_central.display.updateGraphs(new Array());
+				layer.updateGraphs(new Array());
 			}
 		}
 	}

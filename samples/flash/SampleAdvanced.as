@@ -43,14 +43,14 @@ package
 			//
 			Cc.start(this);
 			Cc.config.keystrokePassword = "`";
-			Cc.display.mainPanel.visible = true; // show console, because having password hides console.
+			Cc.layer.mainPanel.visible = true; // show console, because having password hides console.
 			//Cc.memoryMonitor = true;
 			//Cc.fpsMonitor = true;
 			//Cc.displayRoller = true;
 			
 			Cc.config.commandLineAllowed = true;
-			Cc.display.mainPanel.width = 700;
-			Cc.display.mainPanel.height = 300;
+			Cc.layer.mainPanel.width = 700;
+			Cc.layer.mainPanel.height = 300;
 			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			//Cc.remoting = true;
 			

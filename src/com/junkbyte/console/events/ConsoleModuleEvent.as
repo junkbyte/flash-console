@@ -8,6 +8,9 @@ package com.junkbyte.console.events {
 		public static const MODULE_REGISTERED:String = "moduleRegistered";
 		public static const MODULE_UNREGISTERED:String = "moduleUnregistered";
 		
+		public static const REGISTERED_TO_CONSOLE:String = "registeredToConsole";
+		public static const UNREGISTERED_TO_CONSOLE:String = "unregisteredToConsole";
+		
 		public var module:IConsoleModule;
 		
 		public function ConsoleModuleEvent(type : String, module:IConsoleModule) {

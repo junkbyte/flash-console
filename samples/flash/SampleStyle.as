@@ -48,11 +48,11 @@ package
 			//
 			
 			Cc.startOnStage(this, "`"); // "`" - change for password. This will start hidden
-			Cc.display.visible = true; // show console, because having password hides console.
+			Cc.layer.visible = true; // show console, because having password hides console.
 			Cc.config.commandLineAllowed = true;
 			
-			Cc.display.mainPanel.width = 640;
-			Cc.display.mainPanel.height = 320;
+			Cc.layer.mainPanel.width = 640;
+			Cc.layer.mainPanel.height = 320;
 			//
 			// END OF SETUP
 			//

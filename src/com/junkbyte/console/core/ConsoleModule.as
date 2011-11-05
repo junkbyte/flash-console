@@ -1,11 +1,11 @@
 /*
-* 
+*
 * Copyright (c) 2008-2010 Lu Aye Oo
-* 
+*
 * @author 		Lu Aye Oo
-* 
+*
 * http://code.google.com/p/flash-console/
-* 
+*
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,83 +20,108 @@
 * 2. Altered source versions must be plainly marked as such, and must not be
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
-* 
+*
 */
-package com.junkbyte.console.core 
+package com.junkbyte.console.core
 {
-	import com.junkbyte.console.Console;
-	import com.junkbyte.console.ConsoleConfig;
-	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.interfaces.IDependentConsoleModule;
-	import com.junkbyte.console.modules.remoting.IRemoter;
-	import com.junkbyte.console.view.ConsoleLayer;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
-	
-	import flash.events.EventDispatcher;
+    import com.junkbyte.console.Console;
+    import com.junkbyte.console.ConsoleConfig;
+    import com.junkbyte.console.ConsoleStyle;
+    import com.junkbyte.console.events.ConsoleModuleEvent;
+    import com.junkbyte.console.interfaces.IConsoleModule;
+    import com.junkbyte.console.modules.remoting.IRemoter;
+    import com.junkbyte.console.view.ConsoleLayer;
+    import com.junkbyte.console.vos.ConsoleModuleMatch;
+    
+    import flash.events.EventDispatcher;
 
-	public class ConsoleModule extends EventDispatcher implements IConsoleModule, IDependentConsoleModule
-	{
-		protected var _central:ConsoleModules;
+    [Event(name = "registeredToConsole", type = "com.junkbyte.console.events.ConsoleModuleEvent")]
+    [Event(name = "unregisteredToConsole", type = "com.junkbyte.console.events.ConsoleModuleEvent")]
+    public class ConsoleModule extends EventDispatcher implements IConsoleModule
+    {
+        protected var _console:Console;
 		
-		public function ConsoleModule(c:ConsoleModules = null)
-		{
-			_central = c;
-		}
-		
-		protected function get remoter():IRemoter
-		{
-			return _central.remoter;
-		}
-		
-		protected function get console():Console
-		{
-			return _central.console;
-		}
-		
-		protected function get config():ConsoleConfig
-		{
-			return _central.config;
-		}
-		
-		public function get display():ConsoleLayer
-		{
-			return _central.display;
-		}
-		
-		public function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void
-		{
-			_central.report(obj, priority, skipSafe, ch);
-		}
-		
-		public function getModuleName():String
-		{
-			return null;
-		}
-		
-		public function registeredToConsole(console:Console):void
-		{
-			_central = console.modules;
+		protected var _moduleDependences:ModuleDependenceCallback;
+
+        public function ConsoleModule()
+        {
 			
-		}
+        }
+
+        public function getModuleName():String
+        {
+            return null;
+        }
+
+        public function setConsole(newConsole:Console):void
+        {
+			if(newConsole == _console)
+			{
+				return;
+			}
+            if (_console != null)
+            {
+				unregisteredFromConsole();
+            }
+			_console = newConsole;
+            if (newConsole != null)
+            {
+				registeredToConsole();
+            }
+        }
 		
-		public function unregisteredFromConsole(console:Console):void
+		protected function addModuleDependencyCallback(matcher:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function):void
 		{
-			_central = null;
+			if(_moduleDependences == null)
+			{
+				_moduleDependences = new ModuleDependenceCallback(this);
+			}
+			_moduleDependences.addCallback(matcher, registerCallback, unregisterCallback);
 		}
-		
-		public function getDependentModules():Vector.<ConsoleModuleMatch>
+
+        protected function registeredToConsole():void
+        {
+            dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.REGISTERED_TO_CONSOLE, this));
+        }
+
+        protected function unregisteredFromConsole():void
+        {
+            dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, this));
+        }
+
+        public function get console():Console
+        {
+            return _console;
+        }
+
+		public function get modules():ConsoleModulesManager
 		{
-			return new Vector.<ConsoleModuleMatch>();
+			return console.modules;
 		}
-		
-		public function dependentModuleRegistered(module:IConsoleModule):void
+
+        public function get config():ConsoleConfig
+        {
+            return console.config;
+        }
+
+		public function get style():ConsoleStyle
 		{
-			
+			return config.style;
 		}
-		
-		public function dependentModuleUnregistered(module:IConsoleModule):void
-		{
-			
-		}
-	}
+
+        public function get layer():ConsoleLayer
+        {
+            return console.layer;
+        }
+
+        public function get remoter():IRemoter
+        {
+            return modules.remoter;
+        }
+
+        public function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void
+        {
+            modules.report(obj, priority, skipSafe, ch);
+        }
+    }
 }
