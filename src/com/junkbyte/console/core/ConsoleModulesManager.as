@@ -28,14 +28,15 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.interfaces.IRemoter;
+	import com.junkbyte.console.logging.ConsoleLogger;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.ICommandLine;
 	import com.junkbyte.console.modules.commandLine.SlashCommandLine;
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
-	import com.junkbyte.console.modules.remoting.IRemoter;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
-
+	
 	import flash.events.EventDispatcher;
 
     [Event(name = "moduleRegistered", type = "com.junkbyte.console.events.ConsoleModuleEvent")]
@@ -47,7 +48,6 @@ package com.junkbyte.console.core
         protected var _modulesByName:Object = new Object();
 
         protected var _console:Console;
-
         //
         private var _refs:ConsoleReferencingModule;
 
@@ -55,6 +55,8 @@ package com.junkbyte.console.core
 
         //
         private var _logs:Logs;
+		//
+		private var _logger:ConsoleLogger;
 
         public function ConsoleModulesManager(console:Console)
         {
@@ -67,6 +69,10 @@ package com.junkbyte.console.core
         {
             _logs = new Logs();
             registerModule(_logs);
+			
+			_logger = new ConsoleLogger();
+			registerModule(_logger);
+			
             _refs = new ConsoleReferencingModule();
             registerModule(_refs);
             registerModule(new SlashCommandLine());
@@ -78,7 +84,7 @@ package com.junkbyte.console.core
         public function report(obj:* = '', priority:int = 0, skipSafe:Boolean = true, channel:String = null):void
         {
             if (!channel)
-                channel = display.mainPanel.traces.reportChannel;
+                channel = console.layer.mainPanel.traces.reportChannel;
             _logs.addLine([ obj ], priority, channel, false, skipSafe, 0);
         }
 
@@ -86,16 +92,6 @@ package com.junkbyte.console.core
         public function get console():Console
         {
             return _console;
-        }
-
-        public function get config():ConsoleConfig
-        {
-            return console.config;
-        }
-
-        public function get display():ConsoleLayer
-        {
-            return console.layer;
         }
 
         public function get cl():ICommandLine
@@ -122,19 +118,29 @@ package com.junkbyte.console.core
         {
             return _modulesByName[moduleName];
         }
-
-        public function findModuleByMatcher(matcher:ConsoleModuleMatch):IConsoleModule
+		
+        public function findModulesByMatcher(matcher:ConsoleModuleMatch):Vector.<IConsoleModule>
         {
+			var result:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
+			
             var len:uint = _modules.length;
-            for (var i:int = _modules.length - 1; i >= 0; i--)
+            for (var i:int = 0; i < len; i++)
             {
-                if (matcher.matches(_modules[i]))
+				var module:IConsoleModule = _modules[i];
+                if (matcher.matches(module))
                 {
-                    return _modules[i];
+					result.push(module);
                 }
             }
-            return null;
+			
+            return result;
         }
+		
+		public function getFirstMatchingModule(matcher:ConsoleModuleMatch):IConsoleModule
+		{
+			var result:Vector.<IConsoleModule> = findModulesByMatcher(matcher);
+			return result.length > 0 ? result[0] : null;
+		}
 
         public function registerModules(modules:Vector.<IConsoleModule>):void
         {
@@ -150,25 +156,26 @@ package com.junkbyte.console.core
 
         public function registerModule(module:IConsoleModule):void
         {
-            if (!isModuleRegistered(module))
+            if (isModuleRegistered(module))
             {
-                var moduleName:String = module.getModuleName();
-                if (moduleName != null)
-                {
-                    var currentModule:IConsoleModule = _modulesByName[moduleName];
-                    if (currentModule != null)
-                    {
-                        unregisterModule(currentModule);
-                    }
-                    _modulesByName[moduleName] = module;
-                }
-                _modules.push(module);
-                module.setConsole(console);
-                // this is incase module unregister it self straight away
-                if (isModuleRegistered(module))
-                {
-                    dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
-                }
+				return;
+			}
+			var moduleName:String = module.getModuleName();
+            if (moduleName != null)
+			{
+				var currentModule:IConsoleModule = _modulesByName[moduleName];
+				if (currentModule != null)
+				{
+					unregisterModule(currentModule);
+				}
+				_modulesByName[moduleName] = module;
+			}
+			_modules.push(module);
+			module.setConsole(console);
+			// this is incase module unregister it self straight away
+			if (isModuleRegistered(module))
+			{
+				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
             }
         }
 

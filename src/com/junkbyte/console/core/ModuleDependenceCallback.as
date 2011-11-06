@@ -4,138 +4,142 @@ package com.junkbyte.console.core
     import com.junkbyte.console.interfaces.IConsoleModule;
     import com.junkbyte.console.vos.ConsoleModuleMatch;
 
-    import flash.utils.Dictionary;
-
     public class ModuleDependenceCallback
     {
+		protected var modulesManager:ConsoleModulesManager;
+		
+        protected var dependencies:Vector.<DependencyCallback> = new Vector.<DependencyCallback>();
 
-        protected var srcModule:ConsoleModule;
-
-        protected var unregisteredList:Vector.<DependentCallback> = new Vector.<DependentCallback>();
-
-        protected var registeredMatches:Dictionary = new Dictionary();
-
-        public function ModuleDependenceCallback(module:ConsoleModule)
-        {
-            this.srcModule = module;
+		protected var matchedModules:Vector.<MatchedModule> = new Vector.<MatchedModule>;
+		
+		public static function createUsingModule(module:ConsoleModule):ModuleDependenceCallback
+		{
+			var instance:ModuleDependenceCallback = new ModuleDependenceCallback();
+			instance.initUsingModule(module);
+			return instance;
+		}
+		
+		private function initUsingModule(module:ConsoleModule):void
+		{
+			module.addEventListener(ConsoleModuleEvent.REGISTERED_TO_CONSOLE, onSrcModuleRegistered, false, 0, true);
+			module.addEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, onSrcModuleUnregistered, false, 0, true);
 			
-			srcModule.addEventListener(ConsoleModuleEvent.REGISTERED_TO_CONSOLE, onSrcModuleRegistered);
-			srcModule.addEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, onSrcModuleUnregistered);
-        }
+			if(module.isRegisteredToConsole())
+			{
+				initUsingModulesManager(module.modules);
+			}
+		}
+		
+		private function onSrcModuleRegistered(event:ConsoleModuleEvent):void
+		{
+			var module:ConsoleModule = event.module as ConsoleModule;
+			initUsingModulesManager(module.modules);
+		}
+		
+		private function onSrcModuleUnregistered(event:ConsoleModuleEvent):void
+		{
+			modulesManager.removeEventListener(ConsoleModuleEvent.MODULE_REGISTERED, onAnyModuleRegistered);
+			
+			for (var i:int = matchedModules.length - 1; i >=0 ; i--)
+			{
+				var matched:MatchedModule = matchedModules[i];
+				matchUnRegistered(matched);
+			}
+		}
+		
+		public static function createUsingModulesManager(modulesManager:ConsoleModulesManager):ModuleDependenceCallback
+		{
+			var instance:ModuleDependenceCallback = new ModuleDependenceCallback();
+			instance.initUsingModulesManager(modulesManager);
+			return instance;
+		}
+		
+		private function initUsingModulesManager(modulesManager:ConsoleModulesManager):void
+		{
+			this.modulesManager = modulesManager;
+			
+			modulesManager.addEventListener(ConsoleModuleEvent.MODULE_REGISTERED, onAnyModuleRegistered);
+			
+			var len:uint = dependencies.length;
+			for (var i:int = 0; i < len; i++)
+			{
+				var cb:DependencyCallback = dependencies[i];
+				findAndRegisterMatchesOf(cb);
+			}
+		}
+		
+		private function onAnyModuleRegistered(event:ConsoleModuleEvent):void
+		{
+			for each (var cb:DependencyCallback in dependencies)
+			{
+				if (cb.moduleMatch.matches(event.module))
+				{
+					matchRegistered(cb, event.module);
+				}
+			}
+		}
 
         public function addCallback(matcher:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function):void
         {
-            var cb:DependentCallback = new DependentCallback(matcher, registerCallback, unregisterCallback);
+            var cb:DependencyCallback = new DependencyCallback(matcher, registerCallback, unregisterCallback);
 			
-            if (srcModule.console == null)
-            {
-                addToUnregisteredList(cb);
-            }
-            else
-            {
-                var matchingModule:IConsoleModule = srcModule.modules.findModuleByMatcher(matcher);
-
-                if (matchingModule == null)
-                {
-                    addToUnregisteredList(cb);
-                    srcModule.modules.addEventListener(ConsoleModuleEvent.MODULE_REGISTERED, onAnyModuleRegistered);
-                }
-                else
-                {
-                    matchRegistered(cb, matchingModule);
-                }
-            }
+			dependencies.push(cb);
+			
+			if (modulesManager != null)
+			{
+				findAndRegisterMatchesOf(cb);
+			}
         }
+		
+		public function removeAllCallbacks():void
+		{
+			dependencies.splice(0, dependencies.length);
+			matchedModules.splice(0, matchedModules.length);
+		}
+		
+		private function findAndRegisterMatchesOf(cb:DependencyCallback):void
+		{
+			var matches:Vector.<IConsoleModule> = modulesManager.findModulesByMatcher(cb.moduleMatch);
+			for each(var matchingModule:IConsoleModule in matches)
+			{
+				matchRegistered(cb, matchingModule);
+			}
+		}
 
-        private function onSrcModuleRegistered(event:ConsoleModuleEvent):void
+        private function matchRegistered(cb:DependencyCallback, module:IConsoleModule):void
         {
-            srcModule.modules.addEventListener(ConsoleModuleEvent.MODULE_REGISTERED, onAnyModuleRegistered);
-
-            var len:uint = unregisteredList.length;
-            for (var i:int = 0; i < len; i++)
-            {
-                var cb:DependentCallback = unregisteredList[i];
-                var matchingModule:IConsoleModule = srcModule.modules.findModuleByMatcher(cb.moduleMatch);
-
-                if (matchingModule != null)
-                {
-                    matchRegistered(cb, matchingModule);
-                    i--;
-                    len--;
-                }
-            }
+			var matchedModule:MatchedModule = new MatchedModule(module, cb);
+			
+			matchedModules.push(matchedModule);
+			
+            module.addEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, onMatchedModuleUnregistered);
+			
+			cb.registered(module);
         }
+		
+		private function onMatchedModuleUnregistered(event:ConsoleModuleEvent):void
+		{
+			for (var i:int = matchedModules.length - 1; i >=0 ; i--)
+			{
+				var matched:MatchedModule = matchedModules[i];
+				if(matched.module == event.module)
+				{
+					matchUnRegistered(matched);
+				}
+			}
+		}
 
-        private function onSrcModuleUnregistered(event:ConsoleModuleEvent):void
+        private function matchUnRegistered(matchedModule:MatchedModule):void
         {
-            srcModule.modules.removeEventListener(ConsoleModuleEvent.MODULE_REGISTERED, onAnyModuleRegistered);
-            var list:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
-
-            for (var key:* in registeredMatches)
-            {
-                list.push(key as IConsoleModule);
-            }
-            for each (var matchModule:IConsoleModule in list)
-            {
-                var cb:DependentCallback = registeredMatches[matchModule];
-                matchUnRegistered(cb, srcModule);
-            }
-        }
-
-        private function onAnyModuleRegistered(event:ConsoleModuleEvent):void
-        {
-            for each (var cb:DependentCallback in unregisteredList)
-            {
-                if (cb.moduleMatch.matches(event.module))
-                {
-                    matchRegistered(cb, event.module);
-                    break;
-                }
-            }
-        }
-
-        private function matchRegistered(cb:DependentCallback, module:IConsoleModule):void
-        {
-            registeredMatches[module] = cb;
-            removeFromUnregisteredList(cb);
-
-            module.addEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, moduleUnregistered);
-            cb.callRegistered(module);
-        }
-
-        private function matchUnRegistered(cb:DependentCallback, module:IConsoleModule):void
-        {
-            delete registeredMatches[module];
-            addToUnregisteredList(cb);
-
-            module.removeEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, moduleUnregistered);
-            cb.callUnregistered(module);
-        }
-
-        private function addToUnregisteredList(cb:DependentCallback):void
-        {
-            if (unregisteredList.indexOf(cb) < 0)
-            {
-                unregisteredList.push(cb);
-            }
-        }
-
-        private function removeFromUnregisteredList(cb:DependentCallback):void
-        {
-            var index:int = unregisteredList.indexOf(cb);
-            if (index >= 0)
-            {
-                unregisteredList.splice(index, 1);
-            }
-        }
-
-        private function moduleUnregistered(event:ConsoleModuleEvent):void
-        {
-            var cb:DependentCallback = registeredMatches[event.module];
-            if (cb != null)
-            {
-                matchUnRegistered(cb, event.module);
-            }
+			var index:int = matchedModules.indexOf(matchedModule);
+			if(index >= 0)
+			{
+				matchedModules.splice(index, 1);
+			}
+			
+			matchedModule.module.removeEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, onMatchedModuleUnregistered);
+			
+			matchedModule.unregistered();
         }
     }
 }
@@ -143,7 +147,7 @@ package com.junkbyte.console.core
 import com.junkbyte.console.interfaces.IConsoleModule;
 import com.junkbyte.console.vos.ConsoleModuleMatch;
 
-class DependentCallback
+class DependencyCallback
 {
     public var moduleMatch:ConsoleModuleMatch;
 
@@ -151,26 +155,47 @@ class DependentCallback
 
     public var unregisterCallback:Function;
 
-    public function DependentCallback(interestedModule:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function):void
+    public function DependencyCallback(interestedModule:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function):void
     {
         this.moduleMatch = interestedModule;
         this.registerCallback = registerCallback;
         this.unregisterCallback = unregisterCallback;
     }
+	
+	public function registered(module:IConsoleModule):void
+	{
+		if (registerCallback != null)
+		{
+			registerCallback(module);
+		}
+	}
+	
+	public function unregistered(module:IConsoleModule):void
+	{
+		if (unregisterCallback != null)
+		{
+			unregisterCallback(module);
+		}
+	}
+}
 
-    public function callRegistered(matchingModule:IConsoleModule):void
-    {
-        if (registerCallback != null)
-        {
-            registerCallback(matchingModule);
-        }
-    }
+import com.junkbyte.console.interfaces.IConsoleModule;
+import com.junkbyte.console.vos.ConsoleModuleMatch;
 
-    public function callUnregistered(matchingModule:IConsoleModule):void
-    {
-        if (unregisterCallback != null)
-        {
-            unregisterCallback(matchingModule);
-        }
-    }
+class MatchedModule
+{
+	public var module:IConsoleModule;
+	
+	public var dependency:DependencyCallback;
+	
+	public function MatchedModule(module:IConsoleModule, dependency:DependencyCallback):void
+	{
+		this.module = module;
+		this.dependency = dependency;
+	}
+	
+	public function unregistered():void
+	{
+		dependency.unregistered(module);
+	}
 }

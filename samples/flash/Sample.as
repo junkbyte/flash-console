@@ -28,9 +28,12 @@ package
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
-	import com.junkbyte.console.modules.remoting.LocalRemoting;
+	import com.junkbyte.console.logging.ConsoleLogger;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.StandardConsoleModules;
+	import com.junkbyte.console.modules.remoting.LocalRemoting;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.vos.LogEntry;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
@@ -75,6 +78,16 @@ package
 			demoBasics();
 			
 			setupUI();
+			
+			
+			var logger:ConsoleLogger = Cc.modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(ConsoleLogger)) as ConsoleLogger;
+			logger.addEntry(new LogEntry(["test"], "ch", 10));
+			logger.addEntry(new LogEntry(["An info message.", "Optionally there", "can be", "multiple arguments."], "ch", 4));
+			logger.addEntry(new LogEntry(["Some numbers and booleans", 341, 123123123, false, 0.123123, "END"], "ch", 4));
+			
+			logger.addEntry(new LogEntry([<test><hello attribute="1234"/></test>], "ch", 4));
+				
+			logger.addEntry(new LogEntry([Cc, Cc.config], "ch", 4));
 		}
 		
 		private function demoBasics():void

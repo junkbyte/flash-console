@@ -28,7 +28,7 @@ package com.junkbyte.console.modules.graphing
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;

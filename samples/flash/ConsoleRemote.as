@@ -26,7 +26,7 @@ package
 {
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.modules.remoting.LocalRemoting;
-
+	
 	import flash.display.*;
 	import flash.events.*;
 

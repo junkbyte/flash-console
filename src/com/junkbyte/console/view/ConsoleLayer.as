@@ -26,10 +26,11 @@ package com.junkbyte.console.view
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleLevel;
+	import com.junkbyte.console.ConsoleStyle;
 	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.view.mainPanel.MainPanel;
-
+	
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
@@ -68,11 +69,13 @@ package com.junkbyte.console.view
         {
 			_mainPanel = new MainPanel();
 			
+			var style:ConsoleStyle = _central.console.config.style;
+			
 			_tooltipField = new TextField();
 			_tooltipField.name = "tooltip";
-			_tooltipField.styleSheet = _central.config.style.styleSheet;
+			_tooltipField.styleSheet = style.styleSheet;
 			_tooltipField.background = true;
-			_tooltipField.backgroundColor = _central.config.style.backgroundColor;
+			_tooltipField.backgroundColor = style.backgroundColor;
 			_tooltipField.mouseEnabled = false;
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
 			_tooltipField.multiline = true;
@@ -166,7 +169,7 @@ package com.junkbyte.console.view
                 return;
             }
 
-            if (_central.config.alwaysOnTop && parent.getChildAt(parent.numChildren - 1) != this && _topTries > 0)
+            if (_central.console.config.alwaysOnTop && parent.getChildAt(parent.numChildren - 1) != this && _topTries > 0)
             {
                 _topTries--;
                 parent.addChild(this);

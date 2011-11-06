@@ -234,7 +234,7 @@ package com.junkbyte.console.view.mainPanel
 			sprite.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 		}
 		private function onCmdPrefRollOverOut(e : MouseEvent) : void {
-			modules.display.setTooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", mainPanel);
+			layer.setTooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", mainPanel);
 		}
 		
 		private function onCmdPrefMouseDown(e : MouseEvent) : void {

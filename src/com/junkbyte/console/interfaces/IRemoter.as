@@ -1,4 +1,4 @@
-package com.junkbyte.console.modules.remoting
+package com.junkbyte.console.interfaces
 {
 	import flash.events.IEventDispatcher;
 	import flash.utils.ByteArray;

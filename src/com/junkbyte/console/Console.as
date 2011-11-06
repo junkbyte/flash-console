@@ -40,10 +40,7 @@ package com.junkbyte.console
 	import flash.utils.getTimer;
 
 	/**
-	 * Console is the main class. 
-	 * Please see com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
 	 * @see http://code.google.com/p/flash-console/
-	 * @see com.junkbyte.console.Cc
 	 */
 	[Event(name="consoleStarted", type="com.junkbyte.console.events.ConsoleEvent")]
 	[Event(name="consoleShown", type="com.junkbyte.console.events.ConsoleEvent")]
@@ -87,7 +84,7 @@ package com.junkbyte.console
 
 			_modules.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
 			
-			_modules.display.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			layer.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			
 			if (container)
 			{
@@ -185,19 +182,19 @@ package com.junkbyte.console
 		public function setViewingChannels(...channels:Array):void
 		{
 			throwErrorIfNotStarted("minimumPriority");
-			_modules.display.mainPanel.traces.setViewingChannels.apply(this, channels);
+			layer.mainPanel.traces.setViewingChannels.apply(this, channels);
 		}
 
 		public function setIgnoredChannels(...channels:Array):void
 		{
 			throwErrorIfNotStarted("minimumPriority");
-			_modules.display.mainPanel.traces.setIgnoredChannels.apply(this, channels);
+			layer.mainPanel.traces.setIgnoredChannels.apply(this, channels);
 		}
 
 		public function set minimumPriority(level:uint):void
 		{
 			throwErrorIfNotStarted("minimumPriority");
-			_modules.display.mainPanel.traces.priority = level;
+			layer.mainPanel.traces.priority = level;
 		}
 
 		protected function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
@@ -223,12 +220,12 @@ package com.junkbyte.console
 
 		public function stack(string:*, depth:int = -1, priority:int = 5):void
 		{
-			addLine([string], priority, Logs.DEFAULT_CHANNEL, false, false, depth >= 0 ? depth : _modules.config.defaultStackDepth);
+			addLine([string], priority, Logs.DEFAULT_CHANNEL, false, false, depth >= 0 ? depth : config.defaultStackDepth);
 		}
 
 		public function stackch(channel:*, string:*, depth:int = -1, priority:int = 5):void
 		{
-			addLine([string], priority, channel, false, false, depth >= 0 ? depth : _modules.config.defaultStackDepth);
+			addLine([string], priority, channel, false, false, depth >= 0 ? depth : config.defaultStackDepth);
 		}
 
 		public function log(...strings):void
@@ -363,7 +360,7 @@ package com.junkbyte.console
 		{
 			if (!started) return;
 			_modules.logs.clear(channel);
-			if (!paused) _modules.display.mainPanel.traces.updateToBottom();
+			if (!paused) layer.mainPanel.traces.updateToBottom();
 		}
 
 		public function getAllLog(splitter:String = "\r\n"):String

@@ -28,7 +28,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.Log;

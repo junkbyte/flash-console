@@ -39,6 +39,12 @@ package com.junkbyte.console {
 		/** Font size for trace field */
 		public var traceFontSize:int = 11;
 		
+		/** Font for menus and almost all others */
+		public var tracePrimitiveFont:String = "Courier New, Serif";
+		
+		/** Font size for trace field */
+		public var tracePrimitiveFontSize:int = 13;
+		
 		/** Panels background color */
 		public var backgroundColor:uint;
 		
@@ -192,6 +198,7 @@ package com.junkbyte.console {
 			_css.setStyle("p10",{color:hesh(priority10), fontWeight:'bold', display:'inline'});
 			_css.setStyle("p-1",{color:hesh(priorityC1), display:'inline'});
 			_css.setStyle("p-2",{color:hesh(priorityC2), display:'inline'});
+			_css.setStyle("prim",{fontFamily:tracePrimitiveFont, fontSize:tracePrimitiveFontSize, display:'inline'});
 		}
 		/**
 		 * Style sheet used by Console.

@@ -63,7 +63,7 @@ package com.junkbyte.console.view {
 		public function update():void{
 			txtField.wordWrap = false;
 			txtField.width = 80;
-			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> "+ modules.display.mainPanel.traces.getChannelsLink();
+			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> "+ layer.mainPanel.traces.getChannelsLink();
 			txtField.htmlText = str+"</high>";
 			if(txtField.width>160){
 				txtField.wordWrap = true;
@@ -79,9 +79,9 @@ package com.junkbyte.console.view {
 			txtField.setSelection(0, 0);
 			if(e.text == "close"){
 				close();
-				modules.display.channelsPanel = false;
+				layer.channelsPanel = false;
 			}else if(e.text.substring(0,8) == "channel_"){
-				modules.display.mainPanel.traces.onChannelPressed(e.text.substring(8));
+				layer.mainPanel.traces.onChannelPressed(e.text.substring(8));
 			}
 			txtField.setSelection(0, 0);
 			e.stopPropagation();

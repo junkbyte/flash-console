@@ -255,7 +255,7 @@ package com.junkbyte.console.modules.displayRoller
 
                         var n:String = obj.name;
                         var ind:uint;
-                        if (dolink && modules.config.useObjectLinking)
+                        if (dolink && config.useObjectLinking)
                         {
                             ind = modules.refs.setLogRef(obj);
                             n = "<a href='event:cl_" + ind + "'>" + n + "</a> " + modules.refs.makeRefTyped(obj);
@@ -320,7 +320,7 @@ package com.junkbyte.console.modules.displayRoller
             {
                 txt = null;
             }
-            modules.display.setTooltip(txt, this);
+            layer.setTooltip(txt, this);
         }
 
         protected function linkHandler(e:TextEvent):void
@@ -341,12 +341,12 @@ package com.junkbyte.console.modules.displayRoller
                     _settingKey = true;
                     sprite.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
                 }
-                modules.display.setTooltip(null);
+				layer.setTooltip(null);
             }
             else if (e.text == "cancel")
             {
                 cancelCaptureKeySet();
-                modules.display.setTooltip(null);
+				layer.setTooltip(null);
             }
             e.stopPropagation();
         }
@@ -365,7 +365,7 @@ package com.junkbyte.console.modules.displayRoller
             var char:String = String.fromCharCode(e.charCode);
             cancelCaptureKeySet();
             setRollerCaptureKey(char, e.shiftKey, e.ctrlKey, e.altKey);
-            modules.display.setTooltip(null);
+			layer.setTooltip(null);
         }
     }
 }

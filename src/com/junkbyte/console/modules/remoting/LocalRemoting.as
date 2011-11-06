@@ -40,6 +40,7 @@ package com.junkbyte.console.modules.remoting
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.interfaces.IRemoter;
 
 	[Event(name="CONNECT", type="flash.events.Event")]
 	public class LocalRemoting extends ConsoleModule implements IRemoter{

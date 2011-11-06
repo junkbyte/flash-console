@@ -46,7 +46,7 @@ package com.junkbyte.console.modules.ruler {
 
 	public class Ruler extends Sprite{
 		
-		private var _central:ConsoleModulesManager;
+		private var _module:RulerModule;
 		private var _area:Rectangle;
 		private var _pointer:Shape;
 		
@@ -55,8 +55,8 @@ package com.junkbyte.console.modules.ruler {
 		
 		private var _points:Array;
 		
-		public function Ruler(central:ConsoleModulesManager) {
-			_central = central;
+		public function Ruler(module:RulerModule) {
+			_module = module;
 			name = "ruler";
 			start();
 		}
@@ -69,14 +69,14 @@ package com.junkbyte.console.modules.ruler {
 			addChild(_pointer);
 			var p:Point = new Point();
 			p = globalToLocal(p);
-			_area = new Rectangle(-_central.display.stage.stageWidth*1.5+p.x, -_central.display.stage.stageHeight*1.5+p.y, _central.display.stage.stageWidth*3, _central.display.stage.stageHeight*3);
-			graphics.beginFill(_central.config.style.backgroundColor, 0.2);
+			_area = new Rectangle(-_module.layer.stage.stageWidth*1.5+p.x, -_module.layer.stage.stageHeight*1.5+p.y, _module.layer.stage.stageWidth*3, _module.layer.stage.stageHeight*3);
+			graphics.beginFill(_module.config.style.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
 			_posTxt = new TextField();
 			_posTxt.name = "positionText";
-			_posTxt.styleSheet = _central.config.style.styleSheet;
+			_posTxt.styleSheet = _module.config.style.styleSheet;
 			
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
 			addChild(_posTxt);
@@ -88,8 +88,8 @@ package com.junkbyte.console.modules.ruler {
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
 			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, false, 0, true);
 			onMouseMove();
-			if(_central.config.rulerHidesMouse) Mouse.hide();
-			_central.report("<b>Ruler started. Click on two locations to measure.</b>", ConsoleLevel.CONSOLE_STATUS);
+			if(_module.config.rulerHidesMouse) Mouse.hide();
+			_module.report("<b>Ruler started. Click on two locations to measure.</b>", ConsoleLevel.CONSOLE_STATUS);
 		}
 		private function onMouseMove(e:MouseEvent = null):void{
 			_pointer.graphics.clear();
@@ -129,7 +129,7 @@ package com.junkbyte.console.modules.ruler {
 		private function onMouseClick(e:MouseEvent):void{
 			e.stopPropagation();
 			var p:Point;
-			var style : ConsoleStyle = _central.config.style;
+			var style : ConsoleStyle = _module.config.style;
 			if(_points.length==0){
 				p = new Point(e.localX, e.localY);
 				graphics.lineStyle(1, 0xFF0000);
@@ -137,7 +137,7 @@ package com.junkbyte.console.modules.ruler {
 				_points.push(p);
 			}else if(_points.length==1){
 				_zoom.bitmapData = null;
-				if(_central.config.rulerHidesMouse) Mouse.show();
+				if(_module.config.rulerHidesMouse) Mouse.show();
 				removeChild(_pointer);
 				removeChild(_posTxt);
 				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
@@ -214,12 +214,12 @@ package com.junkbyte.console.modules.ruler {
 				graphics.moveTo(p.x, p.y);
 				graphics.lineTo(p2.x, p2.y);
 				//
-				_central.report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", ConsoleLevel.CONSOLE_EVENT);
-				_central.report("Distance: <b>"+round(d,100) +"</b>", ConsoleLevel.CONSOLE_EVENT);
-				_central.report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", ConsoleLevel.CONSOLE_EVENT);
-				_central.report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", ConsoleLevel.CONSOLE_EVENT);
-				_central.report("Angle from first point (red): <b>"+a1+"°</b>", ConsoleLevel.CONSOLE_EVENT);
-				_central.report("Angle from second point (orange): <b>"+a2+"°</b>", ConsoleLevel.CONSOLE_EVENT);
+				_module.report("Ruler results: (red) <b>["+p.x+","+p.y+"]</b> to (orange) <b>["+p2.x+","+p2.y+"]</b>", ConsoleLevel.CONSOLE_EVENT);
+				_module.report("Distance: <b>"+round(d,100) +"</b>", ConsoleLevel.CONSOLE_EVENT);
+				_module.report("Mid point: <b>["+mp.x+","+mp.y+"]</b>", ConsoleLevel.CONSOLE_EVENT);
+				_module.report("Width:<b>"+w+"</b>, Height: <b>"+h+"</b>", ConsoleLevel.CONSOLE_EVENT);
+				_module.report("Angle from first point (red): <b>"+a1+"°</b>", ConsoleLevel.CONSOLE_EVENT);
+				_module.report("Angle from second point (orange): <b>"+a2+"°</b>", ConsoleLevel.CONSOLE_EVENT);
 			}else{
 				exit();
 			}
@@ -231,7 +231,7 @@ package com.junkbyte.console.modules.ruler {
 		}
 		
 		private function makeTxtField(col:Number, b:Boolean = true):TextField{
-			var format:TextFormat = new TextFormat(_central.config.style.menuFont, _central.config.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
+			var format:TextFormat = new TextFormat(_module.config.style.menuFont, _module.config.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
 			var txt:TextField = new TextField();
 			txt.autoSize = TextFieldAutoSize.RIGHT;
 			txt.selectable = false;

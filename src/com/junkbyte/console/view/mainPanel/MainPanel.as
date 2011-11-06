@@ -246,7 +246,7 @@ package com.junkbyte.console.view.mainPanel
                 var obj:Object = { fps: "Frames Per Second", mm: "Memory Monitor", channels: "Expand channels", close: "Close" };
                 txt = obj[txt];
             }
-            modules.display.setTooltip(txt, src);
+			layer.setTooltip(txt, src);
         }
 
         private function linkHandler(e:TextEvent):void
@@ -256,7 +256,7 @@ package com.junkbyte.console.view.mainPanel
             var t:String = e.text;
             if (t == "channels")
             {
-                modules.display.channelsPanel = !modules.display.channelsPanel;
+				layer.channelsPanel = !layer.channelsPanel;
             }
             /*else if(t == "priority"){
                 var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
@@ -293,7 +293,7 @@ package com.junkbyte.console.view.mainPanel
 
         override public function close():void
         {
-            modules.display.setTooltip();
+			layer.setTooltip();
             sprite.visible = false;
             dispatchEvent(new Event(Event.CLOSE));
         }
@@ -312,18 +312,18 @@ package com.junkbyte.console.view.mainPanel
 
         public function hideTopMenu():void
         {
-            modules.display.setTooltip();
+			layer.setTooltip();
             _menu.mini = true;
-            modules.config.style.topMenu = false;
+            config.style.topMenu = false;
             height = height;
             updateMenu();
         }
 
         public function showTopMenu():void
         {
-            modules.display.setTooltip();
+			layer.setTooltip();
             _menu.mini = false;
-            modules.config.style.topMenu = true;
+            config.style.topMenu = true;
             height = height;
             updateMenu();
         }

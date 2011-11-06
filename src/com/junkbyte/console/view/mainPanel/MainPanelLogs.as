@@ -633,11 +633,11 @@ package com.junkbyte.console.view.mainPanel
 
             if (keyStates != null && keyStates.shiftKeyDown)
             {
-                var s:int = modules.config.style.traceFontSize + (e.delta > 0 ? 1 : -1);
+                var s:int = config.style.traceFontSize + (e.delta > 0 ? 1 : -1);
                 if (s >= 8 && s <= 20)
                 {
-                    modules.config.style.traceFontSize = s;
-                    modules.config.style.updateStyleSheet();
+                    config.style.traceFontSize = s;
+                    config.style.updateStyleSheet();
                     updateToBottom();
                     e.stopPropagation();
                 }

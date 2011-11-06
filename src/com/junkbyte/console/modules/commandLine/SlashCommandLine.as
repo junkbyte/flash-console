@@ -27,7 +27,7 @@ package com.junkbyte.console.modules.commandLine
     import com.junkbyte.console.core.ConsoleModule;
     import com.junkbyte.console.interfaces.IConsoleModule;
     import com.junkbyte.console.modules.ConsoleModuleNames;
-    import com.junkbyte.console.modules.remoting.IRemoter;
+    import com.junkbyte.console.interfaces.IRemoter;
     import com.junkbyte.console.utils.EscHTML;
     import com.junkbyte.console.vos.ConsoleModuleMatch;
 

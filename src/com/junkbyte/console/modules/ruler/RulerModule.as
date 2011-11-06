@@ -41,7 +41,7 @@ package com.junkbyte.console.modules.ruler
 		
 		private function start():void
 		{
-			_ruler = new Ruler(modules);
+			_ruler = new Ruler(this);
 			_ruler.addEventListener(Event.CLOSE, onExit, false, 0, true);
 			layer.addChild(_ruler);
 			menu.active = true;

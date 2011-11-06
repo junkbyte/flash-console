@@ -29,7 +29,7 @@ package com.junkbyte.console.core
     import com.junkbyte.console.ConsoleStyle;
     import com.junkbyte.console.events.ConsoleModuleEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
-    import com.junkbyte.console.modules.remoting.IRemoter;
+    import com.junkbyte.console.interfaces.IRemoter;
     import com.junkbyte.console.view.ConsoleLayer;
     import com.junkbyte.console.vos.ConsoleModuleMatch;
     
@@ -74,7 +74,7 @@ package com.junkbyte.console.core
 		{
 			if(_moduleDependences == null)
 			{
-				_moduleDependences = new ModuleDependenceCallback(this);
+				_moduleDependences = ModuleDependenceCallback.createUsingModule(this);
 			}
 			_moduleDependences.addCallback(matcher, registerCallback, unregisterCallback);
 		}
@@ -88,6 +88,11 @@ package com.junkbyte.console.core
         {
             dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, this));
         }
+		
+		public function isRegisteredToConsole():Boolean
+		{
+			return _console != null;
+		}
 
         public function get console():Console
         {

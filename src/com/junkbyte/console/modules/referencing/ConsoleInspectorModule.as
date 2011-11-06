@@ -4,7 +4,7 @@ package com.junkbyte.console.modules.referencing
 	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.modules.remoting.IRemoter;
+	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.WeakObject;
