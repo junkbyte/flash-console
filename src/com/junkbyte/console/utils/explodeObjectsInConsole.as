@@ -15,7 +15,7 @@ package com.junkbyte.console.utils
 		}else if(obj is String){
 			return '"'+EscHTML(obj as String)+'"';
 		}else if(t != "object" || depth == 0 || obj is ByteArray){
-			return console.modules.refs.makeString(obj);
+			return console.modules.logs.makeString(obj);
 		}
 		if(p<0) p = 0;
 		var V:XML = describeType(obj);

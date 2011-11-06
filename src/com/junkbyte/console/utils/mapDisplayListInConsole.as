@@ -1,6 +1,9 @@
 package com.junkbyte.console.utils
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -52,9 +55,10 @@ package com.junkbyte.console.utils
 			for(i=0;i<steps;i++){
 				str += (i==steps-1)?" ∟ ":" - ";
 			}
+			var refs:ConsoleReferencingModule = console.modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(ConsoleReferencingModule)) as ConsoleReferencingModule;
 			if(maxstep<=0 || steps<=maxstep){
 				wasHiding = false;
-				var ind:uint = console.modules.refs.setLogRef(mcDO);
+				var ind:uint = refs.setLogRef(mcDO);
 				var n:String = mcDO.name;
 				if(ind) n = "<a href='event:cl_"+ind+"'>"+n+"</a>";
 				if(mcDO is DisplayObjectContainer){
@@ -62,7 +66,7 @@ package com.junkbyte.console.utils
 				}else{
 					n = "<i>"+n+"</i>";
 				}
-				str += n+" "+console.modules.refs.makeRefTyped(mcDO);
+				str += n+" "+refs.makeRefTyped(mcDO);
 				console.modules.report(str,mcDO is DisplayObjectContainer?5:2, true, ch);
 			}else if(!wasHiding){
 				wasHiding = true;
@@ -70,7 +74,7 @@ package com.junkbyte.console.utils
 			}
 			lastmcDO = mcDO;
 		}
-		console.modules.report(base.name + ":" + console.modules.refs.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
+		console.modules.report(base.name + ":" +refs.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
 		if (console.config.commandLineAllowed) console.modules.report("Click on the child display's name to set scope.", -2, true, ch);
 	}
 		

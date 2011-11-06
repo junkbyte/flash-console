@@ -24,16 +24,17 @@
 */
 package com.junkbyte.console.modules.displayRoller
 {
-    import com.junkbyte.console.interfaces.IMainMenu;
-    import com.junkbyte.console.vos.ConsoleModuleMatch;
     import com.junkbyte.console.KeyBind;
     import com.junkbyte.console.core.KeyBinder;
+    import com.junkbyte.console.interfaces.IMainMenu;
     import com.junkbyte.console.modules.ConsoleModuleNames;
+    import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
     import com.junkbyte.console.utils.EscHTML;
     import com.junkbyte.console.utils.getQualifiedShortClassName;
     import com.junkbyte.console.view.ConsolePanel;
     import com.junkbyte.console.view.TextFieldRollOverHandle;
     import com.junkbyte.console.vos.ConsoleMenuItem;
+    import com.junkbyte.console.vos.ConsoleModuleMatch;
     
     import flash.display.DisplayObject;
     import flash.display.DisplayObjectContainer;
@@ -241,6 +242,7 @@ package com.junkbyte.console.modules.displayRoller
                     chain.unshift(par);
                     par = par.parent;
                 }
+				var refs:ConsoleReferencingModule = getReferencesModule();
                 var len:uint = chain.length;
                 for (var i:uint = 0; i < len; i++)
                 {
@@ -257,15 +259,15 @@ package com.junkbyte.console.modules.displayRoller
                         var ind:uint;
                         if (dolink && config.useObjectLinking)
                         {
-                            ind = modules.refs.setLogRef(obj);
-                            n = "<a href='event:cl_" + ind + "'>" + n + "</a> " + modules.refs.makeRefTyped(obj);
+                            ind = refs.setLogRef(obj);
+                            n = "<a href='event:cl_" + ind + "'>" + n + "</a> " + refs.makeRefTyped(obj);
                         }
                         else
                             n = n + " (" + EscHTML(getQualifiedShortClassName(obj)) + ")";
 
                         if (obj == stg)
                         {
-                            ind = modules.refs.setLogRef(stg);
+                            ind = refs.setLogRef(stg);
                             if (ind)
                                 str += "<p3><a href='event:cl_" + ind + "'><i>Stage</i></a> ";
                             else
@@ -285,7 +287,13 @@ package com.junkbyte.console.modules.displayRoller
             }
             return str;
         }
-
+		
+		
+		protected function getReferencesModule():ConsoleReferencingModule
+		{
+			return console.modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(ConsoleReferencingModule)) as ConsoleReferencingModule;
+		}
+		
         public override function close():void
         {
             cancelCaptureKeySet();

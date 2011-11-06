@@ -40,7 +40,7 @@ package com.junkbyte.console.view
     public class ConsoleLayer extends Sprite
     {
 
-        private var _central:ConsoleModulesManager;
+        private var _console:Console;
 
         private var _mainPanel:MainPanel;
 
@@ -62,14 +62,14 @@ package com.junkbyte.console.view
         public function ConsoleLayer(console:Console)
         {
             name = "Console";
-            _central = console.modules;
+			_console = console;
         }
 
         public function start():void
         {
 			_mainPanel = new MainPanel();
 			
-			var style:ConsoleStyle = _central.console.config.style;
+			var style:ConsoleStyle = console.config.style;
 			
 			_tooltipField = new TextField();
 			_tooltipField.name = "tooltip";
@@ -81,7 +81,7 @@ package com.junkbyte.console.view
 			_tooltipField.multiline = true;
 			
 			addPanel(_mainPanel);
-            _central.registerModule(_mainPanel);
+			console.modules.registerModule(_mainPanel);
 
             addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
         }
@@ -89,7 +89,7 @@ package com.junkbyte.console.view
 		
 		public function get console():Console
 		{
-			return _central.console;
+			return _console;
 		}
 
         public function toggleVisibility():void
@@ -111,7 +111,7 @@ package com.junkbyte.console.view
             if (v)
                 mainPanel.sprite.visible = true;
 
-            _central.console.dispatchEvent(ConsoleEvent.create(visible ? ConsoleEvent.SHOWN : ConsoleEvent.HIDDEN));
+            console.dispatchEvent(ConsoleEvent.create(visible ? ConsoleEvent.SHOWN : ConsoleEvent.HIDDEN));
         }
 
         private function stageAddedHandle(e:Event = null):void
@@ -120,7 +120,7 @@ package com.junkbyte.console.view
             addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
             stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
 
-            _central.console.addEventListener(ConsoleEvent.UPDATE_DATA, _onDataUpdated);
+            console.addEventListener(ConsoleEvent.UPDATE_DATA, _onDataUpdated);
 
             registerStageModule();
         }
@@ -131,7 +131,7 @@ package com.junkbyte.console.view
             addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
             stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
 
-            _central.console.removeEventListener(ConsoleEvent.UPDATE_DATA, _onDataUpdated);
+            console.removeEventListener(ConsoleEvent.UPDATE_DATA, _onDataUpdated);
 
             unregisterStageModule();
         }
@@ -141,7 +141,7 @@ package com.junkbyte.console.view
             if (_stageModule == null)
             {
                 _stageModule = new StageModule(stage);
-                _central.registerModule(_stageModule);
+				console.modules.registerModule(_stageModule);
             }
         }
 
@@ -149,7 +149,7 @@ package com.junkbyte.console.view
         {
             if (_stageModule != null)
             {
-                _central.unregisterModule(_stageModule);
+				console.modules.unregisterModule(_stageModule);
                 _stageModule = null;
             }
         }
@@ -169,14 +169,14 @@ package com.junkbyte.console.view
                 return;
             }
 
-            if (_central.console.config.alwaysOnTop && parent.getChildAt(parent.numChildren - 1) != this && _topTries > 0)
+            if (console.config.alwaysOnTop && parent.getChildAt(parent.numChildren - 1) != this && _topTries > 0)
             {
                 _topTries--;
                 parent.addChild(this);
-                _central.report("Moved console on top (alwaysOnTop enabled), " + _topTries + " attempts left.", ConsoleLevel.CONSOLE_STATUS);
+				console.modules.report("Moved console on top (alwaysOnTop enabled), " + _topTries + " attempts left.", ConsoleLevel.CONSOLE_STATUS);
             }
-            var paused:Boolean = _central.console.paused;
-            var lineAdded:Boolean = _central.logs.newLogsSincesLastUpdate;
+            var paused:Boolean = console.paused;
+            var lineAdded:Boolean = console.modules.logs.newLogsSincesLastUpdate;
             _canDraw = !paused;
             _mainPanel.update(!paused && lineAdded);
             if (!paused)
@@ -373,7 +373,7 @@ package com.junkbyte.console.view
         {
             if (channelsPanel != b)
             {
-                _central.logs.cleanChannels();
+				console.modules.logs.cleanChannels();
                 if (b)
                 {
                     _chsPanel = new ChannelsPanel();

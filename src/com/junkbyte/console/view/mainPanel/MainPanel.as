@@ -232,7 +232,7 @@ package com.junkbyte.console.view.mainPanel
             }
             else if (txt == "pause")
             {
-                if (modules.console.paused)
+                if (console.paused)
                     txt = "Resume updates";
                 else
                     txt = "Pause updates";

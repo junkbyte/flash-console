@@ -49,9 +49,6 @@ package com.junkbyte.console.core
 
         protected var _console:Console;
         //
-        private var _refs:ConsoleReferencingModule;
-
-        //
         private var _logs:Logs;
 		//
 		private var _logger:ConsoleLogger;
@@ -71,8 +68,7 @@ package com.junkbyte.console.core
 			_logger = new ConsoleLogger();
 			registerModule(_logger);
 			
-            _refs = new ConsoleReferencingModule();
-            registerModule(_refs);
+            registerModule(new ConsoleReferencingModule());
             registerModule(new SlashCommandLine());
             registerModule(new KeyBinder());
         }
@@ -82,19 +78,8 @@ package com.junkbyte.console.core
         public function report(obj:* = '', priority:int = 0, skipSafe:Boolean = true, channel:String = null):void
         {
             if (!channel)
-                channel = console.layer.mainPanel.traces.reportChannel;
+                channel = _console.layer.mainPanel.traces.reportChannel;
             _logs.addLine([ obj ], priority, channel, false, skipSafe, 0);
-        }
-
-        //
-        public function get console():Console
-        {
-            return _console;
-        }
- 
-        public function get refs():ConsoleReferencingModule
-        {
-            return _refs;
         }
 
         public function get logs():Logs
@@ -159,7 +144,7 @@ package com.junkbyte.console.core
 				_modulesByName[moduleName] = module;
 			}
 			_modules.push(module);
-			module.setConsole(console);
+			module.setConsole(_console);
 			// this is incase module unregister it self straight away
 			if (isModuleRegistered(module))
 			{

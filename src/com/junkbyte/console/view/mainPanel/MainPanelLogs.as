@@ -258,7 +258,7 @@ package com.junkbyte.console.view.mainPanel
             }
             else
             {
-                modules.console.setViewingChannels(chn);
+                console.setViewingChannels(chn);
             }
         }
 
@@ -516,7 +516,7 @@ package com.junkbyte.console.view.mainPanel
 
         private function startFilter():void
         {
-            modules.console.clear(Logs.FILTER_CHANNEL);
+            console.clear(Logs.FILTER_CHANNEL);
             modules.logs.addChannel(Logs.FILTER_CHANNEL);
             setViewingChannels(Logs.FILTER_CHANNEL);
         }
@@ -584,7 +584,7 @@ package com.junkbyte.console.view.mainPanel
             if (_lockScrollUpdate || (keyStates != null && keyStates.shiftKeyDown))
                 return;
             var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
-            if (!modules.console.paused && _atBottom != atbottom)
+            if (!console.paused && _atBottom != atbottom)
             {
                 var diff:int = _traceField.maxScrollV - _traceField.scrollV;
                 _selectionStart = _traceField.text.length - _traceField.selectionBeginIndex;
@@ -618,7 +618,7 @@ package com.junkbyte.console.view.mainPanel
 
         private function onScrollStarted(e:Event):void
         {
-            if (!modules.console.paused && _atBottom)
+            if (!console.paused && _atBottom)
             {
                 _atBottom = false;
                 var p:Number = _scrollBar.scrollPercent;

@@ -29,6 +29,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.Log;
@@ -58,6 +59,7 @@ package com.junkbyte.console.core
 		public var last:Log;
 		
 		protected var remoter:IRemoter;
+		protected var refs:ConsoleReferencingModule;
 		
 		private var _length:uint;
 		//private var _lines:uint; // number of lines since start.
@@ -67,6 +69,9 @@ package com.junkbyte.console.core
 			_channels = new Object();
 			
 			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IRemoter), onRemoterRegistered, onRemoterUnregistered);
+			
+			// TODO. tempoary dependency
+			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), onRefencerRegistered, onRefencerUnregistered);
 		}
 		
 		override protected function registeredToConsole():void
@@ -99,6 +104,16 @@ package com.junkbyte.console.core
 			remoter.removeEventListener(Event.CONNECT, onRemoteConnection);
 			remoter.registerCallback("log", null);
 			this.remoter = null;
+		}
+		
+		protected function onRefencerRegistered(ref:ConsoleReferencingModule):void
+		{
+			refs = ref;
+		}
+		
+		protected function onRefencerUnregistered(ref:ConsoleReferencingModule):void
+		{
+			refs = null;
 		}
 		
 		protected function onRemoteConnection(e:Event = null):void{
@@ -142,7 +157,7 @@ package com.junkbyte.console.core
 			var len:int = strings.length;
 			for (var i:int = 0; i < len; i++)
 			{
-				txt += (i ? " " : "") + modules.refs.makeString(strings[i], null, html);
+				txt += (i ? " " : "") + makeString(strings[i], null, html);
 			}
 			
 			if (priority >= config.autoStackPriority && stacks < 0) stacks = config.defaultStackDepth;
@@ -151,7 +166,12 @@ package com.junkbyte.console.core
 			{
 				txt += getStack(stacks, priority);
 			}
-			modules.logs.add(new Log(txt, makeConsoleChannel(channel), priority, isRepeating, html));
+			add(new Log(txt, makeConsoleChannel(channel), priority, isRepeating, html));
+		}
+
+		public function makeString(o:*, prop:* = null, html:Boolean = false, maxlen:int = -1):String
+		{
+			return refs.makeString(o, prop, html, maxlen);
 		}
 		
 		public function getStack(depth:int, priority:int):String{

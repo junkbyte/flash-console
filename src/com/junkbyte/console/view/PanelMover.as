@@ -11,8 +11,6 @@ package com.junkbyte.console.view
         protected var _snapping:PanelSnapper;
 
         protected var _dragOffset:Point;
-		
-		protected var count:uint;
 
         public function PanelMover(panel:ConsolePanel)
         {

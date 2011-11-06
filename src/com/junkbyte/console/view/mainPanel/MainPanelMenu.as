@@ -137,7 +137,7 @@ package com.junkbyte.console.view.mainPanel
 			
 			addBuildInMenu(minimizerMenu);
 			addBuildInMenu(new ConsoleMenuItem("X", mainPanel.close, null, "Close::Type password to show again"));
-			addBuildInMenu(new ConsoleMenuItem("C", modules.console.clear, null, "Clear log"));
+			addBuildInMenu(new ConsoleMenuItem("C", console.clear, null, "Clear log"));
 			addBuildInMenu(pauseMenu);
 			addBuildInMenu(new ConsoleMenuItem("Sv", saveLogs, null, "Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file"));
 			addBuildInMenu(priorityMenu);

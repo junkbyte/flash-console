@@ -27,9 +27,9 @@ package com.junkbyte.console.modules.commandLine
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
-	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.utils.getQualifiedShortClassName;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
@@ -153,7 +153,7 @@ package com.junkbyte.console.modules.commandLine
 
 		public function handleScopeEvent(id:uint):void
 		{
-			var v:* = modules.refs.getRefById(id);
+			var v:* = getReferencesModule().getRefById(id);
 			if (v) setReturned(v, true, false);
 			else report("Reference no longer exist.", -2);
 		}
@@ -430,11 +430,11 @@ package com.junkbyte.console.modules.commandLine
 					_prevScope.reference = _scope;
 					_scope = returned;
 					sendCmdScope2Remote();
-					report("Changed to " + modules.refs.makeRefTyped(returned), -1);
+					report("Changed to " + getReferencesModule().makeRefTyped(returned), -1);
 				}
 				else
 				{
-					if (say) report("Returned " + modules.refs.makeString(returned), -1);
+					if (say) report("Returned " + modules.logs.makeString(returned), -1);
 				}
 			}
 			else
@@ -442,7 +442,12 @@ package com.junkbyte.console.modules.commandLine
 				if (say) report("Exec successful, undefined return.", -1);
 			}
 		}
-
+		
+		protected function getReferencesModule():ConsoleReferencingModule
+		{
+			return console.modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(ConsoleReferencingModule)) as ConsoleReferencingModule;
+		}
+		
 		public function sendCmdScope2Remote(e:Event = null):void
 		{
 			var remoter:IRemoter = getRemoter();
@@ -460,7 +465,7 @@ package com.junkbyte.console.modules.commandLine
 
 		private function reportError(e:Error):void
 		{
-			var str:String = modules.refs.makeString(e);
+			var str:String = modules.logs.makeString(e);
 			var lines:Array = str.split(/\n\s*/);
 			var p:int = 10;
 			var internalerrs:int = 0;
@@ -505,7 +510,7 @@ package com.junkbyte.console.modules.commandLine
 				var ref:WeakRef = _saved.getWeakRef(X);
 				sii++;
 				if (ref.reference == null) sii2++;
-				report((ref.strong ? "strong" : "weak") + " <b>$" + X + "</b> = " + modules.refs.makeString(ref.reference), -2);
+				report((ref.strong ? "strong" : "weak") + " <b>$" + X + "</b> = " + modules.logs.makeString(ref.reference), -2);
 			}
 			report("Found " + sii + " item(s), " + sii2 + " empty.", -1);
 		}

@@ -220,7 +220,7 @@ package com.junkbyte.console.modules.commandLine
 
         private function reportError(e:Error):void
         {
-            var str:String = modules.refs.makeString(e);
+            var str:String = modules.logs.makeString(e);
             var lines:Array = str.split(/\n\s*/);
             var p:int = 10;
             var internalerrs:int = 0;
