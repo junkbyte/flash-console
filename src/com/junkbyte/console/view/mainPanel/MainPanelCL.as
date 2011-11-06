@@ -4,6 +4,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.events.ConsolePanelEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.ICommandLine;
 	import com.junkbyte.console.modules.keyStates.IKeyStates;
@@ -11,6 +12,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.view.ConsolePanel;
+	import com.junkbyte.console.view.ConsolePanelAreaModule;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.Log;
 	
@@ -27,7 +29,6 @@ package com.junkbyte.console.view.mainPanel
 	import flash.text.TextFieldType;
 	import flash.text.TextFormat;
 	import flash.ui.Keyboard;
-	import com.junkbyte.console.view.ConsolePanelAreaModule;
 	
 	public class MainPanelCL extends ConsolePanelAreaModule
 	{
@@ -46,6 +47,8 @@ package com.junkbyte.console.view.mainPanel
 		private var _clScope:String = "";
 		
 		private var _hint:String;
+		
+		private var _cl:ICommandLine;
 		
 		public function MainPanelCL(parentPanel:ConsolePanel)
 		{
@@ -204,11 +207,13 @@ package com.junkbyte.console.view.mainPanel
 		
 		protected function commandLineRegistered(module:ICommandLine):void
 		{
+			_cl = module;
 			module.addInternalSlashCommand("clearhistory", clearCommandLineHistory, "Clear history of commands you have entered.", true);
 		}
 		
 		protected function commandLineUnregistered(module:ICommandLine):void
 		{
+			_cl = null;
 			module.addInternalSlashCommand("clearhistory", null);
 		}
 		
@@ -216,8 +221,8 @@ package com.junkbyte.console.view.mainPanel
 		{
 			
 			if (style.showCommandLineScope) {
-				if(_clScope != modules.cl.scopeString){
-					_clScope = modules.cl.scopeString;
+				if(_clScope != _cl.scopeString){
+					_clScope = _cl.scopeString;
 					updateCLScope(_clScope);
 				}
 			}else if(_clScope != null){
@@ -293,7 +298,8 @@ package com.junkbyte.console.view.mainPanel
 				mainPanel.traces.updateToBottom();
 				setHints();
 				if(mainPanel.enteringLogin){
-					modules.remoter.login(_cmdField.text);
+					var remoter:IRemoter = modules.getModuleByName(ConsoleModuleNames.REMOTING) as IRemoter;
+					remoter.login(_cmdField.text);
 					_cmdField.text = "";
 					requestLogin(false);
 				}else{
@@ -319,7 +325,7 @@ package com.junkbyte.console.view.mainPanel
 					if(config.commandLineInputPassThrough != null){
 						txt = config.commandLineInputPassThrough(txt);
 					}
-					if(txt) modules.cl.run(txt);
+					if(txt) _cl.run(txt);
 				}
 			}else if( e.keyCode == Keyboard.ESCAPE){
 				if(sprite.stage) sprite.stage.focus = null;
@@ -359,9 +365,9 @@ package com.junkbyte.console.view.mainPanel
 		}
 		private function updateCmdHint(e:Event = null):void{
 			var str:String = _cmdField.text;
-			if(str && config.commandLineAutoCompleteEnabled && modules.remoter != null && modules.remoter.isSender){
+			if(str && config.commandLineAutoCompleteEnabled){
 				try{
-					setHints(modules.cl.getHintsFor(str, 5));
+					setHints(_cl.getHintsFor(str, 5));
 					return;
 				}catch(err:Error){}
 			}

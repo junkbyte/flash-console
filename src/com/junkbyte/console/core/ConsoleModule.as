@@ -86,7 +86,7 @@ package com.junkbyte.console.core
 
         protected function unregisteredFromConsole():void
         {
-            dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, this));
+            dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.UNREGISTERED_FROM_CONSOLE, this));
         }
 		
 		public function isRegisteredToConsole():Boolean
@@ -117,11 +117,6 @@ package com.junkbyte.console.core
         public function get layer():ConsoleLayer
         {
             return console.layer;
-        }
-
-        public function get remoter():IRemoter
-        {
-            return modules.remoter;
         }
 
         public function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void

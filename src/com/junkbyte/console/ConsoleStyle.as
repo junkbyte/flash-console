@@ -43,7 +43,7 @@ package com.junkbyte.console {
 		public var tracePrimitiveFont:String = "Courier New, Serif";
 		
 		/** Font size for trace field */
-		public var tracePrimitiveFontSize:int = 13;
+		public var tracePrimitiveFontSize:int = 12;
 		
 		/** Panels background color */
 		public var backgroundColor:uint;

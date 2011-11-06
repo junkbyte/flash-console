@@ -38,8 +38,6 @@ package com.junkbyte.console.modules.commandLine
     {
         private var _slashCmds:Object;
 
-        public var localCommands:Array = new Array("filter", "filterexp");
-
         public function SlashCommandLine()
         {
             super();
@@ -155,25 +153,7 @@ package com.junkbyte.console.modules.commandLine
             if (!str)
                 return;
             str = str.replace(/\s*/, "");
-            if (remoter != null && !remoter.isSender)
-            {
-                if (str.charAt(0) == "~")
-                {
-                    str = str.substring(1);
-                }
-                else if (str.search(new RegExp("\/" + localCommands.join("|\/"))) != 0)
-                {
-                    report("Run command at remote: " + str, -2);
-
-                    var bytes:ByteArray = new ByteArray();
-                    bytes.writeUTF(str);
-                    if (remoter == null || !remoter.send("cmd", bytes))
-                    {
-                        report("Command could not be sent to client.", 10);
-                    }
-                    return null;
-                }
-            }
+			
             report("&gt; " + str, 4, false);
             var v:* = null;
             try

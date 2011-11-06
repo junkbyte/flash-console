@@ -22,7 +22,7 @@ package com.junkbyte.console.core
 		private function initUsingModule(module:ConsoleModule):void
 		{
 			module.addEventListener(ConsoleModuleEvent.REGISTERED_TO_CONSOLE, onSrcModuleRegistered, false, 0, true);
-			module.addEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, onSrcModuleUnregistered, false, 0, true);
+			module.addEventListener(ConsoleModuleEvent.UNREGISTERED_FROM_CONSOLE, onSrcModuleUnregistered, false, 0, true);
 			
 			if(module.isRegisteredToConsole())
 			{
@@ -112,7 +112,7 @@ package com.junkbyte.console.core
 			
 			matchedModules.push(matchedModule);
 			
-            module.addEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, onMatchedModuleUnregistered);
+            module.addEventListener(ConsoleModuleEvent.UNREGISTERED_FROM_CONSOLE, onMatchedModuleUnregistered);
 			
 			cb.registered(module);
         }
@@ -137,7 +137,7 @@ package com.junkbyte.console.core
 				matchedModules.splice(index, 1);
 			}
 			
-			matchedModule.module.removeEventListener(ConsoleModuleEvent.UNREGISTERED_TO_CONSOLE, onMatchedModuleUnregistered);
+			matchedModule.module.removeEventListener(ConsoleModuleEvent.UNREGISTERED_FROM_CONSOLE, onMatchedModuleUnregistered);
 			
 			matchedModule.unregistered();
         }

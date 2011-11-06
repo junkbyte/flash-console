@@ -68,13 +68,10 @@ package com.junkbyte.console.modules.graphing
 			return vect;
 		}
 		
-		override public function dependentModuleRegistered(module:IConsoleModule):void
+		override public function dependentModuleRegistered(remoter:IRemoter):void
 		{
-			if(module is IRemoter)
-			{
-				var remoter:IRemoter = module as IRemoter;
-				remoter.registerCallback("fps", function(bytes:ByteArray):void{
-					fpsMonitor = bytes.readBoolean();
+			remoter.registerCallback("fps", function(bytes:ByteArray):void{
+				fpsMonitor = bytes.readBoolean();
 				});
 				remoter.registerCallback("mem", function(bytes:ByteArray):void{
 					memoryMonitor = bytes.readBoolean();
@@ -83,19 +80,15 @@ package com.junkbyte.console.modules.graphing
 					removeGroup(bytes.readUTF());
 				});;
 				remoter.registerCallback("graph", handleRemoteGraph, true);
-			}
 		}
 		
-		override public function dependentModuleUnregistered(module:IConsoleModule):void
+		override public function dependentModuleUnregistered(remoter:IRemoter):void
 		{
-			if(module is IRemoter)
-			{
-				var remoter:IRemoter = module as IRemoter;
+			var remoter:IRemoter = module as IRemoter;
 				remoter.registerCallback("fps", null);
 				remoter.registerCallback("mem", null);
 				remoter.registerCallback("removeGroup", null);;
 				remoter.registerCallback("graph", null);
-			}
 		}
 		
 		protected function onConsoleStarted(e:Event = null):void

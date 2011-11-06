@@ -51,8 +51,6 @@ package com.junkbyte.console.core
         //
         private var _refs:ConsoleReferencingModule;
 
-        private var _remoter:IRemoter;
-
         //
         private var _logs:Logs;
 		//
@@ -92,16 +90,6 @@ package com.junkbyte.console.core
         public function get console():Console
         {
             return _console;
-        }
-
-        public function get cl():ICommandLine
-        {
-            return getModuleByName(ConsoleModuleNames.COMMAND_LINE) as ICommandLine;
-        }
-
-        public function get remoter():IRemoter
-        {
-            return _remoter;
         }
  
         public function get refs():ConsoleReferencingModule

@@ -22,34 +22,18 @@ package com.junkbyte.console.modules.gc
 
         public function run(params:* = null):void
         {
-            if (!remoter.isSender)
-            {
-                try
-                {
-                    // report("Sending garbage collection request to client",-1);
-                    remoter.send("gc");
-                }
-                catch (e:Error)
-                {
-                    report(e, ConsoleLevel.ERROR);
-                }
-            }
-            else
-            {
-                var ok:Boolean = false;
-                try
-                {
-                    // have to put in brackes cause some compilers will complain.
-                    System["gc"]();
-                    ok = true;
-                }
-                catch (e:Error)
-                {
-                }
-
-                var str:String = "Manual garbage collection " + (ok ? "successful." : "FAILED. You need debugger version of flash player.");
-                report(str, (ok ? ConsoleLevel.CONSOLE_STATUS : ConsoleLevel.ERROR));
-            }
+            var ok:Boolean = false;
+			try
+			{
+				// have to put in brackes cause some compilers will complain.
+				System["gc"]();
+				ok = true;
+			}
+			catch (e:Error)
+			{
+			}
+			var str:String = "Manual garbage collection " + (ok ? "successful." : "FAILED. You need debugger version of flash player.");
+			report(str, (ok ? ConsoleLevel.CONSOLE_STATUS : ConsoleLevel.ERROR));
         }
     }
 }

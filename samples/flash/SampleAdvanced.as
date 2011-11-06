@@ -43,7 +43,7 @@ package
 			//
 			Cc.start(this);
 			Cc.config.keystrokePassword = "`";
-			Cc.layer.mainPanel.visible = true; // show console, because having password hides console.
+			//Cc.layer.mainPanel.visible = true; // show console, because having password hides console.
 			//Cc.memoryMonitor = true;
 			//Cc.fpsMonitor = true;
 			//Cc.displayRoller = true;
@@ -53,10 +53,10 @@ package
 			Cc.layer.mainPanel.height = 300;
 			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			//Cc.remoting = true;
-			
+			/*
 			Cc.addMenu("T1", Cc.log, ["Greetings 1"], "This is a test menu 1");
 			Cc.addMenu("T2", Cc.log, ["Greetings 2"], "This is a test menu 2");
-			Cc.addMenu("spam100k", spam, [100000]);
+			Cc.addMenu("spam100k", spam, [100000]);*/
 			//
 			// End of setup
 			//

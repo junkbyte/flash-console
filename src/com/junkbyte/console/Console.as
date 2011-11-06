@@ -27,11 +27,13 @@ package com.junkbyte.console
 	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.core.Logs;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.modules.commandLine.ICommandLine;
 	import com.junkbyte.console.utils.explodeObjectsInConsole;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.utils.mapDisplayListInConsole;
 	import com.junkbyte.console.view.ConsoleLayer;
-
+	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
@@ -207,7 +209,11 @@ package com.junkbyte.console
 
 		public function addSlashCommand(name:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void
 		{
-			_modules.cl.addSlashCommand(name, callback, desc, alwaysAvailable, endOfArgsMarker);
+			var cl:ICommandLine = modules.getModuleByName(ConsoleModuleNames.COMMAND_LINE) as ICommandLine;
+			if(cl != null)
+			{
+				cl.addSlashCommand(name, callback, desc, alwaysAvailable, endOfArgsMarker);
+			}
 		}
 		
 		//

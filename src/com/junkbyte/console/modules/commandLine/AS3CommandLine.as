@@ -153,20 +153,19 @@ package com.junkbyte.console.modules.commandLine
 
 		public function handleScopeEvent(id:uint):void
 		{
-			if (remoter != null && !remoter.isSender)
-			{
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeUnsignedInt(id);
-				remoter.send("scope", bytes);
-			}
-			else
-			{
-				var v:* = modules.refs.getRefById(id);
-				if (v) modules.cl.setReturned(v, true, false);
-				else report("Reference no longer exist.", -2);
-			}
+			var v:* = modules.refs.getRefById(id);
+			if (v) setReturned(v, true, false);
+			else report("Reference no longer exist.", -2);
 		}
-
+		/*
+		// remote side
+		public function handleScopeEvent(id:uint):void
+		{
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeUnsignedInt(id);
+			getRemoter().send("scope", bytes);
+		}
+		*/
 		public function store(n:String, obj:Object, strong:Boolean = false):void
 		{
 			if (!n)
@@ -307,25 +306,7 @@ package com.junkbyte.console.modules.commandLine
 		{
 			if (!str) return;
 			str = str.replace(/\s*/, "");
-			if (remoter != null && !remoter.isSender)
-			{
-				if (str.charAt(0) == "~")
-				{
-					str = str.substring(1);
-				}
-				else if (str.search(new RegExp("\/" + localCommands.join("|\/"))) != 0)
-				{
-					report("Run command at remote: " + str, -2);
-
-					var bytes:ByteArray = new ByteArray();
-					bytes.writeUTF(str);
-					if (remoter == null || !remoter.send("cmd", bytes))
-					{
-						report("Command could not be sent to client.", 10);
-					}
-					return null;
-				}
-			}
+			
 			report("&gt; " + str, 4, false);
 			var v:* = null;
 			try
@@ -448,11 +429,7 @@ package com.junkbyte.console.modules.commandLine
 					// scope changed
 					_prevScope.reference = _scope;
 					_scope = returned;
-					if (remoter != null && remoter.isSender)
-					{
-						_scopeStr = getQualifiedShortClassName(_scope);
-						sendCmdScope2Remote();
-					}
+					sendCmdScope2Remote();
 					report("Changed to " + modules.refs.makeRefTyped(returned), -1);
 				}
 				else
@@ -468,9 +445,17 @@ package com.junkbyte.console.modules.commandLine
 
 		public function sendCmdScope2Remote(e:Event = null):void
 		{
+			var remoter:IRemoter = getRemoter();
+			_scopeStr = getQualifiedShortClassName(_scope);
+			
 			var bytes:ByteArray = new ByteArray();
 			bytes.writeUTF(_scopeStr);
 			remoter.send("cls", bytes);
+		}
+		
+		protected function getRemoter():IRemoter
+		{
+			return modules.getModuleByName(ConsoleModuleNames.REMOTING);
 		}
 
 		private function reportError(e:Error):void

@@ -34,17 +34,12 @@ package com.junkbyte.console.modules.referencing
 		
 		public function ConsoleInspectorModule()
 		{
+			
+			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IRemoter), dependentModuleRegistered, dependentModuleUnregistered);
+			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), dependentModuleRegistered, dependentModuleUnregistered);
 		}
 		
-		override public function getDependentModules():Vector.<ConsoleModuleMatch>
-		{
-			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
-			vect.push(ConsoleModuleMatch.createForClass(IRemoter));
-			vect.push(ConsoleModuleMatch.createForClass(ConsoleReferencingModule));
-			return vect;
-		}
-		
-		override public function dependentModuleRegistered(module:IConsoleModule):void
+		public function dependentModuleRegistered(module:IConsoleModule):void
 		{
 			if(module is IRemoter)
 			{
@@ -60,7 +55,7 @@ package com.junkbyte.console.modules.referencing
 			}
 		}
 		
-		override public function dependentModuleUnregistered(module:IConsoleModule):void
+		public function dependentModuleUnregistered(module:IConsoleModule):void
 		{
 			if(module is IRemoter)
 			{

@@ -27,8 +27,8 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.interfaces.IRemoter;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	import com.junkbyte.console.vos.Log;
@@ -57,6 +57,8 @@ package com.junkbyte.console.core
 		private var first:Log;
 		public var last:Log;
 		
+		protected var remoter:IRemoter;
+		
 		private var _length:uint;
 		//private var _lines:uint; // number of lines since start.
 		
@@ -81,6 +83,7 @@ package com.junkbyte.console.core
 		
 		protected function onRemoterRegistered(remoter:IRemoter):void
 		{
+			this.remoter = remoter;
 			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
 			remoter.registerCallback("log", function(bytes:ByteArray):void{
 				add(Log.FromBytes(bytes));
@@ -95,6 +98,7 @@ package com.junkbyte.console.core
 		{
 			remoter.removeEventListener(Event.CONNECT, onRemoteConnection);
 			remoter.registerCallback("log", null);
+			this.remoter = null;
 		}
 		
 		protected function onRemoteConnection(e:Event = null):void{
@@ -106,8 +110,7 @@ package com.junkbyte.console.core
 		}
 		
 		private function send2Remote(line:Log):void{
-			if(remoter == null) return;
-			if(remoter.isSender && remoter.connected) {
+			if(remoter != null && remoter.connected) {
 				var bytes:ByteArray = new ByteArray();
 				line.toBytes(bytes);
 				remoter.send("log", bytes);
