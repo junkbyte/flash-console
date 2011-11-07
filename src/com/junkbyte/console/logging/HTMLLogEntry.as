@@ -22,26 +22,44 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.vos {
+package com.junkbyte.console.logging 
+{
+	import com.junkbyte.console.interfaces.IConsoleLogProcessor;
+	import com.junkbyte.console.utils.EscHTML;
 	
 	
-	public class LogEntry{
+	public class HTMLLogEntry extends LogEntry
+	{
+		private var valid:Boolean;
 		
-		public var inputs:Array;
-		public var outputs:Vector.<String>;
+		public function HTMLLogEntry(inputs:Array, cc:String, pp:int)
+		{
+			super(inputs, cc, pp);
+		}
 		
-		public var channel:String;
-		public var priority:int;
-		public var repeat:Boolean;
-		public var html:Boolean;
-		//
-		//
-		public function LogEntry(inputs:Array, cc:String, pp:int, repeating:Boolean = false, ishtml:Boolean = false){
-			this.inputs = inputs;
-			channel = cc;
-			priority = pp;
-			repeat = repeating;
-			html = ishtml;
+		override public function outputUsingProcessor(processor:IConsoleLogProcessor):String
+		{
+			valid = testHTML();
+			return super.outputUsingProcessor(processor);
+		}
+		
+		override protected function preProcess(input:*):String
+		{
+			return valid ? String(input) : super.preProcess(input);
+		}
+		
+		private function testHTML():Boolean
+		{
+			try
+			{
+				new XML("<p>" + inputs.join("") + "</p>");
+				// OR use RegExp?
+			}
+			catch(err:Error)
+			{
+				return false;
+			}
+			return true;
 		}
 	}
 }

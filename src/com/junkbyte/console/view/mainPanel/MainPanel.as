@@ -25,7 +25,7 @@
 package com.junkbyte.console.view.mainPanel
 {
     import com.junkbyte.console.ConsoleLevel;
-    import com.junkbyte.console.core.Logs;
+    import com.junkbyte.console.logging.Logs;
     import com.junkbyte.console.events.ConsolePanelEvent;
     import com.junkbyte.console.view.ConsolePanel;
     
@@ -113,8 +113,8 @@ package com.junkbyte.console.view.mainPanel
             if (on)
             {
                 commandLine = true;
-                modules.report("//", ConsoleLevel.CONSOLE_EVENT);
-                modules.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
+				logger.report("//", ConsoleLevel.CONSOLE_EVENT);
+				logger.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
             }
             _traces.requestLogin(on);
             _commandArea.requestLogin(on);
@@ -265,7 +265,7 @@ package com.junkbyte.console.view.mainPanel
             }*/
             else if (t == "settings")
             {
-                modules.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
+				logger.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
                 Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
             }
             else if (t == "remote")

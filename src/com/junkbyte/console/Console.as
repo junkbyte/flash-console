@@ -25,14 +25,20 @@
 package com.junkbyte.console
 {
 	import com.junkbyte.console.core.ConsoleModulesManager;
-	import com.junkbyte.console.core.Logs;
+	import com.junkbyte.console.core.KeyBinder;
+	import com.junkbyte.console.core.ModuleDependenceCallback;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.logging.ConsoleLogger;
+	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.ICommandLine;
+	import com.junkbyte.console.modules.commandLine.SlashCommandLine;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.utils.explodeObjectsInConsole;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.utils.mapDisplayListInConsole;
 	import com.junkbyte.console.view.ConsoleLayer;
+	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -54,6 +60,7 @@ package com.junkbyte.console
 	public class Console extends EventDispatcher
 	{
 		protected var _modules:ConsoleModulesManager;
+		protected var _logger:ConsoleLogger;
 		protected var _display:ConsoleLayer;
 		
 		protected var _config:ConsoleConfig;
@@ -77,14 +84,15 @@ package com.junkbyte.console
 			
 			_modules = new ConsoleModulesManager(this);
 			
-			_modules.init();
-			_display = new ConsoleLayer(this);
+			listenForLoggerRegister();
+			registerBasicModules();
 			
+			_display = new ConsoleLayer(this);
 			
 			if (config.keystrokePassword) _display.visible = false;
 			_display.start();
 
-			_modules.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
+			logger.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
 			
 			layer.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			
@@ -93,6 +101,29 @@ package com.junkbyte.console
 				container.addChild(layer);
 			}
 			dispatchEvent(ConsoleEvent.create(ConsoleEvent.STARTED));
+		}
+		
+		protected function registerBasicModules():void
+		{
+			modules.registerModule(new ConsoleLogger());
+			modules.registerModule(new Logs());
+			modules.registerModule(new ConsoleReferencingModule());
+			modules.registerModule(new SlashCommandLine());
+			modules.registerModule(new KeyBinder());
+		}
+		
+		private function listenForLoggerRegister():void
+		{
+			var watcher:ModuleDependenceCallback = ModuleDependenceCallback.createUsingModulesManager(_modules);
+			watcher.addCallback(ConsoleModuleMatch.createForClass(ConsoleLogger), onLoggerRegistered);
+		}
+		
+		private function onLoggerRegistered(logger:ConsoleLogger):void
+		{
+			if(logger != null)
+			{
+				_logger = logger;
+			}
 		}
 
 		public function startOnStage(target:DisplayObject):void
@@ -171,8 +202,8 @@ package com.junkbyte.console
 		public function set paused(newV:Boolean):void
 		{
 			if (_paused == newV) return;
-			if (newV) _modules.report("Paused", ConsoleLevel.CONSOLE_STATUS);
-			else _modules.report("Resumed", ConsoleLevel.CONSOLE_STATUS);
+			if (newV) logger.report("Paused", ConsoleLevel.CONSOLE_STATUS);
+			else logger.report("Resumed", ConsoleLevel.CONSOLE_STATUS);
 			_paused = newV;
 			layer.mainPanel.traces.setPaused(newV);
 			dispatchEvent(new Event( _paused ? ConsoleEvent.PAUSED : ConsoleEvent.RESUMED ));
@@ -203,7 +234,7 @@ package com.junkbyte.console
 		{
 			if(started)
 			{
-				_modules.logs.addLine(strings, priority, channel, isRepeating, html, stacks);
+				logger.addLine(strings, priority, channel, isRepeating, html, stacks);
 			}
 		}
 
@@ -334,6 +365,12 @@ package com.junkbyte.console
 			throwErrorIfNotStarted("modules");
 			return _modules;
 		}
+		
+		public function get logger():ConsoleLogger
+		{
+			throwErrorIfNotStarted("logger");
+			return _logger;
+		}
 
 		public function get layer():ConsoleLayer
 		{
@@ -365,14 +402,14 @@ package com.junkbyte.console
 		public function clear(channel:String = null):void
 		{
 			if (!started) return;
-			_modules.logs.clear(channel);
+			logger.logs.clear(channel);
 			if (!paused) layer.mainPanel.traces.updateToBottom();
 		}
 
 		public function getAllLog(splitter:String = "\r\n"):String
 		{
 			throwErrorIfNotStarted("getAllLog()");
-			return _modules.logs.getLogsAsString(splitter);
+			return logger.logs.getLogsAsString(splitter);
 		}
 	}
 }

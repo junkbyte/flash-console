@@ -173,10 +173,10 @@ package com.junkbyte.console.view
             {
                 _topTries--;
                 parent.addChild(this);
-				console.modules.report("Moved console on top (alwaysOnTop enabled), " + _topTries + " attempts left.", ConsoleLevel.CONSOLE_STATUS);
+				console.logger.report("Moved console on top (alwaysOnTop enabled), " + _topTries + " attempts left.", ConsoleLevel.CONSOLE_STATUS);
             }
             var paused:Boolean = console.paused;
-            var lineAdded:Boolean = console.modules.logs.newLogsSincesLastUpdate;
+            var lineAdded:Boolean = console.logger.logs.newLogsSincesLastUpdate;
             _canDraw = !paused;
             _mainPanel.update(!paused && lineAdded);
             if (!paused)
@@ -373,7 +373,7 @@ package com.junkbyte.console.view
         {
             if (channelsPanel != b)
             {
-				console.modules.logs.cleanChannels();
+				console.logger.logs.cleanChannels();
                 if (b)
                 {
                     _chsPanel = new ChannelsPanel();

@@ -247,7 +247,7 @@ package com.junkbyte.console.view.mainPanel
 		
 		protected function saveLogsWOpts(incChNames:Boolean = true, makeFile:Boolean = false, filterFunction:Function = null):void
 		{
-			var str : String = modules.logs.getLogsAsString("\r\n", incChNames, filterFunction);
+			var str : String = console.logger.logs.getLogsAsString("\r\n", incChNames, filterFunction);
 			if(makeFile){
 				var file:FileReference = new FileReference();
 				try{

@@ -1,9 +1,9 @@
 package com.junkbyte.console.interfaces
 {
-	import com.junkbyte.console.vos.LogEntry;
+	import com.junkbyte.console.logging.LogEntry;
 
 	public interface IConsoleLogProcessor
 	{
-		function process(entry:LogEntry):void;
+		function process(input:*, currentOutput:String):String;
 	}
 }

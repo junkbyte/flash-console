@@ -22,9 +22,10 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core 
+package com.junkbyte.console.logging 
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
@@ -55,7 +56,7 @@ package com.junkbyte.console.core
 		private var _hasNewLog:Boolean;
 		private var _hadNewLog:Boolean;
 		
-		private var first:Log;
+		public var first:Log;
 		public var last:Log;
 		
 		protected var remoter:IRemoter;
@@ -72,6 +73,13 @@ package com.junkbyte.console.core
 			
 			// TODO. tempoary dependency
 			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), onRefencerRegistered, onRefencerUnregistered);
+		}
+		
+		
+		
+		override public function getModuleName():String
+		{
+			return ConsoleModuleNames.LOGS;
 		}
 		
 		override protected function registeredToConsole():void
@@ -149,29 +157,6 @@ package com.junkbyte.console.core
 		public function get newLogsSincesLastUpdate():Boolean
 		{
 			return _hadNewLog;
-		}
-		
-		public function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
-		{
-			var txt:String = "";
-			var len:int = strings.length;
-			for (var i:int = 0; i < len; i++)
-			{
-				txt += (i ? " " : "") + makeString(strings[i], null, html);
-			}
-			
-			if (priority >= config.autoStackPriority && stacks < 0) stacks = config.defaultStackDepth;
-			
-			if (!html && stacks > 0)
-			{
-				txt += getStack(stacks, priority);
-			}
-			add(new Log(txt, makeConsoleChannel(channel), priority, isRepeating, html));
-		}
-
-		public function makeString(o:*, prop:* = null, html:Boolean = false, maxlen:int = -1):String
-		{
-			return refs.makeString(o, prop, html, maxlen);
 		}
 		
 		public function getStack(depth:int, priority:int):String{

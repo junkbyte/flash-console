@@ -2,7 +2,7 @@ package com.junkbyte.console.modules.referencing
 {
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ConsoleModulesManager;
-	import com.junkbyte.console.core.Logs;
+	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.utils.EscHTML;

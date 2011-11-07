@@ -25,16 +25,8 @@
 package com.junkbyte.console.core
 {
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.interfaces.IRemoter;
-	import com.junkbyte.console.logging.ConsoleLogger;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.commandLine.ICommandLine;
-	import com.junkbyte.console.modules.commandLine.SlashCommandLine;
-	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
-	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
 	
 	import flash.events.EventDispatcher;
@@ -48,43 +40,12 @@ package com.junkbyte.console.core
         protected var _modulesByName:Object = new Object();
 
         protected var _console:Console;
-        //
-        private var _logs:Logs;
-		//
-		private var _logger:ConsoleLogger;
 
         public function ConsoleModulesManager(console:Console)
         {
             _console = console;
-
+			
             super();
-        }
-
-        public function init():void
-        {
-            _logs = new Logs();
-            registerModule(_logs);
-			
-			_logger = new ConsoleLogger();
-			registerModule(_logger);
-			
-            registerModule(new ConsoleReferencingModule());
-            registerModule(new SlashCommandLine());
-            registerModule(new KeyBinder());
-        }
-
-        //
-        //
-        public function report(obj:* = '', priority:int = 0, skipSafe:Boolean = true, channel:String = null):void
-        {
-            if (!channel)
-                channel = _console.layer.mainPanel.traces.reportChannel;
-            _logs.addLine([ obj ], priority, channel, false, skipSafe, 0);
-        }
-
-        public function get logs():Logs
-        {
-            return _logs;
         }
 
         public function getModuleByName(moduleName:String):IConsoleModule

@@ -1,6 +1,6 @@
 package com.junkbyte.console.utils
 {
-	import com.junkbyte.console.core.Logs;
+	import com.junkbyte.console.logging.Logs;
 
 	public function makeConsoleChannel(obj:*):String
 		{

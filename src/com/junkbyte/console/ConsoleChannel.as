@@ -23,7 +23,7 @@
 * 
 */
 package com.junkbyte.console {
-	import com.junkbyte.console.core.Logs;
+	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	

@@ -1,5 +1,6 @@
 package com.junkbyte.console.logging
 {
+	import com.junkbyte.console.interfaces.IConsoleLogProcessor;
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.utils.getQualifiedShortClassName;
 	
@@ -10,14 +11,17 @@ package com.junkbyte.console.logging
 	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 
-	public class ReferencingLogProcessor extends BaseLogProcessor
+	public class ReferencingLogProcessor implements IConsoleLogProcessor
 	{
-		public function ReferencingLogProcessor()
+		private var processor:ConsoleLogProcessors;
+		
+		public function ReferencingLogProcessor(processor:ConsoleLogProcessors)
 		{
 			super();
+			this.processor = processor;
 		}
 		
-		override protected function processInput(input:*):void
+		public function process(input:*, currentOutput:String):String
 		{
 			if (input is Array || input is Vector)
 			{
@@ -25,9 +29,9 @@ package com.junkbyte.console.logging
 				var len:int = input.length;
 				for (var i:int = 0; i < len; i++)
 				{
-					str += (i ? ", " : "") + processInput(input[i]);
+					str += (i ? ", " : "") + processor.makeString(input[i]);
 				}
-				setOutput(str + "]");
+				return str + "]";
 			}
 			if(typeof input == "object")
 			{
@@ -38,8 +42,9 @@ package com.junkbyte.console.logging
 					add = " " + String(input);
 				else if (input is DisplayObject && input.name)
 					add = " " + input.name;
-				setOutput("{" + genLinkString(input, EscHTML(getQualifiedShortClassName(input) + add)) + "}");
+				return "{" + genLinkString(input, EscHTML(getQualifiedShortClassName(input) + add)) + "}";
 			}
+			return currentOutput;
 		}
 		
 		protected function genLinkString(input:*, str:String):String

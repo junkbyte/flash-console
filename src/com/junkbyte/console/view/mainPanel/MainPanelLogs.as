@@ -1,6 +1,6 @@
 package com.junkbyte.console.view.mainPanel
 {
-    import com.junkbyte.console.core.Logs;
+    import com.junkbyte.console.logging.Logs;
     import com.junkbyte.console.interfaces.IConsoleModule;
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.modules.commandLine.ICommandLine;
@@ -208,7 +208,7 @@ package com.junkbyte.console.view.mainPanel
         public function getChannelsLink(limited:Boolean = false):String
         {
             var str:String = "<chs>";
-            var channels:Array = modules.logs.getChannels();
+            var channels:Array = console.logger.logs.getChannels();
             var len:int = channels.length;
             if (limited && len > style.maxChannelsInMenu)
                 len = style.maxChannelsInMenu;
@@ -299,7 +299,7 @@ package com.junkbyte.console.view.mainPanel
         {
             var top:uint = 10;
             var bottom:uint;
-            var line:Log = modules.logs.last;
+            var line:Log = console.logger.logs.last;
             var p:int = _priority;
             _priority = 0;
             var i:uint = 32000; // just for crash safety, it wont look more than 32000 lines.
@@ -366,7 +366,7 @@ package com.junkbyte.console.view.mainPanel
         private function updateFull():void
         {
             var str:String = "";
-            var line:Log = modules.logs.last;
+            var line:Log = console.logger.logs.last;
             var showch:Boolean = _viewingChannels.length != 1;
             while (line)
             {
@@ -388,7 +388,7 @@ package com.junkbyte.console.view.mainPanel
             var linesLeft:int = Math.round(_traceField.height / style.traceFontSize);
             var maxchars:int = Math.round(_traceField.width * 5 / style.traceFontSize);
 
-            var line:Log = modules.logs.last;
+            var line:Log = console.logger.logs.last;
             var showch:Boolean = _viewingChannels.length != 1;
             while (line)
             {
@@ -517,7 +517,7 @@ package com.junkbyte.console.view.mainPanel
         private function startFilter():void
         {
             console.clear(Logs.FILTER_CHANNEL);
-            modules.logs.addChannel(Logs.FILTER_CHANNEL);
+			console.logger.logs.addChannel(Logs.FILTER_CHANNEL);
             setViewingChannels(Logs.FILTER_CHANNEL);
         }
 

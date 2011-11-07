@@ -30,6 +30,7 @@ package com.junkbyte.console.core
     import com.junkbyte.console.events.ConsoleModuleEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
     import com.junkbyte.console.interfaces.IRemoter;
+    import com.junkbyte.console.logging.ConsoleLogger;
     import com.junkbyte.console.view.ConsoleLayer;
     import com.junkbyte.console.vos.ConsoleModuleMatch;
     
@@ -70,7 +71,7 @@ package com.junkbyte.console.core
             }
         }
 		
-		protected function addModuleDependencyCallback(matcher:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function):void
+		protected function addModuleDependencyCallback(matcher:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function = null):void
 		{
 			if(_moduleDependences == null)
 			{
@@ -103,6 +104,11 @@ package com.junkbyte.console.core
 		{
 			return console.modules;
 		}
+		
+		public function get logger():ConsoleLogger
+		{
+			return console.logger;
+		}
 
         public function get config():ConsoleConfig
         {
@@ -121,7 +127,7 @@ package com.junkbyte.console.core
 
         public function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void
         {
-            modules.report(obj, priority, skipSafe, ch);
+            logger.report(obj, priority, skipSafe, ch);
         }
     }
 }

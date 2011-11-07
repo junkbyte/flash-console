@@ -10,7 +10,7 @@ package com.junkbyte.console.utils
 
 	public function mapDisplayListInConsole(console:Console, base:DisplayObjectContainer, maxstep:uint = 0, ch:String = null):void{
 		if(!base){
-			console.modules.report("Not a DisplayObjectContainer.", 10, true, ch);
+			console.logger.report("Not a DisplayObjectContainer.", 10, true, ch);
 			return;
 		}
 		
@@ -67,15 +67,15 @@ package com.junkbyte.console.utils
 					n = "<i>"+n+"</i>";
 				}
 				str += n+" "+refs.makeRefTyped(mcDO);
-				console.modules.report(str,mcDO is DisplayObjectContainer?5:2, true, ch);
+				console.logger.report(str,mcDO is DisplayObjectContainer?5:2, true, ch);
 			}else if(!wasHiding){
 				wasHiding = true;
-				console.modules.report(str+"...",5, true, ch);
+				console.logger.report(str+"...",5, true, ch);
 			}
 			lastmcDO = mcDO;
 		}
-		console.modules.report(base.name + ":" +refs.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
-		if (console.config.commandLineAllowed) console.modules.report("Click on the child display's name to set scope.", -2, true, ch);
+		console.logger.report(base.name + ":" +refs.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
+		if (console.config.commandLineAllowed) console.logger.report("Click on the child display's name to set scope.", -2, true, ch);
 	}
 		
 }

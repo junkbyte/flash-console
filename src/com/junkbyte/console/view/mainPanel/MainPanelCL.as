@@ -1,7 +1,7 @@
 package com.junkbyte.console.view.mainPanel
 {
 	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.core.Logs;
+	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.events.ConsolePanelEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;

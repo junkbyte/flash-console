@@ -1,30 +1,26 @@
 package com.junkbyte.console.logging
 {
+	import com.junkbyte.console.interfaces.IConsoleLogProcessor;
 	import com.junkbyte.console.utils.EscHTML;
 	
 	import flash.utils.ByteArray;
 
-	public class BasicLogProcessor extends BaseLogProcessor
+	public class BasicLogProcessor implements IConsoleLogProcessor
 	{
-		public function BasicLogProcessor()
-		{
-			super();
-		}
 		
-		override protected function processInput(input:*):void
+		public function process(input:*, currentOutput:String):String
 		{
-			// each of these could have their own processor class but that would hit performace
 			if(input is Boolean)
 			{
-				setPrimitiveOutput(input);
+				return primitiveOutput(currentOutput);
 			}
 			else if(input is Number)
 			{
-				setPrimitiveOutput(input);
+				return primitiveOutput(currentOutput);
 			}
 			else if (input is XML || input is XMLList)
 			{
-				setPrimitiveOutput(EscHTML(input.toXMLString()));
+				return primitiveOutput(EscHTML(input.toXMLString()));
 			}
 			else if (input is Error)
 			{
@@ -33,26 +29,23 @@ package com.junkbyte.console.logging
 				var stackstr:String = err.hasOwnProperty("getStackTrace") ? err.getStackTrace() : err.toString();
 				if (stackstr != null && stackstr.length > 0)
 				{
-					setOutput(stackstr);
+					return stackstr;
 				}
 				else
 				{
-					setOutput(err.toString());
+					return err.toString();
 				}
 			}
 			else if (input is ByteArray)
 			{
-				setOutput("[ByteArray position:" + ByteArray(input).position + " length:" + ByteArray(input).length + "]");
+				return "[ByteArray position:" + ByteArray(input).position + " length:" + ByteArray(input).length + "]";
 			}
-			else
-			{
-				setOutput(String(input));
-			}
+			return currentOutput;
 		}
 		
-		protected function setPrimitiveOutput(input:String):void
+		protected function primitiveOutput(input:String):String
 		{
-			setOutput("<prim>"+input+"</prim>");
+			return "<prim>"+input+"</prim>";
 		}
 	}
 }

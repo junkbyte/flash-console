@@ -53,14 +53,14 @@ package com.junkbyte.console.modules.unCaughtErrorsListenerModule
 			var error:* = e.hasOwnProperty("error")?e["error"]:e; // for flash 9 compatibility
 			var str:String;
 			if (error is Error){
-				str = modules.logs.makeString(error);
+				str = console.logger.makeString(error);
 			}else if (error is ErrorEvent){
 				str = ErrorEvent(error).text;
 			}
 			if(!str){
 				str = String(error);
 			}
-			modules.report("Uncaught Error:"+str, ConsoleLevel.FATAL, false);
+			logger.report("Uncaught Error:"+str, ConsoleLevel.FATAL, false);
 		}
 	}
 }
