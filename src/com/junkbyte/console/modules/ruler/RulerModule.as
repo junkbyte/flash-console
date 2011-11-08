@@ -1,6 +1,6 @@
 package com.junkbyte.console.modules.ruler
 {
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.interfaces.IMainMenu;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
@@ -21,7 +21,7 @@ package com.junkbyte.console.modules.ruler
 		{
 			menu = new ConsoleMenuItem("RL", start, null, "Screen Ruler::Measure the distance and angle between two points on screen.");
 			
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
 		}
 		
 		protected function onMainMenuRegistered(module:IMainMenu):void

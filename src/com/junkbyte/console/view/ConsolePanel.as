@@ -24,13 +24,15 @@
 */
 package com.junkbyte.console.view
 {
-	import com.junkbyte.console.events.ConsolePanelEvent;
+    import com.junkbyte.console.events.ConsolePanelEvent;
 
-	import flash.display.DisplayObject;
-	import flash.display.Sprite;
-	import flash.events.Event;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
+    import flash.display.DisplayObject;
+    import flash.display.Sprite;
+    import flash.events.Event;
+    import flash.geom.Point;
+    import flash.geom.Rectangle;
+    import com.junkbyte.console.view.helpers.PanelMover;
+    import com.junkbyte.console.view.helpers.PanelResizer;
 
     [Event(name = "close", type = "flash.events.Event")]
     [Event(name = "startedMoving", type = "com.junkbyte.console.events.ConsolePanelEvent")]
@@ -68,10 +70,10 @@ package com.junkbyte.console.view
 
         protected function drawBackground(col:Number = -1, a:Number = -1, rounding:int = -1):void
         {
-        	if(background == null)
-        	{
-        		return;
-        	}
+            if (background == null)
+            {
+                return;
+            }
             background.graphics.clear();
             background.graphics.beginFill(col >= 0 ? col : style.backgroundColor, a >= 0 ? a : style.backgroundAlpha);
             if (rounding < 0)

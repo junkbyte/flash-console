@@ -1,4 +1,4 @@
-package com.junkbyte.console.view
+package com.junkbyte.console.view.helpers
 {
     import com.junkbyte.console.events.ConsolePanelEvent;
 
@@ -6,6 +6,7 @@ package com.junkbyte.console.view
     import flash.events.Event;
     import flash.events.MouseEvent;
     import flash.geom.Point;
+    import com.junkbyte.console.view.ConsolePanel;
 
     public class PanelResizer extends PanelDragger
     {

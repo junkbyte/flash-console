@@ -6,7 +6,7 @@ package com.junkbyte.console.modules.referencing
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.utils.EscHTML;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.vos.WeakObject;
 	
 	import flash.display.DisplayObject;
@@ -35,8 +35,8 @@ package com.junkbyte.console.modules.referencing
 		public function ConsoleInspectorModule()
 		{
 			
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IRemoter), dependentModuleRegistered, dependentModuleUnregistered);
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), dependentModuleRegistered, dependentModuleUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(IRemoter), dependentModuleRegistered, dependentModuleUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(ConsoleReferencingModule), dependentModuleRegistered, dependentModuleUnregistered);
 		}
 		
 		public function dependentModuleRegistered(module:IConsoleModule):void

@@ -1,4 +1,4 @@
-package com.junkbyte.console.logging
+package com.junkbyte.console.modules.referencing
 {
 	import com.junkbyte.console.interfaces.IConsoleLogProcessor;
 	import com.junkbyte.console.utils.EscHTML;
@@ -10,6 +10,7 @@ package com.junkbyte.console.logging
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
+	import com.junkbyte.console.logging.ConsoleLogProcessors;
 
 	public class ReferencingLogProcessor implements IConsoleLogProcessor
 	{

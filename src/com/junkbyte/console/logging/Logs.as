@@ -32,7 +32,7 @@ package com.junkbyte.console.logging
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.utils.makeConsoleChannel;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.vos.Log;
 	
 	import flash.events.Event;
@@ -69,10 +69,10 @@ package com.junkbyte.console.logging
 			super();
 			_channels = new Object();
 			
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IRemoter), onRemoterRegistered, onRemoterUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(IRemoter), onRemoterRegistered, onRemoterUnregistered);
 			
 			// TODO. tempoary dependency
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), onRefencerRegistered, onRefencerUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(ConsoleReferencingModule), onRefencerRegistered, onRefencerUnregistered);
 		}
 		
 		

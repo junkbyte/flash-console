@@ -28,6 +28,7 @@ package com.junkbyte.console.view {
 	import flash.events.TextEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
+	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 
 	public class ChannelsPanel extends ConsolePanel{
 		
@@ -54,7 +55,7 @@ package com.junkbyte.console.view {
 			txtField.multiline = true;
 			txtField.autoSize = TextFieldAutoSize.LEFT;
 			
-			TextFieldRollOverHandle.registerTFRoller(txtField, onMenuRollOver, linkHandler);
+			ConsoleTextRoller.register(txtField, onMenuRollOver, linkHandler);
 			registerMoveDragger(txtField);
 			
 			addChild(txtField);

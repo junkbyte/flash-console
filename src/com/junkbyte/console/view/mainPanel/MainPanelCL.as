@@ -13,7 +13,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.ConsolePanelAreaModule;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.vos.Log;
 	
 	import flash.display.Shape;
@@ -53,8 +53,8 @@ package com.junkbyte.console.view.mainPanel
 		public function MainPanelCL(parentPanel:ConsolePanel)
 		{
 			super(parentPanel);
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IConsoleUserData), userInfoRegistered, userInfoUnregistered);
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(IConsoleUserData), userInfoRegistered, userInfoUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(ICommandLine), commandLineRegistered, commandLineUnregistered);
 			
 			
 			

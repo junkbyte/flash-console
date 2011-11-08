@@ -3,7 +3,7 @@ package com.junkbyte.console.utils
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -55,7 +55,7 @@ package com.junkbyte.console.utils
 			for(i=0;i<steps;i++){
 				str += (i==steps-1)?" ∟ ":" - ";
 			}
-			var refs:ConsoleReferencingModule = console.modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(ConsoleReferencingModule)) as ConsoleReferencingModule;
+			var refs:ConsoleReferencingModule = console.modules.getFirstMatchingModule(new ModuleTypeMatcher(ConsoleReferencingModule)) as ConsoleReferencingModule;
 			if(maxstep<=0 || steps<=maxstep){
 				wasHiding = false;
 				var ind:uint = refs.setLogRef(mcDO);

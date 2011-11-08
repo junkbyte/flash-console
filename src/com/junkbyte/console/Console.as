@@ -25,13 +25,13 @@
 package com.junkbyte.console
 {
     import com.junkbyte.console.core.ConsoleModulesManager;
-    import com.junkbyte.console.core.ModuleDependenceCallback;
+    import com.junkbyte.console.core.ModuleRegisteryWatcher;
     import com.junkbyte.console.events.ConsoleEvent;
     import com.junkbyte.console.logging.ConsoleLogger;
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.view.ConsoleLayer;
     import com.junkbyte.console.view.mainPanel.MainPanel;
-    import com.junkbyte.console.vos.ConsoleModuleMatch;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
     
     import flash.display.DisplayObject;
     import flash.display.DisplayObjectContainer;
@@ -106,8 +106,8 @@ package com.junkbyte.console
 
         protected function listenForLoggerRegister():void
         {
-            var watcher:ModuleDependenceCallback = ModuleDependenceCallback.createUsingModulesManager(_modules);
-            watcher.addCallback(ConsoleModuleMatch.createForName(ConsoleModuleNames.LOGGER), onLoggerRegistered);
+            var watcher:ModuleRegisteryWatcher = ModuleRegisteryWatcher.createUsingModulesManager(_modules);
+            watcher.addCallback(new ModuleTypeMatcher(ConsoleLogger), onLoggerRegistered);
         }
 		
 		protected function registerLoggerModule():void

@@ -25,16 +25,16 @@
 package com.junkbyte.console.modules.displayRoller
 {
     import com.junkbyte.console.KeyBind;
-    import com.junkbyte.console.core.KeyBinder;
+    import com.junkbyte.console.modules.keybinder.KeyBinder;
     import com.junkbyte.console.interfaces.IMainMenu;
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
     import com.junkbyte.console.utils.EscHTML;
     import com.junkbyte.console.utils.getQualifiedShortClassName;
     import com.junkbyte.console.view.ConsolePanel;
-    import com.junkbyte.console.view.TextFieldRollOverHandle;
+    import com.junkbyte.console.view.helpers.ConsoleTextRoller;
     import com.junkbyte.console.vos.ConsoleMenuItem;
-    import com.junkbyte.console.vos.ConsoleModuleMatch;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
     
     import flash.display.DisplayObject;
     import flash.display.DisplayObjectContainer;
@@ -66,7 +66,7 @@ package com.junkbyte.console.modules.displayRoller
             
             menu = new ConsoleMenuItem("Ro", onMenuClick, null, "Display Roller::Map the display list under your mouse");
 
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
 		}
 		
 		protected function onMainMenuRegistered(module:IMainMenu):void
@@ -89,7 +89,7 @@ package com.junkbyte.console.modules.displayRoller
             txtField.multiline = true;
             txtField.autoSize = TextFieldAutoSize.LEFT;
             addChild(txtField);
-            TextFieldRollOverHandle.registerTFRoller(txtField, onMenuRollOver, linkHandler);
+            ConsoleTextRoller.register(txtField, onMenuRollOver, linkHandler);
             registerMoveDragger(txtField);
         }
 
@@ -291,7 +291,7 @@ package com.junkbyte.console.modules.displayRoller
 		
 		protected function getReferencesModule():ConsoleReferencingModule
 		{
-			return console.modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(ConsoleReferencingModule)) as ConsoleReferencingModule;
+			return console.modules.getFirstMatchingModule(new ModuleTypeMatcher(ConsoleReferencingModule)) as ConsoleReferencingModule;
 		}
 		
         public override function close():void

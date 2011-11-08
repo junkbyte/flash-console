@@ -10,10 +10,7 @@ package com.junkbyte.console.logging
 		
 		public function ConsoleLogProcessors()
 		{
-			
-			processors.push(new BasicLogProcessor());
-			processors.push(new ReferencingLogProcessor(this));
-			numOfProcessors = processors.length;
+			addProcessor(new BasicLogProcessor());
 		}
 		
 		public function getProcessorsCopy():Vector.<IConsoleLogProcessor>
@@ -28,6 +25,21 @@ package com.junkbyte.console.logging
 				throw new ArgumentError();
 			}
 			this.processors = processors.concat();
+			updateNumProcessors();
+		}
+		
+		public function addProcessor(processor:IConsoleLogProcessor):void
+		{
+			if(processors == null)
+			{
+				throw new ArgumentError();
+			}
+			processors.push(processor);
+			updateNumProcessors();
+		}
+		
+		protected function updateNumProcessors():void
+		{
 			numOfProcessors = processors.length;
 		}
 		

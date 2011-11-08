@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.view {
+package com.junkbyte.console.modules.graphing {
 	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.interfaces.IConsoleOnDemandModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
@@ -33,6 +33,7 @@ package com.junkbyte.console.view {
 	import flash.display.Shape;
 	import flash.events.TextEvent;
 	import flash.text.TextField;
+	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 
 	public class GraphingPanel extends ConsoleModulePanel {
 		//
@@ -74,7 +75,7 @@ package com.junkbyte.console.view {
 			txtField = makeTF("menuField");
 			txtField.height = style.menuFontSize+4;
 			txtField.y = -3;
-			TextFieldRollOverHandle.registerTFRoller(txtField, onMenuRollOver, linkHandler);
+			ConsoleTextRoller.register(txtField, onMenuRollOver, linkHandler);
 			registerDragger(txtField); // so that we can still drag from textfield
 			addChild(txtField);
 			//

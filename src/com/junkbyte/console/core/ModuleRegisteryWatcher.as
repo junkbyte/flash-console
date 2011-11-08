@@ -2,9 +2,8 @@ package com.junkbyte.console.core
 {
     import com.junkbyte.console.events.ConsoleModuleEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
-    import com.junkbyte.console.vos.ConsoleModuleMatch;
 
-    public class ModuleDependenceCallback
+    public class ModuleRegisteryWatcher
     {
 		protected var modulesManager:ConsoleModulesManager;
 		
@@ -12,9 +11,9 @@ package com.junkbyte.console.core
 
 		protected var matchedModules:Vector.<MatchedModule> = new Vector.<MatchedModule>;
 		
-		public static function createUsingModule(module:ConsoleModule):ModuleDependenceCallback
+		public static function createUsingModule(module:ConsoleModule):ModuleRegisteryWatcher
 		{
-			var instance:ModuleDependenceCallback = new ModuleDependenceCallback();
+			var instance:ModuleRegisteryWatcher = new ModuleRegisteryWatcher();
 			instance.initUsingModule(module);
 			return instance;
 		}
@@ -47,9 +46,9 @@ package com.junkbyte.console.core
 			}
 		}
 		
-		public static function createUsingModulesManager(modulesManager:ConsoleModulesManager):ModuleDependenceCallback
+		public static function createUsingModulesManager(modulesManager:ConsoleModulesManager):ModuleRegisteryWatcher
 		{
-			var instance:ModuleDependenceCallback = new ModuleDependenceCallback();
+			var instance:ModuleRegisteryWatcher = new ModuleRegisteryWatcher();
 			instance.initUsingModulesManager(modulesManager);
 			return instance;
 		}
@@ -79,7 +78,7 @@ package com.junkbyte.console.core
 			}
 		}
 
-        public function addCallback(matcher:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function = null):void
+        public function addCallback(matcher:ModuleTypeMatcher, registerCallback:Function, unregisterCallback:Function = null):void
         {
             var cb:DependencyCallback = new DependencyCallback(matcher, registerCallback, unregisterCallback);
 			
@@ -145,17 +144,17 @@ package com.junkbyte.console.core
 }
 
 import com.junkbyte.console.interfaces.IConsoleModule;
-import com.junkbyte.console.vos.ConsoleModuleMatch;
+import com.junkbyte.console.core.ModuleTypeMatcher;
 
 class DependencyCallback
 {
-    public var moduleMatch:ConsoleModuleMatch;
+    public var moduleMatch:ModuleTypeMatcher;
 
     public var registerCallback:Function;
 
     public var unregisterCallback:Function;
 
-    public function DependencyCallback(interestedModule:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function):void
+    public function DependencyCallback(interestedModule:ModuleTypeMatcher, registerCallback:Function, unregisterCallback:Function):void
     {
         this.moduleMatch = interestedModule;
         this.registerCallback = registerCallback;
@@ -180,7 +179,7 @@ class DependencyCallback
 }
 
 import com.junkbyte.console.interfaces.IConsoleModule;
-import com.junkbyte.console.vos.ConsoleModuleMatch;
+import com.junkbyte.console.core.ModuleTypeMatcher;
 
 class MatchedModule
 {

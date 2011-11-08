@@ -2,7 +2,7 @@ package com.junkbyte.console.modules
 {
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.core.KeyBinder;
+	import com.junkbyte.console.modules.keybinder.KeyBinder;
 	import com.junkbyte.console.modules.displayRoller.DisplayRoller;
 	import com.junkbyte.console.modules.keyStates.KeyStates;
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;

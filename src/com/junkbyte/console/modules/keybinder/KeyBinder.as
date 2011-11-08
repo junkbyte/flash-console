@@ -22,18 +22,19 @@
 * 3. This notice may not be removed or altered from any source distribution.
 * 
 */
-package com.junkbyte.console.core 
+package com.junkbyte.console.modules.keybinder 
 {
 	import com.junkbyte.console.KeyBind;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.commandLine.ICommandLine;
 	import com.junkbyte.console.view.StageModule;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
 
 	import flash.display.Stage;
 	import flash.events.KeyboardEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldType;
+	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 
 	/**
 	 * Suppose this could be 'view' ?
@@ -48,8 +49,8 @@ package com.junkbyte.console.core
 		public function KeyBinder() {
 			super();
 			
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(StageModule), stageRegistered, stageUnregistered);
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(StageModule), stageRegistered, stageUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(ICommandLine), commandLineRegistered, commandLineUnregistered);
 		}
 		
 		override public function getModuleName():String

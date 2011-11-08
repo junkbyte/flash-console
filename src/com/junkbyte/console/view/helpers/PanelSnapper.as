@@ -1,6 +1,8 @@
-package com.junkbyte.console.view
+package com.junkbyte.console.view.helpers
 {
 	import flash.geom.Point;
+	import com.junkbyte.console.view.ConsoleLayer;
+	import com.junkbyte.console.view.ConsolePanel;
 
 	public class PanelSnapper
 	{

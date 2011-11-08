@@ -27,8 +27,9 @@ package com.junkbyte.console.core
     import com.junkbyte.console.Console;
     import com.junkbyte.console.events.ConsoleModuleEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
-    import com.junkbyte.console.vos.ConsoleModuleMatch;
-
+    import com.junkbyte.console.logging.ConsoleLogger;
+    import com.junkbyte.console.logging.Logs;
+    
     import flash.events.EventDispatcher;
 
     [Event(name = "moduleRegistered", type = "com.junkbyte.console.events.ConsoleModuleEvent")]
@@ -40,7 +41,7 @@ package com.junkbyte.console.core
         protected var _modulesByName:Object = new Object();
 
         protected var _console:Console;
-
+		
         public function ConsoleModulesManager(console:Console)
         {
             _console = console;
@@ -48,12 +49,17 @@ package com.junkbyte.console.core
             super();
         }
 
+        public function getAllModules():Vector.<IConsoleModule>
+        {
+            return _modules.concat();
+        }
+
         public function getModuleByName(moduleName:String):IConsoleModule
         {
             return _modulesByName[moduleName];
         }
 
-        public function findModulesByMatcher(matcher:ConsoleModuleMatch):Vector.<IConsoleModule>
+        public function findModulesByMatcher(matcher:ModuleTypeMatcher):Vector.<IConsoleModule>
         {
             var result:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
 
@@ -70,10 +76,15 @@ package com.junkbyte.console.core
             return result;
         }
 
-        public function getFirstMatchingModule(matcher:ConsoleModuleMatch):IConsoleModule
+        public function getFirstMatchingModule(matcher:ModuleTypeMatcher):IConsoleModule
         {
             var result:Vector.<IConsoleModule> = findModulesByMatcher(matcher);
             return result.length > 0 ? result[0] : null;
+        }
+
+        public function isModuleRegistered(module:IConsoleModule):Boolean
+        {
+            return _modules.indexOf(module) >= 0;
         }
 
         public function registerModules(modules:Vector.<IConsoleModule>):void
@@ -94,7 +105,7 @@ package com.junkbyte.console.core
             {
                 return;
             }
-			registerNamedModule(module);
+            registerNamedModule(module);
             _modules.push(module);
             module.setConsole(_console);
             // this is incase module unregister it self straight away
@@ -103,49 +114,53 @@ package com.junkbyte.console.core
                 dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
             }
         }
+
+        protected function registerNamedModule(module:IConsoleModule):void
+        {
+            var moduleName:String = module.getModuleName();
+            if (moduleName != null)
+            {
+				validateNamedModule(module, moduleName);
+                var currentModule:IConsoleModule = _modulesByName[moduleName];
+                if (currentModule != null)
+                {
+                    unregisterModule(currentModule);
+                }
+                _modulesByName[moduleName] = module;
+            }
+        }
 		
-		protected function registerNamedModule(module:IConsoleModule):void
+		protected function validateNamedModule(module:IConsoleModule, name:String):void
 		{
-			var moduleName:String = module.getModuleName();
-			if (moduleName != null)
+			if(ConsoleCoreModulesMap.isModuleWithNameValid(module, name) == false)
 			{
-				var currentModule:IConsoleModule = _modulesByName[moduleName];
-				if (currentModule != null)
-				{
-					unregisterModule(currentModule);
-				}
-				_modulesByName[moduleName] = module;
+				throw new ArgumentError();
 			}
 		}
-
-        public function isModuleRegistered(module:IConsoleModule):Boolean
-        {
-            return _modules.indexOf(module) >= 0;
-        }
 
         public function unregisterModule(module:IConsoleModule):void
         {
             var index:int = _modules.indexOf(module);
             if (index >= 0)
             {
-				unregisterNamedModule(module);
+                unregisterNamedModule(module);
                 _modules.splice(index, 1);
                 module.setConsole(null);
                 dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_UNREGISTERED, module));
             }
         }
-		
-		
-		protected function unregisterNamedModule(module:IConsoleModule):void
-		{
-			var moduleName:String = module.getModuleName();
-			if (moduleName != null)
-			{
-				if (_modulesByName[moduleName] == module)
-				{
-					delete _modulesByName[moduleName];
-				}
-			}
-		}
+
+
+        protected function unregisterNamedModule(module:IConsoleModule):void
+        {
+            var moduleName:String = module.getModuleName();
+            if (moduleName != null)
+            {
+                if (_modulesByName[moduleName] == module)
+                {
+                    delete _modulesByName[moduleName];
+                }
+            }
+        }
     }
 }

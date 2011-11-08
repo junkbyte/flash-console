@@ -32,7 +32,7 @@ package com.junkbyte.console.modules.commandLine
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.utils.getQualifiedShortClassName;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
 	
@@ -83,10 +83,10 @@ package com.junkbyte.console.modules.commandLine
 			_saved.set("C", console);
 		}
 		
-		override public function getDependentModules():Vector.<ConsoleModuleMatch>
+		override public function getDependentModules():Vector.<ModuleTypeMatcher>
 		{
-			var vect:Vector.<ConsoleModuleMatch> = super.getDependentModules();
-			vect.push(ConsoleModuleMatch.createForClass(IRemoter));
+			var vect:Vector.<ModuleTypeMatcher> = super.getDependentModules();
+			vect.push(new ModuleTypeMatcher(IRemoter));
 			return vect;
 		}
 
@@ -445,7 +445,7 @@ package com.junkbyte.console.modules.commandLine
 		
 		protected function getReferencesModule():ConsoleReferencingModule
 		{
-			return console.modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(ConsoleReferencingModule)) as ConsoleReferencingModule;
+			return console.modules.getFirstMatchingModule(new ModuleTypeMatcher(ConsoleReferencingModule)) as ConsoleReferencingModule;
 		}
 		
 		public function sendCmdScope2Remote(e:Event = null):void

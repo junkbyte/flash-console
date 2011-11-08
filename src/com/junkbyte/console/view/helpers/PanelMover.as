@@ -1,10 +1,11 @@
-package com.junkbyte.console.view
+package com.junkbyte.console.view.helpers
 {
     import com.junkbyte.console.events.ConsolePanelEvent;
     
     import flash.display.DisplayObject;
     import flash.events.MouseEvent;
     import flash.geom.Point;
+    import com.junkbyte.console.view.ConsolePanel;
 
     public class PanelMover extends PanelDragger
     {

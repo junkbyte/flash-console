@@ -3,8 +3,10 @@ package com.junkbyte.console.tests
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ConsoleModulesManager;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.logging.ConsoleLogger;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	
 	import org.flexunit.asserts.assertEquals;
 	import org.flexunit.asserts.assertFalse;
@@ -34,8 +36,6 @@ package com.junkbyte.console.tests
 			modules.registerModule(module);
 			
 			assertTrue(modules.isModuleRegistered(module));
-			
-			modules.unregisterModule(module);
 		}
 		
 		[Test]
@@ -48,9 +48,6 @@ package com.junkbyte.console.tests
 			
 			assertTrue(modules.isModuleRegistered(module));
 			assertTrue(modules.isModuleRegistered(module2));
-			
-			modules.unregisterModule(module);
-			modules.unregisterModule(module2);
 		}
 		
 		[Test]
@@ -70,9 +67,7 @@ package com.junkbyte.console.tests
 			var namedModule:FakeNamedModule = new FakeNamedModule();
 			modules.registerModule(namedModule);
 			
-			assertEquals(namedModule, modules.getModuleByName("fakeModule"));
-			
-			modules.unregisterModule(namedModule);
+			assertEquals(namedModule, modules.getModuleByName(namedModule.getModuleName()));
 		}
 		
 		[Test]
@@ -85,10 +80,8 @@ package com.junkbyte.console.tests
 			
 			assertTrue(modules.isModuleRegistered(namedModule2));
 			assertFalse(modules.isModuleRegistered(namedModule));
-			assertEquals(namedModule2, modules.getModuleByName("fakeModule"));
+			assertEquals(namedModule2, modules.getModuleByName(namedModule2.getModuleName()));
 			
-			modules.unregisterModule(namedModule);
-			modules.unregisterModule(namedModule2);
 		}
 		
 		[Test]
@@ -100,16 +93,12 @@ package com.junkbyte.console.tests
 			
 			modules.registerModules(Vector.<IConsoleModule>([module, module2, module3]));
 			
-			var matches:Vector.<IConsoleModule> = modules.findModulesByMatcher(ConsoleModuleMatch.createForClass(FakeModule));
+			var matches:Vector.<IConsoleModule> = modules.findModulesByMatcher(new ModuleTypeMatcher(FakeModule));
 			
 			assertEquals(3, matches.length);
 			assertEquals(matches[0], module);
 			assertEquals(matches[1], module2);
 			assertEquals(matches[2], module3);
-			
-			modules.unregisterModule(module);
-			modules.unregisterModule(module2);
-			modules.unregisterModule(module3);
 		}
 		
 		[Test]
@@ -120,12 +109,21 @@ package com.junkbyte.console.tests
 			
 			modules.registerModules(Vector.<IConsoleModule>([module, module2]));
 			
-			var match:IConsoleModule = modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(FakeModule));
+			var match:IConsoleModule = modules.getFirstMatchingModule(new ModuleTypeMatcher(FakeModule));
 			
 			assertEquals(module, match);
-			
-			modules.unregisterModule(module);
-			modules.unregisterModule(module2);
+		}
+		
+		[Test(expects="ArgumentError")]
+		public function errorOnRegisteringWithCoreModuleName():void
+		{
+			modules.registerModule(new FakeNamedModule(ConsoleModuleNames.LOGGER));
+		}
+		
+		[Test]
+		public function registerCoreModule():void
+		{
+			modules.registerModule(new ConsoleLogger());
 		}
 	}
 }
@@ -141,14 +139,15 @@ class FakeModule extends ConsoleModule
 import com.junkbyte.console.core.ConsoleModule;
 class FakeNamedModule extends ConsoleModule
 {
-	public function FakeNamedModule():void
+	private var name:String;
+	public function FakeNamedModule(name:String = "FakeNamedModule"):void
 	{
-		
+		this.name = name;
 	}
 	
 	
 	override public function getModuleName():String
 	{
-		return "fakeModule";
+		return name;
 	}
 }

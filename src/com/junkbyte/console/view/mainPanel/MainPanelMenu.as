@@ -8,9 +8,9 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.modules.keyStates.IKeyStates;
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.ConsolePanelAreaModule;
-	import com.junkbyte.console.view.TextFieldRollOverHandle;
+	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.geom.Rectangle;
@@ -50,7 +50,7 @@ package com.junkbyte.console.view.mainPanel
 			_textField.multiline = true;
 			_textField.autoSize = TextFieldAutoSize.RIGHT;
 			
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(MainPanelLogs), mainPanelLogsRegistered, null);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(MainPanelLogs), mainPanelLogsRegistered, null);
 		}
 		
 		override protected function registeredToConsole():void
@@ -63,7 +63,7 @@ package com.junkbyte.console.view.mainPanel
 			_textField.styleSheet = console.config.style.styleSheet;
 			
 			
-			TextFieldRollOverHandle.registerTFRoller(_textField, textRollOverHandler, linkHandler);
+			ConsoleTextRoller.register(_textField, textRollOverHandler, linkHandler);
 		}
 		
 		

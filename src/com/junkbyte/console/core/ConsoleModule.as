@@ -32,7 +32,6 @@ package com.junkbyte.console.core
     import com.junkbyte.console.interfaces.IRemoter;
     import com.junkbyte.console.logging.ConsoleLogger;
     import com.junkbyte.console.view.ConsoleLayer;
-    import com.junkbyte.console.vos.ConsoleModuleMatch;
     
     import flash.events.EventDispatcher;
 
@@ -42,7 +41,7 @@ package com.junkbyte.console.core
     {
         protected var _console:Console;
 		
-		protected var _moduleDependences:ModuleDependenceCallback;
+		protected var _moduleDependences:ModuleRegisteryWatcher;
 
         public function ConsoleModule()
         {
@@ -71,11 +70,11 @@ package com.junkbyte.console.core
             }
         }
 		
-		protected function addModuleRegisteryCallback(matcher:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function = null):void
+		protected function addModuleRegisteryCallback(matcher:ModuleTypeMatcher, registerCallback:Function, unregisterCallback:Function = null):void
 		{
 			if(_moduleDependences == null)
 			{
-				_moduleDependences = ModuleDependenceCallback.createUsingModule(this);
+				_moduleDependences = ModuleRegisteryWatcher.createUsingModule(this);
 			}
 			_moduleDependences.addCallback(matcher, registerCallback, unregisterCallback);
 		}

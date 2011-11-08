@@ -28,7 +28,7 @@ package com.junkbyte.console.logging
     import com.junkbyte.console.core.ConsoleModule;
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.utils.makeConsoleChannel;
-    import com.junkbyte.console.vos.ConsoleModuleMatch;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.vos.Log;
 
     public class ConsoleLogger extends ConsoleModule
@@ -69,7 +69,7 @@ package com.junkbyte.console.logging
 		
 		protected function listenForLogsRegistery():void
 		{
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForName(ConsoleModuleNames.LOGS), onLogsRegistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(Logs), onLogsRegistered);
 		}
 		
 		// this is so that if anyone wants to extend Logs and register it, it'll catch that new module as replacement.

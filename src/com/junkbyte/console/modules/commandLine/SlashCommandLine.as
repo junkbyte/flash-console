@@ -29,7 +29,7 @@ package com.junkbyte.console.modules.commandLine
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.interfaces.IRemoter;
     import com.junkbyte.console.utils.EscHTML;
-    import com.junkbyte.console.vos.ConsoleModuleMatch;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
 
     import flash.utils.ByteArray;
     import flash.utils.getQualifiedClassName;
@@ -46,7 +46,7 @@ package com.junkbyte.console.modules.commandLine
             addInternalSlashCommand("help", printHelp, "How to use command line");
             addInternalSlashCommand("commands", cmdsCmd, "Show a list of all slash commands", true);
 			
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IRemoter), remoterRegistered, remoterUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(IRemoter), remoterRegistered, remoterUnregistered);
         }
 
         protected function remoterRegistered(remoter:IRemoter):void

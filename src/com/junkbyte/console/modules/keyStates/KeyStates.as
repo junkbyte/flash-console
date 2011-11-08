@@ -3,7 +3,7 @@ package com.junkbyte.console.modules.keyStates
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.StageModule;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 
 	import flash.display.Stage;
 	import flash.events.KeyboardEvent;
@@ -19,7 +19,7 @@ package com.junkbyte.console.modules.keyStates
 		{
 			super();
 			
-			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(StageModule), stageModuleRegistered, stageModuleUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(StageModule), stageModuleRegistered, stageModuleUnregistered);
 		}
 		
 		protected function stageModuleRegistered(module:StageModule):void
