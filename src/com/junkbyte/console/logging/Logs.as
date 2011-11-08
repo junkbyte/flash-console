@@ -69,10 +69,10 @@ package com.junkbyte.console.logging
 			super();
 			_channels = new Object();
 			
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IRemoter), onRemoterRegistered, onRemoterUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IRemoter), onRemoterRegistered, onRemoterUnregistered);
 			
 			// TODO. tempoary dependency
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), onRefencerRegistered, onRefencerUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), onRefencerRegistered, onRefencerUnregistered);
 		}
 		
 		
@@ -236,12 +236,19 @@ package com.junkbyte.console.logging
 				_length = 0;
 				_channels = new Object();
 			}
-			announceChannelChanged()
+			announceChannelChanged();
+			_hasNewLog = true;
 		}
 		private function announceChannelChanged():void
 		{
 			dispatchEvent(new Event(CHANNELS_CHANGED));
 		}
+		
+		public function getAllLog(splitter:String = "\r\n"):String
+		{
+			return getLogsAsString(splitter);
+		}
+		
 		public function getLogsAsString(splitter:String, incChNames:Boolean = true, filter:Function = null):String{
 			var str:String = "";
 			var line:Log = first;

@@ -24,12 +24,12 @@
  */
 package com.junkbyte.console.core
 {
-	import com.junkbyte.console.Console;
-	import com.junkbyte.console.events.ConsoleModuleEvent;
-	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
-	
-	import flash.events.EventDispatcher;
+    import com.junkbyte.console.Console;
+    import com.junkbyte.console.events.ConsoleModuleEvent;
+    import com.junkbyte.console.interfaces.IConsoleModule;
+    import com.junkbyte.console.vos.ConsoleModuleMatch;
+
+    import flash.events.EventDispatcher;
 
     [Event(name = "moduleRegistered", type = "com.junkbyte.console.events.ConsoleModuleEvent")]
     [Event(name = "moduleUnregistered", type = "com.junkbyte.console.events.ConsoleModuleEvent")]
@@ -44,7 +44,7 @@ package com.junkbyte.console.core
         public function ConsoleModulesManager(console:Console)
         {
             _console = console;
-			
+
             super();
         }
 
@@ -52,29 +52,29 @@ package com.junkbyte.console.core
         {
             return _modulesByName[moduleName];
         }
-		
+
         public function findModulesByMatcher(matcher:ConsoleModuleMatch):Vector.<IConsoleModule>
         {
-			var result:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
-			
+            var result:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
+
             var len:uint = _modules.length;
             for (var i:int = 0; i < len; i++)
             {
-				var module:IConsoleModule = _modules[i];
+                var module:IConsoleModule = _modules[i];
                 if (matcher.matches(module))
                 {
-					result.push(module);
+                    result.push(module);
                 }
             }
-			
+
             return result;
         }
-		
-		public function getFirstMatchingModule(matcher:ConsoleModuleMatch):IConsoleModule
-		{
-			var result:Vector.<IConsoleModule> = findModulesByMatcher(matcher);
-			return result.length > 0 ? result[0] : null;
-		}
+
+        public function getFirstMatchingModule(matcher:ConsoleModuleMatch):IConsoleModule
+        {
+            var result:Vector.<IConsoleModule> = findModulesByMatcher(matcher);
+            return result.length > 0 ? result[0] : null;
+        }
 
         public function registerModules(modules:Vector.<IConsoleModule>):void
         {
@@ -92,10 +92,22 @@ package com.junkbyte.console.core
         {
             if (isModuleRegistered(module))
             {
-				return;
-			}
+                return;
+            }
+			registerNamedModule(module);
+            _modules.push(module);
+            module.setConsole(_console);
+            // this is incase module unregister it self straight away
+            if (isModuleRegistered(module))
+            {
+                dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
+            }
+        }
+		
+		protected function registerNamedModule(module:IConsoleModule):void
+		{
 			var moduleName:String = module.getModuleName();
-            if (moduleName != null)
+			if (moduleName != null)
 			{
 				var currentModule:IConsoleModule = _modulesByName[moduleName];
 				if (currentModule != null)
@@ -104,14 +116,7 @@ package com.junkbyte.console.core
 				}
 				_modulesByName[moduleName] = module;
 			}
-			_modules.push(module);
-			module.setConsole(_console);
-			// this is incase module unregister it self straight away
-			if (isModuleRegistered(module))
-			{
-				dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_REGISTERED, module));
-            }
-        }
+		}
 
         public function isModuleRegistered(module:IConsoleModule):Boolean
         {
@@ -123,19 +128,24 @@ package com.junkbyte.console.core
             var index:int = _modules.indexOf(module);
             if (index >= 0)
             {
-                var moduleName:String = module.getModuleName();
-                if (moduleName != null)
-                {
-                    if (_modulesByName[moduleName] == module)
-                    {
-                        delete _modulesByName[moduleName];
-                    }
-                }
+				unregisterNamedModule(module);
                 _modules.splice(index, 1);
                 module.setConsole(null);
                 dispatchEvent(new ConsoleModuleEvent(ConsoleModuleEvent.MODULE_UNREGISTERED, module));
             }
         }
-
+		
+		
+		protected function unregisterNamedModule(module:IConsoleModule):void
+		{
+			var moduleName:String = module.getModuleName();
+			if (moduleName != null)
+			{
+				if (_modulesByName[moduleName] == module)
+				{
+					delete _modulesByName[moduleName];
+				}
+			}
+		}
     }
 }

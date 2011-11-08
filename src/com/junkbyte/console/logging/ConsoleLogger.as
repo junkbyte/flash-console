@@ -24,103 +24,127 @@
 */
 package com.junkbyte.console.logging
 {
-	import com.junkbyte.console.ConsoleLevel;
-	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.utils.makeConsoleChannel;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
-	import com.junkbyte.console.vos.Log;
-	
-	public class ConsoleLogger extends ConsoleModule
-	{
-		private var _processor:ConsoleLogProcessors;
-		
-		protected var defaultLogEntryClass:Class;
-		
-		private var _logs:Logs;
-		
-		public function ConsoleLogger()
-		{
-			super();
+    import com.junkbyte.console.ConsoleLevel;
+    import com.junkbyte.console.core.ConsoleModule;
+    import com.junkbyte.console.modules.ConsoleModuleNames;
+    import com.junkbyte.console.utils.makeConsoleChannel;
+    import com.junkbyte.console.vos.ConsoleModuleMatch;
+    import com.junkbyte.console.vos.Log;
+
+    public class ConsoleLogger extends ConsoleModule
+    {
+        private var _processor:ConsoleLogProcessors;
+
+        protected var defaultLogEntryClass:Class;
+
+        private var _logs:Logs;
+
+        public function ConsoleLogger()
+        {
+            super();
+
+            defaultLogEntryClass = LogEntry;
+
+            _processor = createProcessor();
 			
-			defaultLogEntryClass = LogEntry;
-			
-			_processor = createProcessor();
-			
-			addModuleDependencyCallback(ConsoleModuleMatch.createForName(ConsoleModuleNames.LOGS), onLogsRegistered);
-		}
-		
-		protected function onLogsRegistered(logs:Logs):void
-		{
-			if(logs != null)
-			{
-				_logs = logs;
-			}
-		}
-		
-		public function get logs():Logs
-		{
-			return _logs;
-		}
-		
-		protected function createProcessor():ConsoleLogProcessors
-		{
-			return new ConsoleLogProcessors();
-		}
-		
-		public function get processor():ConsoleLogProcessors
-		{
-			return _processor;
-		}
-		
-		public function log(...strings):void
-		{
-			addEntry(new defaultLogEntryClass(strings, null, ConsoleLevel.LOG));
-		}
-		
-		public function info(...strings):void
-		{
-			addEntry(new defaultLogEntryClass(strings, null, ConsoleLevel.INFO));
-		}
+			listenForLogsRegistery();
+        }
 		
 		
-		public function logch(channel:*, ...strings):void
+		override public function getModuleName():String
 		{
-			addEntry(new defaultLogEntryClass(strings, channel, ConsoleLevel.LOG));
+			return ConsoleModuleNames.LOGGER;
 		}
 		
-		public function infoch(channel:*, ...strings):void
+		override protected function registeredToConsole():void
 		{
-			addEntry(new defaultLogEntryClass(strings, channel, ConsoleLevel.INFO));
+			super.registeredToConsole();
+			initAndRegisterLogsModule();
 		}
 		
-		public function addHTML(...strings):void
+		protected function initAndRegisterLogsModule():void
 		{
-			addEntry(new HTMLLogEntry(strings, null, ConsoleLevel.INFO));
+			modules.registerModule(new Logs());
 		}
 		
-		public function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
+		protected function listenForLogsRegistery():void
 		{
-			addEntry(new defaultLogEntryClass(strings, channel, priority));
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForName(ConsoleModuleNames.LOGS), onLogsRegistered);
 		}
 		
-		public function addEntry(entry:LogEntry):void
-		{
-			var output:String = entry.outputUsingProcessor(processor);
-			logs.add(new Log(output, makeConsoleChannel(entry.channel), entry.priority, false, true));
-		}
-		
-		public function makeString(input:*):String
-		{
-			return processor.makeString(input);
-		}
-		//
-		//
-		override public function report(obj:* = '', priority:int = 0, skipSafe:Boolean = true, channel:String = null):void
-		{
-			if (!channel)
-				channel = console.layer.mainPanel.traces.reportChannel;
-			addLine([ obj ], priority, channel, false, skipSafe, 0);
-		}
-	}
+		// this is so that if anyone wants to extend Logs and register it, it'll catch that new module as replacement.
+        protected function onLogsRegistered(logs:Logs):void
+        {
+            if (logs != null)
+            {
+                _logs = logs;
+            }
+        }
+
+        public function get logs():Logs
+        {
+            return _logs;
+        }
+
+        protected function createProcessor():ConsoleLogProcessors
+        {
+            return new ConsoleLogProcessors();
+        }
+
+        public function get processor():ConsoleLogProcessors
+        {
+            return _processor;
+        }
+
+        public function log(... strings):void
+        {
+            addEntry(new defaultLogEntryClass(strings, null, ConsoleLevel.LOG));
+        }
+
+        public function info(... strings):void
+        {
+            addEntry(new defaultLogEntryClass(strings, null, ConsoleLevel.INFO));
+        }
+
+
+        public function logch(channel:*, ... strings):void
+        {
+            addEntry(new defaultLogEntryClass(strings, channel, ConsoleLevel.LOG));
+        }
+
+        public function infoch(channel:*, ... strings):void
+        {
+            addEntry(new defaultLogEntryClass(strings, channel, ConsoleLevel.INFO));
+        }
+
+        public function addHTML(... strings):void
+        {
+            addEntry(new HTMLLogEntry(strings, null, ConsoleLevel.INFO));
+        }
+
+        public function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
+        {
+            addEntry(new defaultLogEntryClass(strings, channel, priority));
+        }
+
+        public function addEntry(entry:LogEntry):void
+        {
+            var output:String = entry.outputUsingProcessor(processor);
+            logs.add(new Log(output, makeConsoleChannel(entry.channel), entry.priority, false, true));
+        }
+
+        public function makeString(input:*):String
+        {
+            return processor.makeString(input);
+        }
+
+        //
+        //
+        override public function report(obj:* = '', priority:int = 0, skipSafe:Boolean = true, channel:String = null):void
+        {
+            if (!channel)
+                channel = console.layer.mainPanel.traces.reportChannel;
+            addLine([ obj ], priority, channel, false, skipSafe, 0);
+        }
+    }
 }

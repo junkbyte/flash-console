@@ -48,8 +48,8 @@ package com.junkbyte.console.core
 		public function KeyBinder() {
 			super();
 			
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(StageModule), stageRegistered, stageUnregistered);
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(StageModule), stageRegistered, stageUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
 		}
 		
 		override public function getModuleName():String

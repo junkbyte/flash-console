@@ -1,11 +1,11 @@
 /*
- * 
+ *
  * Copyright (c) 2008-2010 Lu Aye Oo
- * 
+ *
  * @author 		Lu Aye Oo
- * 
+ *
  * http://code.google.com/p/flash-console/
- * 
+ *
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,396 +20,251 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  * misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- * 
+ *
  */
 package com.junkbyte.console
 {
-	import com.junkbyte.console.core.ConsoleModulesManager;
-	import com.junkbyte.console.core.KeyBinder;
-	import com.junkbyte.console.core.ModuleDependenceCallback;
-	import com.junkbyte.console.events.ConsoleEvent;
-	import com.junkbyte.console.logging.ConsoleLogger;
-	import com.junkbyte.console.logging.Logs;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.commandLine.ICommandLine;
-	import com.junkbyte.console.modules.commandLine.SlashCommandLine;
-	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
-	import com.junkbyte.console.utils.explodeObjectsInConsole;
-	import com.junkbyte.console.utils.makeConsoleChannel;
-	import com.junkbyte.console.utils.mapDisplayListInConsole;
-	import com.junkbyte.console.view.ConsoleLayer;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
-	
-	import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.system.Capabilities;
-	import flash.utils.getTimer;
+    import com.junkbyte.console.core.ConsoleModulesManager;
+    import com.junkbyte.console.core.ModuleDependenceCallback;
+    import com.junkbyte.console.events.ConsoleEvent;
+    import com.junkbyte.console.logging.ConsoleLogger;
+    import com.junkbyte.console.modules.ConsoleModuleNames;
+    import com.junkbyte.console.view.ConsoleLayer;
+    import com.junkbyte.console.view.mainPanel.MainPanel;
+    import com.junkbyte.console.vos.ConsoleModuleMatch;
+    
+    import flash.display.DisplayObject;
+    import flash.display.DisplayObjectContainer;
+    import flash.events.Event;
+    import flash.events.EventDispatcher;
+    import flash.system.Capabilities;
+    import flash.utils.getTimer;
 
-	/**
-	 * @see http://code.google.com/p/flash-console/
-	 */
-	[Event(name="consoleStarted", type="com.junkbyte.console.events.ConsoleEvent")]
-	[Event(name="consoleShown", type="com.junkbyte.console.events.ConsoleEvent")]
-	[Event(name="consoleHidden", type="com.junkbyte.console.events.ConsoleEvent")]
-	[Event(name="paused", type="com.junkbyte.console.events.ConsoleEvent")]
-	[Event(name="resumed", type="com.junkbyte.console.events.ConsoleEvent")]
-	[Event(name="updateData", type="com.junkbyte.console.events.ConsoleEvent")]
-	[Event(name="dataUpdated", type="com.junkbyte.console.events.ConsoleEvent")]
-	public class Console extends EventDispatcher
-	{
-		protected var _modules:ConsoleModulesManager;
-		protected var _logger:ConsoleLogger;
-		protected var _display:ConsoleLayer;
-		
-		protected var _config:ConsoleConfig;
-		protected var _paused:Boolean;
-		
-		protected var _lastTimer:Number;
-		
-		/**
-		 * Console is the main class.
-		 * @see http://code.google.com/p/flash-console/
-		 */
-		public function Console()
-		{
-		}
+    /**
+     * @see http://code.google.com/p/flash-console/
+     */
+    [Event(name = "consoleStarted", type = "com.junkbyte.console.events.ConsoleEvent")]
+    [Event(name = "consoleShown", type = "com.junkbyte.console.events.ConsoleEvent")]
+    [Event(name = "consoleHidden", type = "com.junkbyte.console.events.ConsoleEvent")]
+    [Event(name = "paused", type = "com.junkbyte.console.events.ConsoleEvent")]
+    [Event(name = "resumed", type = "com.junkbyte.console.events.ConsoleEvent")]
+    [Event(name = "updateData", type = "com.junkbyte.console.events.ConsoleEvent")]
+    [Event(name = "dataUpdated", type = "com.junkbyte.console.events.ConsoleEvent")]
+    public class Console extends EventDispatcher
+    {
 
-		public function start(container:DisplayObjectContainer = null):void
+        protected var _modules:ConsoleModulesManager;
+
+        protected var _logger:ConsoleLogger;
+
+        protected var _display:ConsoleLayer;
+
+        protected var _config:ConsoleConfig;
+
+        protected var _paused:Boolean;
+
+        protected var _lastTimer:Number;
+
+        /**
+         * Console is the main class.
+         * @see http://code.google.com/p/flash-console/
+         */
+        public function Console()
+        {
+        }
+
+        public function start(container:DisplayObjectContainer = null):void
+        {
+            if (started)
+            {
+                addToContainer(container);
+                return;
+            }
+            config.style.updateStyleSheet();
+			initData();
+            initDisplay();
+            addToContainer(container);
+            dispatchEvent(ConsoleEvent.create(ConsoleEvent.STARTED));
+        }
+		
+		protected function initData():void
 		{
-			if (started) throw new Error("Console already started.");
-			
-			config.style.updateStyleSheet();
-			
-			_modules = new ConsoleModulesManager(this);
-			
+			initModulesManager();
 			listenForLoggerRegister();
-			registerBasicModules();
-			
-			_display = new ConsoleLayer(this);
-			
-			if (config.keystrokePassword) _display.visible = false;
-			_display.start();
-
-			logger.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
-			
-			layer.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
-			
-			if (container)
-			{
-				container.addChild(layer);
-			}
-			dispatchEvent(ConsoleEvent.create(ConsoleEvent.STARTED));
-		}
-		
-		protected function registerBasicModules():void
-		{
-			modules.registerModule(new ConsoleLogger());
-			modules.registerModule(new Logs());
+			registerLoggerModule();
+			/*
 			modules.registerModule(new ConsoleReferencingModule());
 			modules.registerModule(new SlashCommandLine());
 			modules.registerModule(new KeyBinder());
+			*/
+		}
+
+        protected function initModulesManager():void
+        {
+            _modules = new ConsoleModulesManager(this);
+        }
+
+        protected function listenForLoggerRegister():void
+        {
+            var watcher:ModuleDependenceCallback = ModuleDependenceCallback.createUsingModulesManager(_modules);
+            watcher.addCallback(ConsoleModuleMatch.createForName(ConsoleModuleNames.LOGGER), onLoggerRegistered);
+        }
+		
+		protected function registerLoggerModule():void
+		{
+			modules.registerModule(CLog != null ? CLog : new ConsoleLogger());
 		}
 		
-		private function listenForLoggerRegister():void
+		// this is so that if anyone wants to extend ConsoleLogger and register it, it'll catch that new module as replacement.
+		protected function onLoggerRegistered(logger:ConsoleLogger):void
 		{
-			var watcher:ModuleDependenceCallback = ModuleDependenceCallback.createUsingModulesManager(_modules);
-			watcher.addCallback(ConsoleModuleMatch.createForClass(ConsoleLogger), onLoggerRegistered);
-		}
-		
-		private function onLoggerRegistered(logger:ConsoleLogger):void
-		{
-			if(logger != null)
+			if (logger != null)
 			{
 				_logger = logger;
-			}
-		}
-
-		public function startOnStage(target:DisplayObject):void
-		{
-			if (!started)
-			{
-				start();
-			}
-			if (target)
-			{
-				if (target.stage)
-				{
-					target.stage.addChild(layer);
-				}
-				else
-				{
-					target.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandle, false, 0, true);
-				}
-			}
-		}
-
-		private function addedToStageHandle(e:Event):void
-		{
-			var mc:DisplayObjectContainer = e.currentTarget as DisplayObjectContainer;
-			mc.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandle);
-			mc.stage.addChild(layer);
-		}
-
-		public function get started():Boolean
-		{
-			return _modules != null;
-		}
-		
-		protected function _onEnterFrame(e:Event):void
-		{
-			var timeNow:Number = getTimer();
-			var msDelta:uint = timeNow - _lastTimer;
-			_lastTimer = timeNow;
-			//update data
-			var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.UPDATE_DATA);
-			event.msDelta = msDelta;
-			dispatchEvent(event);
-			//update view
-			event = ConsoleEvent.create(ConsoleEvent.DATA_UPDATED);
-			event.msDelta = msDelta;
-			dispatchEvent(event);
-		}
-
-		public function map(container:DisplayObjectContainer, maxstep:uint = 0):void
-		{
-			throwErrorIfNotStarted("map()");
-			mapDisplayListInConsole(this, container, maxstep, Logs.DEFAULT_CHANNEL);
-		}
-
-		public function mapch(channel:*, container:DisplayObjectContainer, maxstep:uint = 0):void
-		{
-			throwErrorIfNotStarted("mapch()");
-			mapDisplayListInConsole(this, container, maxstep, makeConsoleChannel(channel));
-		}
-
-		public function explode(obj:Object, depth:int = 3):void
-		{
-			addLine(new Array(explodeObjectsInConsole(this, obj, depth)), 1, null, false, true);
-		}
-
-		public function explodech(channel:*, obj:Object, depth:int = 3):void
-		{
-			addLine(new Array(explodeObjectsInConsole(this, obj, depth)), 1, channel, false, true);
-		}
-
-		public function get paused():Boolean
-		{
-			return _paused;
-		}
-
-		public function set paused(newV:Boolean):void
-		{
-			if (_paused == newV) return;
-			if (newV) logger.report("Paused", ConsoleLevel.CONSOLE_STATUS);
-			else logger.report("Resumed", ConsoleLevel.CONSOLE_STATUS);
-			_paused = newV;
-			layer.mainPanel.traces.setPaused(newV);
-			dispatchEvent(new Event( _paused ? ConsoleEvent.PAUSED : ConsoleEvent.RESUMED ));
-		}
-
-		//
-		//
-		//
-		public function setViewingChannels(...channels:Array):void
-		{
-			throwErrorIfNotStarted("minimumPriority");
-			layer.mainPanel.traces.setViewingChannels.apply(this, channels);
-		}
-
-		public function setIgnoredChannels(...channels:Array):void
-		{
-			throwErrorIfNotStarted("minimumPriority");
-			layer.mainPanel.traces.setIgnoredChannels.apply(this, channels);
-		}
-
-		public function set minimumPriority(level:uint):void
-		{
-			throwErrorIfNotStarted("minimumPriority");
-			layer.mainPanel.traces.priority = level;
-		}
-
-		protected function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
-		{
-			if(started)
-			{
-				logger.addLine(strings, priority, channel, isRepeating, html, stacks);
-			}
-		}
-
-		public function addSlashCommand(name:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void
-		{
-			var cl:ICommandLine = modules.getModuleByName(ConsoleModuleNames.COMMAND_LINE) as ICommandLine;
-			if(cl != null)
-			{
-				cl.addSlashCommand(name, callback, desc, alwaysAvailable, endOfArgsMarker);
+				setStaticCLog();
 			}
 		}
 		
-		//
-		// LOGGING
-		//
-		public function add(string:*, priority:int = 2, isRepeating:Boolean = false):void
+		protected function setStaticCLog():void
 		{
-			addLine([string], priority, Logs.DEFAULT_CHANNEL, isRepeating);
+			CLog = logger;
 		}
 
-		public function stack(string:*, depth:int = -1, priority:int = 5):void
-		{
-			addLine([string], priority, Logs.DEFAULT_CHANNEL, false, false, depth >= 0 ? depth : config.defaultStackDepth);
-		}
+        protected function initDisplay():void
+        {
+            _display = new ConsoleLayer(this);
 
-		public function stackch(channel:*, string:*, depth:int = -1, priority:int = 5):void
-		{
-			addLine([string], priority, channel, false, false, depth >= 0 ? depth : config.defaultStackDepth);
-		}
+            if (config.keystrokePassword)
+                _display.visible = false;
+            _display.start();
 
-		public function log(...strings):void
-		{
-			addLine(strings, ConsoleLevel.LOG);
-		}
+            logger.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
 
-		public function info(...strings):void
-		{
-			addLine(strings, ConsoleLevel.INFO);
-		}
+            layer.addEventListener(Event.ENTER_FRAME, onLayerEnterFrame);
+        }
 
-		public function debug(...strings):void
-		{
-			addLine(strings, ConsoleLevel.DEBUG);
-		}
+        protected function addToContainer(container:DisplayObjectContainer):void
+        {
+            if (container != null)
+            {
+                container.addChild(layer);
+            }
+        }
 
-		public function warn(...strings):void
-		{
-			addLine(strings, ConsoleLevel.WARN);
-		}
+        public function startOnStage(target:DisplayObject):void
+        {
+            if (!started)
+            {
+                start();
+            }
+            if (target)
+            {
+                if (target.stage)
+                {
+                    addToContainer(target.stage);
+                }
+                else
+                {
+                    target.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
+                }
+            }
+        }
 
-		public function error(...strings):void
-		{
-			addLine(strings, ConsoleLevel.ERROR);
-		}
+        private function onAddedToStage(e:Event):void
+        {
+            var mc:DisplayObjectContainer = e.currentTarget as DisplayObjectContainer;
+            mc.removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+            addToContainer(mc.stage);
+        }
 
-		public function fatal(...strings):void
-		{
-			addLine(strings, ConsoleLevel.FATAL);
-		}
+        public function get started():Boolean
+        {
+            return _modules != null;
+        }
 
-		public function ch(channel:*, string:*, priority:Number = 2, isRepeating:Boolean = false):void
-		{
-			addLine([string], priority, channel, isRepeating);
-		}
+        protected function onLayerEnterFrame(e:Event):void
+        {
+            var msDelta:uint = updateTime();
+            announceDataUpdate(msDelta);
+            announceViewUpdate(msDelta);
+        }
 
-		public function logch(channel:*, ...strings):void
-		{
-			addLine(strings, ConsoleLevel.LOG, channel);
-		}
+        protected function updateTime():uint
+        {
+            var timeNow:Number = getTimer();
+            var msDelta:uint = timeNow - _lastTimer;
+            _lastTimer = timeNow;
+            return msDelta;
+        }
 
-		public function infoch(channel:*, ...strings):void
-		{
-			addLine(strings, ConsoleLevel.INFO, channel);
-		}
+        protected function announceDataUpdate(msDelta:uint):void
+        {
+            var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.UPDATE_DATA);
+            event.msDelta = msDelta;
+            dispatchEvent(event);
+        }
 
-		public function debugch(channel:*, ...strings):void
-		{
-			addLine(strings, ConsoleLevel.DEBUG, channel);
-		}
+        protected function announceViewUpdate(msDelta:uint):void
+        {
+            var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.DATA_UPDATED);
+            event.msDelta = msDelta;
+            dispatchEvent(event);
+        }
 
-		public function warnch(channel:*, ...strings):void
-		{
-			addLine(strings, ConsoleLevel.WARN, channel);
-		}
+        public function get paused():Boolean
+        {
+            return _paused;
+        }
 
-		public function errorch(channel:*, ...strings):void
-		{
-			addLine(strings, ConsoleLevel.ERROR, channel);
-		}
-
-		public function fatalch(channel:*, ...strings):void
-		{
-			addLine(strings, ConsoleLevel.FATAL, channel);
-		}
-
-		public function addCh(channel:*, strings:Array, priority:int = 2, isRepeating:Boolean = false):void
-		{
-			addLine(strings, priority, channel, isRepeating);
-		}
-
-		public function addHTML(...strings):void
-		{
-			addLine(strings, 2, Logs.DEFAULT_CHANNEL, false, testHTML(strings));
-		}
-
-		public function addHTMLch(channel:*, priority:int, ...strings):void
-		{
-			addLine(strings, priority, channel, false, testHTML(strings));
-		}
-
-		private function testHTML(args:Array):Boolean
-		{
-			try
+        public function set paused(newV:Boolean):void
+        {
+            if (_paused == newV)
+            {
+                return;
+            }
+            if (newV)
 			{
-				new XML("<p>" + args.join("") + "</p>");
-				// OR use RegExp?
+				logger.report("Paused", ConsoleLevel.CONSOLE_STATUS);
 			}
-			catch(err:Error)
+            else
 			{
-				return false;
+				logger.report("Resumed", ConsoleLevel.CONSOLE_STATUS);
 			}
-			return true;
-		}
+            _paused = newV;
+            dispatchEvent(new Event(_paused ? ConsoleEvent.PAUSED : ConsoleEvent.RESUMED));
+        }
 
-		//
-		public function get modules():ConsoleModulesManager
-		{
-			throwErrorIfNotStarted("modules");
-			return _modules;
-		}
+        //
+        //
+        //
+
+        public function get modules():ConsoleModulesManager
+        {
+            return _modules;
+        }
+
+        public function get logger():ConsoleLogger
+        {
+            return _logger;
+        }
+
+        public function get layer():ConsoleLayer
+        {
+            return _display;
+        }
 		
-		public function get logger():ConsoleLogger
+		public function get mainPanel():MainPanel
 		{
-			throwErrorIfNotStarted("logger");
-			return _logger;
+			return layer.mainPanel;
 		}
 
-		public function get layer():ConsoleLayer
-		{
-			throwErrorIfNotStarted("layer");
-			return _display;
-		}
-
-		public function get config():ConsoleConfig
-		{
-			if (_config == null) _config = new ConsoleConfig();
-			return _config;
-		}
-
-		private function throwErrorIfNotStarted(propName:String = null):void
-		{
-			if (!started)
+        public function get config():ConsoleConfig
+        {
+            if (_config == null)
 			{
-				if (propName)
-				{
-					propName = "\"" + propName + "\"";
-				}
-				throw new Error("Call to console " + propName + " before Console have started.");
+				_config = new ConsoleConfig();
 			}
-		}
-
-		//
-		//
-		//
-		public function clear(channel:String = null):void
-		{
-			if (!started) return;
-			logger.logs.clear(channel);
-			if (!paused) layer.mainPanel.traces.updateToBottom();
-		}
-
-		public function getAllLog(splitter:String = "\r\n"):String
-		{
-			throwErrorIfNotStarted("getAllLog()");
-			return logger.logs.getLogsAsString(splitter);
-		}
-	}
+            return _config;
+        }
+    }
 }

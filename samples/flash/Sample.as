@@ -24,16 +24,17 @@
 */
 package 
 {
+	import com.junkbyte.console.CLog;
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
 	import com.junkbyte.console.logging.ConsoleLogger;
+	import com.junkbyte.console.logging.LogEntry;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.StandardConsoleModules;
 	import com.junkbyte.console.modules.remoting.LocalRemoting;
 	import com.junkbyte.console.vos.ConsoleModuleMatch;
-	import com.junkbyte.console.vos.LogEntry;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
@@ -80,29 +81,35 @@ package
 			setupUI();
 			
 			
-			var logger:ConsoleLogger = Cc.modules.getFirstMatchingModule(ConsoleModuleMatch.createForClass(ConsoleLogger)) as ConsoleLogger;
-			logger.addEntry(new LogEntry(["test"], "ch", 10));
-			logger.addEntry(new LogEntry(["An info message.", "Optionally there", "can be", "multiple arguments."], "ch", 4));
-			logger.addEntry(new LogEntry(["Some numbers and booleans", 341, 123123123, false, 0.123123, "END"], "ch", 4));
+			CLog.addEntry(new LogEntry(["test"], "ch", 10));
+			CLog.addEntry(new LogEntry(["An info message.", "Optionally there", "can be", "multiple arguments."], "ch", 4));
+			CLog.addEntry(new LogEntry(["Some numbers and booleans", 341, 123123123, false, 0.123123, "END"], "ch", 4));
 			
-			logger.addEntry(new LogEntry([<test><hello attribute="1234"/></test>], "ch", 4));
+			
+			CLog.log(<test><hello attribute="1234"/></test>);
 				
-			logger.addEntry(new LogEntry([Cc, Cc.config], "ch", 4));
+			CLog.addEntry(new LogEntry([Cc, Cc.config], "ch", 4));
+				
+			CLog.info("<html>Some random html <tags/></html>");
+				
+			CLog.addHTML("<html>Some <i>random</i> <b>html</b></html>");
+				
+			CLog.addHTML("<html>Some <i>random</i> <b>html<b/></html>");
 		}
 		
 		private function demoBasics():void
 		{
-			Cc.log("Hello world.");
-			Cc.info("An info message.", "Optionally there", "can be", "multiple arguments.");
-			Cc.debug("A debug level log.", "You can also pass an object and it'll become a link to inspect:", this);
-			Cc.warn("This is a warning log.", "Lets try the object linking again:", stage, " <- click it! (press 'exit' when done)");
-			Cc.error("This is an error log.", "This link might not work because it can get garbage collected:", new Sprite());
-			Cc.fatal("This is a fatal error log with high visibility.", "Also gets a stack trace on debug player...");
+			CLog.log("Hello world.");
+			CLog.info("An info message.", "Optionally there", "can be", "multiple arguments.");
+			//CLog.debug("A debug level log.", "You can also pass an object and it'll become a link to inspect:", this);
+			//CLog.warn("This is a warning log.", "Lets try the object linking again:", stage, " <- click it! (press 'exit' when done)");
+			//CLog.error("This is an error log.", "This link might not work because it can get garbage collected:", new Sprite());
+			//CLog.fatal("This is a fatal error log with high visibility.", "Also gets a stack trace on debug player...");
 			//
 			// Basic channel logging
 			//
-			Cc.infoch("myChannel", "Hello myChannel.");
-			Cc.debugch("myChannel", "A debug level log.", "There is also Cc.errorch() and Cc.fatalch(). Skipping that for demo.");
+			CLog.infoch("myChannel", "Hello myChannel.");
+			//CLog.debugch("myChannel", "A debug level log.", "There is also Cc.errorch() and Cc.fatalch(). Skipping that for demo.");
 			//
 			// Instanced channel
 			//
@@ -112,7 +119,7 @@ package
 			//
 			// Stack tracing
 			//
-			Cc.stack("Stack trace called from... (need debug player)");
+			//CLog.stack("Stack trace called from... (need debug player)");
 			/* //If you have debug player, it'll show up in console as:
 			   Stack trace called from... (need debug player)
 			    @ Sample/demoBasics()
@@ -120,14 +127,6 @@ package
 			*/
 			// Use Cc.stackch(...) to have channel name.
 
-			//
-			// Advanced logging
-			//
-			Cc.add("My advanced log in priority 2, 1st call", 2, true);
-			Cc.add("My advanced log in priority 2, 2nd call", 2, true);
-			Cc.add("My advanced log in priority 2, 3rd call", 2, true);
-			Cc.add("My advanced log in priority 2, 4th call", 2, true);
-			Cc.add("My advanced log in priority 2, 5th call", 2, true);
 			// When 'no repeat' (3rd param) is set to true, it will not generate new lines for each log.
 			// It will keep replacing the previous line with repeat turned on until a certain count is passed.
 			// For example, if you are tracing download progress and you don't want to flood console with it.
@@ -168,13 +167,13 @@ package
 		private function onButtonClick(e:MouseEvent):void{
 			switch(MovieClip(e.currentTarget).name){
 				case "btnAdd1":
-					Cc.add(getScreenChild("txtLog").text,int(getScreenChild("txtPriority").text));
+					//CLog.add(getScreenChild("txtLog").text,int(getScreenChild("txtPriority").text));
 				break;
 				case "btnAdd2":
 					var ch:String = getScreenChild("txtChannel").text;
 					var txt:String = getScreenChild("txtLog2").text;
 					var lvl:int = int(getScreenChild("txtPriority2").text);
-					Cc.ch(ch, txt, lvl);
+					//CLog.ch(ch, txt, lvl);
 				break;
 				case "btnInterval":
 					if(_interval){
@@ -192,7 +191,7 @@ package
 			}
 		}
 		private function onIntervalEvent():void{
-			Cc.ch("test", "Repeative log _ " + getTimer(), 5,true);
+			//CLog.ch("test", "Repeative log _ " + getTimer(), 5,true);
 		}
 		private function spam():void{
 			for(var i:int = 0;i<100;i++){
@@ -210,7 +209,7 @@ package
 					str = "voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis";
 				}
 				_spamcount++;
-				Cc.ch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*4));
+				//CLog.ch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*4));
 			}
 		}
 		

@@ -23,8 +23,8 @@
 * 
 */
 package com.junkbyte.console {
-	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.core.ConsoleModulesManager;
+	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	
 	import flash.display.DisplayObjectContainer;
@@ -46,7 +46,7 @@ package com.junkbyte.console {
 			_name = makeConsoleChannel(n);
 			if (_name == Logs.GLOBAL_CHANNEL) _name = Logs.DEFAULT_CHANNEL;
 			// allowed to pass in Console here incase you want to use a different console instance from whats used in Cc
-			_c = c?c:Cc;
+			_c = c?c:CLog;
 		}
 		public function add(str:*, priority:Number = 2, isRepeating:Boolean = false):void{
 			if(enabled) _c.ch(_name, str, priority, isRepeating);

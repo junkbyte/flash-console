@@ -35,8 +35,8 @@ package com.junkbyte.console.modules.referencing
 		public function ConsoleInspectorModule()
 		{
 			
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IRemoter), dependentModuleRegistered, dependentModuleUnregistered);
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), dependentModuleRegistered, dependentModuleUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IRemoter), dependentModuleRegistered, dependentModuleUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ConsoleReferencingModule), dependentModuleRegistered, dependentModuleUnregistered);
 		}
 		
 		public function dependentModuleRegistered(module:IConsoleModule):void

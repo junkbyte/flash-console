@@ -66,7 +66,7 @@ package com.junkbyte.console.modules.displayRoller
             
             menu = new ConsoleMenuItem("Ro", onMenuClick, null, "Display Roller::Map the display list under your mouse");
 
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
 		}
 		
 		protected function onMainMenuRegistered(module:IMainMenu):void

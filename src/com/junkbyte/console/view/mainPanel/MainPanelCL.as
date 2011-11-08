@@ -53,8 +53,8 @@ package com.junkbyte.console.view.mainPanel
 		public function MainPanelCL(parentPanel:ConsolePanel)
 		{
 			super(parentPanel);
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IConsoleUserData), userInfoRegistered, userInfoUnregistered);
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IConsoleUserData), userInfoRegistered, userInfoUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
 			
 			
 			

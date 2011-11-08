@@ -21,7 +21,7 @@ package com.junkbyte.console.modules.ruler
 		{
 			menu = new ConsoleMenuItem("RL", start, null, "Screen Ruler::Measure the distance and angle between two points on screen.");
 			
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
 		}
 		
 		protected function onMainMenuRegistered(module:IMainMenu):void

@@ -46,7 +46,7 @@ package com.junkbyte.console.modules.commandLine
             addInternalSlashCommand("help", printHelp, "How to use command line");
             addInternalSlashCommand("commands", cmdsCmd, "Show a list of all slash commands", true);
 			
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IRemoter), remoterRegistered, remoterUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IRemoter), remoterRegistered, remoterUnregistered);
         }
 
         protected function remoterRegistered(remoter:IRemoter):void

@@ -1,7 +1,8 @@
 package com.junkbyte.console.view.mainPanel
 {
-    import com.junkbyte.console.logging.Logs;
+    import com.junkbyte.console.events.ConsoleEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
+    import com.junkbyte.console.logging.Logs;
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.modules.commandLine.ICommandLine;
     import com.junkbyte.console.modules.keyStates.IKeyStates;
@@ -84,8 +85,9 @@ package com.junkbyte.console.view.mainPanel
 
             _traceField.addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel, false, 0, true);
 
-            addModuleDependencyCallback(ConsoleModuleMatch.createForClass(IConsoleUserData), userInfoRegistered, userInfoUnregistered);
-            addModuleDependencyCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
+            addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(IConsoleUserData), userInfoRegistered, userInfoUnregistered);
+            addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(ICommandLine), commandLineRegistered, commandLineUnregistered);
+			
         }
 
         override protected function registeredToConsole():void
@@ -101,8 +103,27 @@ package com.junkbyte.console.view.mainPanel
             addChild(_bottomLine);
             addChild(_scrollBar.sprite);
 
+			console.addEventListener(ConsoleEvent.PAUSED, onConsolePaused, false, 0, true);
+			console.addEventListener(ConsoleEvent.RESUMED, onConsoleResumed, false, 0, true);
+			
             super.registeredToConsole();
         }
+		
+		protected function onConsolePaused(e:Event):void
+		{
+			if (_atBottom)
+			{
+				_atBottom = false;
+				_updateTraces();
+				_traceField.scrollV = _traceField.maxScrollV;
+			}
+		}
+		
+		protected function onConsoleResumed(e:Event):void
+		{
+			_atBottom = true;
+			updateBottom();
+		}
 
         override public function setArea(x:Number, y:Number, width:Number, height:Number):void
         {
@@ -190,21 +211,6 @@ package com.junkbyte.console.view.mainPanel
             }
         }
 
-        public function setPaused(b:Boolean):void
-        {
-            if (b && _atBottom)
-            {
-                _atBottom = false;
-                _updateTraces();
-                _traceField.scrollV = _traceField.maxScrollV;
-            }
-            else if (!b)
-            {
-                _atBottom = true;
-                updateBottom();
-            }
-        }
-
         public function getChannelsLink(limited:Boolean = false):String
         {
             var str:String = "<chs>";
@@ -258,7 +264,7 @@ package com.junkbyte.console.view.mainPanel
             }
             else
             {
-                console.setViewingChannels(chn);
+                console.mainPanel.setViewingChannels(chn);
             }
         }
 
@@ -516,8 +522,8 @@ package com.junkbyte.console.view.mainPanel
 
         private function startFilter():void
         {
-            console.clear(Logs.FILTER_CHANNEL);
-			console.logger.logs.addChannel(Logs.FILTER_CHANNEL);
+            logger.logs.clear(Logs.FILTER_CHANNEL);
+			logger.logs.addChannel(Logs.FILTER_CHANNEL);
             setViewingChannels(Logs.FILTER_CHANNEL);
         }
 

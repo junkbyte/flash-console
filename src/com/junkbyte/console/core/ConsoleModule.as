@@ -71,7 +71,7 @@ package com.junkbyte.console.core
             }
         }
 		
-		protected function addModuleDependencyCallback(matcher:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function = null):void
+		protected function addModuleRegisteryCallback(matcher:ConsoleModuleMatch, registerCallback:Function, unregisterCallback:Function = null):void
 		{
 			if(_moduleDependences == null)
 			{

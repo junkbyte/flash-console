@@ -19,7 +19,7 @@ package com.junkbyte.console.modules.keyStates
 		{
 			super();
 			
-			addModuleDependencyCallback(ConsoleModuleMatch.createForClass(StageModule), stageModuleRegistered, stageModuleUnregistered);
+			addModuleRegisteryCallback(ConsoleModuleMatch.createForClass(StageModule), stageModuleRegistered, stageModuleUnregistered);
 		}
 		
 		protected function stageModuleRegistered(module:StageModule):void

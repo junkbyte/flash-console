@@ -102,6 +102,21 @@ package com.junkbyte.console.view.mainPanel
         {
             return _commandArea;
         }
+		
+		public function setViewingChannels(...channels:Array):void
+		{
+			traces.setViewingChannels.apply(this, channels);
+		}
+		
+		public function setIgnoredChannels(...channels:Array):void
+		{
+			traces.setIgnoredChannels.apply(this, channels);
+		}
+		
+		public function set minimumPriority(level:uint):void
+		{
+			traces.priority = level;
+		}
 
         private function onStartedDragging(e:Event):void
         {
