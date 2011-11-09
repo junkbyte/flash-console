@@ -34,7 +34,7 @@ package
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.StandardConsoleModules;
 	import com.junkbyte.console.modules.remoting.LocalRemoting;
-	import com.junkbyte.console.vos.ConsoleModuleMatch;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
@@ -67,11 +67,15 @@ package
 			
 			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			//Cc.remoting = true; // Start sending logs to remote (using LocalConnection)
+		
 			
-			Cc.layer.mainPanel.setPanelSize(640, 220);
+			Cc.mainPanel.setPanelSize(640, 220);
+		
+			//StandardConsoleModules.registerToConsole();
 			
-			StandardConsoleModules.registerToConsole();
-						//
+			CLog.log(Cc.modules.getAllModules().join(", "));
+			
+			//
 			// End of setup
 			//
 			
@@ -167,13 +171,13 @@ package
 		private function onButtonClick(e:MouseEvent):void{
 			switch(MovieClip(e.currentTarget).name){
 				case "btnAdd1":
-					//CLog.add(getScreenChild("txtLog").text,int(getScreenChild("txtPriority").text));
+					CLog.infoch(getScreenChild("txtLog").text,int(getScreenChild("txtPriority").text));
 				break;
 				case "btnAdd2":
 					var ch:String = getScreenChild("txtChannel").text;
 					var txt:String = getScreenChild("txtLog2").text;
 					var lvl:int = int(getScreenChild("txtPriority2").text);
-					//CLog.ch(ch, txt, lvl);
+					CLog.infoch(ch, txt, lvl);
 				break;
 				case "btnInterval":
 					if(_interval){
@@ -191,7 +195,7 @@ package
 			}
 		}
 		private function onIntervalEvent():void{
-			//CLog.ch("test", "Repeative log _ " + getTimer(), 5,true);
+			CLog.infoch("test", "Repeative log _ " + getTimer(), 5,true);
 		}
 		private function spam():void{
 			for(var i:int = 0;i<100;i++){
@@ -209,7 +213,7 @@ package
 					str = "voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis";
 				}
 				_spamcount++;
-				//CLog.ch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*4));
+				CLog.infoch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*4));
 			}
 		}
 		

@@ -24,18 +24,18 @@
 */
 package com.junkbyte.console.view
 {
-	import com.junkbyte.console.Console;
-	import com.junkbyte.console.ConsoleLevel;
-	import com.junkbyte.console.ConsoleStyle;
-	import com.junkbyte.console.core.ConsoleModulesManager;
-	import com.junkbyte.console.events.ConsoleEvent;
-	import com.junkbyte.console.view.mainPanel.MainPanel;
-	
-	import flash.display.Sprite;
-	import flash.events.Event;
-	import flash.geom.Rectangle;
-	import flash.text.TextField;
-	import flash.text.TextFieldAutoSize;
+    import com.junkbyte.console.Console;
+    import com.junkbyte.console.ConsoleLevel;
+    import com.junkbyte.console.ConsoleStyle;
+    import com.junkbyte.console.core.ConsoleModulesManager;
+    import com.junkbyte.console.events.ConsoleEvent;
+    import com.junkbyte.console.view.mainPanel.MainPanel;
+
+    import flash.display.Sprite;
+    import flash.events.Event;
+    import flash.geom.Rectangle;
+    import flash.text.TextField;
+    import flash.text.TextFieldAutoSize;
 
     public class ConsoleLayer extends Sprite
     {
@@ -48,49 +48,46 @@ package com.junkbyte.console.view
 
         private var _chsPanel:ChannelsPanel;
 
-        //private var _fpsPanel:GraphingPanel;
-        //private var _memPanel:GraphingPanel;
-        //private var _graphsMap:Object = {};
-        //private var _graphPlaced:uint = 0;
-
         private var _tooltipField:TextField;
-
-        private var _canDraw:Boolean;
-
-        private var _topTries:int = 50;
 
         public function ConsoleLayer(console:Console)
         {
-            name = "Console";
-			_console = console;
+            name = "ConsoleLayer";
+            _console = console;
+        }
+
+        public function get console():Console
+        {
+            return _console;
         }
 
         public function start():void
         {
-			_mainPanel = new MainPanel();
-			
-			var style:ConsoleStyle = console.config.style;
-			
-			_tooltipField = new TextField();
-			_tooltipField.name = "tooltip";
-			_tooltipField.styleSheet = style.styleSheet;
-			_tooltipField.background = true;
-			_tooltipField.backgroundColor = style.backgroundColor;
-			_tooltipField.mouseEnabled = false;
-			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
-			_tooltipField.multiline = true;
-			
-			addPanel(_mainPanel);
-			console.modules.registerModule(_mainPanel);
+            initToolTip();
+            initMainPanel();
 
             addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
         }
-		
-		
-		public function get console():Console
-		{
-			return _console;
-		}
+
+        private function initToolTip():void
+        {
+            var style:ConsoleStyle = console.config.style;
+            _tooltipField = new TextField();
+            _tooltipField.name = "tooltip";
+            _tooltipField.styleSheet = style.styleSheet;
+            _tooltipField.background = true;
+            _tooltipField.backgroundColor = style.backgroundColor;
+            _tooltipField.mouseEnabled = false;
+            _tooltipField.autoSize = TextFieldAutoSize.CENTER;
+            _tooltipField.multiline = true;
+        }
+
+        private function initMainPanel():void
+        {
+            _mainPanel = new MainPanel();
+            addPanel(_mainPanel);
+            console.modules.registerModule(_mainPanel);
+        }
 
         public function toggleVisibility():void
         {
@@ -109,8 +106,9 @@ package com.junkbyte.console.view
         {
             super.visible = v;
             if (v)
+            {
                 mainPanel.sprite.visible = true;
-
+            }
             console.dispatchEvent(ConsoleEvent.create(visible ? ConsoleEvent.SHOWN : ConsoleEvent.HIDDEN));
         }
 
@@ -119,8 +117,6 @@ package com.junkbyte.console.view
             removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
             addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
             stage.addEventListener(Event.MOUSE_LEAVE, onStageMouseLeave, false, 0, true);
-
-            console.addEventListener(ConsoleEvent.UPDATE_DATA, _onDataUpdated);
 
             registerStageModule();
         }
@@ -131,8 +127,6 @@ package com.junkbyte.console.view
             addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
             stage.removeEventListener(Event.MOUSE_LEAVE, onStageMouseLeave);
 
-            console.removeEventListener(ConsoleEvent.UPDATE_DATA, _onDataUpdated);
-
             unregisterStageModule();
         }
 
@@ -141,7 +135,7 @@ package com.junkbyte.console.view
             if (_stageModule == null)
             {
                 _stageModule = new StageModule(stage);
-				console.modules.registerModule(_stageModule);
+                console.modules.registerModule(_stageModule);
             }
         }
 
@@ -149,7 +143,7 @@ package com.junkbyte.console.view
         {
             if (_stageModule != null)
             {
-				console.modules.unregisterModule(_stageModule);
+                console.modules.unregisterModule(_stageModule);
                 _stageModule = null;
             }
         }
@@ -162,31 +156,6 @@ package com.junkbyte.console.view
         //
         //
         //
-        private function _onDataUpdated(e:ConsoleEvent):void
-        {
-            if (!visible || !parent)
-            {
-                return;
-            }
-
-            if (console.config.alwaysOnTop && parent.getChildAt(parent.numChildren - 1) != this && _topTries > 0)
-            {
-                _topTries--;
-                parent.addChild(this);
-				console.logger.report("Moved console on top (alwaysOnTop enabled), " + _topTries + " attempts left.", ConsoleLevel.CONSOLE_STATUS);
-            }
-            var paused:Boolean = console.paused;
-            var lineAdded:Boolean = console.logger.logs.newLogsSincesLastUpdate;
-            _canDraw = !paused;
-            _mainPanel.update(!paused && lineAdded);
-            if (!paused)
-            {
-                if (lineAdded && _chsPanel != null)
-                {
-                    _chsPanel.update();
-                }
-            }
-        }
 
         public function addPanel(panel:ConsolePanel):void
         {
@@ -197,15 +166,15 @@ package com.junkbyte.console.view
                 addChild(_tooltipField);
             }
         }
-		
-		public function removePanel(panel:ConsolePanel):void
-		{
-			panel.close();
-			if(contains(panel.sprite))
-			{
-				removeChild(panel.sprite);
-			}
-		}
+
+        public function removePanel(panel:ConsolePanel):void
+        {
+            panel.close();
+            if (contains(panel.sprite))
+            {
+                removeChild(panel.sprite);
+            }
+        }
 
         public function removePanelByName(n:String):void
         {
@@ -235,28 +204,7 @@ package com.junkbyte.console.view
 
         public function panelExists(n:String):Boolean
         {
-            return (getChildByName(n) as ConsolePanel) ? true : false;
-        }
-
-        /**
-         * Set panel position and size.
-         * <p>
-         * See panel names in Console.NAME, FPSPanel.NAME, MemoryPanel.NAME, RollerPanel.NAME, RollerPanel.NAME, etc...
-         * No effect if panel of that name doesn't exist.
-         * </p>
-         * @param	Name of panel to set
-         * @param	Rectangle area for panel size and position. Leave any property value zero to keep as is.
-         *  		For example, if you don't want to change the height of the panel, pass rect.height = 0;
-         */
-        public function setPanelArea(panelname:String, rect:Rectangle):void
-        {
-            var panel:ConsolePanel = getPanel(panelname);
-            if (panel)
-            {
-                panel.sprite.x = rect.x;
-                panel.sprite.y = rect.y;
-                panel.setPanelSize(rect.width ? rect.width : panel.sprite.width, rect.height ? rect.height : panel.sprite.height);
-            }
+            return (getChildByName(n) as ConsolePanel)  != null;
         }
 
         /*
@@ -373,19 +321,18 @@ package com.junkbyte.console.view
         {
             if (channelsPanel != b)
             {
-				console.logger.logs.cleanChannels();
+                console.logger.logs.cleanChannels();
                 if (b)
                 {
                     _chsPanel = new ChannelsPanel();
-					console.modules.registerModule(_chsPanel);
+                    console.modules.registerModule(_chsPanel);
                     _chsPanel.sprite.x = _mainPanel.sprite.x + _mainPanel.width - 332;
                     _chsPanel.sprite.y = _mainPanel.sprite.y - 2;
                     addPanel(_chsPanel);
-                    _chsPanel.update();
                 }
                 else
                 {
-					console.modules.unregisterModule(_chsPanel);
+                    console.modules.unregisterModule(_chsPanel);
                     removePanelByName(ChannelsPanel.NAME);
                     _chsPanel = null;
                 }

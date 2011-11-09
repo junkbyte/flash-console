@@ -25,8 +25,9 @@
 package com.junkbyte.console.view.mainPanel
 {
     import com.junkbyte.console.ConsoleLevel;
-    import com.junkbyte.console.logging.Logs;
+    import com.junkbyte.console.events.ConsoleEvent;
     import com.junkbyte.console.events.ConsolePanelEvent;
+    import com.junkbyte.console.logging.Logs;
     import com.junkbyte.console.view.ConsolePanel;
     
     import flash.events.Event;
@@ -141,17 +142,6 @@ package com.junkbyte.console.view.mainPanel
             return _enteringLogin;
         }
 
-        public function update(changed:Boolean):void
-        {
-            if (changed || _needUpdateMenu)
-            {
-                _needUpdateMenu = false;
-                _updateMenu();
-            }
-
-            traces.update(changed);
-        }
-
         override protected function resizePanel(w:Number, h:Number):void
         {
             super.resizePanel(w, h);
@@ -213,6 +203,7 @@ package com.junkbyte.console.view.mainPanel
 
         private function onMenuChanged(e:Event):void
         {
+			updateMenuArea();
             updateTraceArea();
         }
 

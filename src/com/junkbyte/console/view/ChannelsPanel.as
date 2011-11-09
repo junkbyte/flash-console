@@ -24,17 +24,22 @@
 */
 package com.junkbyte.console.view {
 	import com.junkbyte.console.core.ConsoleModulesManager;
+	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 	
+	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
-	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 
 	public class ChannelsPanel extends ConsolePanel{
 		
 		public static const NAME:String = "channelsPanel";
 		
 		protected var txtField:TextField;
+		
+		protected var needsUpdate:Boolean = true;
 		
 		public function ChannelsPanel() {
 			super();
@@ -61,7 +66,38 @@ package com.junkbyte.console.view {
 			addChild(txtField);
 		}
 		
-		public function update():void{
+		override protected function registeredToConsole():void
+		{
+			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			console.logger.logs.addEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
+			
+			super.registeredToConsole();
+		}
+		
+		override protected function unregisteredFromConsole():void
+		{
+			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			console.logger.logs.removeEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
+			
+			super.unregisteredFromConsole();
+		}
+		
+		private function onChannelsChanged(e:Event):void
+		{
+			needsUpdate = true;
+		}
+		
+		protected function onEnterFrame(event:Event):void
+		{
+			if(needsUpdate)
+			{
+				update();
+				needsUpdate = false;
+			}
+		}
+		
+		
+		protected function update():void{
 			txtField.wordWrap = false;
 			txtField.width = 80;
 			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> "+ layer.mainPanel.traces.getChannelsLink();
@@ -72,10 +108,12 @@ package com.junkbyte.console.view {
 			}
 			setPanelSize(txtField.width+4, txtField.height);
 		}
+		
 		private function onMenuRollOver(e:TextEvent):void
 		{
 			//modules.display.mainPanel.onMenuRollOver(e, this);
 		}
+		
 		protected function linkHandler(e:TextEvent):void{
 			txtField.setSelection(0, 0);
 			if(e.text == "close"){

@@ -1,5 +1,6 @@
 package com.junkbyte.console.view.mainPanel
 {
+    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.events.ConsoleEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
     import com.junkbyte.console.logging.Logs;
@@ -10,9 +11,7 @@ package com.junkbyte.console.view.mainPanel
     import com.junkbyte.console.utils.EscHTML;
     import com.junkbyte.console.utils.makeConsoleChannel;
     import com.junkbyte.console.view.ConsolePanel;
-    import com.junkbyte.console.view.ConsolePanelAreaModule;
     import com.junkbyte.console.view.ConsoleScrollBar;
-    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.vos.Log;
     
     import flash.display.Shape;
@@ -21,7 +20,7 @@ package com.junkbyte.console.view.mainPanel
     import flash.geom.ColorTransform;
     import flash.text.TextField;
 
-    public class MainPanelLogs extends ConsolePanelAreaModule
+    public class MainPanelLogs extends MainPanelSubArea
     {
 
         public static const VIEWING_CHANNELS_CHANGED:String = "viewingChannelsChanged";
@@ -103,11 +102,30 @@ package com.junkbyte.console.view.mainPanel
             addChild(_bottomLine);
             addChild(_scrollBar.sprite);
 
-			console.addEventListener(ConsoleEvent.PAUSED, onConsolePaused, false, 0, true);
-			console.addEventListener(ConsoleEvent.RESUMED, onConsoleResumed, false, 0, true);
+			console.addEventListener(ConsoleEvent.PAUSED, onConsolePaused);
+			console.addEventListener(ConsoleEvent.RESUMED, onConsoleResumed);
+			console.logger.logs.addEventListener(Event.CHANGE, onTracesChanged);
+			
+			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			
             super.registeredToConsole();
         }
+		
+		override protected function unregisteredFromConsole():void
+		{
+			console.removeEventListener(ConsoleEvent.PAUSED, onConsolePaused);
+			console.removeEventListener(ConsoleEvent.RESUMED, onConsoleResumed);
+			console.logger.logs.removeEventListener(Event.CHANGE, onTracesChanged);
+			
+			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			
+			super.unregisteredFromConsole();
+		}
+		
+		private function onTracesChanged(e:Event):void
+		{
+			_needUpdateTrace = true;
+		}
 		
 		protected function onConsolePaused(e:Event):void
 		{
@@ -193,19 +211,15 @@ package com.junkbyte.console.view.mainPanel
             module.addInternalSlashCommand("filterexp", null);
         }
 
-        public function update(changed:Boolean):void
+        protected function onEnterFrame(event:Event):void
         {
             if (_bottomLine.alpha > 0)
             {
                 _bottomLine.alpha -= 0.25;
             }
-            if (changed)
-            {
-                _bottomLine.alpha = 1;
-                _needUpdateTrace = true;
-            }
             if (_needUpdateTrace)
             {
+				_bottomLine.alpha = 1;
                 _needUpdateTrace = false;
                 _updateTraces(true);
             }

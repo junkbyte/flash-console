@@ -12,7 +12,6 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.view.ConsolePanel;
-	import com.junkbyte.console.view.ConsolePanelAreaModule;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.vos.Log;
 	
@@ -30,7 +29,7 @@ package com.junkbyte.console.view.mainPanel
 	import flash.text.TextFormat;
 	import flash.ui.Keyboard;
 	
-	public class MainPanelCL extends ConsolePanelAreaModule
+	public class MainPanelCL extends MainPanelSubArea
 	{
 		private static const CL_HISTORY:String = "clhistory";
 		

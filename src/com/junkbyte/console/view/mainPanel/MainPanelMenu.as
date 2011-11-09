@@ -1,16 +1,17 @@
 package com.junkbyte.console.view.mainPanel
 {
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IMainMenu;
+	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.keyStates.IKeyStates;
 	import com.junkbyte.console.view.ConsolePanel;
-	import com.junkbyte.console.view.ConsolePanelAreaModule;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
-	import com.junkbyte.console.core.ModuleTypeMatcher;
+	
 	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.geom.Rectangle;
@@ -21,7 +22,7 @@ package com.junkbyte.console.view.mainPanel
 	
 	
 	[Event(name="change", type="flash.events.Event")]
-	public class MainPanelMenu extends ConsolePanelAreaModule implements IMainMenu
+	public class MainPanelMenu extends MainPanelSubArea implements IMainMenu
 	{
 		
 		public static const NAME:String = "mainPanelMenu";
@@ -38,6 +39,8 @@ package com.junkbyte.console.view.mainPanel
 		
 		public var mini:Boolean;
 		
+		protected var needsUpdate:Boolean = true;
+		
 		public function MainPanelMenu(parentPanel:ConsolePanel)
 		{
 			super(parentPanel);
@@ -51,6 +54,7 @@ package com.junkbyte.console.view.mainPanel
 			_textField.autoSize = TextFieldAutoSize.RIGHT;
 			
 			addModuleRegisteryCallback(new ModuleTypeMatcher(MainPanelLogs), mainPanelLogsRegistered, null);
+			
 		}
 		
 		override protected function registeredToConsole():void
@@ -62,6 +66,8 @@ package com.junkbyte.console.view.mainPanel
 			
 			_textField.styleSheet = console.config.style.styleSheet;
 			
+			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			console.logger.logs.addEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
 			
 			ConsoleTextRoller.register(_textField, textRollOverHandler, linkHandler);
 		}
@@ -71,9 +77,27 @@ package com.junkbyte.console.view.mainPanel
 		{
 			super.unregisteredFromConsole();
 			
+			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			console.logger.logs.removeEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
+			
 			mainPanel.unregisterMoveDragger(textField);
 			removeChild(textField);
 		}
+		
+		private function onChannelsChanged(e:Event):void
+		{
+			needsUpdate = true;
+		}
+		
+		protected function onEnterFrame(event:Event):void
+		{
+			if(needsUpdate)
+			{
+				update();
+				needsUpdate = false;
+			}
+		}
+		
 		
 		protected function mainPanelLogsRegistered(module:MainPanelLogs):void
 		{
@@ -149,6 +173,7 @@ package com.junkbyte.console.view.mainPanel
 			buildInMenus.push(menu);
 			buildInMenus.sort(menuSorter);
 			menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
+			needsUpdate = true;
 		}
 		
 		public function addMenu(menu:IConsoleMenuItem):void{
@@ -159,6 +184,7 @@ package com.junkbyte.console.view.mainPanel
 				moduleMenus.sort(menuSorter);
 				menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
 			}
+			needsUpdate = true;
 		}
 		
 		public function removeMenu(menu:IConsoleMenuItem):void{
@@ -168,6 +194,7 @@ package com.junkbyte.console.view.mainPanel
 				moduleMenus.splice(index, 1);
 				menu.removeEventListener(Event.CHANGE, onMenuChanged);
 			}
+			needsUpdate = true;
 		}
 		
 		protected function menuSorter(a:IConsoleMenuItem, b:IConsoleMenuItem):int
@@ -181,7 +208,7 @@ package com.junkbyte.console.view.mainPanel
 		
 		protected function onMenuChanged(event:Event):void
 		{
-			update();
+			needsUpdate = true;
 		}
 		
 		protected function initModuleMenus():void

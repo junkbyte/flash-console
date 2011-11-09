@@ -15,7 +15,7 @@ package com.junkbyte.console.view
 			super();
 			if(stage == null)
 			{
-				throw new Error("StageModule requires that stage is not null.");
+				throw new ArgumentError();
 			}
 			_stage = stage;
 		}

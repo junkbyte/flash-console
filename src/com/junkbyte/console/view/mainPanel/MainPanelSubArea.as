@@ -1,18 +1,19 @@
-package com.junkbyte.console.view
+package com.junkbyte.console.view.mainPanel
 {
 
-    import com.junkbyte.console.view.mainPanel.MainPanel;
     
     import flash.geom.Rectangle;
+    import com.junkbyte.console.view.ConsoleDisplayModule;
+    import com.junkbyte.console.view.ConsolePanel;
 
-    public class ConsolePanelAreaModule extends ConsoleDisplayModule
+    public class MainPanelSubArea extends ConsoleDisplayModule
     {
 
         private var parentPanel:ConsolePanel;
 
         private var _area:Rectangle = new Rectangle();
 
-        public function ConsolePanelAreaModule(parentPanel:ConsolePanel)
+        public function MainPanelSubArea(parentPanel:ConsolePanel)
         {
             super();
             this.parentPanel = parentPanel;

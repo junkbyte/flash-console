@@ -38,7 +38,9 @@ package com.junkbyte.console.logging
 	import flash.events.Event;
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
-
+	
+	[Event(name = "change", type = "flash.events.Event")]
+	[Event(name = "channelsChanged", type = "flash.events.Event")]
 	public class Logs extends ConsoleModule{
 		
 		public static const CHANNELS_CHANGED:String = "channelsChanged";
@@ -53,8 +55,6 @@ package com.junkbyte.console.logging
 		private var _repeating:uint;
 		private var _lastRepeat:Log;
 		private var _newRepeat:Log;
-		private var _hasNewLog:Boolean;
-		private var _hadNewLog:Boolean;
 		
 		public var first:Log;
 		public var last:Log;
@@ -143,8 +143,6 @@ package com.junkbyte.console.logging
 		
 		protected function update(event:ConsoleEvent):void
 		{
-			_hadNewLog = _hasNewLog;
-			_hasNewLog = false;
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){
 				if(_lastRepeat) remove(_lastRepeat);
@@ -152,11 +150,6 @@ package com.junkbyte.console.logging
 				_newRepeat = null;
 				push(_lastRepeat);
 			}
-		}
-		
-		public function get newLogsSincesLastUpdate():Boolean
-		{
-			return _hadNewLog;
 		}
 		
 		public function getStack(depth:int, priority:int):String{
@@ -195,7 +188,6 @@ package com.junkbyte.console.logging
 		}
 		
 		public function add(line:Log):void{
-			_hasNewLog = true;
 			addChannel(line.ch);
 			send2Remote(line);
 			if (line.repeat) {
@@ -219,6 +211,7 @@ package com.junkbyte.console.logging
 			if ( config.tracing && config.traceCall != null) {
 				config.traceCall(line.ch, line.plainText(), line.priority);
 			}
+			announceLogsChanged();
 		}
 		public function clear(channel:String = null):void{
 			if(channel){
@@ -237,11 +230,17 @@ package com.junkbyte.console.logging
 				_channels = new Object();
 			}
 			announceChannelChanged();
-			_hasNewLog = true;
+			announceLogsChanged();
 		}
+		
 		private function announceChannelChanged():void
 		{
 			dispatchEvent(new Event(CHANNELS_CHANGED));
+		}
+		
+		private function announceLogsChanged():void
+		{
+			dispatchEvent(new Event(Event.CHANGE));
 		}
 		
 		public function getAllLog(splitter:String = "\r\n"):String

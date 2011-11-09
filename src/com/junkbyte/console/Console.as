@@ -83,6 +83,7 @@ package com.junkbyte.console
             config.style.updateStyleSheet();
 			initData();
             initDisplay();
+			sayIntro();
             addToContainer(container);
             dispatchEvent(ConsoleEvent.create(ConsoleEvent.STARTED));
         }
@@ -92,11 +93,6 @@ package com.junkbyte.console
 			initModulesManager();
 			listenForLoggerRegister();
 			registerLoggerModule();
-			/*
-			modules.registerModule(new ConsoleReferencingModule());
-			modules.registerModule(new SlashCommandLine());
-			modules.registerModule(new KeyBinder());
-			*/
 		}
 
         protected function initModulesManager():void
@@ -132,16 +128,26 @@ package com.junkbyte.console
 
         protected function initDisplay():void
         {
-            _display = new ConsoleLayer(this);
+			initConsoleLayer();
 
             if (config.keystrokePassword)
-                _display.visible = false;
+			{
+				_display.visible = false;
+			}
             _display.start();
-
-            logger.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
-
+			
             layer.addEventListener(Event.ENTER_FRAME, onLayerEnterFrame);
         }
+		
+		protected function initConsoleLayer():void
+		{
+			_display = new ConsoleLayer(this);
+		}
+		
+		protected function sayIntro():void
+		{
+			logger.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
+		}
 
         protected function addToContainer(container:DisplayObjectContainer):void
         {
@@ -185,8 +191,8 @@ package com.junkbyte.console
         protected function onLayerEnterFrame(e:Event):void
         {
             var msDelta:uint = updateTime();
-            announceDataUpdate(msDelta);
-            announceViewUpdate(msDelta);
+			announceUpdateData(msDelta);
+			announceDataUpdated(msDelta);
         }
 
         protected function updateTime():uint
@@ -197,19 +203,19 @@ package com.junkbyte.console
             return msDelta;
         }
 
-        protected function announceDataUpdate(msDelta:uint):void
+        protected function announceUpdateData(msDelta:uint):void
         {
             var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.UPDATE_DATA);
             event.msDelta = msDelta;
             dispatchEvent(event);
         }
-
-        protected function announceViewUpdate(msDelta:uint):void
-        {
-            var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.DATA_UPDATED);
-            event.msDelta = msDelta;
-            dispatchEvent(event);
-        }
+		
+		protected function announceDataUpdated(msDelta:uint):void
+		{
+			var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.DATA_UPDATED);
+			event.msDelta = msDelta;
+			dispatchEvent(event);
+		}
 
         public function get paused():Boolean
         {
