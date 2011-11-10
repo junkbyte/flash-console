@@ -1,27 +1,28 @@
 /*
- *
- * Copyright (c) 2008-2010 Lu Aye Oo
- *
- * @author 		Lu Aye Oo
- *
- * http://code.google.com/p/flash-console/
- *
- *
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- * 1. The origin of this software must not be misrepresented; you must not
- * claim that you wrote the original software. If you use this software
- * in a product, an acknowledgment in the product documentation would be
- * appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- * misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- *
- */
+*
+* Copyright (c) 2008-2011 Lu Aye Oo
+*
+* @author 		Lu Aye Oo
+*
+* http://code.google.com/p/flash-console/
+* http://junkbyte.com
+*
+*
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 1. The origin of this software must not be misrepresented; you must not
+* claim that you wrote the original software. If you use this software
+* in a product, an acknowledgment in the product documentation would be
+* appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+* misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+*
+*/
 package com.junkbyte.console
 {
     import com.junkbyte.console.core.ConsoleModulesManager;
@@ -32,7 +33,7 @@ package com.junkbyte.console
     import com.junkbyte.console.view.ConsoleLayer;
     import com.junkbyte.console.view.mainPanel.MainPanel;
     import com.junkbyte.console.core.ModuleTypeMatcher;
-    
+
     import flash.display.DisplayObject;
     import flash.display.DisplayObjectContainer;
     import flash.events.Event;
@@ -81,19 +82,19 @@ package com.junkbyte.console
                 return;
             }
             config.style.updateStyleSheet();
-			initData();
+            initData();
             initDisplay();
-			sayIntro();
+            sayIntro();
             addToContainer(container);
             dispatchEvent(ConsoleEvent.create(ConsoleEvent.STARTED));
         }
-		
-		protected function initData():void
-		{
-			initModulesManager();
-			listenForLoggerRegister();
-			registerLoggerModule();
-		}
+
+        protected function initData():void
+        {
+            initModulesManager();
+            listenForLoggerRegister();
+            registerLoggerModule();
+        }
 
         protected function initModulesManager():void
         {
@@ -105,49 +106,49 @@ package com.junkbyte.console
             var watcher:ModuleRegisteryWatcher = ModuleRegisteryWatcher.createUsingModulesManager(_modules);
             watcher.addCallback(new ModuleTypeMatcher(ConsoleLogger), onLoggerRegistered);
         }
-		
-		protected function registerLoggerModule():void
-		{
-			modules.registerModule(CLog != null ? CLog : new ConsoleLogger());
-		}
-		
-		// this is so that if anyone wants to extend ConsoleLogger and register it, it'll catch that new module as replacement.
-		protected function onLoggerRegistered(logger:ConsoleLogger):void
-		{
-			if (logger != null)
-			{
-				_logger = logger;
-				setStaticCLog();
-			}
-		}
-		
-		protected function setStaticCLog():void
-		{
-			CLog = logger;
-		}
+
+        protected function registerLoggerModule():void
+        {
+            modules.registerModule(CLog != null ? CLog : new ConsoleLogger());
+        }
+
+        // this is so that if anyone wants to extend ConsoleLogger and register it, it'll catch that new module as replacement.
+        protected function onLoggerRegistered(logger:ConsoleLogger):void
+        {
+            if (logger != null)
+            {
+                _logger = logger;
+                setStaticCLog();
+            }
+        }
+
+        protected function setStaticCLog():void
+        {
+            CLog = logger;
+        }
 
         protected function initDisplay():void
         {
-			initConsoleLayer();
+            initConsoleLayer();
 
             if (config.keystrokePassword)
-			{
-				_display.visible = false;
-			}
+            {
+                _display.visible = false;
+            }
             _display.start();
-			
+
             layer.addEventListener(Event.ENTER_FRAME, onLayerEnterFrame);
         }
-		
-		protected function initConsoleLayer():void
-		{
-			_display = new ConsoleLayer(this);
-		}
-		
-		protected function sayIntro():void
-		{
-			logger.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
-		}
+
+        protected function initConsoleLayer():void
+        {
+            _display = new ConsoleLayer(this);
+        }
+
+        protected function sayIntro():void
+        {
+            logger.report("<b>Console v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE + "</b> build " + ConsoleVersion.BUILD + ". " + Capabilities.playerType + " " + Capabilities.version + ".", ConsoleLevel.CONSOLE_EVENT);
+        }
 
         protected function addToContainer(container:DisplayObjectContainer):void
         {
@@ -191,8 +192,8 @@ package com.junkbyte.console
         protected function onLayerEnterFrame(e:Event):void
         {
             var msDelta:uint = updateTime();
-			announceUpdateData(msDelta);
-			announceDataUpdated(msDelta);
+            announceUpdateData(msDelta);
+            announceDataUpdated(msDelta);
         }
 
         protected function updateTime():uint
@@ -209,13 +210,13 @@ package com.junkbyte.console
             event.msDelta = msDelta;
             dispatchEvent(event);
         }
-		
-		protected function announceDataUpdated(msDelta:uint):void
-		{
-			var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.DATA_UPDATED);
-			event.msDelta = msDelta;
-			dispatchEvent(event);
-		}
+
+        protected function announceDataUpdated(msDelta:uint):void
+        {
+            var event:ConsoleEvent = ConsoleEvent.create(ConsoleEvent.DATA_UPDATED);
+            event.msDelta = msDelta;
+            dispatchEvent(event);
+        }
 
         public function get paused():Boolean
         {
@@ -229,13 +230,13 @@ package com.junkbyte.console
                 return;
             }
             if (newV)
-			{
-				logger.report("Paused", ConsoleLevel.CONSOLE_STATUS);
-			}
+            {
+                logger.report("Paused", ConsoleLevel.CONSOLE_STATUS);
+            }
             else
-			{
-				logger.report("Resumed", ConsoleLevel.CONSOLE_STATUS);
-			}
+            {
+                logger.report("Resumed", ConsoleLevel.CONSOLE_STATUS);
+            }
             _paused = newV;
             dispatchEvent(new Event(_paused ? ConsoleEvent.PAUSED : ConsoleEvent.RESUMED));
         }
@@ -258,18 +259,18 @@ package com.junkbyte.console
         {
             return _display;
         }
-		
-		public function get mainPanel():MainPanel
-		{
-			return layer.mainPanel;
-		}
+
+        public function get mainPanel():MainPanel
+        {
+            return layer.mainPanel;
+        }
 
         public function get config():ConsoleConfig
         {
             if (_config == null)
-			{
-				_config = new ConsoleConfig();
-			}
+            {
+                _config = new ConsoleConfig();
+            }
             return _config;
         }
     }

@@ -1,10 +1,11 @@
 /*
 *
-* Copyright (c) 2008-2010 Lu Aye Oo
+* Copyright (c) 2008-2011 Lu Aye Oo
 *
 * @author 		Lu Aye Oo
 *
 * http://code.google.com/p/flash-console/
+* http://junkbyte.com
 *
 *
 * This software is provided 'as-is', without any express or implied

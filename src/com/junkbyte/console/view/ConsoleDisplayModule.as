@@ -1,10 +1,11 @@
 /*
 *
-* Copyright (c) 2008-2010 Lu Aye Oo
+* Copyright (c) 2008-2011 Lu Aye Oo
 *
 * @author 		Lu Aye Oo
 *
 * http://code.google.com/p/flash-console/
+* http://junkbyte.com
 *
 *
 * This software is provided 'as-is', without any express or implied
@@ -24,12 +25,13 @@
 */
 package com.junkbyte.console.view
 {
-	import com.junkbyte.console.core.ConsoleModule;
 
-	import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
-	import flash.display.Sprite;
-	import flash.events.Event;
+    import com.junkbyte.console.core.ConsoleModule;
+
+    import flash.display.DisplayObject;
+    import flash.display.DisplayObjectContainer;
+    import flash.display.Sprite;
+    import flash.events.Event;
 
     [Event(name = "addedToConsoleLayer", type = "com.junkbyte.console.events.ConsolePanelEvent")]
     [Event(name = "removedFromConsoleLayer", type = "com.junkbyte.console.events.ConsolePanelEvent")]

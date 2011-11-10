@@ -1,11 +1,12 @@
 ﻿/*
-* 
-* Copyright (c) 2008-2010 Lu Aye Oo
-* 
+*
+* Copyright (c) 2008-2011 Lu Aye Oo
+*
 * @author 		Lu Aye Oo
-* 
+*
 * http://code.google.com/p/flash-console/
-* 
+* http://junkbyte.com
+*
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,316 +21,411 @@
 * 2. Altered source versions must be plainly marked as such, and must not be
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
-* 
+*
 */
-package com.junkbyte.console.logging 
+package com.junkbyte.console.logging
 {
-	import com.junkbyte.console.Console;
-	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.events.ConsoleEvent;
-	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.interfaces.IRemoter;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
-	import com.junkbyte.console.utils.makeConsoleChannel;
-	import com.junkbyte.console.core.ModuleTypeMatcher;
-	import com.junkbyte.console.vos.Log;
-	
-	import flash.events.Event;
-	import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;
-	
-	[Event(name = "change", type = "flash.events.Event")]
-	[Event(name = "channelsChanged", type = "flash.events.Event")]
-	public class Logs extends ConsoleModule{
-		
-		public static const CHANNELS_CHANGED:String = "channelsChanged";
-		
-		public static const GLOBAL_CHANNEL:String = " * ";
-		public static const DEFAULT_CHANNEL:String = "-";
-		public static const CONSOLE_CHANNEL:String = "C";
-		public static const FILTER_CHANNEL:String = "~";
-		public static const INSPECTING_CHANNEL:String = "⌂";
-		
-		private var _channels:Object;
-		private var _repeating:uint;
-		private var _lastRepeat:Log;
-		private var _newRepeat:Log;
-		
-		public var first:Log;
-		public var last:Log;
-		
-		protected var remoter:IRemoter;
-		protected var refs:ConsoleReferencingModule;
-		
-		private var _length:uint;
-		//private var _lines:uint; // number of lines since start.
-		
-		public function Logs(){
-			super();
-			_channels = new Object();
-			
-			addModuleRegisteryCallback(new ModuleTypeMatcher(IRemoter), onRemoterRegistered, onRemoterUnregistered);
-			
-			// TODO. tempoary dependency
-			addModuleRegisteryCallback(new ModuleTypeMatcher(ConsoleReferencingModule), onRefencerRegistered, onRefencerUnregistered);
-		}
-		
-		
-		
-		override public function getModuleName():String
-		{
-			return ConsoleModuleNames.LOGS;
-		}
-		
-		override protected function registeredToConsole():void
-		{
-			super.registeredToConsole();
-			console.addEventListener(ConsoleEvent.UPDATE_DATA, update);
-		}
-		
-		override protected function unregisteredFromConsole():void
-		{
-			super.unregisteredFromConsole();
-			console.removeEventListener(ConsoleEvent.UPDATE_DATA, update);
-		}
-		
-		protected function onRemoterRegistered(remoter:IRemoter):void
-		{
-			this.remoter = remoter;
-			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
-			remoter.registerCallback("log", function(bytes:ByteArray):void{
-				add(Log.FromBytes(bytes));
-			});
-			if(remoter.connected)
-			{
-				onRemoteConnection();
-			}
-		}
-		
-		protected function onRemoterUnregistered(remoter:IRemoter):void
-		{
-			remoter.removeEventListener(Event.CONNECT, onRemoteConnection);
-			remoter.registerCallback("log", null);
-			this.remoter = null;
-		}
-		
-		protected function onRefencerRegistered(ref:ConsoleReferencingModule):void
-		{
-			refs = ref;
-		}
-		
-		protected function onRefencerUnregistered(ref:ConsoleReferencingModule):void
-		{
-			refs = null;
-		}
-		
-		protected function onRemoteConnection(e:Event = null):void{
-			var log:Log = first;
-			while(log){
-				send2Remote(log);
-				log = log.next;
-			}
-		}
-		
-		private function send2Remote(line:Log):void{
-			if(remoter != null && remoter.connected) {
-				var bytes:ByteArray = new ByteArray();
-				line.toBytes(bytes);
-				remoter.send("log", bytes);
-			}
-		}
-		
-		
-		protected function update(event:ConsoleEvent):void
-		{
-			if(_repeating > 0) _repeating--;
-			if(_newRepeat){
-				if(_lastRepeat) remove(_lastRepeat);
-				_lastRepeat = _newRepeat;
-				_newRepeat = null;
-				push(_lastRepeat);
-			}
-		}
-		
-		public function getStack(depth:int, priority:int):String{
-			var e:Error = new Error();
-			var str:String = e.hasOwnProperty("getStackTrace")?e.getStackTrace():null;
-			if(!str) return "";
-			var txt:String = "";
-			var lines:Array = str.split(/\n\sat\s/);
-			var len:int = lines.length;
-			var classStrs:Array = new Array("Function", getQualifiedClassName(Console), getQualifiedClassName(Logs));
-			
-			if(config.stackTraceExitClasses)
-			{
-				for each(var obj:Object in config.stackTraceExitClasses)
-				{
-					classStrs.push(getQualifiedClassName(obj));
-				}
-			}
-			
-			var reg:RegExp = new RegExp(classStrs.join("|"));
-			var found:Boolean = false;
-			for (var i:int = 2; i < len; i++){
-				if(!found && (lines[i].search(reg) != 0)){
-					found = true;
-				}
-				if(found){
-					txt += "\n<p"+priority+"> @ "+lines[i]+"</p"+priority+">";
-					if(priority>0) priority--;
-					depth--;
-					if(depth<=0){
-						break;
-					}
-				}
-			}
-			return txt;
-		}
-		
-		public function add(line:Log):void{
-			addChannel(line.ch);
-			send2Remote(line);
-			if (line.repeat) {
-				if(_repeating > 0 && _lastRepeat){
-					//line.line = _lastRepeat.line;
-					_newRepeat = line;
-					return;
-				}else{
-					_repeating = config.maxRepeats;
-					_lastRepeat = line;
-				}
-			}
-			//_lines++;
-			//line.line = _lines;
-			//
-			push(line);
-			while(_length > config.maxLines && config.maxLines > 0){
-				remove(first);
-			}
-			//
-			if ( config.tracing && config.traceCall != null) {
-				config.traceCall(line.ch, line.plainText(), line.priority);
-			}
-			announceLogsChanged();
-		}
-		public function clear(channel:String = null):void{
-			if(channel){
-				var line:Log = first;
-				while(line){
-					if(line.ch == channel){
-						remove(line);
-					}
-					line = line.next;
-				}
-				delete _channels[channel];
-			}else{
-				first = null;
-				last = null;
-				_length = 0;
-				_channels = new Object();
-			}
-			announceChannelChanged();
-			announceLogsChanged();
-		}
-		
-		private function announceChannelChanged():void
-		{
-			dispatchEvent(new Event(CHANNELS_CHANGED));
-		}
-		
-		private function announceLogsChanged():void
-		{
-			dispatchEvent(new Event(Event.CHANGE));
-		}
-		
-		public function getAllLog(splitter:String = "\r\n"):String
-		{
-			return getLogsAsString(splitter);
-		}
-		
-		public function getLogsAsString(splitter:String, incChNames:Boolean = true, filter:Function = null):String{
-			var str:String = "";
-			var line:Log = first;
-			while(line){
-				if(filter == null || filter(line)){
-					if(first != line) str += splitter;
-					str += incChNames?line.toString():line.plainText();
-				}
-				line = line.next;
-			}
-			return str;
-		}
-		public function getChannels():Array{
-			var arr:Array = new Array(GLOBAL_CHANNEL);
-			addIfexist(DEFAULT_CHANNEL, arr);
-			addIfexist(FILTER_CHANNEL, arr);
-			addIfexist(INSPECTING_CHANNEL, arr);
-			addIfexist(CONSOLE_CHANNEL, arr);
-			var others:Array = new Array();
-			for(var X:String in _channels){
-				if(arr.indexOf(X)<0) others.push(X);
-			}
-			return arr.concat(others.sort(Array.CASEINSENSITIVE));
-		}
-		private function addIfexist(n:String, arr:Array):void{
-			if(_channels.hasOwnProperty(n)) arr.push(n);
-		}
-		public function cleanChannels():void{
-			_channels = new Object();
-			var line:Log = first;
-			while(line){
-				addChannel(line.ch);
-				line = line.next;
-			}
-		}
-		public function addChannel(n:String):void{
-			if(_channels[n] === undefined)
-			{
-				_channels[n] = null;
-				announceChannelChanged();
-			}
-		}
-		//
-		// Log chain controls
-		//
-		private function push(v:Log):void{
-			if(last==null) {
-				first = v;
-			}else{
-				last.next = v;
-				v.prev = last;
-			}
-			last = v;
-			_length++;
-		}
-		/*
-		 //Made code for these function part of another function to save compile size.
-		 private function pop():void{
-			if(last) {
-				if(last == _lastRepeat) _lastRepeat = null;
-				last = last.prev;
-				last.next = null;
-				_length--;
-			}
-		}
-		private function shift(count:uint = 1):void{
-			while(first != null && count>0){
-				if(first == _lastRepeat) _lastRepeat = null;
-				first = first.next;
-				first.prev = null;
-				count--;
-				_length--;
-			}
-		}*/
-		private function remove(log:Log):void{
-			if(first == log) first = log.next;
-			if(last == log) last = log.prev;
-			if(log == _lastRepeat) _lastRepeat = null;
-			if(log == _newRepeat) _newRepeat = null;
-			if(log.next != null) log.next.prev = log.prev;
-			if(log.prev != null) log.prev.next = log.next;
-			_length--;
-		}
-	}
+
+    import com.junkbyte.console.Console;
+    import com.junkbyte.console.core.ConsoleModule;
+    import com.junkbyte.console.events.ConsoleEvent;
+    import com.junkbyte.console.interfaces.IConsoleModule;
+    import com.junkbyte.console.interfaces.IRemoter;
+    import com.junkbyte.console.modules.ConsoleModuleNames;
+    import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
+    import com.junkbyte.console.utils.makeConsoleChannel;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
+    import com.junkbyte.console.vos.Log;
+
+    import flash.events.Event;
+    import flash.utils.ByteArray;
+    import flash.utils.getQualifiedClassName;
+
+    [Event(name = "change", type = "flash.events.Event")]
+    [Event(name = "channelsChanged", type = "flash.events.Event")]
+    public class Logs extends ConsoleModule
+    {
+
+        public static const CHANNELS_CHANGED:String = "channelsChanged";
+
+        public static const GLOBAL_CHANNEL:String = " * ";
+
+        public static const DEFAULT_CHANNEL:String = "-";
+
+        public static const CONSOLE_CHANNEL:String = "C";
+
+        public static const FILTER_CHANNEL:String = "~";
+
+        public static const INSPECTING_CHANNEL:String = "⌂";
+
+        private var _channels:Object;
+
+        private var _repeating:uint;
+
+        private var _lastRepeat:Log;
+
+        private var _newRepeat:Log;
+
+        public var first:Log;
+
+        public var last:Log;
+
+        protected var remoter:IRemoter;
+
+        protected var refs:ConsoleReferencingModule;
+
+        private var _length:uint;
+
+        //private var _lines:uint; // number of lines since start.
+
+        public function Logs()
+        {
+            super();
+            _channels = new Object();
+
+            addModuleRegisteryCallback(new ModuleTypeMatcher(IRemoter), onRemoterRegistered, onRemoterUnregistered);
+
+            // TODO. tempoary dependency
+            addModuleRegisteryCallback(new ModuleTypeMatcher(ConsoleReferencingModule), onRefencerRegistered, onRefencerUnregistered);
+        }
+
+        override public function getModuleName():String
+        {
+            return ConsoleModuleNames.LOGS;
+        }
+
+        override protected function registeredToConsole():void
+        {
+            super.registeredToConsole();
+            console.addEventListener(ConsoleEvent.UPDATE_DATA, update);
+        }
+
+        override protected function unregisteredFromConsole():void
+        {
+            super.unregisteredFromConsole();
+            console.removeEventListener(ConsoleEvent.UPDATE_DATA, update);
+        }
+
+        protected function onRemoterRegistered(remoter:IRemoter):void
+        {
+            this.remoter = remoter;
+            remoter.addEventListener(Event.CONNECT, onRemoteConnection);
+            remoter.registerCallback("log", function(bytes:ByteArray):void
+            {
+                add(Log.FromBytes(bytes));
+            });
+            if (remoter.connected)
+            {
+                onRemoteConnection();
+            }
+        }
+
+        protected function onRemoterUnregistered(remoter:IRemoter):void
+        {
+            remoter.removeEventListener(Event.CONNECT, onRemoteConnection);
+            remoter.registerCallback("log", null);
+            this.remoter = null;
+        }
+
+        protected function onRefencerRegistered(ref:ConsoleReferencingModule):void
+        {
+            refs = ref;
+        }
+
+        protected function onRefencerUnregistered(ref:ConsoleReferencingModule):void
+        {
+            refs = null;
+        }
+
+        protected function onRemoteConnection(e:Event = null):void
+        {
+            var log:Log = first;
+            while (log)
+            {
+                send2Remote(log);
+                log = log.next;
+            }
+        }
+
+        private function send2Remote(line:Log):void
+        {
+            if (remoter != null && remoter.connected)
+            {
+                var bytes:ByteArray = new ByteArray();
+                line.toBytes(bytes);
+                remoter.send("log", bytes);
+            }
+        }
+
+
+        protected function update(event:ConsoleEvent):void
+        {
+            if (_repeating > 0)
+            {
+                _repeating--;
+            }
+            if (_newRepeat)
+            {
+                if (_lastRepeat)
+                {
+                    remove(_lastRepeat);
+                }
+                _lastRepeat = _newRepeat;
+                _newRepeat = null;
+                push(_lastRepeat);
+            }
+        }
+
+        public function getStack(depth:int, priority:int):String
+        {
+            var e:Error = new Error();
+            var str:String = e.hasOwnProperty("getStackTrace") ? e.getStackTrace() : null;
+            if (!str)
+            {
+                return "";
+            }
+            var txt:String = "";
+            var lines:Array = str.split(/\n\sat\s/);
+            var len:int = lines.length;
+            var classStrs:Array = new Array("Function", getQualifiedClassName(Console), getQualifiedClassName(Logs));
+
+            if (config.stackTraceExitClasses)
+            {
+                for each (var obj:Object in config.stackTraceExitClasses)
+                {
+                    classStrs.push(getQualifiedClassName(obj));
+                }
+            }
+
+            var reg:RegExp = new RegExp(classStrs.join("|"));
+            var found:Boolean = false;
+            for (var i:int = 2; i < len; i++)
+            {
+                if (!found && (lines[i].search(reg) != 0))
+                {
+                    found = true;
+                }
+                if (found)
+                {
+                    txt += "\n<p" + priority + "> @ " + lines[i] + "</p" + priority + ">";
+                    if (priority > 0)
+                    {
+                        priority--;
+                    }
+                    depth--;
+                    if (depth <= 0)
+                    {
+                        break;
+                    }
+                }
+            }
+            return txt;
+        }
+
+        public function add(line:Log):void
+        {
+            addChannel(line.ch);
+            send2Remote(line);
+            if (line.repeat)
+            {
+                if (_repeating > 0 && _lastRepeat)
+                {
+                    //line.line = _lastRepeat.line;
+                    _newRepeat = line;
+                    return;
+                }
+                else
+                {
+                    _repeating = config.maxRepeats;
+                    _lastRepeat = line;
+                }
+            }
+            //_lines++;
+            //line.line = _lines;
+            //
+            push(line);
+            while (_length > config.maxLines && config.maxLines > 0)
+            {
+                remove(first);
+            }
+            //
+            if (config.tracing && config.traceCall != null)
+            {
+                config.traceCall(line.ch, line.plainText(), line.priority);
+            }
+            announceLogsChanged();
+        }
+
+        public function clear(channel:String = null):void
+        {
+            if (channel)
+            {
+                var line:Log = first;
+                while (line)
+                {
+                    if (line.ch == channel)
+                    {
+                        remove(line);
+                    }
+                    line = line.next;
+                }
+                delete _channels[channel];
+            }
+            else
+            {
+                first = null;
+                last = null;
+                _length = 0;
+                _channels = new Object();
+            }
+            announceChannelChanged();
+            announceLogsChanged();
+        }
+
+        private function announceChannelChanged():void
+        {
+            dispatchEvent(new Event(CHANNELS_CHANGED));
+        }
+
+        private function announceLogsChanged():void
+        {
+            dispatchEvent(new Event(Event.CHANGE));
+        }
+
+        public function getAllLog(splitter:String = "\r\n"):String
+        {
+            return getLogsAsString(splitter);
+        }
+
+        public function getLogsAsString(splitter:String, incChNames:Boolean = true, filter:Function = null):String
+        {
+            var str:String = "";
+            var line:Log = first;
+            while (line)
+            {
+                if (filter == null || filter(line))
+                {
+                    if (first != line)
+                    {
+                        str += splitter;
+                    }
+                    str += incChNames ? line.toString() : line.plainText();
+                }
+                line = line.next;
+            }
+            return str;
+        }
+
+        public function getChannels():Array
+        {
+            var arr:Array = new Array(GLOBAL_CHANNEL);
+            addIfexist(DEFAULT_CHANNEL, arr);
+            addIfexist(FILTER_CHANNEL, arr);
+            addIfexist(INSPECTING_CHANNEL, arr);
+            addIfexist(CONSOLE_CHANNEL, arr);
+            var others:Array = new Array();
+            for (var X:String in _channels)
+            {
+                if (arr.indexOf(X) < 0)
+                {
+                    others.push(X);
+                }
+            }
+            return arr.concat(others.sort(Array.CASEINSENSITIVE));
+        }
+
+        private function addIfexist(n:String, arr:Array):void
+        {
+            if (_channels.hasOwnProperty(n))
+            {
+                arr.push(n);
+            }
+        }
+
+        public function cleanChannels():void
+        {
+            _channels = new Object();
+            var line:Log = first;
+            while (line)
+            {
+                addChannel(line.ch);
+                line = line.next;
+            }
+        }
+
+        public function addChannel(n:String):void
+        {
+            if (_channels[n] === undefined)
+            {
+                _channels[n] = null;
+                announceChannelChanged();
+            }
+        }
+
+        //
+        // Log chain controls
+        //
+        private function push(v:Log):void
+        {
+            if (last == null)
+            {
+                first = v;
+            }
+            else
+            {
+                last.next = v;
+                v.prev = last;
+            }
+            last = v;
+            _length++;
+        }
+
+        /*
+         //Made code for these function part of another function to save compile size.
+         private function pop():void{
+            if(last) {
+                if(last == _lastRepeat) _lastRepeat = null;
+                last = last.prev;
+                last.next = null;
+                _length--;
+            }
+        }
+        private function shift(count:uint = 1):void{
+            while(first != null && count>0){
+                if(first == _lastRepeat) _lastRepeat = null;
+                first = first.next;
+                first.prev = null;
+                count--;
+                _length--;
+            }
+        }*/
+        private function remove(log:Log):void
+        {
+            if (first == log)
+            {
+                first = log.next;
+            }
+            if (last == log)
+            {
+                last = log.prev;
+            }
+            if (log == _lastRepeat)
+            {
+                _lastRepeat = null;
+            }
+            if (log == _newRepeat)
+            {
+                _newRepeat = null;
+            }
+            if (log.next != null)
+            {
+                log.next.prev = log.prev;
+            }
+            if (log.prev != null)
+            {
+                log.prev.next = log.next;
+            }
+            _length--;
+        }
+    }
 }

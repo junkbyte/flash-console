@@ -16,7 +16,6 @@ package com.junkbyte.console.tests
 	{		
 		
 		public var console:Console;
-		
 		[Before]
 		public function setUp():void
 		{
@@ -125,14 +124,6 @@ package com.junkbyte.console.tests
 		{
 			modules.registerModule(new ConsoleLogger());
 		}
-	}
-}
-import com.junkbyte.console.core.ConsoleModule;
-class FakeModule extends ConsoleModule
-{
-	public function FakeModule():void
-	{
-		
 	}
 }
 
