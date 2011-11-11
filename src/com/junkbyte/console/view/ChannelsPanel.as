@@ -28,6 +28,7 @@ package com.junkbyte.console.view {
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
+	import com.junkbyte.console.view.mainPanel.MainPanel;
 	
 	import flash.events.Event;
 	import flash.events.TextEvent;
@@ -72,6 +73,11 @@ package com.junkbyte.console.view {
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			console.logger.logs.addEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
 			
+			var mainPanel:MainPanel = console.mainPanel;
+			sprite.x = mainPanel.sprite.x + mainPanel.width - 332;
+			sprite.y = mainPanel.sprite.y - 2;
+			layer.addPanel(this);
+			
 			super.registeredToConsole();
 		}
 		
@@ -79,6 +85,8 @@ package com.junkbyte.console.view {
 		{
 			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 			console.logger.logs.removeEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
+			
+			layer.removePanel(this);
 			
 			super.unregisteredFromConsole();
 		}
@@ -118,8 +126,7 @@ package com.junkbyte.console.view {
 		protected function linkHandler(e:TextEvent):void{
 			txtField.setSelection(0, 0);
 			if(e.text == "close"){
-				close();
-				layer.channelsPanel = false;
+				modules.unregisterModule(this);
 			}else if(e.text.substring(0,8) == "channel_"){
 				layer.mainPanel.traces.onChannelPressed(e.text.substring(8));
 			}

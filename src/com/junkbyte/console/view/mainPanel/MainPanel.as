@@ -26,9 +26,11 @@
 package com.junkbyte.console.view.mainPanel
 {
     import com.junkbyte.console.ConsoleLevel;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.events.ConsoleEvent;
     import com.junkbyte.console.events.ConsolePanelEvent;
     import com.junkbyte.console.logging.Logs;
+    import com.junkbyte.console.view.ChannelsPanel;
     import com.junkbyte.console.view.ConsolePanel;
     
     import flash.events.Event;
@@ -263,7 +265,7 @@ package com.junkbyte.console.view.mainPanel
             var t:String = e.text;
             if (t == "channels")
             {
-				layer.channelsPanel = !layer.channelsPanel;
+				toggleChannelsPanel();
             }
             /*else if(t == "priority"){
                 var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
@@ -297,6 +299,20 @@ package com.junkbyte.console.view.mainPanel
             _menu.textField.setSelection(0, 0);
             e.stopPropagation();
         }
+		
+		private function toggleChannelsPanel():void
+		{
+			var channelsPanel:ChannelsPanel = modules.findModulesByMatcher(new ModuleTypeMatcher(ChannelsPanel)) as ChannelsPanel;
+			if(channelsPanel != null)
+			{
+				modules.unregisterModule(channelsPanel);
+			}
+			else
+			{
+				channelsPanel = new ChannelsPanel();
+				modules.registerModule(channelsPanel);
+			}
+		}
 
         override public function close():void
         {

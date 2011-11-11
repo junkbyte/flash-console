@@ -47,8 +47,6 @@ package com.junkbyte.console.view
 
         private var _stageModule:StageModule;
 
-        private var _chsPanel:ChannelsPanel;
-
         private var _tooltipField:TextField;
 
         public function ConsoleLayer(console:Console)
@@ -207,139 +205,6 @@ package com.junkbyte.console.view
         {
             return (getChildByName(n) as ConsolePanel)  != null;
         }
-
-        /*
-        public function updateGraphs(graphs:Array):void{
-            if(!visible || !parent){
-                return;
-            }
-            var usedMap:Object = {};
-            var fpsGroup:GraphGroup;
-            var memGroup:GraphGroup;
-            _graphPlaced = 0;
-            for each(var group:GraphGroup in graphs){
-                if(group.type == GraphGroup.FPS) {
-                    fpsGroup = group;
-                }else if(group.type == GraphGroup.MEM) {
-                    memGroup = group;
-                }else{
-                    var n:String = group.name;
-                    var panel:GraphingPanel = _graphsMap[n] as GraphingPanel;
-                    if(!panel){
-                        var rect:Rectangle = group.rect;
-                        if(rect == null) rect = new Rectangle(NaN,NaN, 0, 0);
-                        var size:Number = 100;
-                        if(isNaN(rect.x) || isNaN(rect.y)){
-                            if(_mainPanel.width < 150){
-                                size = 50;
-                            }
-                            var maxX:Number = Math.floor(_mainPanel.width/size)-1;
-                            if(maxX <=1) maxX = 2;
-                            var ix:int = _graphPlaced%maxX;
-                            var iy:int = Math.floor(_graphPlaced/maxX);
-                            rect.x = _mainPanel.x+size+(ix*size);
-                            rect.y = _mainPanel.y+(size*0.6)+(iy*size);
-                            _graphPlaced++;
-                        }
-                        if(rect.width<=0 || isNaN(rect.width))  rect.width = size;
-                        if(rect.height<=0 || isNaN(rect.height)) rect.height = size;
-                        panel = new GraphingPanel(_central, rect.width,rect.height);
-                        panel.x = rect.x;
-                        panel.y = rect.y;
-                        panel.name = "graph_"+n;
-                        _graphsMap[n] = panel;
-                        addPanel(panel);
-                    }
-                    panel.update(group, _canDraw);
-                }
-                usedMap[group.name] = true;
-            }
-            for(var X:String in _graphsMap){
-                if(!usedMap[X]){
-                    _graphsMap[X].close();
-                    delete _graphsMap[X];
-                }
-            }
-            //
-            //
-            if(fpsGroup != null){
-                if (_fpsPanel == null) {
-                    _fpsPanel = new GraphingPanel(_central, 80 ,40, GraphingPanel.FPS);
-                    _fpsPanel.name = GraphingPanel.FPS;
-                    _fpsPanel.x = _mainPanel.x+_mainPanel.width-160;
-                    _fpsPanel.y = _mainPanel.y+15;
-                    addPanel(_fpsPanel);
-                    _mainPanel.updateMenu();
-                }
-                _fpsPanel.update(fpsGroup, _canDraw);
-            }else if(_fpsPanel!=null){
-                removePanelByName(GraphingPanel.FPS);
-                _fpsPanel = null;
-            }
-            //
-            //
-            if(memGroup != null){
-                if(_memPanel == null){
-                    _memPanel = new GraphingPanel(_central, 80 ,40, GraphingPanel.MEM);
-                    _memPanel.name = GraphingPanel.MEM;
-                    _memPanel.x = _mainPanel.x+_mainPanel.width-80;
-                    _memPanel.y = _mainPanel.y+15;
-                    addPanel(_memPanel);
-                    _mainPanel.updateMenu();
-                }
-                _memPanel.update(memGroup, _canDraw);
-            }else if(_memPanel!=null){
-                removePanelByName(GraphingPanel.MEM);
-                _memPanel = null;
-            }
-            _canDraw = false;
-        }
-        public function removeGraph(group:GraphGroup):void
-        {
-            if(_fpsPanel && group == _fpsPanel.group){
-                _fpsPanel.close();
-                _fpsPanel = null;
-            }else if(_memPanel && group == _memPanel.group){
-                _memPanel.close();
-                _memPanel = null;
-            }else{
-                var graph:GraphingPanel = _graphsMap[group.name];
-                if(graph){
-                    graph.close();
-                    delete _graphsMap[group.name];
-                }
-            }
-        }*/
-        //
-        //
-        //
-        public function get channelsPanel():Boolean
-        {
-            return _chsPanel != null;
-        }
-
-        public function set channelsPanel(b:Boolean):void
-        {
-            if (channelsPanel != b)
-            {
-                console.logger.logs.cleanChannels();
-                if (b)
-                {
-                    _chsPanel = new ChannelsPanel();
-                    console.modules.registerModule(_chsPanel);
-                    _chsPanel.sprite.x = _mainPanel.sprite.x + _mainPanel.width - 332;
-                    _chsPanel.sprite.y = _mainPanel.sprite.y - 2;
-                    addPanel(_chsPanel);
-                }
-                else
-                {
-                    console.modules.unregisterModule(_chsPanel);
-                    removePanelByName(ChannelsPanel.NAME);
-                    _chsPanel = null;
-                }
-            }
-        }
-
         //
         //
         //
@@ -394,9 +259,5 @@ package com.junkbyte.console.view
                 removeChild(_tooltipField);
             }
         }
-
-        //
-        //
-        //
     }
 }

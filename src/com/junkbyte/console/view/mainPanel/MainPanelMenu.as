@@ -33,6 +33,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.keyStates.IKeyStates;
+	import com.junkbyte.console.view.ChannelsPanel;
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
@@ -62,6 +63,8 @@ package com.junkbyte.console.view.mainPanel
 		private var priorityMenu:ConsoleMenuItem;
 		private var commandLineMenu:ConsoleMenuItem;
 		
+		private var hasChannelsPanel:Boolean;
+		
 		public var mini:Boolean;
 		
 		protected var needsUpdate:Boolean = true;
@@ -79,6 +82,7 @@ package com.junkbyte.console.view.mainPanel
 			_textField.autoSize = TextFieldAutoSize.RIGHT;
 			
 			addModuleRegisteryCallback(new ModuleTypeMatcher(MainPanelLogs), mainPanelLogsRegistered, null);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(ChannelsPanel), channelsPanelRegistered, channelsPanelUnregistered);
 			
 		}
 		
@@ -128,6 +132,18 @@ package com.junkbyte.console.view.mainPanel
 		{
 			initBuildInMenus();
 			initModuleMenus();
+		}
+		
+		protected function channelsPanelRegistered(module:ChannelsPanel):void
+		{
+			hasChannelsPanel = true;
+			needsUpdate = true;
+		}
+		
+		protected function channelsPanelUnregistered(module:ChannelsPanel):void
+		{
+			hasChannelsPanel = false;
+			needsUpdate = true;
 		}
 		
 		override public function getModuleName():String
@@ -318,7 +334,7 @@ package com.junkbyte.console.view.mainPanel
 			if(mini || !config.style.topMenu){
 				str += "<a href=\"event:show\">‹</a>";
 			}else {
-				if(!layer.channelsPanel){
+				if(hasChannelsPanel == false){
 					str += layer.mainPanel.traces.getChannelsLink(true);
 				}
 				str += printMenus();
