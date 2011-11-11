@@ -27,6 +27,7 @@ package com.junkbyte.console.view {
 	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 	import com.junkbyte.console.view.mainPanel.MainPanel;
 	
@@ -37,18 +38,19 @@ package com.junkbyte.console.view {
 
 	public class ChannelsPanel extends ConsolePanel{
 		
-		public static const NAME:String = "channelsPanel";
-		
 		protected var txtField:TextField;
 		
 		protected var needsUpdate:Boolean = true;
 		
 		public function ChannelsPanel() {
 			super();
-			sprite.name = NAME;
+			sprite.name = getModuleName();
 		}
 		
-		
+		override public function getModuleName():String
+		{
+			return ConsoleModuleNames.CHANNELS_PANEL;
+		}
 		
 		override protected function initToConsole():void
 		{

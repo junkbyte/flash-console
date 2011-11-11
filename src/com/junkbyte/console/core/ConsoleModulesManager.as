@@ -25,11 +25,11 @@
 */
 package com.junkbyte.console.core
 {
+
     import com.junkbyte.console.Console;
     import com.junkbyte.console.events.ConsoleModuleEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
-    import com.junkbyte.console.logging.ConsoleLogger;
-    import com.junkbyte.console.logging.Logs;
+    import com.junkbyte.console.interfaces.IConsoleModuleMatcher;
     
     import flash.events.EventDispatcher;
 
@@ -42,7 +42,7 @@ package com.junkbyte.console.core
         protected var _modulesByName:Object = new Object();
 
         protected var _console:Console;
-		
+
         public function ConsoleModulesManager(console:Console)
         {
             _console = console;
@@ -60,7 +60,7 @@ package com.junkbyte.console.core
             return _modulesByName[moduleName];
         }
 
-        public function findModulesByMatcher(matcher:ModuleTypeMatcher):Vector.<IConsoleModule>
+        public function findModulesByMatcher(matcher:IConsoleModuleMatcher):Vector.<IConsoleModule>
         {
             var result:Vector.<IConsoleModule> = new Vector.<IConsoleModule>();
 
@@ -77,7 +77,7 @@ package com.junkbyte.console.core
             return result;
         }
 
-        public function getFirstMatchingModule(matcher:ModuleTypeMatcher):IConsoleModule
+        public function getFirstMatchingModule(matcher:IConsoleModuleMatcher):IConsoleModule
         {
             var result:Vector.<IConsoleModule> = findModulesByMatcher(matcher);
             return result.length > 0 ? result[0] : null;
@@ -121,7 +121,7 @@ package com.junkbyte.console.core
             var moduleName:String = module.getModuleName();
             if (moduleName != null)
             {
-				validateNamedModule(module, moduleName);
+                validateNamedModule(module, moduleName);
                 var currentModule:IConsoleModule = _modulesByName[moduleName];
                 if (currentModule != null)
                 {
@@ -130,14 +130,14 @@ package com.junkbyte.console.core
                 _modulesByName[moduleName] = module;
             }
         }
-		
-		protected function validateNamedModule(module:IConsoleModule, name:String):void
-		{
-			if(ConsoleCoreModulesMap.isModuleWithNameValid(module, name) == false)
-			{
-				throw new ArgumentError();
-			}
-		}
+
+        protected function validateNamedModule(module:IConsoleModule, name:String):void
+        {
+            if (ConsoleCoreModulesMap.isModuleWithNameValid(module, name) == false)
+            {
+                throw new ArgumentError();
+            }
+        }
 
         public function unregisterModule(module:IConsoleModule):void
         {

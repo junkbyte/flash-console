@@ -25,6 +25,7 @@
 */
 package com.junkbyte.console.view.mainPanel
 {
+	import com.junkbyte.console.core.ModuleNameMatcher;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
@@ -82,8 +83,7 @@ package com.junkbyte.console.view.mainPanel
 			_textField.autoSize = TextFieldAutoSize.RIGHT;
 			
 			addModuleRegisteryCallback(new ModuleTypeMatcher(MainPanelLogs), mainPanelLogsRegistered, null);
-			addModuleRegisteryCallback(new ModuleTypeMatcher(ChannelsPanel), channelsPanelRegistered, channelsPanelUnregistered);
-			
+			addModuleRegisteryCallback(new ModuleNameMatcher(ConsoleModuleNames.CHANNELS_PANEL), channelsPanelRegistered, channelsPanelUnregistered);
 		}
 		
 		override protected function registeredToConsole():void

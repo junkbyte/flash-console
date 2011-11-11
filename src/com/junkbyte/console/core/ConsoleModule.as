@@ -30,6 +30,7 @@ package com.junkbyte.console.core
     import com.junkbyte.console.ConsoleStyle;
     import com.junkbyte.console.events.ConsoleModuleEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
+    import com.junkbyte.console.interfaces.IConsoleModuleMatcher;
     import com.junkbyte.console.interfaces.IRemoter;
     import com.junkbyte.console.logging.ConsoleLogger;
     import com.junkbyte.console.view.ConsoleLayer;
@@ -71,7 +72,7 @@ package com.junkbyte.console.core
             }
         }
 		
-		protected function addModuleRegisteryCallback(matcher:ModuleTypeMatcher, registerCallback:Function, unregisterCallback:Function = null):void
+		protected function addModuleRegisteryCallback(matcher:IConsoleModuleMatcher, registerCallback:Function, unregisterCallback:Function = null):void
 		{
 			if(_moduleDependences == null)
 			{

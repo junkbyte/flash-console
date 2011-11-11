@@ -28,6 +28,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.logging.ConsoleLogger;
 	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.view.ChannelsPanel;
 	import com.junkbyte.console.view.StageModule;
 
 	public class ConsoleCoreModulesMap
@@ -36,7 +37,8 @@ package com.junkbyte.console.core
 		{ 
 			logger: ConsoleLogger, 
 			logs: Logs,
-			stage: StageModule
+			stage: StageModule,
+			channelsPanel: ChannelsPanel
 		}
 		
 		public static function isModuleWithNameValid(module:IConsoleModule, name:String):Boolean

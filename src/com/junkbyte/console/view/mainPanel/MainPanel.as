@@ -25,14 +25,14 @@
 */
 package com.junkbyte.console.view.mainPanel
 {
+
     import com.junkbyte.console.ConsoleLevel;
-    import com.junkbyte.console.core.ModuleTypeMatcher;
-    import com.junkbyte.console.events.ConsoleEvent;
     import com.junkbyte.console.events.ConsolePanelEvent;
     import com.junkbyte.console.logging.Logs;
+    import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.view.ChannelsPanel;
     import com.junkbyte.console.view.ConsolePanel;
-    
+
     import flash.events.Event;
     import flash.events.TextEvent;
     import flash.geom.Point;
@@ -78,7 +78,7 @@ package com.junkbyte.console.view.mainPanel
             _commandArea = new MainPanelCL(this);
 
             _menu.addEventListener(Event.CHANGE, onMenuChanged);
-            
+
             modules.registerModule(_menu);
 
             modules.registerModule(_traces);
@@ -106,21 +106,21 @@ package com.junkbyte.console.view.mainPanel
         {
             return _commandArea;
         }
-		
-		public function setViewingChannels(...channels:Array):void
-		{
-			traces.setViewingChannels.apply(this, channels);
-		}
-		
-		public function setIgnoredChannels(...channels:Array):void
-		{
-			traces.setIgnoredChannels.apply(this, channels);
-		}
-		
-		public function set minimumPriority(level:uint):void
-		{
-			traces.priority = level;
-		}
+
+        public function setViewingChannels(... channels:Array):void
+        {
+            traces.setViewingChannels.apply(this, channels);
+        }
+
+        public function setIgnoredChannels(... channels:Array):void
+        {
+            traces.setIgnoredChannels.apply(this, channels);
+        }
+
+        public function set minimumPriority(level:uint):void
+        {
+            traces.priority = level;
+        }
 
         private function onStartedDragging(e:Event):void
         {
@@ -132,8 +132,8 @@ package com.junkbyte.console.view.mainPanel
             if (on)
             {
                 commandLine = true;
-				logger.report("//", ConsoleLevel.CONSOLE_EVENT);
-				logger.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
+                logger.report("//", ConsoleLevel.CONSOLE_EVENT);
+                logger.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
             }
             _traces.requestLogin(on);
             _commandArea.requestLogin(on);
@@ -206,14 +206,16 @@ package com.junkbyte.console.view.mainPanel
 
         private function onMenuChanged(e:Event):void
         {
-			updateMenuArea();
+            updateMenuArea();
             updateTraceArea();
         }
 
         public function onMenuRollOver(e:TextEvent, src:ConsolePanel = null):void
         {
             if (src == null)
+            {
                 src = this;
+            }
             var txt:String = e.text ? e.text.replace("event:", "") : "";
             if (txt == "channel_" + Logs.GLOBAL_CHANNEL)
             {
@@ -242,9 +244,13 @@ package com.junkbyte.console.view.mainPanel
             else if (txt == "pause")
             {
                 if (console.paused)
+                {
                     txt = "Resume updates";
+                }
                 else
+                {
                     txt = "Pause updates";
+                }
             }
             else if (txt == "close" && src == this)
             {
@@ -255,7 +261,7 @@ package com.junkbyte.console.view.mainPanel
                 var obj:Object = { fps: "Frames Per Second", mm: "Memory Monitor", channels: "Expand channels", close: "Close" };
                 txt = obj[txt];
             }
-			layer.setTooltip(txt, src);
+            layer.setTooltip(txt, src);
         }
 
         private function linkHandler(e:TextEvent):void
@@ -265,7 +271,7 @@ package com.junkbyte.console.view.mainPanel
             var t:String = e.text;
             if (t == "channels")
             {
-				toggleChannelsPanel();
+                toggleChannelsPanel();
             }
             /*else if(t == "priority"){
                 var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
@@ -274,7 +280,7 @@ package com.junkbyte.console.view.mainPanel
             }*/
             else if (t == "settings")
             {
-				logger.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
+                logger.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
                 Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
             }
             else if (t == "remote")
@@ -299,24 +305,24 @@ package com.junkbyte.console.view.mainPanel
             _menu.textField.setSelection(0, 0);
             e.stopPropagation();
         }
-		
-		private function toggleChannelsPanel():void
-		{
-			var channelsPanel:ChannelsPanel = modules.findModulesByMatcher(new ModuleTypeMatcher(ChannelsPanel)) as ChannelsPanel;
-			if(channelsPanel != null)
-			{
-				modules.unregisterModule(channelsPanel);
-			}
-			else
-			{
-				channelsPanel = new ChannelsPanel();
-				modules.registerModule(channelsPanel);
-			}
-		}
+
+        private function toggleChannelsPanel():void
+        {
+            var channelsPanel:ChannelsPanel = modules.getModuleByName(ConsoleModuleNames.CHANNELS_PANEL) as ChannelsPanel;
+            if (channelsPanel != null)
+            {
+                modules.unregisterModule(channelsPanel);
+            }
+            else
+            {
+                channelsPanel = new ChannelsPanel();
+                modules.registerModule(channelsPanel);
+            }
+        }
 
         override public function close():void
         {
-			layer.setTooltip();
+            layer.setTooltip();
             sprite.visible = false;
             dispatchEvent(new Event(Event.CLOSE));
         }
@@ -335,7 +341,7 @@ package com.junkbyte.console.view.mainPanel
 
         public function hideTopMenu():void
         {
-			layer.setTooltip();
+            layer.setTooltip();
             _menu.mini = true;
             config.style.topMenu = false;
             height = height;
@@ -344,7 +350,7 @@ package com.junkbyte.console.view.mainPanel
 
         public function showTopMenu():void
         {
-			layer.setTooltip();
+            layer.setTooltip();
             _menu.mini = false;
             config.style.topMenu = true;
             height = height;
@@ -357,7 +363,7 @@ package com.junkbyte.console.view.mainPanel
             _commandArea.isVisible = b;
 
             _needUpdateMenu = true;
-            
+
             this.height = height;
             dispatchEvent(new Event(COMMAND_LINE_VISIBLITY_CHANGED));
         }
