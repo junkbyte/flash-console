@@ -51,8 +51,8 @@ package
 			Cc.layer.visible = true; // show console, because having password hides console.
 			Cc.config.commandLineAllowed = true;
 			
-			Cc.layer.mainPanel.width = 640;
-			Cc.layer.mainPanel.height = 320;
+			Cc.mainPanel.width = 640;
+			Cc.mainPanel.height = 320;
 			//
 			// END OF SETUP
 			//

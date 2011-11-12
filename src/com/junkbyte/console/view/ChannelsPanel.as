@@ -88,7 +88,7 @@ package com.junkbyte.console.view {
 			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 			console.logger.logs.removeEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
 			
-			layer.removePanel(this);
+			remove();
 			
 			super.unregisteredFromConsole();
 		}
@@ -111,7 +111,7 @@ package com.junkbyte.console.view {
 		protected function update():void{
 			txtField.wordWrap = false;
 			txtField.width = 80;
-			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> "+ layer.mainPanel.traces.getChannelsLink();
+			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> "+ console.mainPanel.traces.getChannelsLink();
 			txtField.htmlText = str+"</high>";
 			if(txtField.width>160){
 				txtField.wordWrap = true;
@@ -130,7 +130,7 @@ package com.junkbyte.console.view {
 			if(e.text == "close"){
 				modules.unregisterModule(this);
 			}else if(e.text.substring(0,8) == "channel_"){
-				layer.mainPanel.traces.onChannelPressed(e.text.substring(8));
+				console.mainPanel.traces.onChannelPressed(e.text.substring(8));
 			}
 			txtField.setSelection(0, 0);
 			e.stopPropagation();

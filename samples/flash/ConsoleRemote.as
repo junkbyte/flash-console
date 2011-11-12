@@ -49,8 +49,8 @@ package
 			// Start remote service.
 			Cc.modules.remoter.remoting = LocalRemoting.RECIEVER;
 			// Disable scaling and moving
-			Cc.layer.mainPanel.moveable = false;
-			Cc.layer.mainPanel.resizable = false;
+			Cc.mainPanel.moveable = false;
+			Cc.mainPanel.resizable = false;
 			//
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;

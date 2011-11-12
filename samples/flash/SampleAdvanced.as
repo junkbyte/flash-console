@@ -49,8 +49,8 @@ package
 			//Cc.displayRoller = true;
 			
 			Cc.config.commandLineAllowed = true;
-			Cc.layer.mainPanel.width = 700;
-			Cc.layer.mainPanel.height = 300;
+			Cc.mainPanel.width = 700;
+			Cc.mainPanel.height = 300;
 			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			//Cc.remoting = true;
 			/*

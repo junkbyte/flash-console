@@ -31,6 +31,7 @@ package com.junkbyte.console.modules
 		public static const LOGS:String = "logs";
 		public static const STAGE:String = "stage";
 		public static const CHANNELS_PANEL:String = "channelsPanel";
+		public static const TOOLTIPS:String = "tooltips";
 		
 		public static const KEYBINDER:String = "keyBinder";
 		public static const KEY_STATES:String = "keyStates";

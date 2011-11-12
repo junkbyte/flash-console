@@ -25,11 +25,13 @@
 */
 package com.junkbyte.console.logging
 {
+
+    import com.junkbyte.console.CLog;
     import com.junkbyte.console.ConsoleLevel;
     import com.junkbyte.console.core.ConsoleModule;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.utils.makeConsoleChannel;
-    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.vos.Log;
 
     public class ConsoleLogger extends ConsoleModule
@@ -47,33 +49,37 @@ package com.junkbyte.console.logging
             defaultLogEntryClass = LogEntry;
 
             _processor = createProcessor();
-			
-			listenForLogsRegistery();
+
+            listenForLogsRegistery();
         }
-		
-		
-		override public function getModuleName():String
-		{
-			return ConsoleModuleNames.LOGGER;
-		}
-		
-		override protected function registeredToConsole():void
-		{
-			super.registeredToConsole();
-			initAndRegisterLogsModule();
-		}
-		
-		protected function initAndRegisterLogsModule():void
-		{
-			modules.registerModule(new Logs());
-		}
-		
-		protected function listenForLogsRegistery():void
-		{
-			addModuleRegisteryCallback(new ModuleTypeMatcher(Logs), onLogsRegistered);
-		}
-		
-		// this is so that if anyone wants to extend Logs and register it, it'll catch that new module as replacement.
+
+        public function registerToStaticCLog():void
+        {
+            CLog = logger;
+        }
+
+        override public function getModuleName():String
+        {
+            return ConsoleModuleNames.LOGGER;
+        }
+
+        override protected function registeredToConsole():void
+        {
+            super.registeredToConsole();
+            initAndRegisterLogsModule();
+        }
+
+        protected function initAndRegisterLogsModule():void
+        {
+            modules.registerModule(new Logs());
+        }
+
+        protected function listenForLogsRegistery():void
+        {
+            addModuleRegisteryCallback(new ModuleTypeMatcher(Logs), onLogsRegistered);
+        }
+
+        // this is so that if anyone wants to extend Logs and register it, it'll catch that new module as replacement.
         protected function onLogsRegistered(logs:Logs):void
         {
             if (logs != null)
@@ -144,7 +150,9 @@ package com.junkbyte.console.logging
         override public function report(obj:* = '', priority:int = 0, skipSafe:Boolean = true, channel:String = null):void
         {
             if (!channel)
-                channel = console.layer.mainPanel.traces.reportChannel;
+            {
+                channel = console.mainPanel.traces.reportChannel;
+            }
             addLine([ obj ], priority, channel, false, skipSafe, 0);
         }
     }

@@ -158,15 +158,15 @@ package com.junkbyte.console.modules.displayRoller
         protected function onMenuClick():void
         {
             if (isActive())
-                close();
+                remove();
             else
                 start();
         }
 
         public function start():void
         {
-            x = layer.mainPanel.x + layer.mainPanel.width - 180;
-            y = layer.mainPanel.y + 55;
+            x = console.mainPanel.x + console.mainPanel.width - 180;
+            y = console.mainPanel.y + 55;
 
             layer.addPanel(this);
 
@@ -191,7 +191,7 @@ package com.junkbyte.console.modules.displayRoller
         {
             if (!sprite.stage)
             {
-                close();
+                remove();
                 return;
             }
             if (_settingKey)
@@ -294,11 +294,11 @@ package com.junkbyte.console.modules.displayRoller
 			return console.modules.getFirstMatchingModule(new ModuleTypeMatcher(ConsoleReferencingModule)) as ConsoleReferencingModule;
 		}
 		
-        public override function close():void
+        public override function remove():void
         {
             cancelCaptureKeySet();
             removeListeners();
-            super.close();
+            super.remove();
         }
 
         private function onMenuRollOver(e:TextEvent):void
@@ -328,7 +328,7 @@ package com.junkbyte.console.modules.displayRoller
             {
                 txt = null;
             }
-            layer.setTooltip(txt, this);
+            setTooltip(txt);
         }
 
         protected function linkHandler(e:TextEvent):void
@@ -336,7 +336,7 @@ package com.junkbyte.console.modules.displayRoller
             TextField(e.currentTarget).setSelection(0, 0);
             if (e.text == "close")
             {
-                close();
+                remove();
             }
             else if (e.text == "capture")
             {
@@ -349,12 +349,12 @@ package com.junkbyte.console.modules.displayRoller
                     _settingKey = true;
                     sprite.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler, false, 0, true);
                 }
-				layer.setTooltip(null);
+				setTooltip(null);
             }
             else if (e.text == "cancel")
             {
                 cancelCaptureKeySet();
-				layer.setTooltip(null);
+				setTooltip(null);
             }
             e.stopPropagation();
         }
@@ -373,7 +373,7 @@ package com.junkbyte.console.modules.displayRoller
             var char:String = String.fromCharCode(e.charCode);
             cancelCaptureKeySet();
             setRollerCaptureKey(char, e.shiftKey, e.ctrlKey, e.altKey);
-			layer.setTooltip(null);
+			setTooltip(null);
         }
     }
 }

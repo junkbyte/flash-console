@@ -261,7 +261,7 @@ package com.junkbyte.console.view.mainPanel
                 var obj:Object = { fps: "Frames Per Second", mm: "Memory Monitor", channels: "Expand channels", close: "Close" };
                 txt = obj[txt];
             }
-            layer.setTooltip(txt, src);
+            setTooltip(txt);
         }
 
         private function linkHandler(e:TextEvent):void
@@ -320,9 +320,9 @@ package com.junkbyte.console.view.mainPanel
             }
         }
 
-        override public function close():void
+        override public function remove():void
         {
-            layer.setTooltip();
+            setTooltip(null);
             sprite.visible = false;
             dispatchEvent(new Event(Event.CLOSE));
         }
@@ -341,7 +341,7 @@ package com.junkbyte.console.view.mainPanel
 
         public function hideTopMenu():void
         {
-            layer.setTooltip();
+            setTooltip(null);
             _menu.mini = true;
             config.style.topMenu = false;
             height = height;
@@ -350,7 +350,7 @@ package com.junkbyte.console.view.mainPanel
 
         public function showTopMenu():void
         {
-            layer.setTooltip();
+            setTooltip(null);
             _menu.mini = false;
             config.style.topMenu = true;
             height = height;

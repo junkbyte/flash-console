@@ -165,7 +165,7 @@ package com.junkbyte.console.view.mainPanel
 		
 		override protected function unregisteredFromConsole():void
 		{
-			var mainPanel:MainPanel  = console.layer.mainPanel;
+			var mainPanel:MainPanel  = console.mainPanel;
 			
 			
 			removeChild(_cmdBG);
@@ -263,12 +263,12 @@ package com.junkbyte.console.view.mainPanel
 			sprite.stage.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 		}
 		private function onCmdPrefRollOverOut(e : MouseEvent) : void {
-			layer.setTooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"", mainPanel);
+			mainPanel.setTooltip(e.type==MouseEvent.MOUSE_MOVE?"Current scope::(CommandLine)":"");
 		}
 		
 		private function onCmdPrefMouseDown(e : MouseEvent) : void {
 			try{
-				var mainPanel:MainPanel  = console.layer.mainPanel;
+				var mainPanel:MainPanel  = console.mainPanel;
 				mainPanel.sprite.stage.focus = _cmdField;
 				setCLSelectionAtEnd();
 			} catch(err:Error) {}

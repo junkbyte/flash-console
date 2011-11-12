@@ -117,7 +117,7 @@ package com.junkbyte.console.view.mainPanel
         override protected function registeredToConsole():void
         {
 
-            var mainPanel:MainPanel = console.layer.mainPanel;
+            var mainPanel:MainPanel = console.mainPanel;
 
             _traceField.styleSheet = style.styleSheet;
 

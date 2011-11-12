@@ -349,7 +349,7 @@ package com.junkbyte.console.modules.remoting
 		private function loginFail():void{
 			if(remoting != LocalRemoting.RECIEVER) return;
 			report("Login Failed", 10);
-			layer.mainPanel.requestLogin();
+			console.mainPanel.requestLogin();
 		}
 		private function sendLoginSuccess():void{
 			_loggedIn = true;
@@ -366,7 +366,7 @@ package com.junkbyte.console.modules.remoting
 			if(_lastLogin){
 				login(_lastLogin);
 			}else{
-				layer.mainPanel.requestLogin();
+				console.mainPanel.requestLogin();
 			}
 		}
 		public function login(pass:String):void{

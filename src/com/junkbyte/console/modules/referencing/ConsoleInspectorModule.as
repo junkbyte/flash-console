@@ -113,7 +113,7 @@ package com.junkbyte.console.modules.referencing
 					if(prop) o = o[prop];
 					if(o){
 						if(str.indexOf("refe_")==0){
-							console.explodech(layer.mainPanel.reportChannel, o);
+							console.explodech(console.mainPanel.reportChannel, o);
 						}else{
 							focus(o, _dofull);
 						}

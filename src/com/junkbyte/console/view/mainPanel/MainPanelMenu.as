@@ -201,7 +201,7 @@ package com.junkbyte.console.view.mainPanel
 			buildInMenus = new Array();
 			
 			addBuildInMenu(minimizerMenu);
-			addBuildInMenu(new ConsoleMenuItem("X", mainPanel.close, null, "Close::Type password to show again"));
+			addBuildInMenu(new ConsoleMenuItem("X", mainPanel.remove, null, "Close::Type password to show again"));
 			addBuildInMenu(new ConsoleMenuItem("C", logger.logs.clear, null, "Clear log"));
 			addBuildInMenu(pauseMenu);
 			addBuildInMenu(new ConsoleMenuItem("Sv", saveLogs, null, "Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file"));
@@ -335,7 +335,7 @@ package com.junkbyte.console.view.mainPanel
 				str += "<a href=\"event:show\">‹</a>";
 			}else {
 				if(hasChannelsPanel == false){
-					str += layer.mainPanel.traces.getChannelsLink(true);
+					str += console.mainPanel.traces.getChannelsLink(true);
 				}
 				str += printMenus();
 			}
@@ -416,7 +416,7 @@ package com.junkbyte.console.view.mainPanel
 				var menu:ConsoleMenuItem = getMenuForIndex(uint(t.substring(5)));
 				t = menu.getTooltip();
 			}
-			layer.setTooltip(t, layer.mainPanel);
+			mainPanel.setTooltip(t);
 		}
 	}
 }

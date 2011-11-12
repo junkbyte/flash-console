@@ -66,7 +66,7 @@ package com.junkbyte.console.view.mainPanel
 
         protected function get mainPanel():MainPanel
         {
-            return layer.mainPanel;
+            return console.mainPanel;
         }
 
         public function setArea(x:Number, y:Number, width:Number, height:Number):void

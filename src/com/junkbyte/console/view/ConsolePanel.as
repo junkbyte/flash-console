@@ -26,14 +26,15 @@
 package com.junkbyte.console.view
 {
     import com.junkbyte.console.events.ConsolePanelEvent;
-
+    import com.junkbyte.console.modules.ConsoleModuleNames;
+    import com.junkbyte.console.view.helpers.PanelMover;
+    import com.junkbyte.console.view.helpers.PanelResizer;
+    
     import flash.display.DisplayObject;
     import flash.display.Sprite;
     import flash.events.Event;
     import flash.geom.Point;
     import flash.geom.Rectangle;
-    import com.junkbyte.console.view.helpers.PanelMover;
-    import com.junkbyte.console.view.helpers.PanelResizer;
 
     [Event(name = "close", type = "flash.events.Event")]
     [Event(name = "startedMoving", type = "com.junkbyte.console.events.ConsolePanelEvent")]
@@ -41,6 +42,8 @@ package com.junkbyte.console.view
     [Event(name = "startedScaling", type = "com.junkbyte.console.events.ConsolePanelEvent")]
     [Event(name = "stoppedScaling", type = "com.junkbyte.console.events.ConsolePanelEvent")]
     [Event(name = "panelResized", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+	[Event(name = "panelAdded", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+	[Event(name = "panelRemoved", type = "com.junkbyte.console.events.ConsolePanelEvent")]
     public class ConsolePanel extends ConsoleDisplayModule
     {
         protected var panelMover:PanelMover;
@@ -87,8 +90,20 @@ package com.junkbyte.console.view
                 background.scale9Grid = new Rectangle(rounding * 0.5, rounding * 0.5, 10, 10);
             }
         }
+		
+		override protected function onAddedToParentDisplay():void
+		{
+			super.onAddedToParentDisplay();
+			dispatchEvent(ConsolePanelEvent.create(ConsolePanelEvent.PANEL_ADDED));
+		}
+		
+		override protected function onRemovedFromParentDisplay():void
+		{
+			super.onRemovedFromParentDisplay();
+			dispatchEvent(ConsolePanelEvent.create(ConsolePanelEvent.PANEL_REMOVED));
+		}
 
-        public function close():void
+        public function remove():void
         {
             dispatchEvent(new Event(Event.CLOSE));
             if (parent != null)
@@ -164,5 +179,11 @@ package com.junkbyte.console.view
         {
             new PanelResizer(this);
         }
+		
+		public function setTooltip(str:String):void
+		{
+			var toolTip:ToolTipModule = modules.getModuleByName(ConsoleModuleNames.TOOLTIPS) as ToolTipModule;
+			toolTip.setTooltip(str);
+		}
     }
 }

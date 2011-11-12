@@ -558,12 +558,12 @@ package com.junkbyte.console.modules.commandLine
 		private function explodeCmd(param:String = "0"):void
 		{
 			var depth:int = int(param);
-			console.explodech(layer.mainPanel.reportChannel, _scope, depth <= 0 ? 3 : depth);
+			console.explodech(layer.reportChannel, _scope, depth <= 0 ? 3 : depth);
 		}
 
 		private function mapCmd(param:String = "0"):void
 		{
-			console.mapch(layer.mainPanel.reportChannel, _scope as DisplayObjectContainer, int(param));
+			console.mapch(layer.reportChannel, _scope as DisplayObjectContainer, int(param));
 		}
 
 		private function funCmd(param:String = ""):void

@@ -195,7 +195,7 @@ package com.junkbyte.console.modules.graphing
 					if(index>=0) _groups.splice(index, 1);
 					_fpsGroup = null;
 				}
-				layer.mainPanel.updateMenu();
+				console.mainPanel.updateMenu();
 			}
 		}
 		//
@@ -217,7 +217,7 @@ package com.junkbyte.console.modules.graphing
 					if(index>=0) _groups.splice(index, 1);
 					_memGroup = null;
 				}
-				layer.mainPanel.updateMenu();
+				console.mainPanel.updateMenu();
 			}
 		}
 		private function addSpecialGroup(type:int):GraphGroup{

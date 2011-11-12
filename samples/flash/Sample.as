@@ -34,7 +34,6 @@ package
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.StandardConsoleModules;
 	import com.junkbyte.console.modules.remoting.LocalRemoting;
-	import com.junkbyte.console.core.ModuleTypeMatcher;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
