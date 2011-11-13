@@ -41,6 +41,7 @@ package com.junkbyte.console.modules.commandLine
 	import flash.utils.ByteArray;
 	import flash.utils.describeType;
 	import flash.utils.getQualifiedClassName;
+	import com.junkbyte.console.interfaces.ICommandLine;
 
 	public class AS3CommandLine extends ConsoleModule implements ICommandLine
 	{
@@ -52,7 +53,9 @@ package com.junkbyte.console.modules.commandLine
 		private var _scopeStr:String = "";
 		private var _slashCmds:Object;
 		public var localCommands:Array = new Array("filter", "filterexp");
-
+		
+		public var autoScope:Boolean;
+		
 		public function AS3CommandLine()
 		{
 			super();
@@ -198,11 +201,8 @@ package com.junkbyte.console.modules.commandLine
 			for (var X:String in _slashCmds)
 			{
 				var cmd:Object = _slashCmds[X];
-				if (config.commandLineAllowed || cmd.allow)
-					all.push(["/" + X + " ", cmd.d ? cmd.d : null]);
+				all.push(["/" + X + " ", cmd.d ? cmd.d : null]);
 			}
-			if (config.commandLineAllowed)
-			{
 				for (var Y:String in _saved)
 				{
 					all.push(["$" + Y, EscHTML(getQualifiedShortClassName(_saved.get(Y)))]);
@@ -212,7 +212,6 @@ package com.junkbyte.console.modules.commandLine
 					all.push(["this", EscHTML(getQualifiedShortClassName(_scope))]);
 					all = all.concat(getPossibleCalls(_scope));
 				}
-			}
 			str = str.toLowerCase();
 			var hints:Array = new Array();
 			for each (var canadate:Array in all)
@@ -266,7 +265,7 @@ package com.junkbyte.console.modules.commandLine
 
 		public function get scopeString():String
 		{
-			return config.commandLineAllowed ? _scopeStr : "";
+			return _scopeStr;
 		}
 
 		public function addInternalSlashCommand(n:String, callback:Function, desc:String = "", allow:Boolean = false, endOfArgsMarker:String = ";"):void
@@ -317,11 +316,6 @@ package com.junkbyte.console.modules.commandLine
 				}
 				else
 				{
-					if (!config.commandLineAllowed)
-					{
-						report(DISABLED, 9);
-						return null;
-					}
 					var exe:Executer = new Executer();
 					exe.addEventListener(Event.COMPLETE, onExecLineComplete, false, 0, true);
 					if (saves)
@@ -337,7 +331,7 @@ package com.junkbyte.console.modules.commandLine
 					}
 					exe.setStored(saves);
 					exe.setReserved(RESERVED);
-					exe.autoScope = config.commandLineAutoScope;
+					exe.autoScope = autoScope;
 					v = exe.exec(_scope, str);
 				}
 			}
@@ -375,11 +369,7 @@ package com.junkbyte.console.modules.commandLine
 				try
 				{
 					var slashcmd:SlashCommand = _slashCmds[cmd];
-					if (!config.commandLineAllowed && !slashcmd.allow)
-					{
-						report(DISABLED, 9);
-						return;
-					}
+					
 					var restStr:String;
 					if (slashcmd.endMarker)
 					{
@@ -416,11 +406,6 @@ package com.junkbyte.console.modules.commandLine
 
 		public function setReturned(returned:*, changeScope:Boolean = false, say:Boolean = true):void
 		{
-			if (!config.commandLineAllowed)
-			{
-				report(DISABLED, 9);
-				return;
-			}
 			if (returned !== undefined)
 			{
 				_saved.set(Executer.RETURNED, returned, true);
@@ -527,14 +512,11 @@ package com.junkbyte.console.modules.commandLine
 			var custom:Array = [];
 			for each (var cmd:SlashCommand in _slashCmds)
 			{
-				if (config.commandLineAllowed || cmd.allow)
-				{
-					if (cmd.user) custom.push(cmd);
-					else buildin.push(cmd);
-				}
+				if (cmd.user) custom.push(cmd);
+				else buildin.push(cmd);
 			}
 			buildin = buildin.sortOn("n");
-			report("Built-in commands:" + (!config.commandLineAllowed ? " (limited permission)" : ""), 4);
+			report("Built-in commands:", 4);
 			for each (cmd in buildin)
 			{
 				report("<b>/" + cmd.n + "</b> <p-1>" + cmd.d + "</p-1>", -2);
@@ -575,8 +557,8 @@ package com.junkbyte.console.modules.commandLine
 
 		private function autoscopeCmd(...args:Array):void
 		{
-			config.commandLineAutoScope = !config.commandLineAutoScope;
-			report("Auto-scoping <b>" + (config.commandLineAutoScope ? "enabled" : "disabled") + "</b>.", 10);
+			autoScope = !autoScope;
+			report("Auto-scoping <b>" + (autoScope ? "enabled" : "disabled") + "</b>.", 10);
 		}
 
 		private function baseCmd(...args:Array):void

@@ -49,7 +49,6 @@ package
 			//Cc.fpsMonitor = true;
 			//Cc.displayRoller = true;
 			
-			Cc.config.commandLineAllowed = true;
 			Cc.mainPanel.width = 700;
 			Cc.mainPanel.height = 300;
 			//Cc.config.remotingPassword = ""; // Just so that remote don't ask for password

@@ -75,7 +75,11 @@ package com.junkbyte.console.utils
 			lastmcDO = mcDO;
 		}
 		console.logger.report(base.name + ":" +refs.makeRefTyped(base) + " has " + (list.length - 1) + " children/sub-children.", 9, true, ch);
-		if (console.config.commandLineAllowed) console.logger.report("Click on the child display's name to set scope.", -2, true, ch);
+		
+		if(console.modules.findModulesByMatcher(new ModuleTypeMatcher(ICommandLine)) != null)
+		{
+			console.logger.report("Click on the child display's name to set scope.", -2, true, ch);
+		}
 	}
 		
 }

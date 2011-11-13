@@ -49,6 +49,23 @@ package com.junkbyte.console.modules.remoting
 		public static const SENDER:uint = 1;
 		public static const RECIEVER:uint = 2;
 		
+		/** 
+		 * Shared connection name used for remoting 
+		 * You can change this if you don't want to use default channel
+		 * Other remotes with different remoting channel won't be able to connect your flash.
+		 * Start with _ to work in any domain + platform (air/swf - local / network)
+		 * Note that local to network sandbox still apply.
+		 */
+		public var remotingConnectionName:String = "_Console";
+		
+		/**
+		 * allowDomain and allowInsecureDomain of remoting LocalConnection.
+		 * Default: "*"
+		 * see LocalConnection -> allowDomain for info.
+		 */
+		public var allowedRemoteDomain:String = "*";
+		
+		
 		private var _callbacks:Object = new Object();
 		private var _mode:uint;
 		private var _local:LocalConnection;
@@ -111,7 +128,7 @@ package com.junkbyte.console.modules.remoting
 						_sendBuffer.readBytes(newbuffer);
 						_sendBuffer = newbuffer;
 					}
-					var target:String = config.remotingConnectionName+(remoting == LocalRemoting.RECIEVER?SENDER:RECIEVER);
+					var target:String = remotingConnectionName+(remoting == LocalRemoting.RECIEVER?SENDER:RECIEVER);
 					_local.send(target, "synchronize", _sendID, packet);
 				}else{
 					_sendBuffer = new ByteArray();
@@ -312,7 +329,7 @@ package com.junkbyte.console.modules.remoting
 		}
 		
 		private function getInfo():String{
-			return "</p5>channel:<p5>"+config.remotingConnectionName+" ("+Security.sandboxType+")";
+			return "</p5>channel:<p5>"+remotingConnectionName+" ("+Security.sandboxType+")";
 		}
 		
 		private function printHowToGlobalSetting():void{
@@ -328,14 +345,14 @@ package com.junkbyte.console.modules.remoting
 			_mode = targetmode;
 			_local = new LocalConnection();
 			_local.client = {synchronize:synchronize};
-			if(config.allowedRemoteDomain){
-				_local.allowDomain(config.allowedRemoteDomain);
-				_local.allowInsecureDomain(config.allowedRemoteDomain);
+			if(allowedRemoteDomain){
+				_local.allowDomain(allowedRemoteDomain);
+				_local.allowInsecureDomain(allowedRemoteDomain);
 			}
 			_local.addEventListener(SecurityErrorEvent.SECURITY_ERROR , onRemotingSecurityError, false, 0, true);
 			
 			try{
-				_local.connect(config.remotingConnectionName+_mode);
+				_local.connect(remotingConnectionName+_mode);
 			}catch(err:Error){
 				return false;
 			}
@@ -359,7 +376,7 @@ package com.junkbyte.console.modules.remoting
 			dispatchEvent(new Event(Event.CONNECT));
 		}
 		private function loginSuccess():void{
-			console.setViewingChannels();
+			console.mainPanel.setViewingChannels();
 			report("Login Successful", -1);
 		}
 		private function requestLogin():void{

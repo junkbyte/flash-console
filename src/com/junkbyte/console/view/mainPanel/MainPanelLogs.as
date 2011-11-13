@@ -31,8 +31,8 @@ package com.junkbyte.console.view.mainPanel
     import com.junkbyte.console.interfaces.IConsoleModule;
     import com.junkbyte.console.logging.Logs;
     import com.junkbyte.console.modules.ConsoleModuleNames;
-    import com.junkbyte.console.modules.commandLine.ICommandLine;
-    import com.junkbyte.console.modules.keyStates.IKeyStates;
+    import com.junkbyte.console.interfaces.ICommandLine;
+    import com.junkbyte.console.interfaces.IKeyStates;
     import com.junkbyte.console.modules.userdata.IConsoleUserData;
     import com.junkbyte.console.utils.EscHTML;
     import com.junkbyte.console.utils.makeConsoleChannel;

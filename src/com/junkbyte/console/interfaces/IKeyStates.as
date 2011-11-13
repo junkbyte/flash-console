@@ -1,4 +1,4 @@
-package com.junkbyte.console.modules.keyStates
+package com.junkbyte.console.interfaces
 {
 	public interface IKeyStates
 	{

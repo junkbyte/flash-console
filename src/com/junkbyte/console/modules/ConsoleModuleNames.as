@@ -34,14 +34,14 @@ package com.junkbyte.console.modules
 		public static const TOOLTIPS:String = "tooltips";
 		public static const MAIN_PANEL:String = "mainPanel";
 		
-		
 		public static const KEYBINDER:String = "keyBinder";
 		public static const KEY_STATES:String = "keyStates";
+		public static const USER_INFO:String = "userInfo";
 		
 		public static const COMMAND_LINE:String = "commandLine";
-		public static const USER_INFO:String = "userInfo";
-		public static const DISPLAY_ROLLER:String = "displayRoller";
 		public static const REMOTING:String = "remoting";
+		
+		public static const DISPLAY_ROLLER:String = "displayRoller";
 		public static const GARBAGE_COLLECTOR:String = "garbageCollector";
 		
 		

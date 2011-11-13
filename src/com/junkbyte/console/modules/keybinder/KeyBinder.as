@@ -26,7 +26,7 @@ package com.junkbyte.console.modules.keybinder
 {
 	import com.junkbyte.console.KeyBind;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.commandLine.ICommandLine;
+	import com.junkbyte.console.interfaces.ICommandLine;
 	import com.junkbyte.console.view.StageModule;
 
 	import flash.display.Stage;

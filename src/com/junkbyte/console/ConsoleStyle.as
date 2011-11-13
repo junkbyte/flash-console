@@ -110,8 +110,6 @@ package com.junkbyte.console {
 		/** Show top menu */
 		public var topMenu:Boolean = true;
 		
-		/** Show command line scope */
-		public var showCommandLineScope:Boolean = true;
 		
 		/** Maximum number of channels to display on top menu */
 		public var maxChannelsInMenu:int = 7;

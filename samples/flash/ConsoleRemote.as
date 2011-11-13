@@ -42,8 +42,7 @@ package
 			
 			Cc.start(this);
 			Cc.commandLine = true;
-			Cc.config.maxLines = 2000;
-			Cc.config.commandLineAllowed = true;
+			Cc.logger.logs.maxLines = 2000;
 			
 			// Start remote service.
 			Cc.modules.remoter.remoting = LocalRemoting.RECIEVER;

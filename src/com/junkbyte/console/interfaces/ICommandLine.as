@@ -1,4 +1,4 @@
-package com.junkbyte.console.modules.commandLine
+package com.junkbyte.console.interfaces
 {
 	/**
 	 * @author LuAye

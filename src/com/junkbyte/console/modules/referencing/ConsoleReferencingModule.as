@@ -88,8 +88,6 @@ package com.junkbyte.console.modules.referencing
 
         public function setLogRef(o:*):uint
         {
-            if (!config.useObjectLinking)
-                return 0;
             var ind:uint = _refRev[o];
             if (!ind)
             {
@@ -177,7 +175,7 @@ package com.junkbyte.console.modules.referencing
                 }
                 return str + "]";
             }
-            else if (config.useObjectLinking && v && typeof v == "object")
+            else if (v && typeof v == "object")
             {
                 var add:String = "";
                 if (v is ByteArray)

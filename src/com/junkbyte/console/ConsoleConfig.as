@@ -34,18 +34,6 @@ package com.junkbyte.console {
 		//////////////////////
 		
 		/**
-		 * Maximum number of logs Console should remember.
-		 * 0 = unlimited. Setting to very high will take up more memory and potentially slow down.
-		 */
-		public var maxLines:uint = 1000;
-		
-		/**
-		 * Auto stack trace logs for this priority and above
-		 * default priortiy = 10; fatal level
-		 */
-		public var autoStackPriority:int = ConsoleLevel.FATAL;
-		
-		/**
 		 * Default stack trace depth
 		 */
 		public var defaultStackDepth:int = 2;
@@ -55,13 +43,6 @@ package com.junkbyte.console {
 		 * Stack tracing will stop on reaching one of the first classes in the array.
 		 */
 		public var stackTraceExitClasses:Array = null;
-		
-		/** 
-		 * Object linking allows you click on individual objects you have logged to inspect the detials in a specific view.
-		 * The down side is that it will take a little more memory to keep a WEAK reference to all objects pass for logging.
-		 * Potentially a security risk as users will be able to explore your code interface.
-		 */
-		public var useObjectLinking:Boolean = true;
 		
 		/**
 		 * Seconds in which object links should be hard referenced for.
@@ -82,39 +63,6 @@ package com.junkbyte.console {
 		 */
 		public var objectHardReferenceTimer:uint = 0;
 		
-		/**
-		 * Use flash's build in (or external) trace().
-		 * <p>
-		 * When turned on, Console will also call trace() for all console logs.
-		 * Trace function can be replaced with something of your own (such as Flex's logging) by
-		 * setting your own function into traceCall variable.
-		 * Default function: trace("["+channel+"] "+text);
-		 * </p>
-		 * @see traceCall
-		 */
-		public var tracing:Boolean;
-		
-		/**
-		 * Assign custom trace function.
-		 * <p>
-		 * Console will only call this when Cc.config.tracing is set to true.<br/>
-		 * Custom function must accept 3 parameters:<br/>
-		 * - String channel name.<br/>
-		 * - String the log line.<br/>
-		 * - int    priority level -2 to 10.
-		 * </p>
-		 * <p>
-		 * Default function calls flash build-in trace in this format: "[channel] log line" (ignores priority)
-		 * Example:
-		 * Cc.config.traceCall = function(ch:String, line:String, level:int):void {
-		 * 	  trace("["+ch+"] "+line);
-		 * }
-		 * </p>
-		 * @see tracing
-		 */
-		public var traceCall:Function = function (ch:String, line:String, ...args):void{
-			trace("["+ch+"] "+line);
-		};
 
 		// Work in progress
 		//public var rolloverStackToolTip:Boolean = false;
@@ -124,55 +72,6 @@ package com.junkbyte.console {
 		//  REMOTING CONFIG  //
 		//                   //
 		///////////////////////
-		
-		/** 
-		 * Shared connection name used for remoting 
-		 * You can change this if you don't want to use default channel
-		 * Other remotes with different remoting channel won't be able to connect your flash.
-		 * Start with _ to work in any domain + platform (air/swf - local / network)
-		 * Note that local to network sandbox still apply.
-		 */
-		public var remotingConnectionName:String = "_Console";
-		
-		/**
-		 * allowDomain and allowInsecureDomain of remoting LocalConnection.
-		 * Default: "*"
-		 * see LocalConnection -> allowDomain for info.
-		 */
-		public var allowedRemoteDomain:String = "*";
-		
-		///////////////////
-		//               //
-		//  MISC CONFIG  //
-		//               //
-		///////////////////
-		
-		/**
-		 * Full Command line features usage allowance.
-		 * <p>
-		 * CommandLine is a big security risk for your code and flash. 
-		 * It is a very good practice to disable it after development phase.
-		 * On the other hand having it on full access will let you debug the code easier.
-		 * </p>
-		 */
-		public var commandLineAllowed:Boolean;
-		
-		/**
-		 * CommandLine autoscoping
-		 * <p>
-		 * When turned on, it will autoscope to objects returned without the need to call the command "/".
-		 * </p>
-		 */
-		public var commandLineAutoScope:Boolean;
-		
-		/**
-		 * Commandline auto hinting and auto-completion
-		 * <p>
-		 * When using config.commandLineInputPassThrough feature, 
-		 * it maybe be convenient to turn off commandLineAutoCompleteEnabled.
-		 * </p>
-		 */
-		public var commandLineAutoCompleteEnabled:Boolean = true;
 		
 		/** 
 		 * Local shared object used for storing user data such as command line history

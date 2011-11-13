@@ -29,7 +29,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.commandLine.ICommandLine;
+	import com.junkbyte.console.interfaces.ICommandLine;
 	import com.junkbyte.console.modules.userdata.IConsoleUserData;
 	import com.junkbyte.console.view.ConsolePanel;
 
@@ -248,18 +248,10 @@ package com.junkbyte.console.view.mainPanel
 		public function update(changed:Boolean):void
 		{
 
-			if (style.showCommandLineScope)
+			if (_clScope != _cl.scopeString)
 			{
-				if (_clScope != _cl.scopeString)
-				{
-					_clScope = _cl.scopeString;
-					updateCLScope(_clScope);
-				}
-			}
-			else if (_clScope != null)
-			{
-				_clScope = "";
-				updateCLScope("");
+				_clScope = _cl.scopeString;
+				updateCLScope(_clScope);
 			}
 		}
 
@@ -456,7 +448,7 @@ package com.junkbyte.console.view.mainPanel
 		private function updateCmdHint(e:Event = null):void
 		{
 			var str:String = _cmdField.text;
-			if (str && config.commandLineAutoCompleteEnabled)
+			if (str)
 			{
 				try
 				{

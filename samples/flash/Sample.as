@@ -33,8 +33,6 @@ package
 	import com.junkbyte.console.logging.LogEntry;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.StandardConsoleModules;
-	import com.junkbyte.console.modules.trace.TraceModule;
-	import com.junkbyte.console.modules.remoting.LocalRemoting;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
@@ -62,8 +60,6 @@ package
 			Cc.startOnStage(this); // "`" - change for password. This will start hidden
 			Cc.layer.visible = true; // Show console, because having password hides console.
 			
-			Cc.config.commandLineAllowed = true; // enable advanced (but security risk) features.
-			Cc.config.tracing = true; // Also trace on flash's normal trace
 			
 			//Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			//Cc.remoting = true; // Start sending logs to remote (using LocalConnection)

@@ -5,6 +5,7 @@ package com.junkbyte.console.modules.commandLine
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	
 	import flash.utils.ByteArray;
+	import com.junkbyte.console.interfaces.ICommandLine;
 	
 	public class RemoteCommandLine extends SlashCommandLine implements ICommandLine
 	{

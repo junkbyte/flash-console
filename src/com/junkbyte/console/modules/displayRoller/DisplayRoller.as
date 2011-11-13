@@ -25,16 +25,16 @@
 package com.junkbyte.console.modules.displayRoller
 {
     import com.junkbyte.console.KeyBind;
-    import com.junkbyte.console.modules.keybinder.KeyBinder;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.interfaces.IMainMenu;
     import com.junkbyte.console.modules.ConsoleModuleNames;
+    import com.junkbyte.console.modules.keybinder.KeyBinder;
     import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
     import com.junkbyte.console.utils.EscHTML;
     import com.junkbyte.console.utils.getQualifiedShortClassName;
     import com.junkbyte.console.view.ConsolePanel;
     import com.junkbyte.console.view.helpers.ConsoleTextRoller;
     import com.junkbyte.console.vos.ConsoleMenuItem;
-    import com.junkbyte.console.core.ModuleTypeMatcher;
     
     import flash.display.DisplayObject;
     import flash.display.DisplayObjectContainer;
@@ -257,7 +257,7 @@ package com.junkbyte.console.modules.displayRoller
 
                         var n:String = obj.name;
                         var ind:uint;
-                        if (dolink && config.useObjectLinking)
+                        if (dolink && modules.findModulesByMatcher(new ModuleTypeMatcher(ConsoleReferencingModule)) != null)
                         {
                             ind = refs.setLogRef(obj);
                             n = "<a href='event:cl_" + ind + "'>" + n + "</a> " + refs.makeRefTyped(obj);

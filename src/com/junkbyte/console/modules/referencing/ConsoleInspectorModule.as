@@ -2,11 +2,12 @@ package com.junkbyte.console.modules.referencing
 {
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ConsoleModulesManager;
-	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
+	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.interfaces.ICommandLine;
 	import com.junkbyte.console.utils.EscHTML;
-	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.vos.WeakObject;
 	
 	import flash.display.DisplayObject;
@@ -179,7 +180,8 @@ package com.junkbyte.console.modules.referencing
 				}
 				menuStr += "</b> || [<a href='event:ref_"+refIndex+"'>refresh</a>]";
 				menuStr += "</b> [<a href='event:refe_"+refIndex+"'>explode</a>]";
-				if(config.commandLineAllowed){
+				if(modules.findModulesByMatcher(new ModuleTypeMatcher(ICommandLine)) != null)
+				{
 					menuStr += " [<a href='event:cl_"+refIndex+"'>scope</a>]";
 				}
 				
@@ -417,7 +419,7 @@ package com.junkbyte.console.modules.referencing
 		}
 		
 		private function makeValue(obj:*, prop:* = null):String{
-			return _ref.makeString(obj, prop, false, config.useObjectLinking?100:-1);
+			return _ref.makeString(obj, prop, false, 100);
 		}
 		
 	}

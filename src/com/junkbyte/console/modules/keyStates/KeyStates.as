@@ -9,6 +9,7 @@ package com.junkbyte.console.modules.keyStates
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.ui.Keyboard;
+	import com.junkbyte.console.interfaces.IKeyStates;
 
 	public class KeyStates extends ConsoleModule implements IKeyStates
 	{

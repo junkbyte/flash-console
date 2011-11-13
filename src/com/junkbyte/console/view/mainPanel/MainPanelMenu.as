@@ -34,7 +34,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.interfaces.IMainMenu;
 	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.keyStates.IKeyStates;
+	import com.junkbyte.console.interfaces.IKeyStates;
 	import com.junkbyte.console.view.ChannelsPanel;
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
