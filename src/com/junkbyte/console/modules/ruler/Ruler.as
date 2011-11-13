@@ -70,13 +70,13 @@ package com.junkbyte.console.modules.ruler {
 			var p:Point = new Point();
 			p = globalToLocal(p);
 			_area = new Rectangle(-_module.layer.stage.stageWidth*1.5+p.x, -_module.layer.stage.stageHeight*1.5+p.y, _module.layer.stage.stageWidth*3, _module.layer.stage.stageHeight*3);
-			graphics.beginFill(_module.config.style.backgroundColor, 0.2);
+			graphics.beginFill(_module.style.backgroundColor, 0.2);
 			graphics.drawRect(_area.x, _area.y, _area.width, _area.height);
 			graphics.endFill();
 			//
 			_posTxt = new TextField();
 			_posTxt.name = "positionText";
-			_posTxt.styleSheet = _module.config.style.styleSheet;
+			_posTxt.styleSheet = _module.style.styleSheet;
 			
 			_posTxt.autoSize = TextFieldAutoSize.LEFT;
 			addChild(_posTxt);
@@ -128,7 +128,7 @@ package com.junkbyte.console.modules.ruler {
 		private function onMouseClick(e:MouseEvent):void{
 			e.stopPropagation();
 			var p:Point;
-			var style : ConsoleStyle = _module.config.style;
+			var style : ConsoleStyle = _module.style;
 			if(_points.length==0){
 				p = new Point(e.localX, e.localY);
 				graphics.lineStyle(1, 0xFF0000);
@@ -229,7 +229,7 @@ package com.junkbyte.console.modules.ruler {
 		}
 		
 		private function makeTxtField(col:Number, b:Boolean = true):TextField{
-			var format:TextFormat = new TextFormat(_module.config.style.menuFont, _module.config.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
+			var format:TextFormat = new TextFormat(_module.style.menuFont, _module.style.menuFontSize, col, b, true, null, null, TextFormatAlign.RIGHT);
 			var txt:TextField = new TextField();
 			txt.autoSize = TextFieldAutoSize.RIGHT;
 			txt.selectable = false;

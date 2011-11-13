@@ -94,7 +94,7 @@ package com.junkbyte.console.view.mainPanel
 			addChild(textField);
 			mainPanel.registerMoveDragger(textField);
 			
-			_textField.styleSheet = console.config.style.styleSheet;
+			_textField.styleSheet = style.styleSheet;
 			
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			console.logger.logs.addEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
@@ -332,7 +332,7 @@ package com.junkbyte.console.view.mainPanel
 		
 		public function update():void{
 			var str:String = "<r><high><menu><b> ";
-			if(mini || !config.style.topMenu){
+			if(mini || !style.topMenu){
 				str += "<a href=\"event:show\">‹</a>";
 			}else {
 				if(hasChannelsPanel == false){

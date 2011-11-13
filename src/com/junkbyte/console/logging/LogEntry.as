@@ -23,60 +23,66 @@
 * 3. This notice may not be removed or altered from any source distribution.
 *
 */
-package com.junkbyte.console.logging {
+package com.junkbyte.console.logging
+{
 	import com.junkbyte.console.interfaces.IConsoleLogProcessor;
 	import com.junkbyte.console.utils.EscHTML;
-	
-	
-	public class LogEntry{
-		
+
+
+	public class LogEntry
+	{
+
 		public var inputs:Array;
+
 		public var output:String;
-		
+
 		public var channel:String;
+
 		public var priority:int;
+
 		//
 		//
-		public function LogEntry(inputs:Array, cc:String, pp:int){
+		public function LogEntry(inputs:Array, channel:String = null, priority:int = 2)
+		{
 			this.inputs = inputs;
-			channel = cc;
-			priority = pp;
+			this.channel = channel;
+			this.priority = priority;
 		}
-		
+
 		public function clearInput():void
 		{
 			inputs = null;
 		}
-		
+
 		public function setOutputUsingProcessor(processor:IConsoleLogProcessor):void
 		{
 			output = makeOutputUsingProcessor(processor);
 		}
-		
+
 		public function makeOutputUsingProcessor(processor:IConsoleLogProcessor):String
 		{
 			var output:Vector.<String> = new Vector.<String>(inputs.length);
-			
+
 			var len:uint = inputs.length;
 			for (var j:uint = 0; j < len; j++)
 			{
 				var input:* = inputs[j];
 				output[j] = postProcess(input, processor.process(input, preProcess(input)));
 			}
-			
+
 			return output.join(" ");
 		}
-		
+
 		protected function preProcess(input:*):String
 		{
 			return EscHTML(String(input));
 		}
-		
+
 		protected function postProcess(input:*, currentOutput:String):String
 		{
 			return currentOutput;
 		}
-		
+
 		public function getPlainOutput():String
 		{
 			return output.replace(/<.*?>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">");

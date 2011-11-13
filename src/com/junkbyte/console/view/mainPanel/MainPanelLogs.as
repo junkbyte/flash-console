@@ -48,6 +48,16 @@ package com.junkbyte.console.view.mainPanel
 
     public class MainPanelLogs extends MainPanelSubArea
     {
+		/**
+		 * Remembers viewing filters such as channels and priority level over different sessions.
+		 * <ul>
+		 * <li>Must be set before starting console (before Cc.start / Cc.startOnStage)</li>
+		 * <li>Requires sharedObject feature turned on</li>
+		 * <li>Because console's SharedObject is shared across, your filtering settings will carry over to other flash projects</li>
+		 * <li>You may want to set sharedObjectName to store project specificly</li>
+		 * </ul>
+		 */
+		public var rememberFilterSettings:Boolean;
 
         public static const VIEWING_CHANNELS_CHANGED:String = "viewingChannelsChanged";
 
@@ -198,7 +208,7 @@ package com.junkbyte.console.view.mainPanel
         {
             _userInfo = module;
             //
-            if (config.rememberFilterSettings && _userInfo.data[VIEWING_CH_HISTORY] is Array)
+            if (rememberFilterSettings && _userInfo.data[VIEWING_CH_HISTORY] is Array)
             {
                 _viewingChannels = _userInfo.data[VIEWING_CH_HISTORY];
             }
@@ -206,7 +216,7 @@ package com.junkbyte.console.view.mainPanel
             {
                 _userInfo.data[VIEWING_CH_HISTORY] = _viewingChannels = new Array();
             }
-            if (config.rememberFilterSettings && _userInfo.data[IGNORED_CH_HISTORY] is Array)
+            if (rememberFilterSettings && _userInfo.data[IGNORED_CH_HISTORY] is Array)
             {
                 _ignoredChannels = _userInfo.data[IGNORED_CH_HISTORY];
             }
@@ -214,7 +224,7 @@ package com.junkbyte.console.view.mainPanel
             {
                 _userInfo.data[IGNORED_CH_HISTORY] = _ignoredChannels = new Array();
             }
-            if (config.rememberFilterSettings && _userInfo.data[PRIORITY_HISTORY] is uint)
+            if (rememberFilterSettings && _userInfo.data[PRIORITY_HISTORY] is uint)
             {
                 _priority = _userInfo.data[PRIORITY_HISTORY];
             }
@@ -669,11 +679,11 @@ package com.junkbyte.console.view.mainPanel
 
             if (keyStates != null && keyStates.shiftKeyDown)
             {
-                var s:int = config.style.traceFontSize + (e.delta > 0 ? 1 : -1);
+                var s:int = style.traceFontSize + (e.delta > 0 ? 1 : -1);
                 if (s >= 8 && s <= 20)
                 {
-                    config.style.traceFontSize = s;
-                    config.style.updateStyleSheet();
+                    style.traceFontSize = s;
+                    style.updateStyleSheet();
                     updateToBottom();
                     e.stopPropagation();
                 }

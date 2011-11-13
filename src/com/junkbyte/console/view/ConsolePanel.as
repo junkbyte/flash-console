@@ -29,7 +29,7 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.helpers.PanelMover;
 	import com.junkbyte.console.view.helpers.PanelResizer;
-
+	
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -182,9 +182,9 @@ package com.junkbyte.console.view
 			return new PanelMover(this);
 		}
 
-		protected function startPanelResizer():void
+		protected function startPanelResizer():PanelResizer
 		{
-			new PanelResizer(this);
+			return new PanelResizer(this);
 		}
 
 		public function setTooltip(str:String):void

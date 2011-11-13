@@ -8,6 +8,16 @@ package com.junkbyte.console.modules.userdata
 
 	public class UserData extends ConsoleModule implements IConsoleUserData
 	{
+		/** 
+		 * Local shared object used for storing user data such as command line history
+		 * Set to null to disable storing to local shared object.
+		 */
+		public var sharedObjectName:String = "com.junkbyte/Console/UserData";
+		
+		/** Local shared object path */
+		public var sharedObjectPath:String = "/";
+		
+		
 		private var _so:SharedObject;
 		private var _soData:Object = {};
 		
@@ -25,11 +35,11 @@ package com.junkbyte.console.modules.userdata
 		{
 			super.registeredToConsole();
 			
-			if (config.sharedObjectName)
+			if (sharedObjectName)
 			{
 				try
 				{
-					_so = SharedObject.getLocal(config.sharedObjectName, config.sharedObjectPath);
+					_so = SharedObject.getLocal(sharedObjectName, sharedObjectPath);
 					_soData = _so.data;
 				}
 				catch(e:Error)

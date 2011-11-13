@@ -108,7 +108,7 @@ package com.junkbyte.console.modules.graphing
 			}
 			var interests:Array = group.interests;
 			if (isNaN(col) || col < 0) {
-				if (interests.length <= 5) col = config.style["priority"+ (10-interests.length*2)];
+				if (interests.length <= 5) col = style["priority"+ (10-interests.length*2)];
 				else col = Math.random()*0xFFFFFF;
 			}
 			if(key == null) key = prop;

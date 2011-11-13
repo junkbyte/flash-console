@@ -45,27 +45,31 @@ package com.junkbyte.console.view.helpers
         public function PanelResizer(panel:ConsolePanel)
         {
             super(panel);
-
-
-            scaler = new Sprite();
-            scaler.name = "scaler";
-            scaler.graphics.beginFill(0, 0);
-            scaler.graphics.drawRect(-10, -18, 10, 18);
-            scaler.graphics.endFill();
-            scaler.graphics.beginFill(panel.style.controlColor, panel.style.backgroundAlpha);
-            scaler.graphics.moveTo(0, 0);
-            scaler.graphics.lineTo(-10, 0);
-            scaler.graphics.lineTo(0, -10);
-            scaler.graphics.endFill();
-            scaler.buttonMode = true;
-            scaler.doubleClickEnabled = true;
 			
-            scaler.addEventListener(MouseEvent.MOUSE_DOWN, onDraggerMouseDown);
-
-            panel.addChild(scaler);
-
+			initScaler();
+			
             panel.addEventListener(ConsolePanelEvent.PANEL_RESIZED, onPanelResized);
         }
+		
+		protected function initScaler():void
+		{
+			scaler = new Sprite();
+			scaler.name = "scaler";
+			scaler.graphics.beginFill(0, 0);
+			scaler.graphics.drawRect(-10, -18, 10, 18);
+			scaler.graphics.endFill();
+			scaler.graphics.beginFill(panel.style.controlColor, panel.style.backgroundAlpha);
+			scaler.graphics.moveTo(0, 0);
+			scaler.graphics.lineTo(-10, 0);
+			scaler.graphics.lineTo(0, -10);
+			scaler.graphics.endFill();
+			scaler.buttonMode = true;
+			scaler.doubleClickEnabled = true;
+			
+			scaler.addEventListener(MouseEvent.MOUSE_DOWN, onDraggerMouseDown);
+			
+			panel.addChild(scaler);
+		}
 
         protected function onPanelResized(e:Event):void
         {

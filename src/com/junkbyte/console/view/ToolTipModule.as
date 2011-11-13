@@ -100,7 +100,6 @@ package com.junkbyte.console.view
 
         private function initToolTip():void
         {
-            var style:ConsoleStyle = console.config.style;
             _tooltipField = new TextField();
             _tooltipField.name = "tooltip";
             _tooltipField.styleSheet = style.styleSheet;

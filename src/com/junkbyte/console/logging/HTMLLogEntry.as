@@ -33,9 +33,9 @@ package com.junkbyte.console.logging
 	{
 		private var valid:Boolean;
 		
-		public function HTMLLogEntry(inputs:Array, cc:String, pp:int)
+		public function HTMLLogEntry(inputs:Array, channel:String = null, priority:int = 2)
 		{
-			super(inputs, cc, pp);
+			super(inputs, channel, priority);
 		}
 		
 		override public function makeOutputUsingProcessor(processor:IConsoleLogProcessor):String

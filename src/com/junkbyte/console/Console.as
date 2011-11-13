@@ -33,7 +33,7 @@ package com.junkbyte.console
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.view.mainPanel.MainPanel;
-	
+
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
@@ -54,9 +54,9 @@ package com.junkbyte.console
 
 		protected var _layer:ConsoleLayer;
 
-		protected var _config:ConsoleConfig;
-
 		protected var _paused:Boolean;
+
+		protected var _style:ConsoleStyle = new ConsoleStyle();
 
 		public function Console()
 		{
@@ -96,7 +96,7 @@ package com.junkbyte.console
 
 		protected function init():void
 		{
-			config.style.updateStyleSheet();
+			style.updateStyleSheet();
 			initModulesManager();
 			registerLoggerModule();
 			initConsoleLayer();
@@ -179,28 +179,24 @@ package com.junkbyte.console
 			return _modules;
 		}
 
-		public function get logger():ConsoleLogger
-		{
-			return modules.getModuleByName(ConsoleModuleNames.LOGGER) as ConsoleLogger;
-		}
-
 		public function get layer():ConsoleLayer
 		{
 			return _layer;
 		}
 
+		public function get style():ConsoleStyle
+		{
+			return _style;
+		}
+
+		public function get logger():ConsoleLogger
+		{
+			return modules.getModuleByName(ConsoleModuleNames.LOGGER) as ConsoleLogger;
+		}
+
 		public function get mainPanel():MainPanel
 		{
 			return modules.getModuleByName(ConsoleModuleNames.MAIN_PANEL) as MainPanel;
-		}
-
-		public function get config():ConsoleConfig
-		{
-			if (_config == null)
-			{
-				_config = new ConsoleConfig();
-			}
-			return _config;
 		}
 	}
 }

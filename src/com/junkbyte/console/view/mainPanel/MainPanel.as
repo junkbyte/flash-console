@@ -341,7 +341,7 @@ package com.junkbyte.console.view.mainPanel
         {
             setTooltip(null);
             _menu.mini = true;
-            config.style.topMenu = false;
+            style.topMenu = false;
             height = height;
             updateMenu();
         }
@@ -350,7 +350,7 @@ package com.junkbyte.console.view.mainPanel
         {
             setTooltip(null);
             _menu.mini = false;
-            config.style.topMenu = true;
+            style.topMenu = true;
             height = height;
             updateMenu();
         }

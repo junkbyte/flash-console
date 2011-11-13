@@ -141,6 +141,7 @@ package com.junkbyte.console.logging
 		{
 			entry.setOutputUsingProcessor(processor);
 			logs.addEntry(entry);
+			
 		}
 
 		public function makeString(input:*):String

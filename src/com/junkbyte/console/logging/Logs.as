@@ -130,52 +130,6 @@ package com.junkbyte.console.logging
 			}
 		}
 
-		public function getStack(depth:int, priority:int):String
-		{
-			var e:Error = new Error();
-			var str:String = e.hasOwnProperty("getStackTrace") ? e.getStackTrace() : null;
-			if (!str)
-			{
-				return "";
-			}
-			var txt:String = "";
-			var lines:Array = str.split(/\n\sat\s/);
-			var len:int = lines.length;
-			var classStrs:Array = new Array("Function", getQualifiedClassName(Console), getQualifiedClassName(Logs));
-
-			if (config.stackTraceExitClasses)
-			{
-				for each (var obj:Object in config.stackTraceExitClasses)
-				{
-					classStrs.push(getQualifiedClassName(obj));
-				}
-			}
-
-			var reg:RegExp = new RegExp(classStrs.join("|"));
-			var found:Boolean = false;
-			for (var i:int = 2; i < len; i++)
-			{
-				if (!found && (lines[i].search(reg) != 0))
-				{
-					found = true;
-				}
-				if (found)
-				{
-					txt += "\n<p" + priority + "> @ " + lines[i] + "</p" + priority + ">";
-					if (priority > 0)
-					{
-						priority--;
-					}
-					depth--;
-					if (depth <= 0)
-					{
-						break;
-					}
-				}
-			}
-			return txt;
-		}
-
 		public function addEntry(entry:LogEntry):void
 		{
 			add(new Log(entry.output, makeConsoleChannel(entry.channel), entry.priority));
