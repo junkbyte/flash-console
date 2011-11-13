@@ -88,7 +88,6 @@ package com.junkbyte.console.modules.ruler {
 			addEventListener(MouseEvent.CLICK, onMouseClick, false, 0, true);
 			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, false, 0, true);
 			onMouseMove();
-			if(_module.config.rulerHidesMouse) Mouse.hide();
 			_module.report("<b>Ruler started. Click on two locations to measure.</b>", ConsoleLevel.CONSOLE_STATUS);
 		}
 		private function onMouseMove(e:MouseEvent = null):void{
@@ -137,7 +136,6 @@ package com.junkbyte.console.modules.ruler {
 				_points.push(p);
 			}else if(_points.length==1){
 				_zoom.bitmapData = null;
-				if(_module.config.rulerHidesMouse) Mouse.show();
 				removeChild(_pointer);
 				removeChild(_posTxt);
 				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);

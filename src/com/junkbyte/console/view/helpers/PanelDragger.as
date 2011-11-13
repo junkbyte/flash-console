@@ -25,11 +25,13 @@
 */
 package com.junkbyte.console.view.helpers
 {
+    import com.junkbyte.console.events.ConsolePanelEvent;
+    import com.junkbyte.console.view.ConsolePanel;
+    
     import flash.events.Event;
     import flash.events.MouseEvent;
     import flash.text.TextField;
     import flash.text.TextFieldAutoSize;
-    import com.junkbyte.console.view.ConsolePanel;
 
     public class PanelDragger
     {
@@ -43,10 +45,10 @@ package com.junkbyte.console.view.helpers
         {
             this.panel = panel;
 			
-			panel.addEventListener(Event.CLOSE, onPanelClosed);
+			panel.addEventListener(ConsolePanelEvent.PANEL_REMOVED, onPanelRemoved);
         }
 		
-		protected function onPanelClosed(e:Event):void
+		protected function onPanelRemoved(e:Event):void
 		{
 			stop();
 		}

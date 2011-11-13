@@ -10,9 +10,9 @@ package com.junkbyte.console.core
 	public class ConsoleTicker
 	{
 
-		private var _lastTimer:Number;
+		protected var _lastTimer:Number;
 
-		private var _console:Console;
+		protected var _console:Console;
 
 		public function ConsoleTicker(console:Console)
 		{

@@ -28,6 +28,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.core.ModuleNameMatcher;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.events.ConsoleLogEvent;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IMainMenu;
@@ -96,7 +97,7 @@ package com.junkbyte.console.view.mainPanel
 			_textField.styleSheet = console.config.style.styleSheet;
 			
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			console.logger.logs.addEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
+			console.logger.logs.addEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
 			
 			ConsoleTextRoller.register(_textField, textRollOverHandler, linkHandler);
 		}
@@ -107,7 +108,7 @@ package com.junkbyte.console.view.mainPanel
 			super.unregisteredFromConsole();
 			
 			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
-			console.logger.logs.removeEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
+			console.logger.logs.removeEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
 			
 			mainPanel.unregisterMoveDragger(textField);
 			removeChild(textField);
@@ -201,7 +202,7 @@ package com.junkbyte.console.view.mainPanel
 			buildInMenus = new Array();
 			
 			addBuildInMenu(minimizerMenu);
-			addBuildInMenu(new ConsoleMenuItem("X", mainPanel.remove, null, "Close::Type password to show again"));
+			addBuildInMenu(new ConsoleMenuItem("X", mainPanel.removeFromParent, null, "Close::Type password to show again"));
 			addBuildInMenu(new ConsoleMenuItem("C", logger.logs.clear, null, "Clear log"));
 			addBuildInMenu(pauseMenu);
 			addBuildInMenu(new ConsoleMenuItem("Sv", saveLogs, null, "Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file"));

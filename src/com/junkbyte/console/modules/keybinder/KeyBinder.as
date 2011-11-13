@@ -82,10 +82,10 @@ package com.junkbyte.console.modules.keybinder
 		}
 
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{
-			if(config.keystrokePassword && (!key.useKeyCode && key.key.charAt(0) == config.keystrokePassword.charAt(0))){
+			/*if(config.keystrokePassword && (!key.useKeyCode && key.key.charAt(0) == config.keystrokePassword.charAt(0))){
 				report("Error: KeyBind ["+key.key+"] is conflicting with Console password.",9);
 				return;
-			}
+			}*/
 			if(fun == null){
 				delete _binds[key.key];
 			}else{
@@ -104,7 +104,7 @@ package com.junkbyte.console.modules.keybinder
 		private function handleKeyEvent(e:KeyboardEvent, isKeyUp:Boolean):void
 		{
 			var char:String = String.fromCharCode(e.charCode);
-			if(isKeyUp && config.keystrokePassword != null && char && char == config.keystrokePassword.substring(_passInd,_passInd+1)){
+			/*if(isKeyUp && config.keystrokePassword != null && char && char == config.keystrokePassword.substring(_passInd,_passInd+1)){
 				_passInd++;
 				if(_passInd >= config.keystrokePassword.length){
 					_passInd = 0;
@@ -117,7 +117,7 @@ package com.junkbyte.console.modules.keybinder
 				}
 			}
 			else
-			{
+			{*/
 				if(!isKeyUp) _passInd = 0;
 				var bind:KeyBind = new KeyBind(e.keyCode, e.shiftKey, e.ctrlKey, e.altKey, isKeyUp);
 				tryRunKey(bind.key);
@@ -125,7 +125,7 @@ package com.junkbyte.console.modules.keybinder
 					bind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey, isKeyUp);
 					tryRunKey(bind.key);
 				}
-			}
+			//}
 		}
 		private function printBinds(...args:Array):void{
 			report("Key binds:", -2);
@@ -139,7 +139,7 @@ package com.junkbyte.console.modules.keybinder
 		private function tryRunKey(key:String):void
 		{
 			var a:Array = _binds[key];
-			if(config.keyBindsEnabled && a){
+			if(a){
 				if(canTrigger()){
 					(a[0] as Function).apply(null, a[1]);
 				}else if(_warns < 3){

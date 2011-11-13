@@ -31,33 +31,27 @@ package com.junkbyte.console.vos {
 		public var text:String;
 		public var ch:String;
 		public var priority:int;
-		public var repeat:Boolean;
-		public var html:Boolean;
 		//public var stack:String;
 		//
 		public var next:Log;
 		public var prev:Log;
 		//
-		public function Log(txt:String, cc:String, pp:int, repeating:Boolean = false, ishtml:Boolean = false){
+		public function Log(txt:String, cc:String, pp:int){
 			text = txt;
 			ch = cc;
 			priority = pp;
-			repeat = repeating;
-			html = ishtml;
 		}
 		public function toBytes(bytes:ByteArray):void{
 			bytes.writeUnsignedInt(text.length);
 			bytes.writeUTFBytes(text); // because writeUTF can't accept more than 65535
 			bytes.writeUTF(ch);
-			bytes.writeInt(priority);
-			bytes.writeBoolean(repeat);
+			bytes.writeInt(priority)
 		}
 		public static function FromBytes(bytes:ByteArray):Log{
 			var t:String = bytes.readUTFBytes(bytes.readUnsignedInt());
 			var c:String = bytes.readUTF();
 			var p:int = bytes.readInt();
-			var r:Boolean = bytes.readBoolean();
-			return new Log(t, c, p, r);
+			return new Log(t, c, p);
 		}
 		
 		public function plainText():String{
@@ -68,7 +62,7 @@ package com.junkbyte.console.vos {
 		}
 		
 		public function clone():Log{
-			var l:Log = new Log(text, ch, priority, repeat, html);
+			var l:Log = new Log(text, ch, priority);
 			//l.line = line;
 			//l.stack = stack;
 			return l;

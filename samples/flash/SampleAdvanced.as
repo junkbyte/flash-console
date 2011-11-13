@@ -24,8 +24,9 @@
 */
 package 
 {
+	import com.junkbyte.console.CLog;
 	import com.junkbyte.console.Cc;
-
+	
 	import flash.display.*;
 	import flash.geom.Rectangle;
 
@@ -42,7 +43,7 @@ package
 			// SET UP - only required once
 			//
 			Cc.start(this);
-			Cc.config.keystrokePassword = "`";
+			//Cc.config.keystrokePassword = "`";
 			//Cc.layer.mainPanel.visible = true; // show console, because having password hides console.
 			//Cc.memoryMonitor = true;
 			//Cc.fpsMonitor = true;
@@ -51,7 +52,7 @@ package
 			Cc.config.commandLineAllowed = true;
 			Cc.mainPanel.width = 700;
 			Cc.mainPanel.height = 300;
-			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
+			//Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			//Cc.remoting = true;
 			/*
 			Cc.addMenu("T1", Cc.log, ["Greetings 1"], "This is a test menu 1");
@@ -60,26 +61,26 @@ package
 			//
 			// End of setup
 			//
-			Cc.log("Lets try some object linking...");
-			Cc.info("Here is a link to stage: ", stage);
-			Cc.info("Here is a link to Cc class", Cc);
-			Cc.info("Here is a link to Console instance", Cc);
+			CLog.log("Lets try some object linking...");
+			CLog.info("Here is a link to stage: ", stage);
+			CLog.info("Here is a link to Cc class", Cc);
+			CLog.info("Here is a link to Console instance", Cc);
 			//
 			// HTML text
-			Cc.addHTML("Here is HTML <font color='#ff00ff'>purple <b>bold</b> <b><i>and</i></b> <i>italic</i></font> text.");
-			Cc.addHTMLch("html", 8, "Mix objects inside html <p9>like this <i><b>&gt;", this,"&lt;</b></i></p9>");
+			CLog.addHTML("Here is HTML <font color='#ff00ff'>purple <b>bold</b> <b><i>and</i></b> <i>italic</i></font> text.");
+			CLog.addHTMLch("html", 8, "Mix objects inside html <p9>like this <i><b>&gt;", this,"&lt;</b></i></p9>");
 			
-			Cc.log("___");
+			CLog.log("___");
 			
 			// explode an object into its values..
-			Cc.log("Cc.explode() test:");
-			Cc.explode(temp);
+			//CLog.log("Cc.explode() test:");
+			//Cc.explode(temp);
 			
-			Cc.log("___");
-			Cc.info("Try the new search highlighting... Type '/filter link' in commandline below.");
+			CLog.log("___");
+			CLog.info("Try the new search highlighting... Type '/filter link' in commandline below.");
 			//
-			Cc.addSlashCommand("test", function():void{ Cc.log("Do the test!");} );
-			Cc.addSlashCommand("test2", function(param:String):void{Cc.log("Do the test 2 with param string:", param);} );
+			//Cc.addSlashCommand("test", function():void{ Cc.log("Do the test!");} );
+			//Cc.addSlashCommand("test2", function(param:String):void{Cc.log("Do the test 2 with param string:", param);} );
 			
 			//
 			//Graphing feature examples
@@ -112,15 +113,15 @@ package
 			e();
 		}
 		private function e():void{
-			Cc.stack("Hello from stack trace.");
+			//CLog.stack("Hello from stack trace.");
 		}
 		private function spam(chars:int):void{
 			var str:String = "";
 			while(str.length < chars){
 				str += "12345678901234567890123456789012345678901234567890123456789012345678901234567890";
 			}
-			Cc.log(str.substring(0, chars));
-			Cc.log("<<",chars,"chars.");
+			CLog.log(str.substring(0, chars));
+			CLog.log("<<",chars,"chars.");
 		}
 	}
 }

@@ -38,10 +38,10 @@ package com.junkbyte.console.logging
 			super(inputs, cc, pp);
 		}
 		
-		override public function outputUsingProcessor(processor:IConsoleLogProcessor):String
+		override public function makeOutputUsingProcessor(processor:IConsoleLogProcessor):String
 		{
 			valid = testHTML();
-			return super.outputUsingProcessor(processor);
+			return super.makeOutputUsingProcessor(processor);
 		}
 		
 		override protected function preProcess(input:*):String

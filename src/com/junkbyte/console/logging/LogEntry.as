@@ -31,6 +31,7 @@ package com.junkbyte.console.logging {
 	public class LogEntry{
 		
 		public var inputs:Array;
+		public var output:String;
 		
 		public var channel:String;
 		public var priority:int;
@@ -42,7 +43,17 @@ package com.junkbyte.console.logging {
 			priority = pp;
 		}
 		
-		public function outputUsingProcessor(processor:IConsoleLogProcessor):String
+		public function clearInput():void
+		{
+			inputs = null;
+		}
+		
+		public function setOutputUsingProcessor(processor:IConsoleLogProcessor):void
+		{
+			output = makeOutputUsingProcessor(processor);
+		}
+		
+		public function makeOutputUsingProcessor(processor:IConsoleLogProcessor):String
 		{
 			var output:Vector.<String> = new Vector.<String>(inputs.length);
 			
@@ -64,6 +75,11 @@ package com.junkbyte.console.logging {
 		protected function postProcess(input:*, currentOutput:String):String
 		{
 			return currentOutput;
+		}
+		
+		public function getPlainOutput():String
+		{
+			return output.replace(/<.*?>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 		}
 	}
 }

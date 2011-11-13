@@ -27,6 +27,7 @@ package com.junkbyte.console.view.mainPanel
 {
     import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.events.ConsoleEvent;
+    import com.junkbyte.console.events.ConsoleLogEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
     import com.junkbyte.console.logging.Logs;
     import com.junkbyte.console.modules.ConsoleModuleNames;
@@ -129,7 +130,7 @@ package com.junkbyte.console.view.mainPanel
 
 			console.addEventListener(ConsoleEvent.PAUSED, onConsolePaused);
 			console.addEventListener(ConsoleEvent.RESUMED, onConsoleResumed);
-			console.logger.logs.addEventListener(Event.CHANGE, onTracesChanged);
+			console.logger.logs.addEventListener(ConsoleLogEvent.ENTRIES_CHANGED, onTracesChanged);
 			
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			
@@ -140,7 +141,7 @@ package com.junkbyte.console.view.mainPanel
 		{
 			console.removeEventListener(ConsoleEvent.PAUSED, onConsolePaused);
 			console.removeEventListener(ConsoleEvent.RESUMED, onConsoleResumed);
-			console.logger.logs.removeEventListener(Event.CHANGE, onTracesChanged);
+			console.logger.logs.removeEventListener(ConsoleLogEvent.ENTRIES_CHANGED, onTracesChanged);
 			
 			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 			
@@ -439,18 +440,8 @@ package com.junkbyte.console.view.mainPanel
             {
                 if (lineShouldShow(line))
                 {
-                    var numlines:int = Math.ceil(line.text.length / maxchars);
-                    if (line.html || linesLeft >= numlines)
-                    {
-                        lines.push(makeLine(line, showch));
-                    }
-                    else
-                    {
-                        line = line.clone();
-                        line.text = line.text.substring(Math.max(0, line.text.length - (maxchars * linesLeft)));
-                        lines.push(makeLine(line, showch));
-                        break;
-                    }
+					lines.push(makeLine(line, showch));
+					var numlines:int = Math.ceil(line.text.length / maxchars);
                     linesLeft -= numlines;
                     if (linesLeft <= 0)
                     {

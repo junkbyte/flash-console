@@ -42,7 +42,7 @@ package com.junkbyte.console.modules.ruler
 		private function start():void
 		{
 			_ruler = new Ruler(this);
-			_ruler.addEventListener(Event.CLOSE, onExit, false, 0, true);
+			_ruler.addEventListener(Event.CLOSE, onExit);
 			layer.addChild(_ruler);
 			menu.active = true;
 			menu.announceChanged();
@@ -54,6 +54,7 @@ package com.junkbyte.console.modules.ruler
 			{
 				layer.removeChild(_ruler);
 			}
+			_ruler.removeEventListener(Event.CLOSE, onExit);
 			_ruler = null;
 			menu.active = false;
 			menu.announceChanged();

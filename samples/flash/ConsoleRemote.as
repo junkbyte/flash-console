@@ -43,7 +43,6 @@ package
 			Cc.start(this);
 			Cc.commandLine = true;
 			Cc.config.maxLines = 2000;
-			Cc.config.maxRepeats = 200;
 			Cc.config.commandLineAllowed = true;
 			
 			// Start remote service.

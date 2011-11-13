@@ -31,11 +31,10 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.events.ConsoleLayerEvent;
 	import com.junkbyte.console.events.ConsolePanelEvent;
 	import com.junkbyte.console.view.mainPanel.MainPanel;
-	
+
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.utils.Dictionary;
 
 	[Event(name = "panelAdded", type = "com.junkbyte.console.events.ConsoleLayerEvent")]
 	[Event(name = "panelRemoved", type = "com.junkbyte.console.events.ConsoleLayerEvent")]
@@ -48,17 +47,33 @@ package com.junkbyte.console.view
 
 		private var _panels:Vector.<ConsolePanel> = new Vector.<ConsolePanel>();
 
-		public function ConsoleLayer(console:Console)
+		public function ConsoleLayer()
 		{
 			name = "ConsoleLayer";
+		}
+
+		public function initUsingConsole(console:Console):void
+		{
 			this.console = console;
+			initStageModule();
+			initToolTip();
+			initMainPanel();
+		}
 
-			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
+		protected function initStageModule():void
+		{
+			_stageModule = new StageModule();
+			_stageModule.registerSelfToConsoleWhenAddedToStage(console);
+		}
 
-			if (console.config.keystrokePassword)
-			{
-				visible = false;
-			}
+		protected function initToolTip():void
+		{
+			console.modules.registerModule(new ToolTipModule());
+		}
+
+		protected function initMainPanel():void
+		{
+			console.modules.registerModule(new MainPanel());
 		}
 
 		public function toggleVisibility():void
@@ -82,40 +97,6 @@ package com.junkbyte.console.view
 				mainPanel.sprite.visible = true;
 			}
 			console.dispatchEvent(ConsoleEvent.create(visible ? ConsoleEvent.SHOWN : ConsoleEvent.HIDDEN));
-		}
-
-		private function stageAddedHandle(e:Event = null):void
-		{
-			removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-			addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-
-			registerStageModule();
-		}
-
-		private function stageRemovedHandle(e:Event = null):void
-		{
-			removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
-			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
-
-			unregisterStageModule();
-		}
-
-		protected function registerStageModule():void
-		{
-			if (_stageModule == null)
-			{
-				_stageModule = new StageModule(stage);
-				console.modules.registerModule(_stageModule);
-			}
-		}
-
-		protected function unregisterStageModule():void
-		{
-			if (_stageModule != null)
-			{
-				console.modules.unregisterModule(_stageModule);
-				_stageModule = null;
-			}
 		}
 
 		//
@@ -142,11 +123,6 @@ package com.junkbyte.console.view
 			dispatchEvent(new ConsoleLayerEvent(ConsoleLayerEvent.PANEL_REMOVED, panel));
 		}
 
-		public function getPanelByName(n:String):ConsolePanel
-		{
-			return getChildByName(n) as ConsolePanel;
-		}
-
 		public function getPanelFromDisplay(display:DisplayObject):ConsolePanel
 		{
 			for each (var panel:ConsolePanel in _panels)
@@ -157,11 +133,6 @@ package com.junkbyte.console.view
 				}
 			}
 			return null;
-		}
-
-		public function panelExists(n:String):Boolean
-		{
-			return (getChildByName(n) as ConsolePanel) != null;
 		}
 
 		public function get mainPanel():MainPanel

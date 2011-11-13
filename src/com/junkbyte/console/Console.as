@@ -32,7 +32,6 @@ package com.junkbyte.console
 	import com.junkbyte.console.logging.ConsoleLogger;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ConsoleLayer;
-	import com.junkbyte.console.view.ToolTipModule;
 	import com.junkbyte.console.view.mainPanel.MainPanel;
 	
 	import flash.display.DisplayObject;
@@ -53,9 +52,7 @@ package com.junkbyte.console
 
 		protected var _modules:ConsoleModulesManager;
 
-		protected var _display:ConsoleLayer;
-
-		protected var _mainPanel:MainPanel;
+		protected var _layer:ConsoleLayer;
 
 		protected var _config:ConsoleConfig;
 
@@ -65,6 +62,25 @@ package com.junkbyte.console
 		{
 		}
 
+		public function startOnStage(target:DisplayObject):void
+		{
+			if (!started)
+			{
+				start();
+			}
+			if (target != null)
+			{
+				if (target.stage != null)
+				{
+					addToContainer(target.stage);
+				}
+				else
+				{
+					target.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
+				}
+			}
+		}
+
 		public function start(container:DisplayObjectContainer = null):void
 		{
 			if (started)
@@ -72,18 +88,19 @@ package com.junkbyte.console
 				addToContainer(container);
 				return;
 			}
-			config.style.updateStyleSheet();
-			initData();
-			initDisplay();
+			init();
 			sayIntro();
 			addToContainer(container);
 			dispatchEvent(ConsoleEvent.create(ConsoleEvent.STARTED));
 		}
 
-		protected function initData():void
+		protected function init():void
 		{
+			config.style.updateStyleSheet();
 			initModulesManager();
 			registerLoggerModule();
+			initConsoleLayer();
+			initTicker();
 		}
 
 		protected function initModulesManager():void
@@ -96,31 +113,15 @@ package com.junkbyte.console
 			modules.registerModule(CLog != null ? CLog : new ConsoleLogger());
 		}
 
-		protected function initDisplay():void
-		{
-			initConsoleLayer();
-			initToolTip();
-			initMainPanel();
-
-			new ConsoleTicker(this); // should keep it self hard linked
-		}
-
 		protected function initConsoleLayer():void
 		{
-			_display = new ConsoleLayer(this);
+			_layer = new ConsoleLayer();
+			_layer.initUsingConsole(this);
 		}
 
-		protected function initMainPanel():void
+		protected function initTicker():void
 		{
-			_mainPanel = new MainPanel();
-			layer.addPanel(_mainPanel);
-			modules.registerModule(_mainPanel);
-		}
-
-		protected function initToolTip():void
-		{
-			var tooltip:ToolTipModule = new ToolTipModule();
-			modules.registerModule(tooltip);
+			new ConsoleTicker(this); // should keep it self hard linked
 		}
 
 		protected function sayIntro():void
@@ -133,25 +134,6 @@ package com.junkbyte.console
 			if (container != null)
 			{
 				container.addChild(layer);
-			}
-		}
-
-		public function startOnStage(target:DisplayObject):void
-		{
-			if (!started)
-			{
-				start();
-			}
-			if (target)
-			{
-				if (target.stage)
-				{
-					addToContainer(target.stage);
-				}
-				else
-				{
-					target.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
-				}
 			}
 		}
 
@@ -187,12 +169,10 @@ package com.junkbyte.console
 				logger.report("Resumed", ConsoleLevel.CONSOLE_STATUS);
 			}
 			_paused = newV;
-			dispatchEvent(new Event(_paused ? ConsoleEvent.PAUSED : ConsoleEvent.RESUMED));
-		}
 
-		//
-		//
-		//
+			var eventType:String = _paused ? ConsoleEvent.PAUSED : ConsoleEvent.RESUMED;
+			dispatchEvent(ConsoleEvent.create(eventType));
+		}
 
 		public function get modules():ConsoleModulesManager
 		{
@@ -206,12 +186,12 @@ package com.junkbyte.console
 
 		public function get layer():ConsoleLayer
 		{
-			return _display;
+			return _layer;
 		}
 
 		public function get mainPanel():MainPanel
 		{
-			return _mainPanel;
+			return modules.getModuleByName(ConsoleModuleNames.MAIN_PANEL) as MainPanel;
 		}
 
 		public function get config():ConsoleConfig

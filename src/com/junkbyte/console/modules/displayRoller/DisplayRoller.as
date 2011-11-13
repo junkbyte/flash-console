@@ -158,7 +158,7 @@ package com.junkbyte.console.modules.displayRoller
         protected function onMenuClick():void
         {
             if (isActive())
-                remove();
+                removeFromParent();
             else
                 start();
         }
@@ -167,8 +167,8 @@ package com.junkbyte.console.modules.displayRoller
         {
             x = console.mainPanel.x + console.mainPanel.width - 180;
             y = console.mainPanel.y + 55;
-
-            layer.addPanel(this);
+			
+			addToLayer();
 
             menu.active = true;
             menu.announceChanged();
@@ -191,7 +191,7 @@ package com.junkbyte.console.modules.displayRoller
         {
             if (!sprite.stage)
             {
-                remove();
+                removeFromParent();
                 return;
             }
             if (_settingKey)
@@ -294,11 +294,11 @@ package com.junkbyte.console.modules.displayRoller
 			return console.modules.getFirstMatchingModule(new ModuleTypeMatcher(ConsoleReferencingModule)) as ConsoleReferencingModule;
 		}
 		
-        public override function remove():void
+        public override function removeFromParent():void
         {
             cancelCaptureKeySet();
             removeListeners();
-            super.remove();
+            super.removeFromParent();
         }
 
         private function onMenuRollOver(e:TextEvent):void
@@ -336,7 +336,7 @@ package com.junkbyte.console.modules.displayRoller
             TextField(e.currentTarget).setSelection(0, 0);
             if (e.text == "close")
             {
-                remove();
+                removeFromParent();
             }
             else if (e.text == "capture")
             {

@@ -26,6 +26,7 @@
 package com.junkbyte.console.view {
 	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.events.ConsoleLogEvent;
 	import com.junkbyte.console.logging.Logs;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
@@ -73,12 +74,13 @@ package com.junkbyte.console.view {
 		override protected function registeredToConsole():void
 		{
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			console.logger.logs.addEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
+			console.logger.logs.addEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
 			
 			var mainPanel:MainPanel = console.mainPanel;
 			sprite.x = mainPanel.sprite.x + mainPanel.width - 332;
 			sprite.y = mainPanel.sprite.y - 2;
-			layer.addPanel(this);
+			
+			addToLayer();
 			
 			super.registeredToConsole();
 		}
@@ -86,9 +88,9 @@ package com.junkbyte.console.view {
 		override protected function unregisteredFromConsole():void
 		{
 			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
-			console.logger.logs.removeEventListener(Logs.CHANNELS_CHANGED, onChannelsChanged);
+			console.logger.logs.removeEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
 			
-			remove();
+			removeFromParent();
 			
 			super.unregisteredFromConsole();
 		}

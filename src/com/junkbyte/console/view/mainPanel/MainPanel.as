@@ -32,7 +32,7 @@ package com.junkbyte.console.view.mainPanel
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.view.ChannelsPanel;
     import com.junkbyte.console.view.ConsolePanel;
-
+    
     import flash.events.Event;
     import flash.events.TextEvent;
     import flash.geom.Point;
@@ -41,8 +41,6 @@ package com.junkbyte.console.view.mainPanel
 
     public class MainPanel extends ConsolePanel
     {
-
-        public static const NAME:String = "mainPanel";
 
         public static const COMMAND_LINE_VISIBLITY_CHANGED:String = "commandLineVisibilityChanged";
 
@@ -66,11 +64,16 @@ package com.junkbyte.console.view.mainPanel
 
             addEventListener(ConsolePanelEvent.STARTED_MOVING, onStartedDragging);
         }
+		
+		override public function getModuleName():String
+		{
+			return ConsoleModuleNames.MAIN_PANEL;
+		}
 
         override protected function initToConsole():void
         {
             super.initToConsole();
-            sprite.name = NAME;
+            sprite.name = ConsoleModuleNames.MAIN_PANEL;
 
             //
             _menu = new MainPanelMenu(this);
@@ -90,6 +93,8 @@ package com.junkbyte.console.view.mainPanel
             sprite.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 
             setPanelSize(480, 100);
+			
+			addToLayer();
         }
 
         public function get menu():MainPanelMenu
@@ -318,13 +323,6 @@ package com.junkbyte.console.view.mainPanel
                 channelsPanel = new ChannelsPanel();
                 modules.registerModule(channelsPanel);
             }
-        }
-
-        override public function remove():void
-        {
-            setTooltip(null);
-            sprite.visible = false;
-            dispatchEvent(new Event(Event.CLOSE));
         }
 
         public function toggleTopMenu():void

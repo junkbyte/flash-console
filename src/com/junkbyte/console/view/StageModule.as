@@ -25,34 +25,76 @@
 */
 package com.junkbyte.console.view
 {
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	
+
 	import flash.display.Stage;
-	
-	// This is a build-in module registed by console when console is added to stage display list.
+	import flash.events.Event;
+
 	public class StageModule extends ConsoleModule
 	{
 		private var _stage:Stage;
-		
-		public function StageModule(stage:Stage)
+
+		private var _listeningConsole:Console;
+
+		public function StageModule()
 		{
 			super();
-			if(stage == null)
-			{
-				throw new ArgumentError();
-			}
-			_stage = stage;
 		}
-		
+
 		public function get stage():Stage
 		{
 			return _stage;
 		}
-		
+
 		override public function getModuleName():String
 		{
 			return ConsoleModuleNames.STAGE;
+		}
+
+
+		// This module can register it self to console when console layer is added to stage.
+		public function registerSelfToConsoleWhenAddedToStage(console:Console):void
+		{
+			_listeningConsole = console;
+			var layer:ConsoleLayer = _listeningConsole.layer;
+			if (_listeningConsole.layer.stage != null)
+			{
+				onAddedToStage();
+			}
+			else
+			{
+				_listeningConsole.layer.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+			}
+		}
+
+		private function onAddedToStage(e:Event = null):void
+		{
+			var layer:ConsoleLayer = _listeningConsole.layer;
+			layer.removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+			layer.addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			_stage = layer.stage;
+			registerSelf();
+		}
+
+		private function onRemovedFromStage(e:Event):void
+		{
+			var layer:ConsoleLayer = _listeningConsole.layer;
+			layer.removeEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			layer.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+			_stage = null;
+			unregisterSelf();
+		}
+
+		protected function registerSelf():void
+		{
+			_listeningConsole.modules.registerModule(this);
+		}
+
+		protected function unregisterSelf():void
+		{
+			_listeningConsole.modules.unregisterModule(this);
 		}
 	}
 }

@@ -28,21 +28,24 @@ package com.junkbyte.console.logging
 
     import com.junkbyte.console.Console;
     import com.junkbyte.console.core.ConsoleModule;
+    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.events.ConsoleEvent;
+    import com.junkbyte.console.events.ConsoleLogEvent;
     import com.junkbyte.console.interfaces.IConsoleModule;
     import com.junkbyte.console.interfaces.IRemoter;
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
     import com.junkbyte.console.utils.makeConsoleChannel;
-    import com.junkbyte.console.core.ModuleTypeMatcher;
     import com.junkbyte.console.vos.Log;
-
+    
     import flash.events.Event;
     import flash.utils.ByteArray;
     import flash.utils.getQualifiedClassName;
 
-    [Event(name = "change", type = "flash.events.Event")]
-    [Event(name = "channelsChanged", type = "flash.events.Event")]
+	[Event(name = "entryadded", type = "com.junkbyte.console.events.ConsoleLogEvent")]
+	[Event(name = "entriesChanged", type = "com.junkbyte.console.events.ConsoleLogEvent")]
+	[Event(name = "channelAdded", type = "com.junkbyte.console.events.ConsoleLogEvent")]
+	[Event(name = "channelsChanged", type = "com.junkbyte.console.events.ConsoleLogEvent")]
     public class Logs extends ConsoleModule
     {
 
@@ -59,12 +62,6 @@ package com.junkbyte.console.logging
         public static const INSPECTING_CHANNEL:String = "⌂";
 
         private var _channels:Object;
-
-        private var _repeating:uint;
-
-        private var _lastRepeat:Log;
-
-        private var _newRepeat:Log;
 
         public var first:Log;
 
@@ -92,18 +89,6 @@ package com.junkbyte.console.logging
         override public function getModuleName():String
         {
             return ConsoleModuleNames.LOGS;
-        }
-
-        override protected function registeredToConsole():void
-        {
-            super.registeredToConsole();
-            console.addEventListener(ConsoleEvent.UPDATE_DATA, update);
-        }
-
-        override protected function unregisteredFromConsole():void
-        {
-            super.unregisteredFromConsole();
-            console.removeEventListener(ConsoleEvent.UPDATE_DATA, update);
         }
 
         protected function onRemoterRegistered(remoter:IRemoter):void
@@ -157,25 +142,6 @@ package com.junkbyte.console.logging
             }
         }
 
-
-        protected function update(event:ConsoleEvent):void
-        {
-            if (_repeating > 0)
-            {
-                _repeating--;
-            }
-            if (_newRepeat)
-            {
-                if (_lastRepeat)
-                {
-                    remove(_lastRepeat);
-                }
-                _lastRepeat = _newRepeat;
-                _newRepeat = null;
-                push(_lastRepeat);
-            }
-        }
-
         public function getStack(depth:int, priority:int):String
         {
             var e:Error = new Error();
@@ -221,37 +187,26 @@ package com.junkbyte.console.logging
             }
             return txt;
         }
+		
+		public function addEntry(entry:LogEntry):void
+		{
+			add(new Log(entry.output, makeConsoleChannel(entry.channel), entry.priority));
+			
+			var event:ConsoleLogEvent = new ConsoleLogEvent(ConsoleLogEvent.ENTRTY_ADDED);
+			event.entry = entry;
+			dispatchEvent(event);
+			entry.clearInput();
+		}
 
         public function add(line:Log):void
         {
             addChannel(line.ch);
             send2Remote(line);
-            if (line.repeat)
-            {
-                if (_repeating > 0 && _lastRepeat)
-                {
-                    //line.line = _lastRepeat.line;
-                    _newRepeat = line;
-                    return;
-                }
-                else
-                {
-                    _repeating = config.maxRepeats;
-                    _lastRepeat = line;
-                }
-            }
-            //_lines++;
-            //line.line = _lines;
             //
             push(line);
             while (_length > config.maxLines && config.maxLines > 0)
             {
                 remove(first);
-            }
-            //
-            if (config.tracing && config.traceCall != null)
-            {
-                config.traceCall(line.ch, line.plainText(), line.priority);
             }
             announceLogsChanged();
         }
@@ -284,12 +239,12 @@ package com.junkbyte.console.logging
 
         private function announceChannelChanged():void
         {
-            dispatchEvent(new Event(CHANNELS_CHANGED));
+            dispatchEvent(new ConsoleLogEvent(ConsoleLogEvent.CHANNELS_CHANGED));
         }
 
         private function announceLogsChanged():void
         {
-            dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent(new ConsoleLogEvent(ConsoleLogEvent.ENTRIES_CHANGED));
         }
 
         public function getAllLog(splitter:String = "\r\n"):String
@@ -408,14 +363,6 @@ package com.junkbyte.console.logging
             if (last == log)
             {
                 last = log.prev;
-            }
-            if (log == _lastRepeat)
-            {
-                _lastRepeat = null;
-            }
-            if (log == _newRepeat)
-            {
-                _newRepeat = null;
             }
             if (log.next != null)
             {

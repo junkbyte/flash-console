@@ -63,7 +63,9 @@ package com.junkbyte.console.events
 
 		override public function clone():Event
 		{
-			return new ConsoleEvent(type);
+			var event:ConsoleEvent = new ConsoleEvent(type);
+			event.msDelta = msDelta;
+			return event;
 		}
 	}
 }

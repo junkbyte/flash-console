@@ -27,22 +27,6 @@ package com.junkbyte.console {
 
 	public class ConsoleConfig {
 		
-		/**
-		 * 	Password sequence to toggle console's visibility. If password is set, console will start hidden. Set Cc.visible = ture to unhide at start.
-		 * 	Must be ASCII chars. Example passwords: ` OR debug.
-		 * 	Password will not trigger if you have focus on an input TextField.
-		 */
-		public var keystrokePassword:String;
-		
-		/**
-		 * Set Password required to connect from remote.
-		 * <p>
-		 * Set to null (deafult) to use keystrokePassword.
-		 * Set to "" (blank string), to disable remoting password.
-		 * </p>
-		 */
-		public var remotingPassword:String;
-		
 		//////////////////////
 		//                  //
 		//  LOGGING CONIFG  //
@@ -54,15 +38,6 @@ package com.junkbyte.console {
 		 * 0 = unlimited. Setting to very high will take up more memory and potentially slow down.
 		 */
 		public var maxLines:uint = 1000;
-		
-		/**
-		 * Frames before repeating line is forced to print to next line.
-		 * <p>
-		 * Set to -1 to never force. Set to 0 to force every line.
-		 * Default = 75;
-		 * </p>
-		 */
-		public var maxRepeats:int = 75;
 		
 		/**
 		 * Auto stack trace logs for this priority and above
@@ -191,23 +166,6 @@ package com.junkbyte.console {
 		public var commandLineAutoScope:Boolean;
 		
 		/**
-		 * CommandLine input pass through function
-		 * <p>
-		 * Function to call when user enter commandLine input via main console panel.
-		 * This can be used to essentially replace built-in commandLine functionality.
-		 * If function returns a String, that string is executed as command.
-		 * <ul>
-		 * <li>Example below prints the command input insted of executing:</li>
-		 * <li><code>Cc.config.commandLineInputPassThrough = function(commandStr:String):String{</code></li>
-		 * <li><code>Cc.info("Received command input: '"+commandStr+"'.");</code></li>
-		 * <li><code>return null;</code></li>
-		 * <li><code>};</code></li>
-		 * </ul>
-		 * </p>
-		 */
-		public var commandLineInputPassThrough:Function;
-		
-		/**
 		 * Commandline auto hinting and auto-completion
 		 * <p>
 		 * When using config.commandLineInputPassThrough feature, 
@@ -215,37 +173,6 @@ package com.junkbyte.console {
 		 * </p>
 		 */
 		public var commandLineAutoCompleteEnabled:Boolean = true;
-		
-		/**
-		 * Key binding availability
-		 * <p>
-		 * While turned off, you can still bind keys. 
-		 * Just that it will not trigger so long as the keyBindsEnabled is set to false.
-		 * </p>
-		 */
-		public var keyBindsEnabled:Boolean = true;
-		
-		/**
-		 * Display Roller availability
-		 * <p>
-		 * You are able to turn it off incase you need better security.
-		 * </p>
-		 */
-		public var displayRollerEnabled:Boolean = true;
-		
-		/**
-		 * Ruler tool availability
-		 */
-		public var rulerToolEnabled:Boolean = true;
-		
-		/**
-		 * Determine if Console should hide mouse cursor when using Ruler tool.
-		 * <p>
-		 * You may want to turn it off if your app/game don't use system mouse.
-		 * Default: true
-		 * </p>
-		 */
-		public var rulerHidesMouse:Boolean = true;
 		
 		/** 
 		 * Local shared object used for storing user data such as command line history
@@ -267,24 +194,6 @@ package com.junkbyte.console {
 		 */
 		public var rememberFilterSettings:Boolean;
 		
-		/**
-		 * Keeping Console on top of display list.
-		 * <p>
-		 * When turned on (by default), console will always try to put it self on top of the parent's display list.
-		 * For example, if console is started in root, when a child display is added in root, console will move it self to the 
-		 * top of root's display list to try to overlay the new child display. - making sure that console don't get covered.
-		 * </p>
-		 * <p>
-		 * However, if Console's parent display (root in example) is covered by another display (example: adding a child directly to stage), 
-		 * console will not be able to pull it self above it as it is in root, not stage.
-		 * If console is added on stage in the first place, there won't be an issue as described above. Use Cc.startOnStage(...).
-		 * </p>
-		 * <p>
-		 * Keeping it turned on may have other side effects if another display is also trying to put it self on top, 
-		 * they could be jumping layers as they fight for the top layer.
-		 * </p>
-		 */
-		public var alwaysOnTop:Boolean = true;
 		
 		////////////////////
 		//                //

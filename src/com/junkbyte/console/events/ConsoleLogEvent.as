@@ -23,30 +23,38 @@
 * 3. This notice may not be removed or altered from any source distribution.
 *
 */
-package com.junkbyte.console.core
+package com.junkbyte.console.events
 {
-	import com.junkbyte.console.interfaces.IConsoleModule;
-	import com.junkbyte.console.logging.ConsoleLogger;
-	import com.junkbyte.console.logging.Logs;
-	import com.junkbyte.console.view.ChannelsPanel;
-	import com.junkbyte.console.view.StageModule;
-	import com.junkbyte.console.view.mainPanel.MainPanel;
+	import com.junkbyte.console.logging.LogEntry;
+	
+	import flash.events.Event;
 
-	public class ConsoleCoreModulesMap
+	public class ConsoleLogEvent extends Event
 	{
-		private static const NAME_TO_TYPE_MAP:Object = 
-		{ 
-			logger: ConsoleLogger, 
-			logs: Logs,
-			stage: StageModule,
-			mainPanel: MainPanel,
-			channelsPanel: ChannelsPanel
-		}
-		
-		public static function isModuleWithNameValid(module:IConsoleModule, name:String):Boolean
+		public static const ENTRTY_ADDED:String = "entryadded";
+		public static const ENTRIES_CHANGED:String = "entriesChanged";
+		public static const CHANNEL_ADDED:String = "channelAdded";
+		public static const CHANNELS_CHANGED:String = "channelsChanged";
+
+		public var entry:LogEntry;
+		public var channel:String;
+
+		public function ConsoleLogEvent(type:String)
 		{
-			var type:Class = NAME_TO_TYPE_MAP[name];
-			return type == null || module is type;
+			super(type,false,false);
+		}
+
+		public override function clone():Event
+		{
+			var event:ConsoleLogEvent = new ConsoleLogEvent(type);
+			event.entry = entry;
+			event.channel = channel;
+			return event;
+		}
+
+		public override function toString():String
+		{
+			return formatToString("ConsoleLogEvent","entry","channel");
 		}
 	}
 }

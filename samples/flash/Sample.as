@@ -33,6 +33,7 @@ package
 	import com.junkbyte.console.logging.LogEntry;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.StandardConsoleModules;
+	import com.junkbyte.console.modules.trace.TraceModule;
 	import com.junkbyte.console.modules.remoting.LocalRemoting;
 	
 	import flash.display.MovieClip;
@@ -56,7 +57,7 @@ package
 			//
 			// SET UP - only required once
 			//
-			Cc.config.keystrokePassword = "`";
+			//Cc.config.keystrokePassword = "`";
 			
 			Cc.startOnStage(this); // "`" - change for password. This will start hidden
 			Cc.layer.visible = true; // Show console, because having password hides console.
@@ -64,9 +65,10 @@ package
 			Cc.config.commandLineAllowed = true; // enable advanced (but security risk) features.
 			Cc.config.tracing = true; // Also trace on flash's normal trace
 			
-			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
+			//Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			//Cc.remoting = true; // Start sending logs to remote (using LocalConnection)
 		
+			//Cc.modules.registerModule(new TraceModule());
 			
 			Cc.mainPanel.setPanelSize(640, 220);
 		
@@ -82,7 +84,7 @@ package
 			demoBasics();
 			
 			setupUI();
-			
+			/*
 			
 			CLog.addEntry(new LogEntry(["test"], "ch", 10));
 			CLog.addEntry(new LogEntry(["An info message.", "Optionally there", "can be", "multiple arguments."], "ch", 4));
@@ -97,7 +99,7 @@ package
 				
 			CLog.addHTML("<html>Some <i>random</i> <b>html</b></html>");
 				
-			CLog.addHTML("<html>Some <i>random</i> <b>html<b/></html>");
+			CLog.addHTML("<html>Some <i>random</i> <b>html<b/></html>");*/
 		}
 		
 		private function demoBasics():void

@@ -25,165 +25,172 @@
 */
 package com.junkbyte.console.view
 {
-    import com.junkbyte.console.events.ConsolePanelEvent;
-    import com.junkbyte.console.modules.ConsoleModuleNames;
-    import com.junkbyte.console.view.helpers.PanelMover;
-    import com.junkbyte.console.view.helpers.PanelResizer;
-    
-    import flash.display.DisplayObject;
-    import flash.display.Sprite;
-    import flash.events.Event;
-    import flash.geom.Point;
-    import flash.geom.Rectangle;
+	import com.junkbyte.console.events.ConsolePanelEvent;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.view.helpers.PanelMover;
+	import com.junkbyte.console.view.helpers.PanelResizer;
 
-    [Event(name = "close", type = "flash.events.Event")]
-    [Event(name = "startedMoving", type = "com.junkbyte.console.events.ConsolePanelEvent")]
-    [Event(name = "stoppedMoving", type = "com.junkbyte.console.events.ConsolePanelEvent")]
-    [Event(name = "startedScaling", type = "com.junkbyte.console.events.ConsolePanelEvent")]
-    [Event(name = "stoppedScaling", type = "com.junkbyte.console.events.ConsolePanelEvent")]
-    [Event(name = "panelResized", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+	import flash.display.DisplayObject;
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
+
+	[Event(name = "startedMoving", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+	[Event(name = "stoppedMoving", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+	[Event(name = "startedScaling", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+	[Event(name = "stoppedScaling", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+	[Event(name = "panelResized", type = "com.junkbyte.console.events.ConsolePanelEvent")]
 	[Event(name = "panelAdded", type = "com.junkbyte.console.events.ConsolePanelEvent")]
 	[Event(name = "panelRemoved", type = "com.junkbyte.console.events.ConsolePanelEvent")]
-    public class ConsolePanel extends ConsoleDisplayModule
-    {
-        protected var panelMover:PanelMover;
+	public class ConsolePanel extends ConsoleDisplayModule
+	{
+		protected var panelMover:PanelMover;
 
-        protected var background:Sprite;
+		protected var background:Sprite;
 
-        protected var minSize:Point = new Point(18, 18);
+		protected var minSize:Point = new Point(18, 18);
 
-        public function ConsolePanel()
-        {
-            super();
+		public function ConsolePanel()
+		{
+			super();
 
-            createBackground();
-        }
+			createBackground();
+		}
 
-        // override for init
-        override protected function initToConsole():void
-        {
-            drawBackground();
-        }
+		// override for init
+		override protected function initToConsole():void
+		{
+			drawBackground();
+		}
 
-        protected function createBackground():void
-        {
-            background = new Sprite();
-            background.name = "background";
-            addChild(background);
-        }
+		protected function createBackground():void
+		{
+			background = new Sprite();
+			background.name = "background";
+			addChild(background);
+		}
 
-        protected function drawBackground(col:Number = -1, a:Number = -1, rounding:int = -1):void
-        {
-            if (background == null)
-            {
-                return;
-            }
-            background.graphics.clear();
-            background.graphics.beginFill(col >= 0 ? col : style.backgroundColor, a >= 0 ? a : style.backgroundAlpha);
-            if (rounding < 0)
-                rounding = style.roundBorder;
-            if (rounding <= 0)
-                background.graphics.drawRect(0, 0, 100, 100);
-            else
-            {
-                background.graphics.drawRoundRect(0, 0, rounding + 10, rounding + 10, rounding, rounding);
-                background.scale9Grid = new Rectangle(rounding * 0.5, rounding * 0.5, 10, 10);
-            }
-        }
-		
+		protected function drawBackground(col:Number = -1, a:Number = -1, rounding:int = -1):void
+		{
+			if (background == null)
+			{
+				return;
+			}
+			background.graphics.clear();
+			background.graphics.beginFill(col >= 0 ? col : style.backgroundColor, a >= 0 ? a : style.backgroundAlpha);
+			if (rounding < 0)
+			{
+				rounding = style.roundBorder;
+			}
+			if (rounding <= 0)
+			{
+				background.graphics.drawRect(0, 0, 100, 100);
+			}
+			else
+			{
+				background.graphics.drawRoundRect(0, 0, rounding + 10, rounding + 10, rounding, rounding);
+				background.scale9Grid = new Rectangle(rounding * 0.5, rounding * 0.5, 10, 10);
+			}
+		}
+
 		override protected function onAddedToParentDisplay():void
 		{
 			super.onAddedToParentDisplay();
 			dispatchEvent(ConsolePanelEvent.create(ConsolePanelEvent.PANEL_ADDED));
 		}
-		
+
 		override protected function onRemovedFromParentDisplay():void
 		{
 			super.onRemovedFromParentDisplay();
 			dispatchEvent(ConsolePanelEvent.create(ConsolePanelEvent.PANEL_REMOVED));
 		}
 
-        public function remove():void
-        {
-            dispatchEvent(new Event(Event.CLOSE));
-            if (parent != null)
-            {
-                parent.removeChild(sprite);
-            }
-        }
+		public function addToLayer():void
+		{
+			layer.addPanel(this);
+		}
 
-        public function get width():Number
-        {
-            return background.width;
-        }
+		public function removeFromParent():void
+		{
+			if (parent != null)
+			{
+				parent.removeChild(sprite);
+			}
+		}
 
-        public function set width(n:Number):void
-        {
-            setPanelSize(n, height);
-        }
+		public function get width():Number
+		{
+			return background.width;
+		}
 
-        public function get height():Number
-        {
-            return background.height;
-        }
+		public function set width(n:Number):void
+		{
+			setPanelSize(n, height);
+		}
 
-        public function set height(n:Number):void
-        {
-            setPanelSize(width, n);
-        }
+		public function get height():Number
+		{
+			return background.height;
+		}
 
-        public function setPanelSize(w:Number, h:Number):void
-        {
-            if (w < minSize.x)
-            {
-                w = minSize.x;
-            }
-            if (h < minSize.y)
-            {
-                h = minSize.y;
-            }
-            resizePanel(w, h);
-        }
+		public function set height(n:Number):void
+		{
+			setPanelSize(width, n);
+		}
 
-        protected function resizePanel(w:Number, h:Number):void
-        {
-            background.width = w;
-            background.height = h;
+		public function setPanelSize(w:Number, h:Number):void
+		{
+			if (w < minSize.x)
+			{
+				w = minSize.x;
+			}
+			if (h < minSize.y)
+			{
+				h = minSize.y;
+			}
+			resizePanel(w, h);
+		}
 
-            dispatchEvent(ConsolePanelEvent.create(ConsolePanelEvent.PANEL_RESIZED));
-        }
+		protected function resizePanel(w:Number, h:Number):void
+		{
+			background.width = w;
+			background.height = h;
 
-        public function registerMoveDragger(mc:DisplayObject):void
-        {
-            if (panelMover == null)
-            {
-                panelMover = createMoveDragger();
-            }
-            panelMover.registerDragger(mc);
-        }
+			dispatchEvent(ConsolePanelEvent.create(ConsolePanelEvent.PANEL_RESIZED));
+		}
 
-        public function unregisterMoveDragger(mc:DisplayObject):void
-        {
-            if (panelMover != null)
-            {
-                panelMover.unregisterDragger(mc);
-            }
-        }
+		public function registerMoveDragger(mc:DisplayObject):void
+		{
+			if (panelMover == null)
+			{
+				panelMover = createMoveDragger();
+			}
+			panelMover.registerDragger(mc);
+		}
 
-        protected function createMoveDragger():PanelMover
-        {
-            return new PanelMover(this);
-        }
+		public function unregisterMoveDragger(mc:DisplayObject):void
+		{
+			if (panelMover != null)
+			{
+				panelMover.unregisterDragger(mc);
+			}
+		}
 
-        protected function startPanelResizer():void
-        {
-            new PanelResizer(this);
-        }
-		
+		protected function createMoveDragger():PanelMover
+		{
+			return new PanelMover(this);
+		}
+
+		protected function startPanelResizer():void
+		{
+			new PanelResizer(this);
+		}
+
 		public function setTooltip(str:String):void
 		{
 			var toolTip:ToolTipModule = modules.getModuleByName(ConsoleModuleNames.TOOLTIPS) as ToolTipModule;
 			toolTip.setTooltip(str);
 		}
-    }
+	}
 }

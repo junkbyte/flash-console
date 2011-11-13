@@ -63,6 +63,8 @@ package com.junkbyte.console.modules.remoting
 		private var _sendID:String;
 		private var _lastReciever:String;
 		
+		public var password;
+		
 		public function LocalRemoting() {
 			super();
 			registerCallback("login", function(bytes:ByteArray):void{
@@ -387,10 +389,7 @@ package com.junkbyte.console.modules.remoting
 		}
 		
 		private function checkLogin(pass : String) : Boolean {
-			return ((config.remotingPassword === null && config.keystrokePassword == pass) 
-					|| config.remotingPassword === "" 
-					|| config.remotingPassword == pass
-				);
+			return password == pass;
 		}
 		
 		public function close():void{
