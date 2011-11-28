@@ -1,35 +1,35 @@
 /*
-*
-* Copyright (c) 2008-2011 Lu Aye Oo
-*
-* @author 		Lu Aye Oo
-*
-* http://code.google.com/p/flash-console/
-* http://junkbyte.com
-*
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-* 1. The origin of this software must not be misrepresented; you must not
-* claim that you wrote the original software. If you use this software
-* in a product, an acknowledgment in the product documentation would be
-* appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-* misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-*
-*/
+ *
+ * Copyright (c) 2008-2011 Lu Aye Oo
+ *
+ * @author 		Lu Aye Oo
+ *
+ * http://code.google.com/p/flash-console/
+ * http://junkbyte.com
+ *
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ * 1. The origin of this software must not be misrepresented; you must not
+ * claim that you wrote the original software. If you use this software
+ * in a product, an acknowledgment in the product documentation would be
+ * appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ * misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ */
 package com.junkbyte.console.view.mainPanel
 {
 	import com.junkbyte.console.core.ModuleTypeMatcher;
+	import com.junkbyte.console.interfaces.ICommandLine;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.interfaces.ICommandLine;
 	import com.junkbyte.console.modules.userdata.IConsoleUserData;
 	import com.junkbyte.console.view.ConsolePanel;
 
@@ -49,26 +49,15 @@ package com.junkbyte.console.view.mainPanel
 	public class MainPanelCL extends MainPanelSubArea
 	{
 		private static const CL_HISTORY:String = "clhistory";
-
-
 		private var _userInfo:IConsoleUserData;
-
 		private var _cmdsHistory:Array;
-
 		private var _cmdPrefx:TextField;
-
 		private var _cmdField:TextField;
-
 		private var _hintField:TextField;
-
 		private var _cmdBG:Shape;
-
 		private var _cmdsInd:int = -1;
-
 		private var _clScope:String = "";
-
 		private var _hint:String;
-
 		private var _cl:ICommandLine;
 
 		public function MainPanelCL(parentPanel:ConsolePanel)
@@ -76,9 +65,6 @@ package com.junkbyte.console.view.mainPanel
 			super(parentPanel);
 			addModuleRegisteryCallback(new ModuleTypeMatcher(IConsoleUserData), userInfoRegistered, userInfoUnregistered);
 			addModuleRegisteryCallback(new ModuleTypeMatcher(ICommandLine), commandLineRegistered, commandLineUnregistered);
-
-
-
 
 			_cmdsHistory = new Array();
 			//
@@ -142,7 +128,6 @@ package com.junkbyte.console.view.mainPanel
 
 		override protected function registeredToConsole():void
 		{
-
 			var tf:TextFormat = new TextFormat(style.menuFont, style.menuFontSize, style.highColor);
 
 			_cmdField.defaultTextFormat = tf;
@@ -168,18 +153,15 @@ package com.junkbyte.console.view.mainPanel
 		{
 			var mainPanel:MainPanel = console.mainPanel;
 
-
 			removeChild(_cmdBG);
 			removeChild(_cmdField);
 			removeChild(_hintField);
 			removeChild(_cmdPrefx);
 
-
 			sprite.removeEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 			sprite.removeEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle);
 			//
 			updateCLScope("");
-
 
 			super.unregisteredFromConsole();
 		}
@@ -195,7 +177,6 @@ package com.junkbyte.console.view.mainPanel
 			_cmdBG.graphics.beginFill(style.commandLineColor, 0.1);
 			_cmdBG.graphics.drawRoundRect(0, 0, 100, 18, fsize, fsize);
 			_cmdBG.scale9Grid = new Rectangle(9, 9, 80, 1);
-
 
 			_cmdPrefx.x = 2;
 			_hintField.x = _cmdField.x = 40;
@@ -213,7 +194,6 @@ package com.junkbyte.console.view.mainPanel
 			_cmdBG.y = cmdy;
 			_cmdBG.width = width;
 		}
-
 
 		protected function userInfoRegistered(module:IConsoleUserData):void
 		{
@@ -247,14 +227,12 @@ package com.junkbyte.console.view.mainPanel
 
 		public function update(changed:Boolean):void
 		{
-
 			if (_clScope != _cl.scopeString)
 			{
 				_clScope = _cl.scopeString;
 				updateCLScope(_clScope);
 			}
 		}
-
 
 		private function stageAddedHandle(e:Event = null):void
 		{
@@ -516,10 +494,10 @@ package com.junkbyte.console.view.mainPanel
 
 		public function updateCLScope(str:String):void
 		{
-			//if(mainPanel.enteringLogin) {
-			//	mainPanel.enteringLogin = false;
-			//	requestLogin(false);
-			//}
+			// if(mainPanel.enteringLogin) {
+			// mainPanel.enteringLogin = false;
+			// requestLogin(false);
+			// }
 			_cmdPrefx.autoSize = TextFieldAutoSize.LEFT;
 			_cmdPrefx.text = str;
 			updateCLSize();

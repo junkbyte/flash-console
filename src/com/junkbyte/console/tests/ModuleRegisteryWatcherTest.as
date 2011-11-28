@@ -6,7 +6,7 @@ package com.junkbyte.console.tests
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.logging.ConsoleLogger;
-	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.logging.ConsoleLogs;
 	
 	import org.flexunit.asserts.assertEquals;
 	import org.flexunit.asserts.assertFalse;
@@ -108,7 +108,7 @@ package com.junkbyte.console.tests
 			var module:FakeModule = new FakeModule();
 			var watcher:ModuleRegisteryWatcher = ModuleRegisteryWatcher.createUsingModule(module);
 			watcher.addCallback(new ModuleTypeMatcher(ConsoleLogger), createAsyncCallback(moduleIsLogger));
-			watcher.addCallback(new ModuleTypeMatcher(Logs), createAsyncCallback(moduleIsConsoleLogs));
+			watcher.addCallback(new ModuleTypeMatcher(ConsoleLogs), createAsyncCallback(moduleIsConsoleLogs));
 			modules.registerModule(module);
 		}
 		
@@ -118,7 +118,7 @@ package com.junkbyte.console.tests
 			var module:FakeModule = new FakeModule();
 			modules.registerModule(module);
 			var watcher:ModuleRegisteryWatcher = ModuleRegisteryWatcher.createUsingModule(module);
-			watcher.addCallback(new ModuleTypeMatcher(Logs), null, createAsyncCallback(moduleIsConsoleLogs));
+			watcher.addCallback(new ModuleTypeMatcher(ConsoleLogs), null, createAsyncCallback(moduleIsConsoleLogs));
 			watcher.addCallback(new ModuleTypeMatcher(ConsoleLogger), null, createAsyncCallback(moduleIsLogger));
 			modules.unregisterModule(module);
 		}

@@ -23,17 +23,22 @@
  * 3. This notice may not be removed or altered from any source distribution.
  *
  */
-package com.junkbyte.console.interfaces
+package com.junkbyte.console.logging
 {
-	import com.junkbyte.console.Console;
+	import com.junkbyte.console.utils.EscHTML;
 
-	import flash.events.IEventDispatcher;
+	import flash.utils.ByteArray;
 
-	public interface IConsoleModule extends IEventDispatcher
+	public class HTMLLogProcessor extends BaseLogProcessor
 	{
-		function getModuleName():String;
+		override public function process(input:*, currentOutput:String):String
+		{
+			return currentOutput === null ? String(input) : currentOutput;
+		}
 
-		// can be null if other modules don't depend on this module
-		function setConsole(newConsole:Console):void;
+		protected function primitiveOutput(input:String):String
+		{
+			return "<prim>" + input + "</prim>";
+		}
 	}
 }

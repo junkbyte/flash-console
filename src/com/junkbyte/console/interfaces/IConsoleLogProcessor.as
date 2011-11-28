@@ -25,10 +25,10 @@
 */
 package com.junkbyte.console.interfaces
 {
-    import com.junkbyte.console.logging.LogEntry;
+	import com.junkbyte.console.vos.Log;
 
     public interface IConsoleLogProcessor
     {
-        function process(input:*, currentOutput:String):String;
+		function processEntry(entry:Log, outputs:Vector.<String>):void;
     }
 }

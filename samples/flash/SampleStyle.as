@@ -38,9 +38,9 @@ package
 			// SETUP - only required once
 			//
 			// you must modify the styles before starting console.
-			Cc.config.style.big(); // BIGGER text. this modifies the config variables such as traceFontSize, menuFontSize
-			Cc.config.style.whiteBase(); // Black on white. this modifies the config variables such as priority0, priority1, etc
-			Cc.config.style.backgroundAlpha = 1; // makes it non-transparent background.
+			Cc.style.big(); // BIGGER text. this modifies the config variables such as traceFontSize, menuFontSize
+			Cc.style.whiteBase(); // Black on white. this modifies the config variables such as priority0, priority1, etc
+			Cc.style.backgroundAlpha = 1; // makes it non-transparent background.
 			
 			//// Alternatively you can modify the style variables directly:
 			//config.style.traceFontSize = 16;
@@ -75,10 +75,10 @@ package
 			
 			
 			Cc.info("Custom css examples:");	
-			Cc.config.style.styleSheet.setStyle("purple",{color:'#FF00FF', fontWeight:'bold', display:'inline'});
+			Cc.style.styleSheet.setStyle("purple",{color:'#FF00FF', fontWeight:'bold', display:'inline'});
 			Cc.addHTML("My special <purple>PURPLE</purple> text.");
 			
-			Cc.config.style.styleSheet.setStyle(".spacy",{letterSpacing:10});
+			Cc.style.styleSheet.setStyle(".spacy",{letterSpacing:10});
 			Cc.addHTML("Here is <span class='spacy'>big letter spacing</span>.");
 			
 			

@@ -27,7 +27,7 @@ package com.junkbyte.console.core
 {
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.logging.ConsoleLogger;
-	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.logging.ConsoleLogs;
 	import com.junkbyte.console.view.ChannelsPanel;
 	import com.junkbyte.console.view.StageModule;
 	import com.junkbyte.console.view.mainPanel.MainPanel;
@@ -37,11 +37,11 @@ package com.junkbyte.console.core
 		private static const NAME_TO_TYPE_MAP:Object = 
 		{ 
 			logger: ConsoleLogger, 
-			logs: Logs,
+			logs: ConsoleLogs,
 			stage: StageModule,
 			mainPanel: MainPanel,
 			channelsPanel: ChannelsPanel
-		}
+		};
 		
 		public static function isModuleWithNameValid(module:IConsoleModule, name:String):Boolean
 		{

@@ -25,7 +25,7 @@
 */
 package com.junkbyte.console {
 	import com.junkbyte.console.core.ConsoleModulesManager;
-	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.logging.ConsoleLogs;
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	
 	import flash.display.DisplayObjectContainer;
@@ -45,7 +45,7 @@ package com.junkbyte.console {
 		 */
 		public function ConsoleChannel(n:*, c:ConsoleModulesManager = null){
 			_name = makeConsoleChannel(n);
-			if (_name == Logs.GLOBAL_CHANNEL) _name = Logs.DEFAULT_CHANNEL;
+			if (_name == ConsoleLogs.GLOBAL_CHANNEL) _name = ConsoleLogs.DEFAULT_CHANNEL;
 			// allowed to pass in Console here incase you want to use a different console instance from whats used in Cc
 			_c = c?c:CLog;
 		}

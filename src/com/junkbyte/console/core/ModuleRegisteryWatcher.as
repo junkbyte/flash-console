@@ -25,10 +25,9 @@
 */
 package com.junkbyte.console.core
 {
-
-    import com.junkbyte.console.events.ConsoleModuleEvent;
-    import com.junkbyte.console.interfaces.IConsoleModule;
-    import com.junkbyte.console.interfaces.IConsoleModuleMatcher;
+	import com.junkbyte.console.events.ConsoleModuleEvent;
+	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.interfaces.IConsoleModuleMatcher;
 
     public class ModuleRegisteryWatcher
     {
@@ -177,7 +176,6 @@ package com.junkbyte.console.core
         }
     }
 }
-
 import com.junkbyte.console.interfaces.IConsoleModule;
 import com.junkbyte.console.interfaces.IConsoleModuleMatcher;
 
@@ -212,8 +210,6 @@ class DependencyCallback
         }
     }
 }
-
-import com.junkbyte.console.interfaces.IConsoleModule;
 
 class MatchedModule
 {

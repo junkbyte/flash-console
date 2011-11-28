@@ -5,7 +5,7 @@ package com.junkbyte.console.modules.referencing
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
-	import com.junkbyte.console.logging.Logs;
+	import com.junkbyte.console.logging.ConsoleLogs;
 	import com.junkbyte.console.interfaces.ICommandLine;
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.vos.WeakObject;
@@ -130,8 +130,8 @@ package com.junkbyte.console.modules.referencing
 			{
 				remoter.send("focus");
 			}
-			console.clear(Logs.INSPECTING_CHANNEL);
-			console.setViewingChannels(Logs.INSPECTING_CHANNEL);
+			console.clear(ConsoleLogs.INSPECTING_CHANNEL);
+			console.setViewingChannels(ConsoleLogs.INSPECTING_CHANNEL);
 			
 			if(!_history) _history = new Array();
 			
@@ -145,8 +145,8 @@ package com.junkbyte.console.modules.referencing
 			inspect(o, _dofull);
 		}
 		private function handleFocused():void{
-			console.clear(Logs.INSPECTING_CHANNEL);
-			console.setViewingChannels(Logs.INSPECTING_CHANNEL);
+			console.clear(ConsoleLogs.INSPECTING_CHANNEL);
+			console.setViewingChannels(ConsoleLogs.INSPECTING_CHANNEL);
 		}
 		public function exitFocus():void{
 			_current = null;
@@ -158,7 +158,7 @@ package com.junkbyte.console.modules.referencing
 				bytes.writeUTF("refexit");
 				remoter.send("ref", bytes);
 			}
-			console.clear(Logs.INSPECTING_CHANNEL);
+			console.clear(ConsoleLogs.INSPECTING_CHANNEL);
 		}
 		
 		public function inspect(obj:*, viewAll:Boolean= true, ch:String = null):void {

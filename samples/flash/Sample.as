@@ -1,11 +1,11 @@
 ﻿/*
-* 
+*
 * Copyright (c) 2008-2010 Lu Aye Oo
-* 
+*
 * @author 		Lu Aye Oo
-* 
+*
 * http://code.google.com/p/flash-console/
-* 
+*
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,20 +20,15 @@
 * 2. Altered source versions must be plainly marked as such, and must not be
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
-* 
+*
 */
-package 
+package
 {
 	import com.junkbyte.console.CLog;
 	import com.junkbyte.console.Cc;
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
-	import com.junkbyte.console.logging.ConsoleLogger;
-	import com.junkbyte.console.logging.LogEntry;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
-	import com.junkbyte.console.modules.StandardConsoleModules;
-	
+
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
@@ -42,62 +37,65 @@ package
 	import flash.utils.getTimer;
 	import flash.utils.setInterval;
 
-	[SWF(width='640',height='480',backgroundColor='0xDDDDDD',frameRate='30')]
-	public class Sample extends MovieClip{
-		
-		[Embed(source="SampleAssets.swf", symbol="SampleScreenClip", mimeType="application/x-shockwave-flash" )]
-        public var ScreenClipClass:Class;
-        public var screenClip:Sprite;
-        
+	[SWF(width = '640', height = '480', backgroundColor = '0xDDDDDD', frameRate = '30')]
+	public class Sample extends MovieClip
+	{
+
+		[Embed(source = "SampleAssets.swf", symbol = "SampleScreenClip", mimeType = "application/x-shockwave-flash")]
+		public var ScreenClipClass:Class;
+
+		public var screenClip:Sprite;
+
 		private var _spamcount:int;
-		
-		public function Sample() {
+
+		public function Sample()
+		{
 			//
 			// SET UP - only required once
 			//
 			//Cc.config.keystrokePassword = "`";
-			
+
 			Cc.startOnStage(this); // "`" - change for password. This will start hidden
 			Cc.layer.visible = true; // Show console, because having password hides console.
-			
-			
+
+
 			//Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			//Cc.remoting = true; // Start sending logs to remote (using LocalConnection)
-		
+
 			//Cc.modules.registerModule(new TraceModule());
-			
+
 			Cc.mainPanel.setPanelSize(640, 220);
-		
+
 			//StandardConsoleModules.registerToConsole();
-			
+
 			CLog.log(Cc.modules.getAllModules().join(", "));
-			
+
 			//
 			// End of setup
 			//
-			
+
 			// show the demo logging stuff there...
 			demoBasics();
-			
+
 			setupUI();
-			/*
-			
-			CLog.addEntry(new LogEntry(["test"], "ch", 10));
-			CLog.addEntry(new LogEntry(["An info message.", "Optionally there", "can be", "multiple arguments."], "ch", 4));
-			CLog.addEntry(new LogEntry(["Some numbers and booleans", 341, 123123123, false, 0.123123, "END"], "ch", 4));
-			
-			
-			CLog.log(<test><hello attribute="1234"/></test>);
-				
-			CLog.addEntry(new LogEntry([Cc, Cc.config], "ch", 4));
-				
-			CLog.info("<html>Some random html <tags/></html>");
-				
-			CLog.addHTML("<html>Some <i>random</i> <b>html</b></html>");
-				
-			CLog.addHTML("<html>Some <i>random</i> <b>html<b/></html>");*/
+		/*
+
+		CLog.addEntry(new LogEntry(["test"], "ch", 10));
+		CLog.addEntry(new LogEntry(["An info message.", "Optionally there", "can be", "multiple arguments."], "ch", 4));
+		CLog.addEntry(new LogEntry(["Some numbers and booleans", 341, 123123123, false, 0.123123, "END"], "ch", 4));
+
+
+		CLog.log(<test><hello attribute="1234"/></test>);
+
+		CLog.addEntry(new LogEntry([Cc, Cc.config], "ch", 4));
+
+		CLog.info("<html>Some random html <tags/></html>");
+
+		CLog.addHTML("<html>Some <i>random</i> <b>html</b></html>");
+
+		CLog.addHTML("<html>Some <i>random</i> <b>html<b/></html>");*/
 		}
-		
+
 		private function demoBasics():void
 		{
 			CLog.log("Hello world.");
@@ -116,16 +114,16 @@ package
 			//
 			var ch:ConsoleChannel = new ConsoleChannel('myCh');
 			ch.info("Hello!", "Works just like other logging methods but this way you keep the channel as an instance.");
-			
+
 			//
 			// Stack tracing
 			//
 			//CLog.stack("Stack trace called from... (need debug player)");
-			/* //If you have debug player, it'll show up in console as:
-			   Stack trace called from... (need debug player)
-			    @ Sample/demoBasics()
-			    @ Sample()
-			*/
+		/* //If you have debug player, it'll show up in console as:
+		   Stack trace called from... (need debug player)
+			@ Sample/demoBasics()
+			@ Sample()
+		*/
 			// Use Cc.stackch(...) to have channel name.
 
 			// When 'no repeat' (3rd param) is set to true, it will not generate new lines for each log.
@@ -134,14 +132,16 @@ package
 			// If you want to specify the channel, use:
 			// Use Cc.ch(channel:*, str:*, priority:int, isRepeating:Boolean)
 		}
+
 		//
 		//
 		//
-		private function setupUI():void{
+		private function setupUI():void
+		{
 			screenClip = new ScreenClipClass();
 			addChild(screenClip);
 			getScreenChild("mcBunny").head.stop();
-			TextField(getScreenChild("version")).text = "v"+ConsoleVersion.VERSION+ConsoleVersion.STAGE;
+			TextField(getScreenChild("version")).text = "v" + ConsoleVersion.VERSION + ConsoleVersion.STAGE;
 			TextField(getScreenChild("txtPriority")).restrict = "0-9";
 			TextField(getScreenChild("txtPriority2")).restrict = "0-9";
 			setUpButton("btnInterval", "Start interval");
@@ -149,10 +149,14 @@ package
 			setUpButton("btnAdd2", "Add");
 			setUpButton("btnSpam", "Spam");
 		}
-		private function getScreenChild(n:String):Object{
+
+		private function getScreenChild(n:String):Object
+		{
 			return screenClip.getChildByName(n);
 		}
-		private function setUpButton(btnname:String, t:String):void{
+
+		private function setUpButton(btnname:String, t:String):void
+		{
 			var btn:MovieClip = getScreenChild(btnname) as MovieClip;
 			btn.stop();
 			btn.buttonMode = true;
@@ -162,58 +166,80 @@ package
 			btn.addEventListener(MouseEvent.ROLL_OVER, onButtonEvent);
 			btn.addEventListener(MouseEvent.ROLL_OUT, onButtonEvent);
 		}
-		private function onButtonEvent(e:MouseEvent):void{
-			MovieClip(e.currentTarget).gotoAndStop(e.type==MouseEvent.ROLL_OVER?"over":"out");
+
+		private function onButtonEvent(e:MouseEvent):void
+		{
+			MovieClip(e.currentTarget).gotoAndStop(e.type == MouseEvent.ROLL_OVER ? "over" : "out");
 		}
-		private function onButtonClick(e:MouseEvent):void{
-			switch(MovieClip(e.currentTarget).name){
+
+		private function onButtonClick(e:MouseEvent):void
+		{
+			switch (MovieClip(e.currentTarget).name)
+			{
 				case "btnAdd1":
-					CLog.infoch(getScreenChild("txtLog").text,int(getScreenChild("txtPriority").text));
-				break;
+					CLog.infoch(getScreenChild("txtLog").text, int(getScreenChild("txtPriority").text));
+					break;
 				case "btnAdd2":
 					var ch:String = getScreenChild("txtChannel").text;
 					var txt:String = getScreenChild("txtLog2").text;
 					var lvl:int = int(getScreenChild("txtPriority2").text);
 					CLog.infoch(ch, txt, lvl);
-				break;
+					break;
 				case "btnInterval":
-					if(_interval){
+					if (_interval)
+					{
 						clearInterval(_interval);
 						_interval = 0;
 						getScreenChild("btnInterval").txt.text = "Start Interval";
-					}else{
+					}
+					else
+					{
 						_interval = setInterval(onIntervalEvent, 50);
 						getScreenChild("btnInterval").txt.text = "Stop Interval";
 					}
-				break;
+					break;
 				case "btnSpam":
 					spam();
-				break;
+					break;
 			}
 		}
-		private function onIntervalEvent():void{
-			CLog.infoch("test", "Repeative log _ " + getTimer(), 5,true);
+
+		private function onIntervalEvent():void
+		{
+			CLog.infoch("test", "Repeative log _ " + getTimer(), 5, true);
 		}
-		private function spam():void{
-			for(var i:int = 0;i<100;i++){
+
+		private function spam():void
+		{
+			for (var i:int = 0; i < 100; i++)
+			{
 				var str:String = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.";
-				var rand:int = Math.random()*5;
-				if(rand == 1){
+				var rand:int = Math.random() * 5;
+				if (rand == 1)
+				{
 					str = "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam,";
-				}else if(rand == 2){
+				}
+				else if (rand == 2)
+				{
 					str = "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi";
-				}else if(rand == 3){
+				}
+				else if (rand == 3)
+				{
 					str = "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.";
-				}else if(rand == 4){
+				}
+				else if (rand == 4)
+				{
 					str = "Itaque earum rerum hic tenetur a sapiente delectus.";
-				}else if(rand == 5){
+				}
+				else if (rand == 5)
+				{
 					str = "voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis";
 				}
 				_spamcount++;
-				CLog.infoch("ch"+Math.round(Math.random()*5), _spamcount+" "+str, Math.round(Math.random()*4));
+				CLog.infoch("ch" + Math.round(Math.random() * 5), _spamcount + " " + str, Math.round(Math.random() * 4));
 			}
 		}
-		
+
 		private var _interval:uint;
 	}
 }

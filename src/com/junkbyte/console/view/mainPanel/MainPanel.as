@@ -28,7 +28,7 @@ package com.junkbyte.console.view.mainPanel
 
     import com.junkbyte.console.ConsoleLevel;
     import com.junkbyte.console.events.ConsolePanelEvent;
-    import com.junkbyte.console.logging.Logs;
+    import com.junkbyte.console.logging.ConsoleLogs;
     import com.junkbyte.console.modules.ConsoleModuleNames;
     import com.junkbyte.console.view.ChannelsPanel;
     import com.junkbyte.console.view.ConsolePanel;
@@ -222,15 +222,15 @@ package com.junkbyte.console.view.mainPanel
                 src = this;
             }
             var txt:String = e.text ? e.text.replace("event:", "") : "";
-            if (txt == "channel_" + Logs.GLOBAL_CHANNEL)
+            if (txt == "channel_" + ConsoleLogs.GLOBAL_CHANNEL)
             {
                 txt = "View all channels";
             }
-            else if (txt == "channel_" + Logs.DEFAULT_CHANNEL)
+            else if (txt == "channel_" + ConsoleLogs.DEFAULT_CHANNEL)
             {
                 txt = "Default channel::Logs with no channel";
             }
-            else if (txt == "channel_" + Logs.CONSOLE_CHANNEL)
+            else if (txt == "channel_" + ConsoleLogs.CONSOLE_CHANNEL)
             {
                 txt = "Console's channel::Logs generated from Console";
             }
@@ -238,7 +238,7 @@ package com.junkbyte.console.view.mainPanel
                 txt = _filterRegExp?String(_filterRegExp):_filterText;
                 txt = "Filtering channel"+"::*"+txt+"*";
             }*/
-            else if (txt == "channel_" + Logs.INSPECTING_CHANNEL)
+            else if (txt == "channel_" + ConsoleLogs.INSPECTING_CHANNEL)
             {
                 txt = "Inspecting channel";
             }

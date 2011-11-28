@@ -25,7 +25,7 @@
 */
 package com.junkbyte.console.events
 {
-	import com.junkbyte.console.logging.LogEntry;
+	import com.junkbyte.console.vos.Log;
 	
 	import flash.events.Event;
 
@@ -36,7 +36,7 @@ package com.junkbyte.console.events
 		public static const CHANNEL_ADDED:String = "channelAdded";
 		public static const CHANNELS_CHANGED:String = "channelsChanged";
 
-		public var entry:LogEntry;
+		public var entry:Log;
 		public var channel:String;
 
 		public function ConsoleLogEvent(type:String)

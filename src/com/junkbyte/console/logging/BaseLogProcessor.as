@@ -23,44 +23,27 @@
 * 3. This notice may not be removed or altered from any source distribution.
 *
 */
-package com.junkbyte.console.logging 
+package com.junkbyte.console.logging
 {
 	import com.junkbyte.console.interfaces.IConsoleLogProcessor;
-	import com.junkbyte.console.utils.EscHTML;
-	
-	
-	public class HTMLLogEntry extends LogEntry
+	import com.junkbyte.console.vos.Log;
+
+	public class BaseLogProcessor implements IConsoleLogProcessor
 	{
-		private var valid:Boolean;
-		
-		public function HTMLLogEntry(inputs:Array, channel:String = null, priority:int = 2)
+		public function processEntry(entry:Log, outputs:Vector.<String>):void
 		{
-			super(inputs, channel, priority);
-		}
-		
-		override public function makeOutputUsingProcessor(processor:IConsoleLogProcessor):String
-		{
-			valid = testHTML();
-			return super.makeOutputUsingProcessor(processor);
-		}
-		
-		override protected function preProcess(input:*):String
-		{
-			return valid ? String(input) : super.preProcess(input);
-		}
-		
-		private function testHTML():Boolean
-		{
-			try
+			var len:uint = outputs.length;
+			for (var i:uint = 0; i < len; i++)
 			{
-				new XML("<p>" + inputs.join("") + "</p>");
-				// OR use RegExp?
+				var input:* = entry.inputs[i];
+				outputs[i] = process(input, outputs[i]);
 			}
-			catch(err:Error)
-			{
-				return false;
-			}
-			return true;
+		}
+		
+		public function process(input:*, currentOutput:String):String
+		{
+			// override
+			return currentOutput;
 		}
 	}
 }
