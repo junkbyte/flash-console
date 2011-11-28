@@ -1,4 +1,4 @@
-package com.junkbyte.console.tests
+package
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
