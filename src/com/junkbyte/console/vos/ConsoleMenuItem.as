@@ -38,7 +38,7 @@ package com.junkbyte.console.vos
 		public var callback:Function;
 		public var arguments:Array;
 		public var tooltip:String;
-		public var visible:Boolean;
+		public var visible:Boolean = true;
 		public var active:Boolean;
 		public var sortPriority:int;
 
