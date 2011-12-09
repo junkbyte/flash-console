@@ -26,11 +26,18 @@
 package com.junkbyte.console.logging
 {
 	import com.junkbyte.console.utils.EscHTML;
-
+	import com.junkbyte.console.vos.Log;
+	
 	import flash.utils.ByteArray;
 
 	public class HTMLLogProcessor extends BaseLogProcessor
 	{
+		override public function processEntry(entry:Log, outputs:Vector.<String>):void
+		{
+			super.processEntry(entry, outputs);
+			// TODO, check if valid html
+		}
+		
 		override public function process(input:*, currentOutput:String):String
 		{
 			return currentOutput === null ? String(input) : currentOutput;

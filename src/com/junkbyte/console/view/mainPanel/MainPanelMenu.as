@@ -37,22 +37,21 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
-
+	
 	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.geom.Rectangle;
-	import flash.net.FileReference;
-	import flash.system.System;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 
-	[Event(name="change", type="flash.events.Event")]
+	[Event(name = "change", type = "flash.events.Event")]
 	public class MainPanelMenu extends MainPanelSubArea implements IMainMenu
 	{
 		public static const NAME:String = "mainPanelMenu";
 		protected var _textField:TextField;
-		private var buildInMenus:Array;
-		private var moduleMenus:Array;
+		
+		protected var _menus:Vector.<IConsoleMenuItem>;
+		
 		private var minimizerMenu:ConsoleMenuItem;
 		private var pauseMenu:ConsoleMenuItem;
 		private var priorityMenu:ConsoleMenuItem;
@@ -64,8 +63,7 @@ package com.junkbyte.console.view.mainPanel
 		public function MainPanelMenu(parentPanel:ConsolePanel)
 		{
 			super(parentPanel);
-			buildInMenus = new Array();
-			moduleMenus = new Array();
+			_menus = new Vector.<IConsoleMenuItem>();
 
 			_textField = new TextField();
 			_textField.name = "menuField";
@@ -120,7 +118,6 @@ package com.junkbyte.console.view.mainPanel
 		protected function mainPanelLogsRegistered(module:MainPanelLogs):void
 		{
 			initBuildInMenus();
-			initModuleMenus();
 		}
 
 		protected function channelsPanelRegistered(module:ChannelsPanel):void
@@ -163,49 +160,55 @@ package com.junkbyte.console.view.mainPanel
 		protected function initBuildInMenus():void
 		{
 			minimizerMenu = new ConsoleMenuItem("", minimizerCB);
+			minimizerMenu.sortPriority = -100;
 			updateMinimizerState();
 			console.addEventListener(ConsoleEvent.PAUSED, updateMinimizerState, false, 0, true);
 			console.addEventListener(ConsoleEvent.RESUMED, updateMinimizerState, false, 0, true);
 
 			pauseMenu = new ConsoleMenuItem("P", pauseCB, null, "Close::Type password to show again");
+			pauseMenu.sortPriority = -70;
 			updatePauseState();
 			console.addEventListener(ConsoleEvent.PAUSED, updatePauseState, false, 0, true);
 			console.addEventListener(ConsoleEvent.RESUMED, updatePauseState, false, 0, true);
 
 			priorityMenu = new ConsoleMenuItem("P0", priorityCB, null, "Priority filter::shift: previous priority\n(skips unused priorites)");
+			priorityMenu.sortPriority = -50;
 			updatePriorityState();
 			mainPanel.addEventListener(MainPanelLogs.FILTER_PRIORITY_CHANGED, updatePriorityState, false, 0, true);
 
 			commandLineMenu = new ConsoleMenuItem("CL", commandLineCB);
+			commandLineMenu.sortPriority = -40;
 			updateCommandLineState();
 			mainPanel.addEventListener(MainPanel.COMMAND_LINE_VISIBLITY_CHANGED, updateCommandLineState, false, 0, true);
 
-			buildInMenus = new Array();
-
-			addBuildInMenu(minimizerMenu);
-			addBuildInMenu(new ConsoleMenuItem("X", mainPanel.removeFromParent, null, "Close::Type password to show again"));
-			addBuildInMenu(new ConsoleMenuItem("C", logger.logs.clear, null, "Clear log"));
-			addBuildInMenu(pauseMenu);
-			addBuildInMenu(new ConsoleMenuItem("Sv", saveLogs, null, "Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file"));
-			addBuildInMenu(priorityMenu);
-			addBuildInMenu(commandLineMenu);
-		}
-
-		protected function addBuildInMenu(menu:IConsoleMenuItem):void
-		{
-			buildInMenus.push(menu);
-			buildInMenus.sort(menuSorter);
-			menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
-			needsUpdate = true;
+			addMenu(minimizerMenu);
+			
+			var closeMenu:ConsoleMenuItem = new ConsoleMenuItem("X", mainPanel.removeFromParent, null, "Close::Type password to show again");
+			closeMenu.sortPriority = -90;
+			addMenu(closeMenu);
+			
+			var clearMenu:ConsoleMenuItem = new ConsoleMenuItem("C", logger.logs.clear, null, "Clear log");
+			clearMenu.sortPriority = -80;
+			
+			addMenu(clearMenu);
+			
+			addMenu(pauseMenu);
+			//addBuildInMenu(new ConsoleMenuItem("Sv", saveLogs, null, "Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file"));
+			addMenu(priorityMenu);
+			addMenu(commandLineMenu);
+			
+			var divider:ConsoleMenuItem = new ConsoleMenuItem(" ¦ ", null);
+			divider.sortPriority = -1;
+			addMenu(divider);
 		}
 
 		public function addMenu(menu:IConsoleMenuItem):void
 		{
-			var index:int = moduleMenus.indexOf(menu);
+			var index:int = _menus.indexOf(menu);
 			if (index < 0)
 			{
-				moduleMenus.push(menu);
-				moduleMenus.sort(menuSorter);
+				_menus.push(menu);
+				_menus.sort(menuSorter);
 				menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
 			}
 			needsUpdate = true;
@@ -213,10 +216,10 @@ package com.junkbyte.console.view.mainPanel
 
 		public function removeMenu(menu:IConsoleMenuItem):void
 		{
-			var index:int = moduleMenus.indexOf(menu);
+			var index:int = _menus.indexOf(menu);
 			if (index >= 0)
 			{
-				moduleMenus.splice(index, 1);
+				_menus.splice(index, 1);
 				menu.removeEventListener(Event.CHANGE, onMenuChanged);
 			}
 			needsUpdate = true;
@@ -226,19 +229,20 @@ package com.junkbyte.console.view.mainPanel
 		{
 			var pA:Number = a.getSortPriority();
 			var pB:Number = b.getSortPriority();
-			if (pA > pB) return 1;
-			else if (pA < pB) return -1;
+			if (pA > pB)
+			{
+				return 1;
+			}
+			else if (pA < pB)
+			{
+				return -1;
+			}
 			return 0;
 		}
 
 		protected function onMenuChanged(event:Event):void
 		{
 			needsUpdate = true;
-		}
-
-		protected function initModuleMenus():void
-		{
-			moduleMenus = new Array();
 		}
 
 		private function updatePauseState(e:Event = null):void
@@ -291,47 +295,12 @@ package com.junkbyte.console.view.mainPanel
 			mainPanel.commandLine = !mainPanel.commandLine;
 		}
 
-		private function saveLogs():void
-		{
-			var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
-			if (keyStates == null)
-			{
-				saveLogsWOpts();
-			}
-			else
-			{
-				saveLogsWOpts(!keyStates.shiftKeyDown, keyStates.altKeyDown, keyStates.ctrlKeyDown ? mainPanel.traces.lineShouldShow : null);
-			}
-		}
-
-		protected function saveLogsWOpts(incChNames:Boolean = true, makeFile:Boolean = false, filterFunction:Function = null):void
-		{
-			var str:String = console.logger.logs.getLogsAsString("\r\n", incChNames, filterFunction);
-			if (makeFile)
-			{
-				var file:FileReference = new FileReference();
-				try
-				{
-					file["save"](str, "log.txt");
-				}
-				catch(err:Error)
-				{
-					report("Save to file is not supported in your flash player.", 8);
-				}
-			}
-			else
-			{
-				System.setClipboard(str);
-				report("Copied log to clipboard.", -1);
-			}
-		}
-
 		public function update():void
 		{
 			var str:String = "<r><high><menu><b> ";
 			if (mini || !style.topMenu)
 			{
-				str += "<a href=\"event:show\">‹</a>";
+				str += printMinimizedMenu();
 			}
 			else
 			{
@@ -349,7 +318,15 @@ package com.junkbyte.console.view.mainPanel
 
 		protected function createMenuString(menu:IConsoleMenuItem, index:uint):String
 		{
-			var str:String = " <a href=\"event:menu_" + index + "\">" + menu.getName() + "</a>";
+			if(menu.isVisible() == false)
+			{
+				return "";
+			}
+			var str:String = menu.getName();
+			if(menu.isClickable())
+			{
+				str = " <a href=\"event:menu_" + index + "\">" + str + "</a>";
+			}
 			if (menu.isActive())
 			{
 				return "<menuHi>" + str + "</menuHi>";
@@ -363,7 +340,7 @@ package com.junkbyte.console.view.mainPanel
 			var t:String = e.text;
 			if (t.substring(0, 5) == "menu_")
 			{
-				var menu:ConsoleMenuItem = getMenuForIndex(uint(t.substring(5)));
+				var menu:IConsoleMenuItem = getMenuAtIndex(uint(t.substring(5)));
 				if (menu)
 				{
 					menu.onClick();
@@ -374,47 +351,24 @@ package com.junkbyte.console.view.mainPanel
 		private function printMenus():String
 		{
 			var str:String = "";
-			var modulesLen:uint = moduleMenus.length;
+			var modulesLen:uint = _menus.length;
 
 			for (var i:int = modulesLen - 1; i >= 0; i--)
 			{
-				str += createMenuString(moduleMenus[i], i);
+				str += createMenuString(_menus[i], i);
 			}
-
-			str += " ¦ ";
-
-			for (i = buildInMenus.length - 1; i >= 0; i--)
-			{
-				str += createMenuString(buildInMenus[i], i + modulesLen);
-			}
-			/*
-			var extra:Boolean;
-			for (var X:String in _extraMenus){
-			str += "<a href=\"event:external_"+X+"\">"+X+"</a> ";
-			extra = true;
-			}
-			if(extra) str += "¦ ";
-				
-			str += doActive("<a href=\"event:fps\">F</a>", central.console.fpsMonitor>0);
-			str += doActive(" <a href=\"event:mm\">M</a>", central.console.memoryMonitor>0);
-				
-			str += doActive(" <a href=\"event:command\">CL</a>", central.console.commandLine);
-				
-			if(central.remoter.remoting != Remoting.RECIEVER){
-			if(config.displayRollerEnabled)
-			str += doActive(" <a href=\"event:roller\">Ro</a>", central.console.displayRoller);
-			if(config.rulerToolEnabled)
-			str += doActive(" <a href=\"event:ruler\">RL</a>", central.panels.rulerActive);
-			}
-			str += " ¦</b>";
-			 */
 			return str;
 		}
-
-		private function getMenuForIndex(index:uint):ConsoleMenuItem
+		
+		private function printMinimizedMenu():String
 		{
-			if (index >= moduleMenus.length ) return buildInMenus[index - moduleMenus.length];
-			return moduleMenus[index];
+			var index:int = _menus.indexOf(minimizerMenu);
+			return createMenuString(minimizerMenu, index);
+		}
+
+		private function getMenuAtIndex(index:uint):IConsoleMenuItem
+		{
+			return _menus[index];
 		}
 
 		private function textRollOverHandler(e:TextEvent):void
@@ -422,7 +376,7 @@ package com.junkbyte.console.view.mainPanel
 			var t:String = e.text ? e.text.replace("event:", "") : "";
 			if (t.substring(0, 5) == "menu_")
 			{
-				var menu:ConsoleMenuItem = getMenuForIndex(uint(t.substring(5)));
+				var menu:IConsoleMenuItem = getMenuAtIndex(uint(t.substring(5)));
 				t = menu.getTooltip();
 			}
 			mainPanel.setTooltip(t);

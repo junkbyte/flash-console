@@ -82,9 +82,10 @@ package com.junkbyte.console.view.mainPanel
 
             _menu.addEventListener(Event.CHANGE, onMenuChanged);
 
-            modules.registerModule(_menu);
 
             modules.registerModule(_traces);
+			
+			modules.registerModule(_menu);
 
             modules.registerModule(_commandArea);
 

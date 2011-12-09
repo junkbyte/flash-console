@@ -25,22 +25,24 @@
 */
 package com.junkbyte.console.interfaces
 {
-    import flash.events.IEventDispatcher;
+	import flash.events.IEventDispatcher;
 
-    [Event(name = "change", type = "flash.events.Event")]
-    public interface IConsoleMenuItem extends IEventDispatcher
-    {
+	[Event(name = "change", type = "flash.events.Event")]
+	public interface IConsoleMenuItem extends IEventDispatcher
+	{
 
-        function isVisible():Boolean;
+		function isVisible():Boolean;
 
-        function getName():String;
+		function getName():String;
+		
+		function isClickable():Boolean;
 
-        function onClick():void;
+		function onClick():void;
 
-        function isActive():Boolean; // return true if you want it to be on active state (bold text)
+		function isActive():Boolean; // return true if you want it to be on active state (bold text)
 
-        function getSortPriority():int;
+		function getSortPriority():int;
 
-        function getTooltip():String;
-    }
+		function getTooltip():String;
+	}
 }
