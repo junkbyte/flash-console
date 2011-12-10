@@ -32,6 +32,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.userdata.IConsoleUserData;
 	import com.junkbyte.console.view.ConsolePanel;
+	import com.junkbyte.console.view.menus.CommandLineMenu;
 
 	import flash.display.Shape;
 	import flash.events.Event;
@@ -147,6 +148,8 @@ package com.junkbyte.console.view.mainPanel
 			sprite.addEventListener(Event.REMOVED_FROM_STAGE, stageRemovedHandle, false, 0, true);
 
 			super.registeredToConsole();
+
+			addMenus();
 		}
 
 		override protected function unregisteredFromConsole():void
@@ -164,6 +167,11 @@ package com.junkbyte.console.view.mainPanel
 			updateCLScope("");
 
 			super.unregisteredFromConsole();
+		}
+
+		protected function addMenus():void
+		{
+			modules.registerModule(new CommandLineMenu());
 		}
 
 		override public function setArea(x:Number, y:Number, width:Number, height:Number):void

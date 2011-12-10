@@ -17,7 +17,7 @@ package com.junkbyte.console.modules.stayOnTop
             attemptsLeft = numOfAttempts;
         }
 
-        protected function registeredToConsole():void
+        override protected function registeredToConsole():void
         {
             console.addEventListener(ConsoleEvent.DATA_UPDATED, onDataUpdated);
             super.registeredToConsole();

@@ -26,365 +26,372 @@
 package com.junkbyte.console.view.mainPanel
 {
 
-    import com.junkbyte.console.ConsoleLevel;
-    import com.junkbyte.console.events.ConsolePanelEvent;
-    import com.junkbyte.console.logging.ConsoleLogs;
-    import com.junkbyte.console.modules.ConsoleModuleNames;
-    import com.junkbyte.console.view.ChannelsPanel;
-    import com.junkbyte.console.view.ConsolePanel;
-    
-    import flash.events.Event;
-    import flash.events.TextEvent;
-    import flash.geom.Point;
-    import flash.system.Security;
-    import flash.system.SecurityPanel;
+	import com.junkbyte.console.ConsoleLevel;
+	import com.junkbyte.console.events.ConsolePanelEvent;
+	import com.junkbyte.console.logging.ConsoleLogs;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.view.ChannelsPanel;
+	import com.junkbyte.console.view.ConsolePanel;
+	import com.junkbyte.console.view.menus.ClosePanelMenu;
+	import com.junkbyte.console.view.menus.PauseLogDisplayMenu;
 
-    public class MainPanel extends ConsolePanel
-    {
+	import flash.events.Event;
+	import flash.events.TextEvent;
+	import flash.geom.Point;
+	import flash.system.Security;
+	import flash.system.SecurityPanel;
 
-        public static const COMMAND_LINE_VISIBLITY_CHANGED:String = "commandLineVisibilityChanged";
+	public class MainPanel extends ConsolePanel
+	{
 
+		public static const COMMAND_LINE_VISIBLITY_CHANGED:String = "commandLineVisibilityChanged";
 
-        private var _menu:MainPanelMenu;
+		private var _menu:MainPanelMenu;
 
-        private var _traces:MainPanelLogs;
+		private var _traces:MainPanelLogs;
 
-        private var _commandArea:MainPanelCL;
+		private var _commandArea:MainPanelCL;
 
-        private var _needUpdateMenu:Boolean;
+		private var _needUpdateMenu:Boolean;
 
-        private var _enteringLogin:Boolean;
+		private var _enteringLogin:Boolean;
 
-        private var _movedFrom:Point;
+		private var _movedFrom:Point;
 
-        public function MainPanel()
-        {
-            super();
-            minSize.x = 160;
+		public function MainPanel()
+		{
+			super();
+			minSize.x = 160;
 
-            addEventListener(ConsolePanelEvent.STARTED_MOVING, onStartedDragging);
-        }
-		
+			addEventListener(ConsolePanelEvent.STARTED_MOVING, onStartedDragging);
+		}
+
 		override public function getModuleName():String
 		{
 			return ConsoleModuleNames.MAIN_PANEL;
 		}
 
-        override protected function initToConsole():void
-        {
-            super.initToConsole();
-            sprite.name = ConsoleModuleNames.MAIN_PANEL;
+		override protected function initToConsole():void
+		{
+			super.initToConsole();
+			sprite.name = ConsoleModuleNames.MAIN_PANEL;
 
-            //
-            _menu = new MainPanelMenu(this);
-            _traces = new MainPanelLogs(this);
-            _commandArea = new MainPanelCL(this);
+			//
+			_menu = new MainPanelMenu(this);
+			_traces = new MainPanelLogs(this);
+			_commandArea = new MainPanelCL(this);
 
-            _menu.addEventListener(Event.CHANGE, onMenuChanged);
+			_menu.addEventListener(Event.CHANGE, onMenuChanged);
 
+			modules.registerModule(_traces);
 
-            modules.registerModule(_traces);
-			
 			modules.registerModule(_menu);
 
-            modules.registerModule(_commandArea);
+			modules.registerModule(_commandArea);
 
-            startPanelResizer();
+			startPanelResizer();
 
-            sprite.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
+			sprite.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 
-            setPanelSize(480, 100);
-			
+			setPanelSize(480, 100);
+
+			addMenus();
+
 			addToLayer();
-        }
+		}
 
-        public function get menu():MainPanelMenu
-        {
-            return _menu;
-        }
+		public function get menu():MainPanelMenu
+		{
+			return _menu;
+		}
 
-        public function get traces():MainPanelLogs
-        {
-            return _traces;
-        }
+		public function get traces():MainPanelLogs
+		{
+			return _traces;
+		}
 
-        public function get commandArea():MainPanelCL
-        {
-            return _commandArea;
-        }
+		public function get commandArea():MainPanelCL
+		{
+			return _commandArea;
+		}
 
-        public function setViewingChannels(... channels:Array):void
-        {
-            traces.setViewingChannels.apply(this, channels);
-        }
+		public function setViewingChannels(... channels:Array):void
+		{
+			traces.setViewingChannels.apply(this, channels);
+		}
 
-        public function setIgnoredChannels(... channels:Array):void
-        {
-            traces.setIgnoredChannels.apply(this, channels);
-        }
+		public function setIgnoredChannels(... channels:Array):void
+		{
+			traces.setIgnoredChannels.apply(this, channels);
+		}
 
-        public function set minimumPriority(level:uint):void
-        {
-            traces.priority = level;
-        }
+		public function set minimumPriority(level:uint):void
+		{
+			traces.priority = level;
+		}
 
-        private function onStartedDragging(e:Event):void
-        {
-            _movedFrom = new Point(x, y);
-        }
+		private function onStartedDragging(e:Event):void
+		{
+			_movedFrom = new Point(x, y);
+		}
 
-        public function requestLogin(on:Boolean = true):void
-        {
-            if (on)
-            {
-                commandLine = true;
-                logger.report("//", ConsoleLevel.CONSOLE_EVENT);
-                logger.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
-            }
-            _traces.requestLogin(on);
-            _commandArea.requestLogin(on);
-            _enteringLogin = on;
-        }
+		public function requestLogin(on:Boolean = true):void
+		{
+			if (on)
+			{
+				commandLine = true;
+				logger.report("//", ConsoleLevel.CONSOLE_EVENT);
+				logger.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
+			}
+			_traces.requestLogin(on);
+			_commandArea.requestLogin(on);
+			_enteringLogin = on;
+		}
 
-        public function get enteringLogin():Boolean
-        {
-            return _enteringLogin;
-        }
+		public function get enteringLogin():Boolean
+		{
+			return _enteringLogin;
+		}
 
-        override protected function resizePanel(w:Number, h:Number):void
-        {
-            super.resizePanel(w, h);
+		override protected function resizePanel(w:Number, h:Number):void
+		{
+			super.resizePanel(w, h);
 
-            updateMenuArea();
+			updateMenuArea();
 
-            updateCommandArea();
-            _needUpdateMenu = true;
+			updateCommandArea();
+			_needUpdateMenu = true;
 
-            var fsize:int = style.menuFontSize;
-            var msize:Number = fsize + 6 + style.traceFontSize;
-            if (height != h)
-            {
-                _menu.mini = h < (_commandArea.isVisible ? (msize + fsize + 4) : msize);
-            }
+			var fsize:int = style.menuFontSize;
+			var msize:Number = fsize + 6 + style.traceFontSize;
+			if (height != h)
+			{
+				_menu.mini = h < (_commandArea.isVisible ? (msize + fsize + 4) : msize);
+			}
 
-            updateTraceArea();
-        }
+			updateTraceArea();
+		}
 
-        private function updateMenuArea():void
-        {
-            _menu.setArea(0, 0, width - 6, height);
-        }
+		private function updateMenuArea():void
+		{
+			_menu.setArea(0, 0, width - 6, height);
+		}
 
-        private function updateTraceArea():void
-        {
-            var mini:Boolean = _menu.mini || !style.topMenu;
+		private function updateTraceArea():void
+		{
+			var mini:Boolean = _menu.mini || !style.topMenu;
 
-            var traceY:Number = mini ? 0 : (_menu.area.y + _menu.area.height - 6);
-            var traceHeight:Number = height - (_commandArea.isVisible ? (style.menuFontSize + 4) : 0) - traceY;
-            _traces.setArea(0, traceY, width, traceHeight);
+			var traceY:Number = mini ? 0 : (_menu.area.y + _menu.area.height - 6);
+			var traceHeight:Number = height - (_commandArea.isVisible ? (style.menuFontSize + 4) : 0) - traceY;
+			_traces.setArea(0, traceY, width, traceHeight);
 
-        }
+		}
 
-        private function updateCommandArea():void
-        {
-            _commandArea.setArea(0, 0, width, height);
-        }
+		private function updateCommandArea():void
+		{
+			_commandArea.setArea(0, 0, width, height);
+		}
 
-        //
-        //
-        //
-        public function updateMenu(instant:Boolean = false):void
-        {
-            if (instant)
-            {
-                _updateMenu();
-            }
-            else
-            {
-                _needUpdateMenu = true;
-            }
-        }
+		//
+		//
+		//
+		public function updateMenu(instant:Boolean = false):void
+		{
+			if (instant)
+			{
+				_updateMenu();
+			}
+			else
+			{
+				_needUpdateMenu = true;
+			}
+		}
 
-        private function _updateMenu():void
-        {
-            _menu.update();
-        }
+		private function _updateMenu():void
+		{
+			_menu.update();
+		}
 
-        private function onMenuChanged(e:Event):void
-        {
-            updateMenuArea();
-            updateTraceArea();
-        }
+		protected function addMenus():void
+		{
+			modules.registerModule(new ClosePanelMenu(this));
+			modules.registerModule(new PauseLogDisplayMenu());
+		}
 
-        public function onMenuRollOver(e:TextEvent, src:ConsolePanel = null):void
-        {
-            if (src == null)
-            {
-                src = this;
-            }
-            var txt:String = e.text ? e.text.replace("event:", "") : "";
-            if (txt == "channel_" + ConsoleLogs.GLOBAL_CHANNEL)
-            {
-                txt = "View all channels";
-            }
-            else if (txt == "channel_" + ConsoleLogs.DEFAULT_CHANNEL)
-            {
-                txt = "Default channel::Logs with no channel";
-            }
-            else if (txt == "channel_" + ConsoleLogs.CONSOLE_CHANNEL)
-            {
-                txt = "Console's channel::Logs generated from Console";
-            }
-            /*else if(txt == "channel_"+ Logs.FILTER_CHANNEL) {
-                txt = _filterRegExp?String(_filterRegExp):_filterText;
-                txt = "Filtering channel"+"::*"+txt+"*";
-            }*/
-            else if (txt == "channel_" + ConsoleLogs.INSPECTING_CHANNEL)
-            {
-                txt = "Inspecting channel";
-            }
-            else if (txt.indexOf("channel_") == 0)
-            {
-                txt = "Change channel::shift: select multiple\nctrl: ignore channel";
-            }
-            else if (txt == "pause")
-            {
-                if (console.paused)
-                {
-                    txt = "Resume updates";
-                }
-                else
-                {
-                    txt = "Pause updates";
-                }
-            }
-            else if (txt == "close" && src == this)
-            {
-                txt = "Close::Type password to show again";
-            }
-            else
-            {
-                var obj:Object = { fps: "Frames Per Second", mm: "Memory Monitor", channels: "Expand channels", close: "Close" };
-                txt = obj[txt];
-            }
-            setTooltip(txt);
-        }
+		private function onMenuChanged(e:Event):void
+		{
+			updateMenuArea();
+			updateTraceArea();
+		}
 
-        private function linkHandler(e:TextEvent):void
-        {
-            _menu.textField.setSelection(0, 0);
-            sprite.stopDrag();
-            var t:String = e.text;
-            if (t == "channels")
-            {
-                toggleChannelsPanel();
-            }
-            /*else if(t == "priority"){
-                var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
+		public function onMenuRollOver(e:TextEvent, src:ConsolePanel = null):void
+		{
+			if (src == null)
+			{
+				src = this;
+			}
+			var txt:String = e.text ? e.text.replace("event:", "") : "";
+			if (txt == "channel_" + ConsoleLogs.GLOBAL_CHANNEL)
+			{
+				txt = "View all channels";
+			}
+			else if (txt == "channel_" + ConsoleLogs.DEFAULT_CHANNEL)
+			{
+				txt = "Default channel::Logs with no channel";
+			}
+			else if (txt == "channel_" + ConsoleLogs.CONSOLE_CHANNEL)
+			{
+				txt = "Console's channel::Logs generated from Console";
+			}
+			/*else if(txt == "channel_"+ Logs.FILTER_CHANNEL) {
+				txt = _filterRegExp?String(_filterRegExp):_filterText;
+				txt = "Filtering channel"+"::*"+txt+"*";
+			}*/
+			else if (txt == "channel_" + ConsoleLogs.INSPECTING_CHANNEL)
+			{
+				txt = "Inspecting channel";
+			}
+			else if (txt.indexOf("channel_") == 0)
+			{
+				txt = "Change channel::shift: select multiple\nctrl: ignore channel";
+			}
+			else if (txt == "pause")
+			{
+				if (console.paused)
+				{
+					txt = "Resume updates";
+				}
+				else
+				{
+					txt = "Pause updates";
+				}
+			}
+			else if (txt == "close" && src == this)
+			{
+				txt = "Close::Type password to show again";
+			}
+			else
+			{
+				var obj:Object = {fps: "Frames Per Second", mm: "Memory Monitor", channels: "Expand channels", close: "Close"};
+				txt = obj[txt];
+			}
+			setTooltip(txt);
+		}
 
-                traces.incPriority(keyStates != null && keyStates.shiftKeyDown);
-            }*/
-            else if (t == "settings")
-            {
-                logger.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
-                Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
-            }
-            else if (t == "remote")
-            {
-                //central.remoter.remoting = Remoting.RECIEVER;
-                //} else if(t.indexOf("ref")==0){
-                //	central.refs.handleRefEvent(t);
-            }
-            else if (t.indexOf("channel_") == 0)
-            {
-                traces.onChannelPressed(t.substring(8));
-            }
-            else if (t.indexOf("cl_") == 0)
-            {
-                var ind:int = t.indexOf("_", 3);
-                //central.cl.handleScopeEvent(uint(t.substring(3, ind<0?t.length:ind)));
-                if (ind >= 0)
-                {
-                    _commandArea.inputText = t.substring(ind + 1);
-                }
-            }
-            _menu.textField.setSelection(0, 0);
-            e.stopPropagation();
-        }
+		private function linkHandler(e:TextEvent):void
+		{
+			_menu.textField.setSelection(0, 0);
+			sprite.stopDrag();
+			var t:String = e.text;
+			if (t == "channels")
+			{
+				toggleChannelsPanel();
+			}
+			/*else if(t == "priority"){
+				var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
 
-        private function toggleChannelsPanel():void
-        {
-            var channelsPanel:ChannelsPanel = modules.getModuleByName(ConsoleModuleNames.CHANNELS_PANEL) as ChannelsPanel;
-            if (channelsPanel != null)
-            {
-                modules.unregisterModule(channelsPanel);
-            }
-            else
-            {
-                channelsPanel = new ChannelsPanel();
-                modules.registerModule(channelsPanel);
-            }
-        }
+				traces.incPriority(keyStates != null && keyStates.shiftKeyDown);
+			}*/
+			else if (t == "settings")
+			{
+				logger.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
+				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
+			}
+			else if (t == "remote")
+			{
+				//central.remoter.remoting = Remoting.RECIEVER;
+				//} else if(t.indexOf("ref")==0){
+				//	central.refs.handleRefEvent(t);
+			}
+			else if (t.indexOf("channel_") == 0)
+			{
+				traces.onChannelPressed(t.substring(8));
+			}
+			else if (t.indexOf("cl_") == 0)
+			{
+				var ind:int = t.indexOf("_", 3);
+				//central.cl.handleScopeEvent(uint(t.substring(3, ind<0?t.length:ind)));
+				if (ind >= 0)
+				{
+					_commandArea.inputText = t.substring(ind + 1);
+				}
+			}
+			_menu.textField.setSelection(0, 0);
+			e.stopPropagation();
+		}
 
-        public function toggleTopMenu():void
-        {
-            if (_menu.mini)
-            {
-                showTopMenu();
-            }
-            else
-            {
-                hideTopMenu();
-            }
-        }
+		private function toggleChannelsPanel():void
+		{
+			var channelsPanel:ChannelsPanel = modules.getModuleByName(ConsoleModuleNames.CHANNELS_PANEL) as ChannelsPanel;
+			if (channelsPanel != null)
+			{
+				modules.unregisterModule(channelsPanel);
+			}
+			else
+			{
+				channelsPanel = new ChannelsPanel();
+				modules.registerModule(channelsPanel);
+			}
+		}
 
-        public function hideTopMenu():void
-        {
-            setTooltip(null);
-            _menu.mini = true;
-            style.topMenu = false;
-            height = height;
-            updateMenu();
-        }
+		public function toggleTopMenu():void
+		{
+			if (_menu.mini)
+			{
+				showTopMenu();
+			}
+			else
+			{
+				hideTopMenu();
+			}
+		}
 
-        public function showTopMenu():void
-        {
-            setTooltip(null);
-            _menu.mini = false;
-            style.topMenu = true;
-            height = height;
-            updateMenu();
-        }
+		public function hideTopMenu():void
+		{
+			setTooltip(null);
+			_menu.mini = true;
+			style.topMenu = false;
+			height = height;
+			updateMenu();
+		}
 
-        public function set commandLine(b:Boolean):void
-        {
+		public function showTopMenu():void
+		{
+			setTooltip(null);
+			_menu.mini = false;
+			style.topMenu = true;
+			height = height;
+			updateMenu();
+		}
 
-            _commandArea.isVisible = b;
+		public function set commandLine(b:Boolean):void
+		{
 
-            _needUpdateMenu = true;
+			_commandArea.isVisible = b;
 
-            this.height = height;
-            dispatchEvent(new Event(COMMAND_LINE_VISIBLITY_CHANGED));
-        }
+			_needUpdateMenu = true;
 
+			this.height = height;
+			dispatchEvent(new Event(COMMAND_LINE_VISIBLITY_CHANGED));
+		}
 
-        public function get commandLine():Boolean
-        {
-            return _commandArea.isVisible;
-        }
+		public function get commandLine():Boolean
+		{
+			return _commandArea.isVisible;
+		}
 
-        public function moveToLastSafePosition():void
-        {
-            if (_movedFrom != null)
-            {
-                // This will only work if stage size is not altered OR stage.align is top left
-                if (x + width < 10 || (sprite.stage && sprite.stage.stageWidth < x + 10) || y + height < 10 || (sprite.stage && sprite.stage.stageHeight < y + 20))
-                {
-                    x = _movedFrom.x;
-                    y = _movedFrom.y;
-                }
-                _movedFrom = null;
-            }
-        }
-    }
+		public function moveToLastSafePosition():void
+		{
+			if (_movedFrom != null)
+			{
+				// This will only work if stage size is not altered OR stage.align is top left
+				if (x + width < 10 || (sprite.stage && sprite.stage.stageWidth < x + 10) || y + height < 10 || (sprite.stage && sprite.stage.stageHeight < y + 20))
+				{
+					x = _movedFrom.x;
+					y = _movedFrom.y;
+				}
+				_movedFrom = null;
+			}
+		}
+	}
 }

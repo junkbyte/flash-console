@@ -1,30 +1,39 @@
 package com.junkbyte.console.view.menus
 {
-	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.interfaces.IKeyStates;
-	import com.junkbyte.console.interfaces.IMainMenu;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
-	
+
 	import flash.net.FileReference;
 	import flash.system.System;
 
-	public class SaveToClipboardMenu extends ConsoleMenuModule
+	public class SaveToClipboardMenu extends BaseConsoleMenuModule
 	{
+
+		public var defaultSaveFileName:String = "log.txt";
+
 		public function SaveToClipboardMenu()
 		{
 			super();
+
+			addModuleRegisteryCallback(new ModuleTypeMatcher(IKeyStates), onKeyStatesModuleChange, onKeyStatesModuleChange);
+		}
+
+		protected function onKeyStatesModuleChange(keyStates:IKeyStates):void
+		{
+			update();
 		}
 
 		override protected function initMenu():void
 		{
-			menu = new ConsoleMenuItem("Sv", onClick, null, "Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file");
+			menu = new ConsoleMenuItem("Sv", onClick);
 			menu.sortPriority = -60;
+			update();
 		}
 
 		override protected function onClick():void
 		{
-			var keyStates:IKeyStates = modules.findModulesByMatcher(new ModuleTypeMatcher(IKeyStates)) as IKeyStates;
+			var keyStates:IKeyStates = getKeyStates();
 
 			if (keyStates == null)
 			{
@@ -44,6 +53,18 @@ package com.junkbyte.console.view.menus
 			}
 		}
 
+		override protected function update():void
+		{
+			var str:String = "Save to clipboard";
+
+			if (getKeyStates() != null)
+			{
+				str += "::shift: no channel name\nctrl: use viewing filters\nalt: save to file";
+			}
+
+			menu.tooltip = str;
+		}
+
 		protected function getLogsWOptions(incChNames:Boolean = true, filterFunction:Function = null):String
 		{
 			return console.logger.logs.getLogsAsString("\r\n", incChNames, filterFunction);
@@ -60,7 +81,7 @@ package com.junkbyte.console.view.menus
 			var file:FileReference = new FileReference();
 			try
 			{
-				file.save(string, generateFileName());
+				file.save(string, generateSaveFileName());
 			}
 			catch (err:Error)
 			{
@@ -68,9 +89,14 @@ package com.junkbyte.console.view.menus
 			}
 		}
 
-		protected function generateFileName():String
+		protected function generateSaveFileName():String
 		{
-			return "log.txt";
+			return defaultSaveFileName;
+		}
+
+		protected function getKeyStates():IKeyStates
+		{
+			return modules.findModulesByMatcher(new ModuleTypeMatcher(IKeyStates)) as IKeyStates;
 		}
 	}
 }

@@ -38,6 +38,8 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.ConsoleScrollBar;
+	import com.junkbyte.console.view.menus.LogPriorityMenu;
+	import com.junkbyte.console.view.menus.SaveToClipboardMenu;
 	import com.junkbyte.console.vos.Log;
 
 	import flash.display.Shape;
@@ -124,6 +126,8 @@ package com.junkbyte.console.view.mainPanel
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 
 			super.registeredToConsole();
+
+			addMenus();
 		}
 
 		override protected function unregisteredFromConsole():void
@@ -135,6 +139,12 @@ package com.junkbyte.console.view.mainPanel
 			display.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 
 			super.unregisteredFromConsole();
+		}
+
+		protected function addMenus():void
+		{
+			modules.registerModule(new LogPriorityMenu(this));
+			modules.registerModule(new SaveToClipboardMenu());
 		}
 
 		private function onTracesChanged(e:Event):void
@@ -245,7 +255,9 @@ package com.junkbyte.console.view.mainPanel
 			var channels:Array = console.logger.logs.getChannels();
 			var len:int = channels.length;
 			if (limited && len > style.maxChannelsInMenu)
+			{
 				len = style.maxChannelsInMenu;
+			}
 			var filtering:Boolean = _viewingChannels.length > 0 || _ignoredChannels.length > 0;
 			for (var i:int = 0; i < len; i++)
 			{
@@ -343,25 +355,37 @@ package com.junkbyte.console.view.mainPanel
 				if (lineShouldShow(line))
 				{
 					if (line.priority > p && top > line.priority)
+					{
 						top = line.priority;
+					}
 					if (line.priority < p && bottom < line.priority)
+					{
 						bottom = line.priority;
+					}
 				}
 				line = line.prev;
 			}
 			if (down)
 			{
 				if (bottom == p)
+				{
 					p = 10;
+				}
 				else
+				{
 					p = bottom;
+				}
 			}
 			else
 			{
 				if (top == p)
+				{
 					p = 0;
+				}
 				else
+				{
 					p = top;
+				}
 			}
 			priority = p;
 		}
@@ -464,7 +488,9 @@ package com.junkbyte.console.view.mainPanel
 		{
 			var a:Array = new Array();
 			for each (var item:Object in channels)
+			{
 				a.push(makeConsoleChannel(item));
+			}
 
 			/*
 			TODO
@@ -477,7 +503,9 @@ package com.junkbyte.console.view.mainPanel
 			if (a.indexOf(ConsoleLogs.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0)
 			{
 				for each (var ch:String in a)
+				{
 					_viewingChannels.push(ch);
+				}
 			}
 			updateToBottom();
 			announceChannelInterestChanged();
@@ -492,7 +520,9 @@ package com.junkbyte.console.view.mainPanel
 		{
 			var a:Array = new Array();
 			for each (var item:Object in channels)
+			{
 				a.push(makeConsoleChannel(item));
+			}
 
 			/*
 			TODO
@@ -505,7 +535,9 @@ package com.junkbyte.console.view.mainPanel
 			if (a.indexOf(ConsoleLogs.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0)
 			{
 				for each (var ch:String in a)
+				{
 					_ignoredChannels.push(ch);
+				}
 			}
 			updateToBottom();
 		}
@@ -581,7 +613,7 @@ package com.junkbyte.console.view.mainPanel
 					{
 						txt = txt.substring(0, index) + "<u>" + txt.substring(index, index + match.length) + "</u>" + txt.substring(index + match.length);
 						_filterRegExp.lastIndex += 7;
-						// need to add to satisfy the fact that we added <u> and </u>
+							// need to add to satisfy the fact that we added <u> and </u>
 					}
 					result = _filterRegExp.exec(txt);
 				}
@@ -607,7 +639,9 @@ package com.junkbyte.console.view.mainPanel
 			var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
 
 			if (_lockScrollUpdate || (keyStates != null && keyStates.shiftKeyDown))
+			{
 				return;
+			}
 			var atbottom:Boolean = _traceField.scrollV >= _traceField.maxScrollV;
 			if (!console.paused && _atBottom != atbottom)
 			{
