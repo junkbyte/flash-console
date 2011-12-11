@@ -40,8 +40,9 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.view.ConsoleScrollBar;
 	import com.junkbyte.console.view.menus.LogPriorityMenu;
 	import com.junkbyte.console.view.menus.SaveToClipboardMenu;
+	import com.junkbyte.console.vos.ConsoleMenuItem;
 	import com.junkbyte.console.vos.Log;
-
+	
 	import flash.display.Shape;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -143,8 +144,19 @@ package com.junkbyte.console.view.mainPanel
 
 		protected function addMenus():void
 		{
-			modules.registerModule(new LogPriorityMenu(this));
-			modules.registerModule(new SaveToClipboardMenu());
+			
+			var logPriorityMenu:LogPriorityMenu = new LogPriorityMenu(this);
+			logPriorityMenu.sortPriority = -80;
+			mainPanel.menu.addMenu(logPriorityMenu);
+			
+			var saveMenu:SaveToClipboardMenu = new SaveToClipboardMenu();
+			saveMenu.sortPriority = -50;
+			
+			mainPanel.menu.addMenu(saveMenu);
+			
+			var clearLogsMenu:ConsoleMenuItem = new ConsoleMenuItem("C", logger.logs.clear, null, "Clear log");
+			clearLogsMenu.sortPriority = -80;
+			mainPanel.menu.addMenu(clearLogsMenu);
 		}
 
 		private function onTracesChanged(e:Event):void

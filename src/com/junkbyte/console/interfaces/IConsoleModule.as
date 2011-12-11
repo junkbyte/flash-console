@@ -35,5 +35,7 @@ package com.junkbyte.console.interfaces
 
 		// can be null if other modules don't depend on this module
 		function setConsole(newConsole:Console):void;
+		
+		function get console():Console;
 	}
 }

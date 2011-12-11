@@ -7,31 +7,17 @@ package com.junkbyte.console.view.menus
 	import flash.net.FileReference;
 	import flash.system.System;
 
-	public class SaveToClipboardMenu extends BaseConsoleMenuModule
+	public class SaveToClipboardMenu extends ConsoleMenuItem
 	{
 
 		public var defaultSaveFileName:String = "log.txt";
 
 		public function SaveToClipboardMenu()
 		{
-			super();
-
-			addModuleRegisteryCallback(new ModuleTypeMatcher(IKeyStates), onKeyStatesModuleChange, onKeyStatesModuleChange);
+			super("Sv", onMenuClick);
 		}
 
-		protected function onKeyStatesModuleChange(keyStates:IKeyStates):void
-		{
-			update();
-		}
-
-		override protected function initMenu():void
-		{
-			menu = new ConsoleMenuItem("Sv", onClick);
-			menu.sortPriority = -60;
-			update();
-		}
-
-		override protected function onClick():void
+		protected function onMenuClick():void
 		{
 			var keyStates:IKeyStates = getKeyStates();
 
@@ -41,7 +27,7 @@ package com.junkbyte.console.view.menus
 			}
 			else
 			{
-				var string:String = getLogsWOptions(!keyStates.shiftKeyDown, keyStates.ctrlKeyDown ? layer.mainPanel.traces.lineShouldShow : null);
+				var string:String = getLogsWOptions(!keyStates.shiftKeyDown, keyStates.ctrlKeyDown ? console.layer.mainPanel.traces.lineShouldShow : null);
 				if (keyStates.altKeyDown)
 				{
 					saveToFile(string);
@@ -52,17 +38,16 @@ package com.junkbyte.console.view.menus
 				}
 			}
 		}
-
-		override protected function update():void
+		
+		override public function getTooltip():String
 		{
-			var str:String = "Save to clipboard";
-
+			var string:String = "Save to clipboard";
+			
 			if (getKeyStates() != null)
 			{
-				str += "::shift: no channel name\nctrl: use viewing filters\nalt: save to file";
+				string += "::shift: no channel name\nctrl: use viewing filters\nalt: save to file";
 			}
-
-			menu.tooltip = str;
+			return string;
 		}
 
 		protected function getLogsWOptions(incChNames:Boolean = true, filterFunction:Function = null):String
@@ -73,7 +58,7 @@ package com.junkbyte.console.view.menus
 		protected function copyToClipboard(string:String):void
 		{
 			System.setClipboard(string);
-			report("Copied to clipboard.", -1);
+			console.logger.report("Copied to clipboard.", -1);
 		}
 
 		protected function saveToFile(string:String):void
@@ -85,7 +70,7 @@ package com.junkbyte.console.view.menus
 			}
 			catch (err:Error)
 			{
-				report("Error saving to file.", 8);
+				console.logger.report("Error saving to file.", 8);
 			}
 		}
 
@@ -96,7 +81,11 @@ package com.junkbyte.console.view.menus
 
 		protected function getKeyStates():IKeyStates
 		{
-			return modules.findModulesByMatcher(new ModuleTypeMatcher(IKeyStates)) as IKeyStates;
+			if (console != null)
+			{
+				return console.modules.getFirstMatchingModule(new ModuleTypeMatcher(IKeyStates)) as IKeyStates;
+			}
+			return null;
 		}
 	}
 }

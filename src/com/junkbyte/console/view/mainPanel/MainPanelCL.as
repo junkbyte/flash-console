@@ -171,7 +171,10 @@ package com.junkbyte.console.view.mainPanel
 
 		protected function addMenus():void
 		{
-			modules.registerModule(new CommandLineMenu());
+			var clmenu:CommandLineMenu = new CommandLineMenu(mainPanel);
+			clmenu.sortPriority = -40;
+			
+			mainPanel.menu.addMenu(clmenu);
 		}
 
 		override public function setArea(x:Number, y:Number, width:Number, height:Number):void

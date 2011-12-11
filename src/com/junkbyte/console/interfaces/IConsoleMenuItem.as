@@ -27,7 +27,7 @@ package com.junkbyte.console.interfaces
 {
 	import flash.events.IEventDispatcher;
 
-	[Event(name = "change", type = "flash.events.Event")]
+	//[Event(name = "change", type = "flash.events.Event")]
 	public interface IConsoleMenuItem extends IEventDispatcher
 	{
 
@@ -44,5 +44,9 @@ package com.junkbyte.console.interfaces
 		function getSortPriority():int;
 
 		function getTooltip():String;
+		
+		function onMenuAdded(module:IConsoleModule):void;
+		
+		function onMenuRemoved(module:IConsoleModule):void;
 	}
 }

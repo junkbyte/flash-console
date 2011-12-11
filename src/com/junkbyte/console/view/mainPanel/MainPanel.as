@@ -32,8 +32,8 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ChannelsPanel;
 	import com.junkbyte.console.view.ConsolePanel;
-	import com.junkbyte.console.view.menus.ClosePanelMenu;
 	import com.junkbyte.console.view.menus.PauseLogDisplayMenu;
+	import com.junkbyte.console.vos.ConsoleMenuItem;
 
 	import flash.events.Event;
 	import flash.events.TextEvent;
@@ -214,8 +214,13 @@ package com.junkbyte.console.view.mainPanel
 
 		protected function addMenus():void
 		{
-			modules.registerModule(new ClosePanelMenu(this));
-			modules.registerModule(new PauseLogDisplayMenu());
+			var closeMenu:ConsoleMenuItem = new ConsoleMenuItem("X", removeFromParent, null, "Close::Type password to show again");
+			closeMenu.sortPriority = -90;
+			menu.addMenu(closeMenu);
+
+			var pauseMenu:PauseLogDisplayMenu = new PauseLogDisplayMenu();
+			pauseMenu.sortPriority = -60;
+			menu.addMenu(pauseMenu);
 		}
 
 		private function onMenuChanged(e:Event):void

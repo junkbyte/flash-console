@@ -184,6 +184,7 @@ package com.junkbyte.console.view.mainPanel
 				_menus.push(menu);
 				_menus.sort(menuSorter);
 				menu.addEventListener(Event.CHANGE, onMenuChanged, false, 0, true);
+				menu.onMenuAdded(this);
 			}
 			_needsUpdate = true;
 		}
@@ -195,6 +196,7 @@ package com.junkbyte.console.view.mainPanel
 			{
 				_menus.splice(index, 1);
 				menu.removeEventListener(Event.CHANGE, onMenuChanged);
+				menu.onMenuRemoved(this);
 			}
 			_needsUpdate = true;
 		}

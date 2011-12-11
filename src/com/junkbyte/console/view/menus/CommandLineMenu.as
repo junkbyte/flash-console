@@ -1,45 +1,54 @@
 package com.junkbyte.console.view.menus
 {
+	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.view.mainPanel.MainPanel;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
 
-	public class CommandLineMenu extends BaseConsoleMenuModule
+	import flash.events.Event;
+
+	public class CommandLineMenu extends ConsoleMenuItem
 	{
 
-		public function CommandLineMenu()
+		private var mainPanel:MainPanel;
+
+		public function CommandLineMenu(mainPanel:MainPanel)
 		{
-			super();
+			super("CL", onMenuClick);
+			this.mainPanel = mainPanel;
 		}
 
-		override protected function initMenu():void
-		{
-			mainPanel.addEventListener(MainPanel.COMMAND_LINE_VISIBLITY_CHANGED, onRelatedChanged);
-
-			menu = new ConsoleMenuItem("CL", onClick);
-			menu.sortPriority = -40;
-
-			update();
-		}
-
-		override protected function decMenu():void
-		{
-			mainPanel.removeEventListener(MainPanel.COMMAND_LINE_VISIBLITY_CHANGED, onRelatedChanged);
-		}
-
-		override protected function onClick():void
+		protected function onMenuClick():void
 		{
 			mainPanel.commandLine = !mainPanel.commandLine;
 		}
 
-		override protected function update():void
+		override public function getTooltip():String
 		{
-			menu.active = mainPanel.commandLine;
-			menu.tooltip = menu.active ? "Hide Command Line" : "Show Command Line";
+			return isActive() ? "Hide Command Line" : "Show Command Line";
 		}
 
-		protected function get mainPanel():MainPanel
+		override public function onMenuAdded(module:IConsoleModule):void
 		{
-			return layer.mainPanel;
+			super.onMenuAdded(module);
+			mainPanel.addEventListener(MainPanel.COMMAND_LINE_VISIBLITY_CHANGED, onCLVisibiltyChanged);
+			update();
+		}
+
+		override public function onMenuRemoved(module:IConsoleModule):void
+		{
+			mainPanel.addEventListener(MainPanel.COMMAND_LINE_VISIBLITY_CHANGED, onCLVisibiltyChanged);
+			super.onMenuRemoved(module);
+		}
+
+		protected function onCLVisibiltyChanged(event:Event):void
+		{
+			update();
+			announceChanged();
+		}
+
+		protected function update():void
+		{
+			active = mainPanel.commandLine;
 		}
 	}
 }

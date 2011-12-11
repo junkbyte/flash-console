@@ -25,7 +25,9 @@
 */
 package com.junkbyte.console.vos
 {
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
+	import com.junkbyte.console.interfaces.IConsoleModule;
 
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -41,6 +43,8 @@ package com.junkbyte.console.vos
 		public var visible:Boolean = true;
 		public var active:Boolean;
 		public var sortPriority:int;
+
+		protected var module:IConsoleModule;
 
 		public function ConsoleMenuItem(name:String, cb:Function = null, args:Array = null, tooltip:String = null):void
 		{
@@ -91,6 +95,21 @@ package com.junkbyte.console.vos
 		public function announceChanged():void
 		{
 			dispatchEvent(new Event(Event.CHANGE));
+		}
+
+		public function onMenuAdded(module:IConsoleModule):void
+		{
+			this.module = module
+		}
+
+		public function onMenuRemoved(module:IConsoleModule):void
+		{
+			this.module = null;
+		}
+
+		protected function get console():Console
+		{
+			return module != null ? module.console : null;
 		}
 	}
 }
