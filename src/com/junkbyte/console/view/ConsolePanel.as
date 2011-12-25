@@ -108,14 +108,6 @@ package com.junkbyte.console.view
 			layer.addPanel(this);
 		}
 
-		public function removeFromParent():void
-		{
-			if (parent != null)
-			{
-				parent.removeChild(sprite);
-			}
-		}
-
 		public function get width():Number
 		{
 			return background.width;

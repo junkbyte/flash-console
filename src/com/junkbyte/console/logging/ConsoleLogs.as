@@ -52,7 +52,7 @@ package com.junkbyte.console.logging
 		 * Maximum number of logs Console should remember.
 		 * 0 = unlimited. Setting to very high will take up more memory and potentially slow down.
 		 */
-		public var maxLines:uint = 1000;
+		public var maxLines:uint = 2000;
 		public var first:Log;
 		public var last:Log;
 		protected var remoter:IRemoter;

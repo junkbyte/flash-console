@@ -76,6 +76,20 @@ package com.junkbyte.console.view
                 initToConsole();
             }
         }
+		
+		override protected function unregisteredFromConsole():void
+		{
+			removeFromParent();
+			super.unregisteredFromConsole();
+		}
+		
+		public function removeFromParent():void
+		{
+			if (parent != null)
+			{
+				parent.removeChild(sprite);
+			}
+		}
 
         private function onAddedHandle(e:Event):void
         {
