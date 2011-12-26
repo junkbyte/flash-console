@@ -1,7 +1,7 @@
 package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.view.ConsolePanel;
-
+	
 	import flash.events.EventDispatcher;
 	import flash.geom.Rectangle;
 
@@ -11,12 +11,12 @@ package com.junkbyte.console.modules.graphing
 
 		public static var defaultGraphingPanelModuleClass:Class = GraphingPanelModule;
 
+		public var updateFrequencyMS:uint = 5;
+		
 		public var fixedMin:Number;
 		public var fixedMax:Number;
 
 		public var inverted:Boolean;
-
-		public var area:Rectangle;
 
 		public var lines:Vector.<GraphingLine> = new Vector.<GraphingLine>();
 
@@ -35,5 +35,6 @@ package com.junkbyte.console.modules.graphing
 		{
 			return new defaultGraphingPanelModuleClass(this);
 		}
+		
 	}
 }

@@ -28,7 +28,15 @@ package
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
-
+	import com.junkbyte.console.modules.graphing.custom.CustomGraphingGroup;
+	import com.junkbyte.console.modules.graphing.custom.CustomGraphingLine;
+	import com.junkbyte.console.modules.graphing.custom.CustomGraphingModule;
+	import com.junkbyte.console.modules.graphing.fps.FPSGraphingModule;
+	import com.junkbyte.console.modules.graphing.GraphingGroup;
+	import com.junkbyte.console.modules.graphing.GraphingCentralModule;
+	import com.junkbyte.console.modules.graphing.GraphingPanelsCentralModule;
+	import com.junkbyte.console.modules.graphing.memory.MemoryGraphingModule;
+	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
@@ -37,7 +45,7 @@ package
 	import flash.utils.getTimer;
 	import flash.utils.setInterval;
 
-	[SWF(width = '640', height = '480', backgroundColor = '0xDDDDDD', frameRate = '30')]
+	[SWF(width = '640', height = '480', backgroundColor = '0xDDDDDD', frameRate = '60')]
 	public class Sample extends MovieClip
 	{
 
@@ -69,7 +77,21 @@ package
 			//StandardConsoleModules.registerToConsole();
 
 			CLog.log(Cc.modules.getAllModules().join(", "));
-
+			
+			
+			Cc.modules.registerModule(new GraphingCentralModule());
+			
+			Cc.modules.registerModule(new FPSGraphingModule());
+			
+			Cc.modules.registerModule(new MemoryGraphingModule());
+			
+			
+			var group:CustomGraphingGroup = new CustomGraphingGroup();
+			group.lines.push(new CustomGraphingLine(this, "mouseX", "x", 0xFF0000));
+			group.lines.push(new CustomGraphingLine(this, "mouseY", "y", 0x3333FF));
+			Cc.modules.registerModule(new CustomGraphingModule(group));
+			
+			Cc.modules.registerModule(new GraphingPanelsCentralModule());
 			//
 			// End of setup
 			//

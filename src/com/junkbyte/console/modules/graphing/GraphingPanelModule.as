@@ -61,7 +61,7 @@ package com.junkbyte.console.modules.graphing
 			_bm.y = style.menuFontSize;
 			addChild(_bm);
 
-			setPanelSize(100, 80);
+			setPanelSize(80 ,40);
 			addToLayer();
 		}
 		

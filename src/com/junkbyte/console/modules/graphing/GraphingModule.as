@@ -1,73 +1,131 @@
 package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.vos.GraphInterest;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
+	import com.junkbyte.console.events.ConsoleEvent;
 
-	[Event(name = "addGroup", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
-	[Event(name = "removeGroup", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
-	[Event(name = "push", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
 	public class GraphingModule extends ConsoleModule
 	{
+		protected var graphModule:GraphingCentralModule;
 
-		protected var groups:Object = new Object();
-		protected var nextIndex:uint;
+		protected var timeSinceUpdate:uint;
+		
+		private var _group:GraphingGroup;
 
 		public function GraphingModule()
 		{
 			super();
+
+			addModuleRegisteryCallback(new ModuleTypeMatcher(GraphingCentralModule), graphModuleRegistered, graphModuleUnregistered);
 		}
 
-		public function registerGroup(group:GraphingGroup):uint
+		final public function get group():GraphingGroup
 		{
-			if(getGroupId(group) >= 0)
-			{
-				throw new ArgumentError();
-			}
-			groups[nextIndex] = group;
-			
-			var event:GraphingEvent = new GraphingEvent(GraphingEvent.ADD_GROUP);
-			event.group = group;
-			dispatchEvent(event);
-			
-			return nextIndex++;
+			return _group;
 		}
 
-		public function removeGroup(group:GraphingGroup):void
+		protected function graphModuleRegistered(module:GraphingCentralModule):void
 		{
-			if(getGroupId(group) < 0)
+			graphModule = module;
+			checkIfDependenciesReady();
+		}
+
+		protected function graphModuleUnregistered(module:GraphingCentralModule):void
+		{
+			stop();
+			graphModule = null;
+		}
+
+		protected function isDependenciesReady():Boolean
+		{
+			return graphModule != null;
+		}
+
+		protected function checkIfDependenciesReady():void
+		{
+			if (_group == null && isDependenciesReady())
 			{
-				throw new ArgumentError();
+				onDependenciesReady();
 			}
-			var event:GraphingEvent = new GraphingEvent(GraphingEvent.REMOVE_GROUP);
-			event.group = group;
-			dispatchEvent(event);
 		}
 		
-		public function getGroups():Vector.<GraphingGroup>
+		// OVERRIDE
+		protected function onDependenciesReady():void
 		{
-			var result:Vector.<GraphingGroup> = new Vector.<GraphingGroup>();
-			for each(var group:GraphingGroup in groups)
+			
+		}
+
+		protected function start():void
+		{
+			if (_group!= null)
 			{
-				result.push(group);
+				return;
 			}
-			return result;
-		}
+			timeSinceUpdate = 0;
 
-		public function getGroupById(id:uint):GraphingGroup
-		{
-			return groups[nextIndex];
-		}
-
-		public function getGroupId(group:GraphingGroup):int
-		{
-			for (var X:String in groups)
+			_group = createGraphingGroup();
+			if(_group == null)
 			{
-				if (groups[X] == group)
+				throw new Error("createGraphingGroup() must return non-null.");
+			}
+			
+			graphModule.registerGroup(_group);
+
+			console.addEventListener(ConsoleEvent.UPDATE_DATA, onConsoleUpdate);
+
+			pushValues();
+		}
+		
+		protected function stop():void
+		{
+			if (_group == null)
+			{
+				return;
+			}
+			console.removeEventListener(ConsoleEvent.UPDATE_DATA, onConsoleUpdate);
+			graphModule.removeGroup(_group);
+			_group = null;
+		}
+		protected function onConsoleUpdate(event:ConsoleEvent):void
+		{
+			timeSinceUpdate += event.msDelta;
+			
+			if (timeSinceUpdate >= _group.updateFrequencyMS)
+			{
+				pushValues();
+				timeSinceUpdate = Math.min(timeSinceUpdate - _group.updateFrequencyMS, _group.updateFrequencyMS)
+			}
+		}
+		
+		protected function pushValues():void
+		{
+			var values:Vector.<Number> = getValues();
+			if(values != null)
+			{
+				if(values.length != _group.lines.length)
 				{
-					return int(X);
+					throw new Error("Graphing: getValues() must retun the same number of lenght as group.lines.length.");
 				}
+				_group.push(values);
 			}
-			return -1;
+		}
+		
+		// OVERRIDE
+		protected function createGraphingGroup():GraphingGroup
+		{
+			return null;
+		}
+		
+		// OVERRIDE
+		protected function getValues():Vector.<Number>
+		{
+			return null;
+		}
+
+		override protected function unregisteredFromConsole():void
+		{
+			stop();
+			super.unregisteredFromConsole();
 		}
 	}
 }

@@ -6,31 +6,31 @@ package com.junkbyte.console.modules.graphing
 	
 	import flash.utils.Dictionary;
 
-	public class GraphingPanelsModule extends ConsoleModule
+	public class GraphingPanelsCentralModule extends ConsoleModule
 	{
 
 		protected var graphToPanelMap:Dictionary = new Dictionary();
 
-		public function GraphingPanelsModule()
+		public function GraphingPanelsCentralModule()
 		{
 			super();
-			addModuleRegisteryCallback(new ModuleTypeMatcher(GraphingModule), graphModuleRegistered, graphModuleUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(GraphingCentralModule), graphModuleRegistered, graphModuleUnregistered);
 		}
 
-		protected function graphModuleRegistered(graphModule:GraphingModule):void
+		protected function graphModuleRegistered(graphModule:GraphingCentralModule):void
 		{
 			graphModule.addEventListener(GraphingEvent.ADD_GROUP, onGroupAdded);
 			graphModule.addEventListener(GraphingEvent.REMOVE_GROUP, onGroupRemoved);
 			addGroups(graphModule);
 		}
 
-		protected function graphModuleUnregistered(graphModule:GraphingModule):void
+		protected function graphModuleUnregistered(graphModule:GraphingCentralModule):void
 		{
 			graphModule.removeEventListener(GraphingEvent.ADD_GROUP, onGroupAdded);
 			graphModule.removeEventListener(GraphingEvent.REMOVE_GROUP, onGroupRemoved);
 		}
 
-		protected function addGroups(graphModule:GraphingModule):void
+		protected function addGroups(graphModule:GraphingCentralModule):void
 		{
 			for each (var group:GraphingGroup in graphModule.getGroups())
 			{
@@ -52,6 +52,7 @@ package com.junkbyte.console.modules.graphing
 		{
 			var panel:ConsolePanel = group.createPanel();
 			graphToPanelMap[group] = panel;
+			
 			modules.registerModule(panel);
 		}
 
