@@ -1,9 +1,9 @@
 package com.junkbyte.console.modules.graphing.custom
 {
+	import com.junkbyte.console.modules.graphing.GraphingGroup;
 	import com.junkbyte.console.view.ConsolePanel;
 	
 	import flash.geom.Rectangle;
-	import com.junkbyte.console.modules.graphing.GraphingGroup;
 
 	public class CustomGraphingGroup extends GraphingGroup
 	{
@@ -15,7 +15,10 @@ package com.junkbyte.console.modules.graphing.custom
 			super();
 		}
 		
-		
+		public function addLine(line:CustomGraphingLine):void
+		{
+			lines.push(line);
+		}
 		
 		override public function createPanel():ConsolePanel
 		{

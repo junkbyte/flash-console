@@ -35,6 +35,6 @@ package com.junkbyte.console.modules.trace
 		{
 			trace("[" + entry.channel + "] " + entry.plainText());
 		}
-		;
+
 	}
 }

@@ -14,11 +14,12 @@ package com.junkbyte.console.modules.graphing.memory
 		
 		protected var menu:ConsoleMenuItem;
 		
-		public function MemoryGraphingModule()
+		public function MemoryGraphingModule(startImmediately:Boolean = false)
 		{
 			menu = new ConsoleMenuItem("M", onMenuClick, null, "Memory::monitor");
 			menu.sortPriority = -20;
 			menu.visible = false;
+			menu.active = startImmediately;
 			
 			addModuleRegisteryCallback(new ModuleTypeMatcher(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
 			
@@ -51,6 +52,10 @@ package com.junkbyte.console.modules.graphing.memory
 		{
 			menu.visible = true;
 			menu.announceChanged();
+			if(menu.active)
+			{
+				start();
+			}
 		}
 
 		override protected function createGraphingGroup():GraphingGroup

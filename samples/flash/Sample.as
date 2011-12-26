@@ -81,14 +81,14 @@ package
 			
 			Cc.modules.registerModule(new GraphingCentralModule());
 			
-			Cc.modules.registerModule(new FPSGraphingModule());
+			Cc.modules.registerModule(new FPSGraphingModule(true));
 			
-			Cc.modules.registerModule(new MemoryGraphingModule());
+			Cc.modules.registerModule(new MemoryGraphingModule(true));
 			
 			
 			var group:CustomGraphingGroup = new CustomGraphingGroup();
-			group.lines.push(new CustomGraphingLine(this, "mouseX", "x", 0xFF0000));
-			group.lines.push(new CustomGraphingLine(this, "mouseY", "y", 0x3333FF));
+			group.addLine(new CustomGraphingLine(this, "mouseX", "x", 0xFF0000));
+			group.addLine(new CustomGraphingLine(this, "mouseY", "y", 0x3333FF));
 			Cc.modules.registerModule(new CustomGraphingModule(group));
 			
 			Cc.modules.registerModule(new GraphingPanelsCentralModule());

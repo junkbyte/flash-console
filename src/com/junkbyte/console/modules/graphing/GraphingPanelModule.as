@@ -1,7 +1,7 @@
 package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.view.ConsolePanel;
-	
+
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.geom.Matrix;
@@ -52,8 +52,9 @@ package com.junkbyte.console.modules.graphing
 			_textField.name = "menuField";
 			_textField.autoSize = TextFieldAutoSize.RIGHT;
 			_textField.height = style.menuFontSize + 4;
+			_textField.x = 0;
 			_textField.y = -3;
-			_textField.defaultTextFormat = new TextFormat(style.menuFont, style.menuFontSize, style.menuColor);
+			_textField.defaultTextFormat = new TextFormat(style.menuFont, style.traceFontSize, style.menuColor);
 			registerMoveDragger(_textField);
 			addChild(_textField);
 
@@ -61,10 +62,10 @@ package com.junkbyte.console.modules.graphing
 			_bm.y = style.menuFontSize;
 			addChild(_bm);
 
-			setPanelSize(80 ,40);
+			setPanelSize(80, 40);
 			addToLayer();
 		}
-		
+
 		override protected function unregisteredFromConsole():void
 		{
 			_group.removeEventListener(GraphingGroupEvent.PUSH, onPushEvent);
@@ -74,7 +75,7 @@ package com.junkbyte.console.modules.graphing
 
 		override protected function resizePanel(w:Number, h:Number):void
 		{
-
+			_textField.width = w;
 			super.resizePanel(w, h);
 		}
 
@@ -122,8 +123,8 @@ package com.junkbyte.console.modules.graphing
 
 			var H:int = _bmd.height;
 
-			var lowest:Number = isNaN(group.fixedMin)?lastLow:group.fixedMin;
-			var highest:Number = isNaN(group.fixedMax)?lastHigh:group.fixedMax;
+			var lowest:Number = isNaN(group.fixedMin) ? lastLow : group.fixedMin;
+			var highest:Number = isNaN(group.fixedMax) ? lastHigh : group.fixedMax;
 			for each (var v:Number in values)
 			{
 				if (isNaN(group.fixedMin) && (isNaN(lowest) || v < lowest))

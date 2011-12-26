@@ -20,12 +20,14 @@ package com.junkbyte.console.modules.graphing.fps
 		
 		protected var menu:ConsoleMenuItem;
 
-		public function FPSGraphingModule()
+		public function FPSGraphingModule(startImmediately:Boolean = false)
 		{
 			
 			menu = new ConsoleMenuItem("F", onMenuClick, null, "Frames per second::monitor");
 			menu.sortPriority = -10;
 			menu.visible = false;
+			menu.active = startImmediately;
+			
 			
 			addModuleRegisteryCallback(new ModuleTypeMatcher(StageModule), stageModuleRegistered, stageModuleUnregistered);
 			addModuleRegisteryCallback(new ModuleTypeMatcher(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
@@ -76,6 +78,10 @@ package com.junkbyte.console.modules.graphing.fps
 		{
 			menu.visible = true;
 			menu.announceChanged();
+			if(menu.active)
+			{
+				start();
+			}
 		}
 
 		override protected function createGraphingGroup():GraphingGroup
