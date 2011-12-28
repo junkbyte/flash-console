@@ -29,6 +29,12 @@ package com.junkbyte.console.modules
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.modules.commandLine.SlashCommandLine;
 	import com.junkbyte.console.modules.displayRoller.DisplayRoller;
+	import com.junkbyte.console.modules.graphing.GraphingCentralModule;
+	import com.junkbyte.console.modules.graphing.GraphingPanelsCentralModule;
+	import com.junkbyte.console.modules.graphing.custom.CustomGraphingGroup;
+	import com.junkbyte.console.modules.graphing.custom.CustomGraphingModule;
+	import com.junkbyte.console.modules.graphing.fps.FPSGraphingModule;
+	import com.junkbyte.console.modules.graphing.memory.MemoryGraphingModule;
 	import com.junkbyte.console.modules.keyStates.KeyStates;
 	import com.junkbyte.console.modules.keybinder.KeyBinder;
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
@@ -61,6 +67,14 @@ package com.junkbyte.console.modules
 			console.modules.registerModule(new RulerModule());
 			console.modules.registerModule(new DisplayRoller());
 			console.modules.registerModule(new UnCaughtErrorsListenerModule());
+			
+			
+			console.modules.registerModule(new GraphingCentralModule());
+			console.modules.registerModule(new FPSGraphingModule());
+			console.modules.registerModule(new MemoryGraphingModule());
+			console.modules.registerModule(new GraphingPanelsCentralModule());
 		}
+		
+		private static var imports:Array = [CustomGraphingModule];
 	}
 }

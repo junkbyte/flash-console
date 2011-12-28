@@ -1,7 +1,7 @@
 package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.view.ConsolePanel;
-
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.geom.Matrix;
@@ -15,7 +15,7 @@ package com.junkbyte.console.modules.graphing
 
 		protected var _group:GraphingGroup;
 
-		protected var _textField:TextField;
+		protected var _text:GraphingText;
 
 		private var _bm:Bitmap;
 		private var _bmd:BitmapData;
@@ -27,7 +27,7 @@ package com.junkbyte.console.modules.graphing
 		public function GraphingPanelModule(group:GraphingGroup)
 		{
 			super();
-
+			
 			_group = group;
 		}
 
@@ -39,7 +39,9 @@ package com.junkbyte.console.modules.graphing
 		override protected function initToConsole():void
 		{
 			super.initToConsole();
-
+			
+			_text = new GraphingText(this, group);
+			
 			group.addEventListener(GraphingGroupEvent.PUSH, onPushEvent);
 			startPanelResizer();
 
@@ -52,14 +54,6 @@ package com.junkbyte.console.modules.graphing
 			_bm.y = style.menuFontSize;
 			addChild(_bm);
 
-			_textField = new TextField();
-			_textField.name = "menuField";
-			_textField.autoSize = TextFieldAutoSize.RIGHT;
-			_textField.height = style.menuFontSize + 4;
-			_textField.y = -3;
-			_textField.defaultTextFormat = new TextFormat(style.menuFont, style.traceFontSize, style.menuColor);
-			registerMoveDragger(_textField);
-			addChild(_textField);
 
 			setPanelSize(80, 40);
 			addToLayer();
@@ -74,8 +68,7 @@ package com.junkbyte.console.modules.graphing
 
 		override protected function resizePanel(w:Number, h:Number):void
 		{
-			_textField.x = 0;
-			_textField.width = w;
+			_text.setArea(0,0,w, h);
 			super.resizePanel(w, h);
 			updateBitmapSize();
 		}
@@ -107,14 +100,20 @@ package com.junkbyte.console.modules.graphing
 			}
 			_bm.bitmapData = _bmd;
 		}
+		
+		public function reset():void
+		{
+			lastLow = lastHigh = NaN;
+			lastValues = new Object();
+		}
 
 		private function onPushEvent(event:GraphingGroupEvent):void
 		{
 			var values:Vector.<Number> = event.values;
 
 			pushValuesToGraph(values);
-
-			updateTextValues(values);
+			
+			_text.update(event);
 		}
 
 		private function pushValuesToGraph(values:Vector.<Number>):void
@@ -210,11 +209,6 @@ package com.junkbyte.console.modules.graphing
 				value = _bmd.height - 1;
 			}
 			return value;
-		}
-
-		private function updateTextValues(values:Vector.<Number>):void
-		{
-			_textField.text = String(values[0]);
 		}
 	}
 }
