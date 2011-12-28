@@ -48,19 +48,18 @@ package com.junkbyte.console.modules.graphing
 			minSize.x = 32;
 			minSize.y = 26;
 
+			_bm = new Bitmap();
+			_bm.y = style.menuFontSize;
+			addChild(_bm);
+
 			_textField = new TextField();
 			_textField.name = "menuField";
 			_textField.autoSize = TextFieldAutoSize.RIGHT;
 			_textField.height = style.menuFontSize + 4;
-			_textField.x = 0;
 			_textField.y = -3;
 			_textField.defaultTextFormat = new TextFormat(style.menuFont, style.traceFontSize, style.menuColor);
 			registerMoveDragger(_textField);
 			addChild(_textField);
-
-			_bm = new Bitmap();
-			_bm.y = style.menuFontSize;
-			addChild(_bm);
 
 			setPanelSize(80, 40);
 			addToLayer();
@@ -75,17 +74,23 @@ package com.junkbyte.console.modules.graphing
 
 		override protected function resizePanel(w:Number, h:Number):void
 		{
+			_textField.x = 0;
 			_textField.width = w;
 			super.resizePanel(w, h);
+			updateBitmapSize();
 		}
 
 		private function updateBitmapSize():void
 		{
 			var w:uint = width - 5;
 			var h:int = height - _bm.y;
-			if (h <= 0)
+			if (h < 3)
 			{
-				h = 1;
+				h = 3;
+			}
+			if (w < 1)
+			{
+				w = 1;
 			}
 			if (_bmd != null && _bmd.width == w && _bmd.height == h)
 			{
@@ -93,38 +98,30 @@ package com.junkbyte.console.modules.graphing
 			}
 			var prevBMD:BitmapData = _bmd;
 			_bmd = new BitmapData(w, h, true, 0);
-			if (prevBMD)
+			if (prevBMD != null)
 			{
-				_bmd.draw(prevBMD);
+				var matrix:Matrix = new Matrix(1, 0, 0, _bmd.height / prevBMD.height);
+				matrix.tx = _bmd.width - prevBMD.width;
+				_bmd.draw(prevBMD, matrix, null, null, null, true);
 				prevBMD.dispose();
 			}
 			_bm.bitmapData = _bmd;
 		}
 
-		private function scaleBitmapData(newLow:Number, newHigh:Number):void
-		{
-			var scaleBMD:BitmapData = _bmd.clone();
-			_bmd.fillRect(new Rectangle(0, 0, _bmd.width, _bmd.height), 0);
-			var matrix:Matrix = new Matrix();
-			var oldDiff:Number = lastHigh - lastLow;
-			var newDiff:Number = newHigh - newLow;
-
-			matrix.ty = ((lastLow - newLow) / newDiff) * _bmd.height;
-			matrix.scale(1, oldDiff / newDiff);
-			_bmd.draw(scaleBMD, matrix);
-			scaleBMD.dispose();
-		}
-
 		private function onPushEvent(event:GraphingGroupEvent):void
 		{
-			updateBitmapSize();
-
 			var values:Vector.<Number> = event.values;
 
-			var H:int = _bmd.height;
+			pushValuesToGraph(values);
 
+			updateTextValues(values);
+		}
+
+		private function pushValuesToGraph(values:Vector.<Number>):void
+		{
 			var lowest:Number = isNaN(group.fixedMin) ? lastLow : group.fixedMin;
 			var highest:Number = isNaN(group.fixedMax) ? lastHigh : group.fixedMax;
+
 			for each (var v:Number in values)
 			{
 				if (isNaN(group.fixedMin) && (isNaN(lowest) || v < lowest))
@@ -136,19 +133,44 @@ package com.junkbyte.console.modules.graphing
 					highest = v;
 				}
 			}
-			_bmd.lock();
-			_textField.text = String(values[0]);
 
 			if (lastLow != lowest || lastHigh != highest)
 			{
 				scaleBitmapData(lowest, highest);
 			}
+			draw(highest, lowest, values);
+			lastLow = lowest;
+			lastHigh = highest;
+		}
+
+		private function scaleBitmapData(newLow:Number, newHigh:Number):void
+		{
+			var scaleBMD:BitmapData = _bmd.clone();
+			
+			_bmd.fillRect(new Rectangle(0, 0, _bmd.width, _bmd.height), 0);
+			
+			var oldDiff:Number = lastHigh - lastLow;
+			var newDiff:Number = newHigh - newLow;
+			
+			var matrix:Matrix = new Matrix();
+			matrix.ty = (newHigh-lastHigh) / oldDiff * _bmd.height;
+			matrix.scale(1, oldDiff / newDiff);
+			_bmd.draw(scaleBMD, matrix, null, null, null, true);
+			scaleBMD.dispose();
+		}
+
+		private function draw(highest:Number, lowest:Number, values:Vector.<Number>):void
+		{
 			var diffGraph:Number = highest - lowest;
 			var pixX:uint = _bmd.width - 1;
 
+			var H:int = _bmd.height;
+
+			_bmd.lock();
+
 			_bmd.scroll(-1, 0);
 			_bmd.fillRect(new Rectangle(pixX, 0, 1, _bmd.height), 0);
-			var newValues:Object = new Object();
+
 			for (var i:int = _group.lines.length - 1; i >= 0; i--)
 			{
 				var interest:GraphingLine = _group.lines[i];
@@ -156,7 +178,8 @@ package com.junkbyte.console.modules.graphing
 				var pixY:int = ((value - lowest) / diffGraph) * H;
 				pixY = makePercentValue(pixY);
 
-				var lastValue:Number = lastValues[interest.key];
+				var lastValue:Number = lastValues[i];
+
 				if (isNaN(lastValue) == false)
 				{
 					var pixY2:int = ((lastValue - lowest) / diffGraph) * H;
@@ -167,12 +190,9 @@ package com.junkbyte.console.modules.graphing
 				}
 				_bmd.setPixel32(pixX, pixY, interest.color + 0xFF000000);
 
-				newValues[interest.key] = value;
+				lastValues[i] = value;
 			}
 			_bmd.unlock();
-			lastLow = lowest;
-			lastHigh = highest;
-			lastValues = newValues;
 		}
 
 		private function makePercentValue(value:Number):Number
@@ -190,6 +210,11 @@ package com.junkbyte.console.modules.graphing
 				value = _bmd.height - 1;
 			}
 			return value;
+		}
+
+		private function updateTextValues(values:Vector.<Number>):void
+		{
+			_textField.text = String(values[0]);
 		}
 	}
 }
