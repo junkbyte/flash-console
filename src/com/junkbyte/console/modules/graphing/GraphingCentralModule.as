@@ -1,6 +1,7 @@
 package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.view.ConsolePanel;
 
 	[Event(name = "addGroup", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
 	[Event(name = "removeGroup", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
@@ -24,11 +25,22 @@ package com.junkbyte.console.modules.graphing
 			}
 			groups[nextIndex] = group;
 			
+			createPanelForGroup(group);
+			
 			var event:GraphingEvent = new GraphingEvent(GraphingEvent.ADD_GROUP);
 			event.group = group;
 			dispatchEvent(event);
 			
 			return nextIndex++;
+		}
+		
+		protected function createPanelForGroup(group:GraphingGroup):void
+		{
+			var panel:ConsolePanel = group.createPanel();
+			if(panel != null)
+			{
+				modules.registerModule(panel);
+			}
 		}
 
 		public function removeGroup(group:GraphingGroup):void

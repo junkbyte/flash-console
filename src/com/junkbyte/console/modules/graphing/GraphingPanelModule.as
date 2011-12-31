@@ -6,6 +6,7 @@ package com.junkbyte.console.modules.graphing
 	import com.junkbyte.console.view.ToolTipModule;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 	
+	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
@@ -35,6 +36,9 @@ package com.junkbyte.console.modules.graphing
 			super.initToConsole();
 
 			group.addEventListener(GraphingGroupEvent.PUSH, onPushEvent);
+			group.addEventListener(Event.CLOSE, onCloseEvent);
+			
+			
 			startPanelResizer();
 
 			registerMoveDragger(background);
@@ -84,14 +88,19 @@ package com.junkbyte.console.modules.graphing
 			_graph.reset();
 		}
 
-		private function onPushEvent(event:GraphingGroupEvent):void
+		protected function onPushEvent(event:GraphingGroupEvent):void
 		{
 			var values:Vector.<Number> = event.values;
 
 			_graph.push(values);
 			updateTextField(event);
 		}
-
+		
+		protected function onCloseEvent(event:Event):void
+		{
+			modules.unregisterModule(this);
+		}
+		
 		protected function initTextField():void
 		{
 			textField = new TextField();
