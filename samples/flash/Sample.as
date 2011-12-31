@@ -28,17 +28,18 @@ package
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
+	import com.junkbyte.console.modules.graphing.GraphingCentralModule;
+	import com.junkbyte.console.modules.graphing.GraphingGroup;
+	import com.junkbyte.console.modules.graphing.GraphingPanelsCentralModule;
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingGroup;
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingLine;
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingModule;
 	import com.junkbyte.console.modules.graphing.fps.FPSGraphingModule;
-	import com.junkbyte.console.modules.graphing.GraphingGroup;
-	import com.junkbyte.console.modules.graphing.GraphingCentralModule;
-	import com.junkbyte.console.modules.graphing.GraphingPanelsCentralModule;
 	import com.junkbyte.console.modules.graphing.memory.MemoryGraphingModule;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
+	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.text.TextField;
 	import flash.utils.clearInterval;
@@ -55,6 +56,8 @@ package
 		public var screenClip:Sprite;
 
 		private var _spamcount:int;
+		
+		public var num:Number = 0;
 
 		public function Sample()
 		{
@@ -91,6 +94,10 @@ package
 			group.addLine(new CustomGraphingLine(this, "mouseY", "y", 0x3333FF));
 			Cc.modules.registerModule(new CustomGraphingModule(group));
 			
+			group = new CustomGraphingGroup();
+			group.addLine(new CustomGraphingLine(this, "num", "num", 0xFF0000));
+			Cc.modules.registerModule(new CustomGraphingModule(group));
+			
 			Cc.modules.registerModule(new GraphingPanelsCentralModule());
 			//
 			// End of setup
@@ -100,6 +107,8 @@ package
 			demoBasics();
 
 			setupUI();
+			
+			addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		/*
 
 		CLog.addEntry(new LogEntry(["test"], "ch", 10));
@@ -116,6 +125,11 @@ package
 		CLog.addHTML("<html>Some <i>random</i> <b>html</b></html>");
 
 		CLog.addHTML("<html>Some <i>random</i> <b>html<b/></html>");*/
+		}
+
+		private function onEnterFrame(event:Event):void
+		{
+			num++
 		}
 
 		private function demoBasics():void

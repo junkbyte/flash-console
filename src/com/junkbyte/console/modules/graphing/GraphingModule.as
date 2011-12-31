@@ -3,6 +3,8 @@ package com.junkbyte.console.modules.graphing
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleEvent;
+	
+	import flash.events.Event;
 
 	public class GraphingModule extends ConsoleModule
 	{
@@ -68,12 +70,18 @@ package com.junkbyte.console.modules.graphing
 			{
 				throw new Error("createGraphingGroup() must return non-null.");
 			}
-
+			_group.addEventListener(Event.CLOSE, onGroupClose);
+			
 			graphModule.registerGroup(_group);
 
 			console.addEventListener(ConsoleEvent.UPDATE_DATA, onConsoleUpdate);
 
 			pushValues();
+		}
+		
+		protected function onGroupClose(event:Event):void
+		{
+			stop();
 		}
 
 		protected function stop():void

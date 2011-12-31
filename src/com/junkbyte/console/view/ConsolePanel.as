@@ -178,8 +178,15 @@ package com.junkbyte.console.view
 
 		public function setTooltip(str:String):void
 		{
+			if(isRegisteredToConsole() == false) 
+			{
+				return;
+			}
 			var toolTip:ToolTipModule = modules.getModuleByName(ConsoleModuleNames.TOOLTIPS) as ToolTipModule;
-			toolTip.setTooltip(str);
+			if(toolTip != null)
+			{
+				toolTip.setTooltip(str);
+			}
 		}
 	}
 }

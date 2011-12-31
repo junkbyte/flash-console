@@ -2,10 +2,12 @@ package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.view.ConsolePanel;
 	
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.geom.Rectangle;
 
 	[Event(name = "push", type = "com.junkbyte.console.modules.graphing.GraphingGroupEvent")]
+	[Event(name="close", type="flash.events.Event")]
 	public class GraphingGroup extends EventDispatcher
 	{
 
@@ -36,5 +38,9 @@ package com.junkbyte.console.modules.graphing
 			return new defaultGraphingPanelModuleClass(this);
 		}
 		
+		public function close():void
+		{
+			dispatchEvent(new Event(Event.CLOSE));
+		}
 	}
 }

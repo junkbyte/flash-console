@@ -21,6 +21,13 @@ package com.junkbyte.console.modules.graphing.custom
 			start();
 		}
 		
+		
+		override protected function stop():void
+		{
+			super.stop();
+			modules.unregisterModule(this);
+		}
+		
 		override protected function createGraphingGroup():GraphingGroup
 		{
 			return customGroup;
