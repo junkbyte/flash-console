@@ -25,7 +25,11 @@
 package com.junkbyte.console.modules.remoting 
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.interfaces.ConsoleDataUpdatedListener;
+	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.core.ConsoleTicker;
 	import com.junkbyte.console.events.ConsoleEvent;
+	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	
 	import flash.events.AsyncErrorEvent;
@@ -39,11 +43,9 @@ package com.junkbyte.console.modules.remoting
 	import flash.system.Security;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.interfaces.IRemoter;
 
 	[Event(name="CONNECT", type="flash.events.Event")]
-	public class LocalRemoting extends ConsoleModule implements IRemoter{
+	public class LocalRemoting extends ConsoleModule implements IRemoter, ConsoleDataUpdatedListener{
 		
 		public static const NONE:uint = 0;
 		public static const SENDER:uint = 1;
@@ -92,24 +94,23 @@ package com.junkbyte.console.modules.remoting
 			registerCallback("loginSuccess", loginSuccess);
 		}
 		
-		override public function registeredToConsole(console:Console):void
+		override protected function registeredToConsole():void
 		{
 			super.registeredToConsole(console);
-			modules.addEventListener(ConsoleEvent.DATA_UPDATED, onConsoleUpdated);
+			
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.addDataUpdatedListener(this);
 		}
 		
-		override public function unregisteredFromConsole(console:Console):void
+		override protected function unregisteredFromConsole():void
 		{
 			super.unregisteredFromConsole(console);
-			modules.removeEventListener(ConsoleEvent.DATA_UPDATED, onConsoleUpdated);
+			
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.removeDataUpdatedListener(this);
 		}
 		
-		protected function onConsoleUpdated(e:Event):void
-		{
-			update();
-		}
-		
-		public function update():void{
+		public function onDataUpdated(msDelta:uint):void
 			if(_sendBuffer.length){
 				if(_socket && _socket.connected){
 					_socket.writeBytes(_sendBuffer);

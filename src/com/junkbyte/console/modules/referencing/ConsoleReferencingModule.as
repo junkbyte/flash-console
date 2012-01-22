@@ -26,11 +26,13 @@
 package com.junkbyte.console.modules.referencing
 {
 	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.core.ConsoleTicker;
+	import com.junkbyte.console.interfaces.ConsoleUpdateDataListener;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.utils.getQualifiedShortClassName;
 	import com.junkbyte.console.vos.WeakObject;
-
+	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.geom.Matrix;
@@ -40,7 +42,7 @@ package com.junkbyte.console.modules.referencing
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
 
-    public class ConsoleReferencingModule extends ConsoleModule
+    public class ConsoleReferencingModule extends ConsoleModule implements ConsoleUpdateDataListener
     {
 		
 		/**
@@ -83,20 +85,24 @@ package com.junkbyte.console.modules.referencing
         override protected function registeredToConsole():void
         {
             super.registeredToConsole();
-            console.addEventListener(ConsoleEvent.UPDATE_DATA, update);
+			
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.addUpdateDataListener(this);
         }
 
         override protected function unregisteredFromConsole():void
         {
             super.unregisteredFromConsole();
-            console.removeEventListener(ConsoleEvent.UPDATE_DATA, update);
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.removeUpdateDataListener(this);
         }
-
-        protected function update(event:ConsoleEvent):void
-        {
+		
+		
+		public function onUpdateData(msDelta:uint):void
+		{
             if (_currentBank.length || _prevBank.length)
             {
-                _msSinceWithdraw += event.msDelta;
+                _msSinceWithdraw += msDelta;
                 if (_msSinceWithdraw >= objectHardReferenceTimer * 1000)
                 {
                     _prevBank = _currentBank;

@@ -39,7 +39,7 @@ package com.junkbyte.console.core
 		
 		public function matches(module:IConsoleModule):Boolean
 		{
-			return type != null && module is type;
+			return module is type;
 		}
 	}
 }

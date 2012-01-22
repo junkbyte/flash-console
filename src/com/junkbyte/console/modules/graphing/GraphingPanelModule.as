@@ -1,18 +1,14 @@
 package com.junkbyte.console.modules.graphing
 {
-	import com.junkbyte.console.core.ModuleTypeMatcher;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ConsolePanel;
-	import com.junkbyte.console.view.ToolTipModule;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
-	
+
 	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
-	import flash.text.TextFormat;
 
-	public class GraphingPanelModule extends ConsolePanel
+	public class GraphingPanelModule extends ConsolePanel implements GraphingGroupListener
 	{
 
 		protected var _group:GraphingGroup;
@@ -35,10 +31,9 @@ package com.junkbyte.console.modules.graphing
 		{
 			super.initToConsole();
 
-			group.addEventListener(GraphingGroupEvent.PUSH, onPushEvent);
 			group.addEventListener(Event.CLOSE, onCloseEvent);
-			
-			
+			group.addPushCallback(this);
+
 			startPanelResizer();
 
 			registerMoveDragger(background);
@@ -60,7 +55,7 @@ package com.junkbyte.console.modules.graphing
 
 		override protected function unregisteredFromConsole():void
 		{
-			_group.removeEventListener(GraphingGroupEvent.PUSH, onPushEvent);
+			_group.removePushCallback(this);
 			_group = null;
 			super.unregisteredFromConsole();
 		}
@@ -88,19 +83,17 @@ package com.junkbyte.console.modules.graphing
 			_graph.reset();
 		}
 
-		protected function onPushEvent(event:GraphingGroupEvent):void
+		public function push(group:GraphingGroup, values:Vector.<Number>):void
 		{
-			var values:Vector.<Number> = event.values;
-
 			_graph.push(values);
-			updateTextField(event);
+			updateTextField(group, values);
 		}
-		
+
 		protected function onCloseEvent(event:Event):void
 		{
 			modules.unregisterModule(this);
 		}
-		
+
 		protected function initTextField():void
 		{
 			textField = new TextField();
@@ -109,22 +102,21 @@ package com.junkbyte.console.modules.graphing
 			textField.height = style.menuFontSize + 4;
 			textField.y = -3;
 			textField.styleSheet = style.styleSheet;
-			
+
 			ConsoleTextRoller.register(textField, onTextRollOverHandler, onTextLinkHandler);
-			
+
 			registerMoveDragger(textField);
 			addChild(textField);
 		}
 
-		protected function updateTextField(event:GraphingGroupEvent):void
+		protected function updateTextField(group:GraphingGroup, values:Vector.<Number>):void
 		{
-
 			var str:String = "<r><low>";
 
 			for (var X:String in group.lines)
 			{
 				var line:GraphingLine = group.lines[X];
-				var value:Number = event.values[X];
+				var value:Number = values[X];
 				str += " <font color='#" + line.color.toString(16) + "'>" + value + "</font>";
 			}
 			str += " | <menu><a href=\"event:reset\">R</a>";
@@ -150,7 +142,7 @@ package com.junkbyte.console.modules.graphing
 		protected function onTextRollOverHandler(e:TextEvent):void
 		{
 			var txt:String = e.text ? e.text : null;
-			
+
 			setTooltip(txt);
 		}
 	}

@@ -100,7 +100,7 @@ package com.junkbyte.console
 			initModulesManager();
 			registerLoggerModule();
 			initConsoleLayer();
-			initTicker();
+			registerTickerModule();
 		}
 
 		protected function initModulesManager():void
@@ -119,9 +119,9 @@ package com.junkbyte.console
 			_layer.initUsingConsole(this);
 		}
 
-		protected function initTicker():void
+		protected function registerTickerModule():void
 		{
-			new ConsoleTicker(this); // should keep it self hard linked
+			modules.registerModule(new ConsoleTicker());
 		}
 
 		protected function sayIntro():void

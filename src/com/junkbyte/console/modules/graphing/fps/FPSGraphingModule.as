@@ -19,6 +19,8 @@ package com.junkbyte.console.modules.graphing.fps
 		private var frames:uint;
 		
 		protected var menu:ConsoleMenuItem;
+		
+		private var values:Vector.<Number> = new Vector.<Number>(1);
 
 		public function FPSGraphingModule(startImmediately:Boolean = false)
 		{
@@ -98,11 +100,11 @@ package com.junkbyte.console.modules.graphing.fps
 			group.lines.push(line);
 			return group;
 		}
-
-		override protected function onConsoleUpdate(event:ConsoleEvent):void
+		
+		override public function onUpdateData(msDelta:uint):void
 		{
 			frames++;
-			super.onConsoleUpdate(event);
+			super.onUpdateData(msDelta);
 		}
 
 		override protected function getValues():Vector.<Number>
@@ -113,7 +115,8 @@ package com.junkbyte.console.modules.graphing.fps
 			{
 				fps = group.fixedMax;
 			}
-			return Vector.<Number>([fps]);
+			values[0] = fps;
+			return values;
 		}
 		
 		override protected function start():void

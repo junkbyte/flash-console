@@ -43,12 +43,6 @@ package com.junkbyte.console.events
 
 		public static const RESUMED:String = "resumed";
 
-		public static const UPDATE_DATA:String = "updateData";
-
-		public static const DATA_UPDATED:String = "dataUpdated";
-
-		public static const UPDATE_DISPLAY:String = "updateDisplay";
-
 		public var msDelta:uint;
 
 		public function ConsoleEvent(type:String)

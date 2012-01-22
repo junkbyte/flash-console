@@ -14,6 +14,8 @@ package com.junkbyte.console.modules.graphing.memory
 		
 		protected var menu:ConsoleMenuItem;
 		
+		private var values:Vector.<Number> = new Vector.<Number>(1);
+		
 		public function MemoryGraphingModule(startImmediately:Boolean = false)
 		{
 			menu = new ConsoleMenuItem("M", onMenuClick, null, "Memory::monitor");
@@ -73,8 +75,8 @@ package com.junkbyte.console.modules.graphing.memory
 
 		override protected function getValues():Vector.<Number>
 		{
-			var value:Number = Math.round(System.totalMemory / 10485.76) / 100;
-			return Vector.<Number>([value]);
+			values[0] = Math.round(System.totalMemory / 10485.76) / 100;
+			return values;
 		}
 		
 		override protected function start():void

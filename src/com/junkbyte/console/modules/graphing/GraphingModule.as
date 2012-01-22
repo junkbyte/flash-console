@@ -1,12 +1,14 @@
 package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.core.ConsoleTicker;
+	import com.junkbyte.console.interfaces.ConsoleUpdateDataListener;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleEvent;
 	
 	import flash.events.Event;
 
-	public class GraphingModule extends ConsoleModule
+	public class GraphingModule extends ConsoleModule implements ConsoleUpdateDataListener
 	{
 		protected var graphModule:GraphingCentralModule;
 
@@ -74,8 +76,9 @@ package com.junkbyte.console.modules.graphing
 			
 			graphModule.registerGroup(_group);
 
-			console.addEventListener(ConsoleEvent.UPDATE_DATA, onConsoleUpdate);
-
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.addUpdateDataListener(this);
+			
 			pushValues();
 		}
 		
@@ -90,14 +93,18 @@ package com.junkbyte.console.modules.graphing
 			{
 				return;
 			}
-			console.removeEventListener(ConsoleEvent.UPDATE_DATA, onConsoleUpdate);
+			
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.removeUpdateDataListener(this);
+			
 			graphModule.removeGroup(_group);
 			_group = null;
 		}
-
-		protected function onConsoleUpdate(event:ConsoleEvent):void
+		
+		
+		public function onUpdateData(msDelta:uint):void
 		{
-			timeSinceUpdate += event.msDelta;
+			timeSinceUpdate += msDelta;
 
 			if (timeSinceUpdate >= _group.updateFrequencyMS)
 			{

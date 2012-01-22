@@ -1,7 +1,9 @@
 package com.junkbyte.console.modules.stayOnTop
 {
+    import com.junkbyte.console.Console;
     import com.junkbyte.console.ConsoleLevel;
     import com.junkbyte.console.core.ConsoleModule;
+    import com.junkbyte.console.core.ConsoleTicker;
     import com.junkbyte.console.events.ConsoleEvent;
     import com.junkbyte.console.view.ConsoleLayer;
     
@@ -16,12 +18,22 @@ package com.junkbyte.console.modules.stayOnTop
         {
             attemptsLeft = numOfAttempts;
         }
-
-        override protected function registeredToConsole():void
+		
+		override protected function registeredToConsole():void
         {
-            console.addEventListener(ConsoleEvent.DATA_UPDATED, onDataUpdated);
             super.registeredToConsole();
+			
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.addDataUpdatedListener(this);
         }
+		
+		override protected function unregisteredFromConsole():void
+		{
+			super.unregisteredFromConsole();
+			
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.removeDataUpdatedListener(this);
+		}
 
         private function onDataUpdated(e:ConsoleEvent):void
         {
