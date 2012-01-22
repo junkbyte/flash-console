@@ -25,6 +25,7 @@
  */
 package com.junkbyte.console.view.mainPanel
 {
+	import com.junkbyte.console.ConsoleChannels;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.events.ConsoleLogEvent;
@@ -303,12 +304,12 @@ package com.junkbyte.console.view.mainPanel
 
 			var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
 
-			if (keyStates != null && keyStates.ctrlKeyDown && chn != ConsoleLogs.GLOBAL_CHANNEL)
+			if (keyStates != null && keyStates.ctrlKeyDown && chn != ConsoleChannels.GLOBAL)
 			{
 				current = toggleCHList(_ignoredChannels, chn);
 				setIgnoredChannels.apply(this, current);
 			}
-			else if (keyStates != null && keyStates.shiftKeyDown && chn != ConsoleLogs.GLOBAL_CHANNEL && _viewingChannels[0] != ConsoleLogs.INSPECTING_CHANNEL)
+			else if (keyStates != null && keyStates.shiftKeyDown && chn != ConsoleChannels.GLOBAL && _viewingChannels[0] != ConsoleChannels.INSPECTING)
 			{
 				current = toggleCHList(_viewingChannels, chn);
 				setViewingChannels.apply(this, current);
@@ -328,7 +329,7 @@ package com.junkbyte.console.view.mainPanel
 				current.splice(ind, 1);
 				if (current.length == 0)
 				{
-					current.push(ConsoleLogs.GLOBAL_CHANNEL);
+					current.push(ConsoleChannels.GLOBAL);
 				}
 			}
 			else
@@ -483,7 +484,7 @@ package com.junkbyte.console.view.mainPanel
 
 		public function lineShouldShow(line:Log):Boolean
 		{
-			return ((chShouldShow(line.channel) || (_filterText && _viewingChannels.indexOf(ConsoleLogs.FILTER_CHANNEL) >= 0 && line.text.toLowerCase().indexOf(_filterText) >= 0) || (_filterRegExp && _viewingChannels.indexOf(ConsoleLogs.FILTER_CHANNEL) >= 0 && line.text.search(_filterRegExp) >= 0)) && (_priority == 0 || line.priority >= _priority));
+			return ((chShouldShow(line.channel) || (_filterText && _viewingChannels.indexOf(ConsoleChannels.FILTERING) >= 0 && line.text.toLowerCase().indexOf(_filterText) >= 0) || (_filterRegExp && _viewingChannels.indexOf(ConsoleChannels.FILTERING) >= 0 && line.text.search(_filterRegExp) >= 0)) && (_priority == 0 || line.priority >= _priority));
 		}
 
 		private function chShouldShow(ch:String):Boolean
@@ -493,7 +494,7 @@ package com.junkbyte.console.view.mainPanel
 
 		public function get reportChannel():String
 		{
-			return _viewingChannels.length == 1 ? _viewingChannels[0] : ConsoleLogs.CONSOLE_CHANNEL;
+			return _viewingChannels.length == 1 ? _viewingChannels[0] : ConsoleChannels.CONSOLE;
 		}
 
 		public function setViewingChannels(... channels:Array):void
@@ -512,7 +513,7 @@ package com.junkbyte.console.view.mainPanel
 
 			_ignoredChannels.splice(0);
 			_viewingChannels.splice(0);
-			if (a.indexOf(ConsoleLogs.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0)
+			if (a.indexOf(ConsoleChannels.GLOBAL) < 0 && a.indexOf(null) < 0)
 			{
 				for each (var ch:String in a)
 				{
@@ -544,7 +545,7 @@ package com.junkbyte.console.view.mainPanel
 
 			_ignoredChannels.splice(0);
 			_viewingChannels.splice(0);
-			if (a.indexOf(ConsoleLogs.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0)
+			if (a.indexOf(ConsoleChannels.GLOBAL) < 0 && a.indexOf(null) < 0)
 			{
 				for each (var ch:String in a)
 				{
@@ -584,18 +585,18 @@ package com.junkbyte.console.view.mainPanel
 
 		private function startFilter():void
 		{
-			logger.logs.clear(ConsoleLogs.FILTER_CHANNEL);
-			logger.logs.addChannel(ConsoleLogs.FILTER_CHANNEL);
-			setViewingChannels(ConsoleLogs.FILTER_CHANNEL);
+			logger.logs.clear(ConsoleChannels.FILTERING);
+			logger.logs.addChannel(ConsoleChannels.FILTERING);
+			setViewingChannels(ConsoleChannels.FILTERING);
 		}
 
 		private function endFilter():void
 		{
 			_filterRegExp = null;
 			_filterText = null;
-			if (_viewingChannels.length == 1 && _viewingChannels[0] == ConsoleLogs.FILTER_CHANNEL)
+			if (_viewingChannels.length == 1 && _viewingChannels[0] == ConsoleChannels.FILTERING)
 			{
-				setViewingChannels(ConsoleLogs.GLOBAL_CHANNEL);
+				setViewingChannels(ConsoleChannels.GLOBAL);
 			}
 		}
 
@@ -603,7 +604,7 @@ package com.junkbyte.console.view.mainPanel
 		{
 			var str:String = "";
 			var txt:String = line.text;
-			if (showch && line.channel != ConsoleLogs.DEFAULT_CHANNEL)
+			if (showch && line.channel != ConsoleChannels.DEFAULT)
 			{
 				txt = "[<a href=\"event:channel_" + line.channel + "\">" + line.channel + "</a>] " + txt;
 			}

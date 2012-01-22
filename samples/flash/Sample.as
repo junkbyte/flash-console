@@ -30,7 +30,6 @@ package
 	import com.junkbyte.console.ConsoleVersion;
 	import com.junkbyte.console.modules.graphing.GraphingCentralModule;
 	import com.junkbyte.console.modules.graphing.GraphingGroup;
-	import com.junkbyte.console.modules.graphing.GraphingPanelsCentralModule;
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingGroup;
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingLine;
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingModule;
@@ -88,7 +87,6 @@ package
 			
 			Cc.modules.registerModule(new MemoryGraphingModule(true));
 			
-			
 			var group:CustomGraphingGroup = new CustomGraphingGroup();
 			group.addLine(new CustomGraphingLine(this, "mouseX", "x", 0xFF0000));
 			group.addLine(new CustomGraphingLine(this, "mouseY", "y", 0x3333FF));
@@ -97,15 +95,13 @@ package
 			group = new CustomGraphingGroup();
 			group.addLine(new CustomGraphingLine(this, "num", "num", 0xFF0000));
 			Cc.modules.registerModule(new CustomGraphingModule(group));
-			
-			Cc.modules.registerModule(new GraphingPanelsCentralModule());
 			//
 			// End of setup
 			//
 
 			// show the demo logging stuff there...
 			demoBasics();
-
+			
 			setupUI();
 			
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);

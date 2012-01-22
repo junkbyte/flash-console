@@ -25,13 +25,14 @@
  */
 package com.junkbyte.console.logging
 {
+	import com.junkbyte.console.ConsoleChannels;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleLogEvent;
 	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.vos.Log;
-
+	
 	import flash.events.Event;
 	import flash.utils.ByteArray;
 
@@ -41,12 +42,6 @@ package com.junkbyte.console.logging
 	[Event(name = "channelsChanged", type = "com.junkbyte.console.events.ConsoleLogEvent")]
 	public class ConsoleLogs extends ConsoleModule
 	{
-		public static const CHANNELS_CHANGED:String = "channelsChanged";
-		public static const GLOBAL_CHANNEL:String = " * ";
-		public static const DEFAULT_CHANNEL:String = "-";
-		public static const CONSOLE_CHANNEL:String = "C";
-		public static const FILTER_CHANNEL:String = "~";
-		public static const INSPECTING_CHANNEL:String = "⌂";
 		private var _channels:Object;
 		/**
 		 * Maximum number of logs Console should remember.
@@ -197,11 +192,11 @@ package com.junkbyte.console.logging
 
 		public function getChannels():Array
 		{
-			var arr:Array = new Array(GLOBAL_CHANNEL);
-			addIfexist(DEFAULT_CHANNEL, arr);
-			addIfexist(FILTER_CHANNEL, arr);
-			addIfexist(INSPECTING_CHANNEL, arr);
-			addIfexist(CONSOLE_CHANNEL, arr);
+			var arr:Array = new Array(ConsoleChannels.GLOBAL);
+			addIfexist(ConsoleChannels.DEFAULT, arr);
+			addIfexist(ConsoleChannels.FILTERING, arr);
+			addIfexist(ConsoleChannels.INSPECTING, arr);
+			addIfexist(ConsoleChannels.CONSOLE, arr);
 			var others:Array = new Array();
 			for (var X:String in _channels)
 			{
