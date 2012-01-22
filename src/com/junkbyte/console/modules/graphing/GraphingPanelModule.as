@@ -86,7 +86,7 @@ package com.junkbyte.console.modules.graphing
 		protected function onGroupPush(group:GraphingGroup, values:Vector.<Number>):void
 		{
 			_graph.push(values);
-			//updateTextField(group, values);
+			updateTextField(group, values);
 		}
 
 		protected function onCloseEvent(event:Event):void
