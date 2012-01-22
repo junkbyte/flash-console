@@ -4,30 +4,37 @@ package com.junkbyte.console.core
 	public class CallbackDispatcher
 	{
 
-		private var _list:Array = new Array();
+		protected var _list:Vector.<Function> = new Vector.<Function>();
 
-		public function add(listener:Object):void
+		public function add(callback:Function):void
 		{
-			_list.push(listener);
+			if (_list.indexOf(callback) < 0)
+			{
+				_list.push(callback);
+			}
 		}
 
-		public function remove(listener:Object):void
+		public function remove(callback:Function):void
 		{
-			var index:int = _list.indexOf(listener);
+			var index:int = _list.indexOf(callback);
 			if (index >= 0)
 			{
 				_list.splice(index, 1);
 			}
 		}
 		
-		public function get list():Array
+		public function apply(arguments:Array):void
 		{
-			return _list;
+			var len:uint = _list.length;
+			for (var i:uint = 0; i < len; i++)
+			{
+				_list[i].apply(null, arguments);
+			}
 		}
-
-		public function forEach(callback:Function):void
+		
+		public function destroy():void
 		{
-			_list.forEach(callback);
+			_list = null;
 		}
 	}
 }

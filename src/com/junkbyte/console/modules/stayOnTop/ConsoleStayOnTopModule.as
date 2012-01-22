@@ -24,7 +24,7 @@ package com.junkbyte.console.modules.stayOnTop
             super.registeredToConsole();
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addDataUpdatedListener(this);
+			ticker.addDataUpdatedCallback(onDataUpdated);
         }
 		
 		override protected function unregisteredFromConsole():void
@@ -32,7 +32,7 @@ package com.junkbyte.console.modules.stayOnTop
 			super.unregisteredFromConsole();
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeDataUpdatedListener(this);
+			ticker.removeDataUpdatedCallback(onDataUpdated);
 		}
 
         private function onDataUpdated(e:ConsoleEvent):void

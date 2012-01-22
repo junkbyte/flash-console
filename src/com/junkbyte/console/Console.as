@@ -45,8 +45,6 @@ package com.junkbyte.console
 	[Event(name = "consoleHidden", type = "com.junkbyte.console.events.ConsoleEvent")]
 	[Event(name = "paused", type = "com.junkbyte.console.events.ConsoleEvent")]
 	[Event(name = "resumed", type = "com.junkbyte.console.events.ConsoleEvent")]
-	[Event(name = "updateData", type = "com.junkbyte.console.events.ConsoleEvent")]
-	[Event(name = "dataUpdated", type = "com.junkbyte.console.events.ConsoleEvent")]
 	public class Console extends EventDispatcher
 	{
 

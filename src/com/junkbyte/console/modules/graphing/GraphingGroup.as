@@ -22,27 +22,27 @@ package com.junkbyte.console.modules.graphing
 		public var lines:Vector.<GraphingLine> = new Vector.<GraphingLine>();
 
 		private var pushDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		private var pushDeltaArray:Array = new Array(2);
 
 		public function GraphingGroup()
 		{
+			pushDeltaArray[0] = this;
 		}
 
 		public function push(values:Vector.<Number>):void
 		{
-			for each (var listener:GraphingGroupListener in pushDispatcher.list)
-			{
-				listener.push(this, values);
-			}
+			pushDeltaArray[1] = values;
+			pushDispatcher.apply(pushDeltaArray);
 		}
 
-		public function addPushCallback(listener:GraphingGroupListener):void
+		public function addPushCallback(callback:Function):void
 		{
-			pushDispatcher.add(listener);
+			pushDispatcher.add(callback);
 		}
 
-		public function removePushCallback(listener:GraphingGroupListener):void
+		public function removePushCallback(callback:Function):void
 		{
-			pushDispatcher.remove(listener);
+			pushDispatcher.remove(callback);
 		}
 
 		public function createPanel():ConsolePanel

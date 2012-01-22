@@ -43,8 +43,6 @@ package com.junkbyte.console.events
 
 		public static const RESUMED:String = "resumed";
 
-		public var msDelta:uint;
-
 		public function ConsoleEvent(type:String)
 		{
 			super(type);
@@ -57,9 +55,7 @@ package com.junkbyte.console.events
 
 		override public function clone():Event
 		{
-			var event:ConsoleEvent = new ConsoleEvent(type);
-			event.msDelta = msDelta;
-			return event;
+			return new ConsoleEvent(type);
 		}
 	}
 }

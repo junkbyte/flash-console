@@ -25,7 +25,6 @@
 package com.junkbyte.console.modules.remoting 
 {
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.interfaces.ConsoleDataUpdatedListener;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ConsoleTicker;
 	import com.junkbyte.console.events.ConsoleEvent;
@@ -45,7 +44,7 @@ package com.junkbyte.console.modules.remoting
 	import flash.utils.Dictionary;
 
 	[Event(name="CONNECT", type="flash.events.Event")]
-	public class LocalRemoting extends ConsoleModule implements IRemoter, ConsoleDataUpdatedListener{
+	public class LocalRemoting extends ConsoleModule implements IRemoter{
 		
 		public static const NONE:uint = 0;
 		public static const SENDER:uint = 1;
@@ -99,7 +98,7 @@ package com.junkbyte.console.modules.remoting
 			super.registeredToConsole(console);
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addDataUpdatedListener(this);
+			ticker.addDataUpdatedCallback(onDataUpdated);
 		}
 		
 		override protected function unregisteredFromConsole():void
@@ -107,7 +106,7 @@ package com.junkbyte.console.modules.remoting
 			super.unregisteredFromConsole(console);
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeDataUpdatedListener(this);
+			ticker.removeDataUpdatedCallback(onDataUpdated);
 		}
 		
 		public function onDataUpdated(msDelta:uint):void

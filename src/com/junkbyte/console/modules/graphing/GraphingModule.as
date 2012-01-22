@@ -2,13 +2,11 @@ package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ConsoleTicker;
-	import com.junkbyte.console.interfaces.ConsoleUpdateDataListener;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
-	import com.junkbyte.console.events.ConsoleEvent;
-	
+
 	import flash.events.Event;
 
-	public class GraphingModule extends ConsoleModule implements ConsoleUpdateDataListener
+	public class GraphingModule extends ConsoleModule
 	{
 		protected var graphModule:GraphingCentralModule;
 
@@ -73,15 +71,15 @@ package com.junkbyte.console.modules.graphing
 				throw new Error("createGraphingGroup() must return non-null.");
 			}
 			_group.addEventListener(Event.CLOSE, onGroupClose);
-			
+
 			graphModule.registerGroup(_group);
 
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addUpdateDataListener(this);
-			
+			ticker.addUpdateDataCallback(onUpdateData);
+
 			pushValues();
 		}
-		
+
 		protected function onGroupClose(event:Event):void
 		{
 			stop();
@@ -93,16 +91,15 @@ package com.junkbyte.console.modules.graphing
 			{
 				return;
 			}
-			
+
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeUpdateDataListener(this);
-			
+			ticker.removeUpdateDataCallback(onUpdateData);
+
 			graphModule.removeGroup(_group);
 			_group = null;
 		}
-		
-		
-		public function onUpdateData(msDelta:uint):void
+
+		protected function onUpdateData(msDelta:uint):void
 		{
 			timeSinceUpdate += msDelta;
 

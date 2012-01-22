@@ -8,7 +8,7 @@ package com.junkbyte.console.modules.graphing
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 
-	public class GraphingPanelModule extends ConsolePanel implements GraphingGroupListener
+	public class GraphingPanelModule extends ConsolePanel
 	{
 
 		protected var _group:GraphingGroup;
@@ -32,7 +32,7 @@ package com.junkbyte.console.modules.graphing
 			super.initToConsole();
 
 			group.addEventListener(Event.CLOSE, onCloseEvent);
-			group.addPushCallback(this);
+			group.addPushCallback(onGroupPush);
 
 			startPanelResizer();
 
@@ -55,7 +55,7 @@ package com.junkbyte.console.modules.graphing
 
 		override protected function unregisteredFromConsole():void
 		{
-			_group.removePushCallback(this);
+			_group.removePushCallback(onGroupPush);
 			_group = null;
 			super.unregisteredFromConsole();
 		}
@@ -83,10 +83,10 @@ package com.junkbyte.console.modules.graphing
 			_graph.reset();
 		}
 
-		public function push(group:GraphingGroup, values:Vector.<Number>):void
+		protected function onGroupPush(group:GraphingGroup, values:Vector.<Number>):void
 		{
 			_graph.push(values);
-			updateTextField(group, values);
+			//updateTextField(group, values);
 		}
 
 		protected function onCloseEvent(event:Event):void

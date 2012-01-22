@@ -3,16 +3,16 @@ package com.junkbyte.console.core
 
 	import flash.events.Event;
 	import flash.utils.getTimer;
-	import com.junkbyte.console.interfaces.ConsoleDataUpdatedListener;
-	import com.junkbyte.console.interfaces.ConsoleUpdateDataListener;
 
 	public class ConsoleTicker extends ConsoleModule
 	{
 
-		protected var _lastTimer:Number;
+		protected var lastTimer:Number;
 
-		private var updateDispatcher:CallbackDispatcher = new CallbackDispatcher();
-		private var updatedDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		protected var updateDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		protected var updatedDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		
+		protected var deltaArray:Array = new Array(1);
 
 		public function ConsoleTicker()
 		{
@@ -33,53 +33,37 @@ package com.junkbyte.console.core
 
 		protected function onLayerEnterFrame(e:Event):void
 		{
-			var msDelta:uint = updateTime();
-			announceUpdateData(msDelta);
-			announceDataUpdated(msDelta);
+			deltaArray[0] = updateTime();
+			updateDispatcher.apply(deltaArray);
+			updatedDispatcher.apply(deltaArray);
 		}
 
 		protected function updateTime():uint
 		{
 			var timeNow:Number = getTimer();
-			var msDelta:uint = timeNow - _lastTimer;
-			_lastTimer = timeNow;
+			var msDelta:uint = timeNow - lastTimer;
+			lastTimer = timeNow;
 			return msDelta;
 		}
 
-		protected function announceUpdateData(msDelta:uint):void
+		public function addUpdateDataCallback(callback:Function):void
 		{
-			for each (var listener:ConsoleUpdateDataListener in updateDispatcher.list)
-			{
-				listener.onUpdateData(msDelta);
-			}
+			updateDispatcher.add(callback);
 		}
 
-		public function addUpdateDataListener(listener:ConsoleUpdateDataListener):void
+		public function removeUpdateDataCallback(callback:Function):void
 		{
-			updateDispatcher.add(listener);
+			updateDispatcher.remove(callback);
 		}
 
-		public function removeUpdateDataListener(listener:ConsoleUpdateDataListener):void
+		public function addDataUpdatedCallback(callback:Function):void
 		{
-			updateDispatcher.remove(listener);
+			updateDispatcher.add(callback);
 		}
 
-		protected function announceDataUpdated(msDelta:uint):void
+		public function removeDataUpdatedCallback(callback:Function):void
 		{
-			for each (var listener:ConsoleDataUpdatedListener in updatedDispatcher.list)
-			{
-				listener.onDataUpdated(msDelta);
-			}
-		}
-
-		public function addDataUpdatedListener(listener:ConsoleDataUpdatedListener):void
-		{
-			updateDispatcher.add(listener);
-		}
-
-		public function removeDataUpdatedListener(listener:ConsoleDataUpdatedListener):void
-		{
-			updateDispatcher.remove(listener);
+			updateDispatcher.remove(callback);
 		}
 	}
 }

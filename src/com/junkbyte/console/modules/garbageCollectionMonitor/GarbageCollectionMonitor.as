@@ -28,14 +28,12 @@ package com.junkbyte.console.modules.garbageCollectionMonitor
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.core.ConsoleTicker;
-	import com.junkbyte.console.interfaces.ConsoleUpdateDataListener;
-	import com.junkbyte.console.events.ConsoleEvent;
-	
+
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
 
-	public class GarbageCollectionMonitor extends ConsoleModule implements ConsoleUpdateDataListener
+	public class GarbageCollectionMonitor extends ConsoleModule
 	{
 
 		public static const NAME:String = "garbageCollectionMonitor";
@@ -57,7 +55,7 @@ package com.junkbyte.console.modules.garbageCollectionMonitor
 		{
 			super.registeredToConsole(console);
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addUpdateDataListener(this);
+			ticker.addUpdateDataCallback(onUpdateData);
 		}
 
 		override public function getModuleName():String
@@ -117,7 +115,7 @@ package com.junkbyte.console.modules.garbageCollectionMonitor
 		//
 		//
 		//
-		public function onUpdateData(msDelta:uint):void
+		protected function onUpdateData(msDelta:uint):void
 		{
 			if (_count == 0)
 			{

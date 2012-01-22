@@ -101,7 +101,7 @@ package com.junkbyte.console.modules.graphing.fps
 			return group;
 		}
 		
-		override public function onUpdateData(msDelta:uint):void
+		override protected function onUpdateData(msDelta:uint):void
 		{
 			frames++;
 			super.onUpdateData(msDelta);

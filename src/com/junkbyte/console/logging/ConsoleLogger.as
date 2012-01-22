@@ -79,10 +79,7 @@ package com.junkbyte.console.logging
 		// this is so that if anyone wants to extend Logs and register it, it'll catch that new module as replacement.
 		protected function onLogsRegistered(logs:ConsoleLogs):void
 		{
-			if (logs != null)
-			{
-				_logs = logs;
-			}
+			_logs = logs;
 		}
 
 		public function get logs():ConsoleLogs
@@ -129,7 +126,7 @@ package com.junkbyte.console.logging
 			
 		}
 
-		public function addLine(strings:Array, priority:int = 0, channel:* = null, isRepeating:Boolean = false, html:Boolean = false, stacks:int = -1):void
+		public function addLine(strings:Array, priority:int = 0, channel:* = null, html:Boolean = false, stacks:int = -1):void
 		{
 			if(html)
 			{
@@ -175,7 +172,7 @@ package com.junkbyte.console.logging
 			{
 				channel = console.mainPanel.traces.reportChannel;
 			}
-			addLine([obj], priority, channel, false, skipSafe, 0);
+			addLine([obj], priority, channel, skipSafe, 0);
 		}
 	}
 }
