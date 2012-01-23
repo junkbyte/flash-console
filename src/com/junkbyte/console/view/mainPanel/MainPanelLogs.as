@@ -239,14 +239,14 @@ package com.junkbyte.console.view.mainPanel
 
 		protected function commandLineRegistered(module:ICommandLine):void
 		{
-			module.addInternalSlashCommand("filter", setFilterText, "Filter console logs to matching string. When done, click on the * (global channel) at top.", true);
-			module.addInternalSlashCommand("filterexp", setFilterRegExp, "Filter console logs to matching regular expression", true);
+			module.setInternalSlashCommand("filter", setFilterText, "Filter console logs to matching string. When done, click on the * (global channel) at top.", true);
+			module.setInternalSlashCommand("filterexp", setFilterRegExp, "Filter console logs to matching regular expression", true);
 		}
 
 		protected function commandLineUnregistered(module:ICommandLine):void
 		{
-			module.addInternalSlashCommand("filter", null);
-			module.addInternalSlashCommand("filterexp", null);
+			module.setInternalSlashCommand("filter", null);
+			module.setInternalSlashCommand("filterexp", null);
 		}
 
 		protected function onEnterFrame(event:Event):void

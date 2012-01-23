@@ -24,7 +24,7 @@ package com.junkbyte.console.modules.stayOnTop
             super.registeredToConsole();
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addDataUpdatedCallback(onDataUpdated);
+			ticker.addUpdateViewCallback(onUpdateView);
         }
 		
 		override protected function unregisteredFromConsole():void
@@ -32,10 +32,10 @@ package com.junkbyte.console.modules.stayOnTop
 			super.unregisteredFromConsole();
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeDataUpdatedCallback(onDataUpdated);
+			ticker.removeUpdateViewCallback(onUpdateView);
 		}
 
-        private function onDataUpdated(e:ConsoleEvent):void
+        private function onUpdateView(deltaTime:uint):void
         {
             var layer:ConsoleLayer = console.layer;
             var parent:DisplayObjectContainer = layer.parent;

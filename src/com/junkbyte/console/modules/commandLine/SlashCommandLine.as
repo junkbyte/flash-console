@@ -44,8 +44,8 @@ package com.junkbyte.console.modules.commandLine
 			super();
 			_slashCmds = new Object();
 
-			addInternalSlashCommand("help", printHelp, "How to use command line");
-			addInternalSlashCommand("commands", cmdsCmd, "Show a list of all slash commands", true);
+			setInternalSlashCommand("help", printHelp, "How to use command line");
+			setInternalSlashCommand("commands", cmdsCmd, "Show a list of all slash commands", true);
 
 			addModuleRegisteryCallback(new ModuleTypeMatcher(IRemoter), remoterRegistered, remoterUnregistered);
 		}
@@ -116,7 +116,7 @@ package com.junkbyte.console.modules.commandLine
 			return "";
 		}
 
-		public function addInternalSlashCommand(n:String, callback:Function, desc:String = "", allow:Boolean = false, endOfArgsMarker:String = ";"):void
+		public function setInternalSlashCommand(n:String, callback:Function, desc:String = "", allow:Boolean = false, endOfArgsMarker:String = ";"):void
 		{
 			var split:Array = n.split("|");
 			for (var i:int = 0; i < split.length; i++)
@@ -137,7 +137,7 @@ package com.junkbyte.console.modules.commandLine
 			}
 		}
 
-		public function addSlashCommand(n:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void
+		public function setSlashCommand(n:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void
 		{
 			n = n.replace(/[^\w]*/g, "");
 			if (_slashCmds[n] != null)

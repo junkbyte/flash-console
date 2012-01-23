@@ -98,7 +98,7 @@ package com.junkbyte.console.modules.remoting
 			super.registeredToConsole(console);
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addDataUpdatedCallback(onDataUpdated);
+			ticker.addUpdateViewCallback(onDataUpdated);
 		}
 		
 		override protected function unregisteredFromConsole():void
@@ -106,7 +106,7 @@ package com.junkbyte.console.modules.remoting
 			super.unregisteredFromConsole(console);
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeDataUpdatedCallback(onDataUpdated);
+			ticker.removeUpdateViewCallback(onDataUpdated);
 		}
 		
 		public function onDataUpdated(msDelta:uint):void

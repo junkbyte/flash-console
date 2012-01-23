@@ -22,7 +22,6 @@
 * 3. This notice may not be removed or altered from any source distribution.
 *
 */
-
 package com.junkbyte.console.modules.referencing
 {
 	import com.junkbyte.console.core.ConsoleModule;

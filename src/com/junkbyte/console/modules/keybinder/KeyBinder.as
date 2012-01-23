@@ -73,12 +73,12 @@ package com.junkbyte.console.modules.keybinder
 		
 		protected function commandLineRegistered(module:ICommandLine):void
 		{
-			module.addInternalSlashCommand("keybinds", printBinds, "List all keybinds used");
+			module.setInternalSlashCommand("keybinds", printBinds, "List all keybinds used");
 		}
 		
 		protected function commandLineUnregistered(module:ICommandLine):void
 		{
-			module.addInternalSlashCommand("keybinds", null);
+			module.setInternalSlashCommand("keybinds", null);
 		}
 
 		public function bindKey(key:KeyBind, fun:Function ,args:Array = null):void{

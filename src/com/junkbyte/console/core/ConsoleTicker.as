@@ -9,8 +9,8 @@ package com.junkbyte.console.core
 
 		protected var lastTimer:Number;
 
-		protected var updateDispatcher:CallbackDispatcher = new CallbackDispatcher();
-		protected var updatedDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		protected var dataDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		protected var viewDispatcher:CallbackDispatcher = new CallbackDispatcher();
 		
 		protected var deltaArray:Array = new Array(1);
 
@@ -34,8 +34,8 @@ package com.junkbyte.console.core
 		protected function onLayerEnterFrame(e:Event):void
 		{
 			deltaArray[0] = updateTime();
-			updateDispatcher.apply(deltaArray);
-			updatedDispatcher.apply(deltaArray);
+			dataDispatcher.apply(deltaArray);
+			viewDispatcher.apply(deltaArray);
 		}
 
 		protected function updateTime():uint
@@ -48,22 +48,22 @@ package com.junkbyte.console.core
 
 		public function addUpdateDataCallback(callback:Function):void
 		{
-			updateDispatcher.add(callback);
+			dataDispatcher.add(callback);
 		}
 
 		public function removeUpdateDataCallback(callback:Function):void
 		{
-			updateDispatcher.remove(callback);
+			dataDispatcher.remove(callback);
 		}
 
-		public function addDataUpdatedCallback(callback:Function):void
+		public function addUpdateViewCallback(callback:Function):void
 		{
-			updateDispatcher.add(callback);
+			viewDispatcher.add(callback);
 		}
 
-		public function removeDataUpdatedCallback(callback:Function):void
+		public function removeUpdateViewCallback(callback:Function):void
 		{
-			updateDispatcher.remove(callback);
+			viewDispatcher.remove(callback);
 		}
 	}
 }

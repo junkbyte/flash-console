@@ -227,13 +227,13 @@ package com.junkbyte.console.view.mainPanel
 		protected function commandLineRegistered(module:ICommandLine):void
 		{
 			_cl = module;
-			module.addInternalSlashCommand("clearhistory", clearCommandLineHistory, "Clear history of commands you have entered.", true);
+			module.setInternalSlashCommand("clearhistory", clearCommandLineHistory, "Clear history of commands you have entered.", true);
 		}
 
 		protected function commandLineUnregistered(module:ICommandLine):void
 		{
 			_cl = null;
-			module.addInternalSlashCommand("clearhistory", null);
+			module.setInternalSlashCommand("clearhistory", null);
 		}
 
 		public function update(changed:Boolean):void

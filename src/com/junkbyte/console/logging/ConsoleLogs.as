@@ -235,7 +235,7 @@ package com.junkbyte.console.logging
 				announceChannelChanged();
 			}
 		}
-
+		
 		//
 		// Log chain controls
 		//
