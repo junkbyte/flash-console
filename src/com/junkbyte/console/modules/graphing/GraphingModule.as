@@ -82,21 +82,20 @@ package com.junkbyte.console.modules.graphing
 
 		protected function onGroupClose(event:Event):void
 		{
-			stop();
+			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
+			ticker.removeUpdateDataCallback(onUpdateData);
+			
+			_group.removeEventListener(Event.CLOSE, onGroupClose);
+			_group = null;
 		}
 
 		protected function stop():void
 		{
-			if (_group == null)
+			if (_group != null)
 			{
-				return;
+				_group.close();
+				_group = null;
 			}
-
-			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeUpdateDataCallback(onUpdateData);
-
-			graphModule.removeGroup(_group);
-			_group = null;
 		}
 
 		protected function onUpdateData(msDelta:uint):void

@@ -53,6 +53,9 @@ package com.junkbyte.console.modules.graphing
 		public function close():void
 		{
 			dispatchEvent(new Event(Event.CLOSE));
+			lines = null;
+			pushDeltaArray = null;
+			pushDispatcher = null;
 		}
 	}
 }

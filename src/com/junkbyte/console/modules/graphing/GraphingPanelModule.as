@@ -20,6 +20,7 @@ package com.junkbyte.console.modules.graphing
 			super();
 
 			_group = group;
+			
 		}
 
 		public function get group():GraphingGroup
@@ -127,6 +128,7 @@ package com.junkbyte.console.modules.graphing
 
 		protected function onTextLinkHandler(e:TextEvent):void
 		{
+			e.stopPropagation();
 			TextField(e.currentTarget).setSelection(0, 0);
 			if (e.text == "reset")
 			{
@@ -136,7 +138,6 @@ package com.junkbyte.console.modules.graphing
 			{
 				group.close();
 			}
-			e.stopPropagation();
 		}
 
 		protected function onTextRollOverHandler(e:TextEvent):void

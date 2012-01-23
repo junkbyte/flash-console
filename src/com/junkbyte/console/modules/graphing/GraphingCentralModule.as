@@ -3,8 +3,9 @@ package com.junkbyte.console.modules.graphing
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.view.ConsolePanel;
 
+	import flash.events.Event;
+
 	[Event(name = "addGroup", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
-	[Event(name = "removeGroup", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
 	public class GraphingCentralModule extends ConsoleModule
 	{
 
@@ -18,45 +19,50 @@ package com.junkbyte.console.modules.graphing
 
 		public function registerGroup(group:GraphingGroup):uint
 		{
-			if(getGroupId(group) >= 0)
+			if (getGroupId(group) >= 0)
 			{
 				throw new ArgumentError();
 			}
 			groups[nextIndex] = group;
-			
+
+			group.addEventListener(Event.CLOSE, onGroupClose);
+
 			createPanelForGroup(group);
-			
+
 			var event:GraphingEvent = new GraphingEvent(GraphingEvent.ADD_GROUP);
 			event.group = group;
 			dispatchEvent(event);
-			
+
 			return nextIndex++;
 		}
-		
+
 		protected function createPanelForGroup(group:GraphingGroup):void
 		{
 			var panel:ConsolePanel = group.createPanel();
-			if(panel != null)
+			if (panel != null)
 			{
 				modules.registerModule(panel);
 			}
 		}
 
-		public function removeGroup(group:GraphingGroup):void
+		protected function onGroupClose(event:Event):void
 		{
-			if(getGroupId(group) < 0)
-			{
-				throw new ArgumentError();
-			}
-			var event:GraphingEvent = new GraphingEvent(GraphingEvent.REMOVE_GROUP);
-			event.group = group;
-			dispatchEvent(event);
+			var group:GraphingGroup = event.currentTarget as GraphingGroup;
+			removeGroup(group);
 		}
-		
+
+		protected function removeGroup(group:GraphingGroup):void
+		{
+			group.removeEventListener(Event.CLOSE, onGroupClose);
+			
+			var index:int = getGroupId(group);
+			delete groups[index];
+		}
+
 		public function getGroups():Vector.<GraphingGroup>
 		{
 			var result:Vector.<GraphingGroup> = new Vector.<GraphingGroup>();
-			for each(var group:GraphingGroup in groups)
+			for each (var group:GraphingGroup in groups)
 			{
 				result.push(group);
 			}

@@ -10,6 +10,7 @@ package com.junkbyte.console.modules.graphing.fps
 	import com.junkbyte.console.vos.ConsoleMenuItem;
 	
 	import flash.display.Stage;
+	import flash.events.Event;
 
 	public class FPSGraphingModule extends GraphingModule
 	{
@@ -126,11 +127,12 @@ package com.junkbyte.console.modules.graphing.fps
 			super.start();
 		}
 		
-		override protected function stop():void
+		override protected function onGroupClose(event:Event):void
 		{
 			menu.active = false;
 			menu.announceChanged();
-			super.stop();
+			
+			super.onGroupClose(event);
 		}
 	}
 }

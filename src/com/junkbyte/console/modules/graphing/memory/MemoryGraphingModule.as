@@ -7,6 +7,7 @@ package com.junkbyte.console.modules.graphing.memory
 	import com.junkbyte.console.modules.graphing.GraphingModule;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
 	
+	import flash.events.Event;
 	import flash.system.System;
 
 	public class MemoryGraphingModule extends GraphingModule
@@ -86,11 +87,13 @@ package com.junkbyte.console.modules.graphing.memory
 			super.start();
 		}
 		
-		override protected function stop():void
+		
+		override protected function onGroupClose(event:Event):void
 		{
 			menu.active = false;
 			menu.announceChanged();
-			super.stop();
+			
+			super.onGroupClose(event);
 		}
 	}
 }
