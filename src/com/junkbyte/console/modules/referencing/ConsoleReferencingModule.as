@@ -30,7 +30,7 @@ package com.junkbyte.console.modules.referencing
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.utils.getQualifiedShortClassName;
 	import com.junkbyte.console.vos.WeakObject;
-
+	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.geom.Matrix;
@@ -82,6 +82,8 @@ package com.junkbyte.console.modules.referencing
 		override protected function registeredToConsole():void
 		{
 			super.registeredToConsole();
+			
+			logger.processor.push(new ReferencingLogProcessor(logger));
 
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
 			ticker.addUpdateDataCallback(onUpdateData);
@@ -90,6 +92,7 @@ package com.junkbyte.console.modules.referencing
 		override protected function unregisteredFromConsole():void
 		{
 			super.unregisteredFromConsole();
+			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
 			ticker.removeUpdateDataCallback(onUpdateData);
 		}

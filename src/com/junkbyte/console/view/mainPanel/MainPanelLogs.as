@@ -102,6 +102,7 @@ package com.junkbyte.console.view.mainPanel
 			_scrollBar = new ConsoleScrollBar();
 			_scrollBar.addEventListener(Event.SCROLL, onScrollBarScroll);
 			_scrollBar.addEventListener(ConsoleScrollBar.STARTED_SCROLLING, onScrollStarted);
+			_scrollBar.addEventListener(ConsoleScrollBar.STOPPED_SCROLLING, onScrollEnded);
 
 			_traceField.addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel, false, 0, true);
 
@@ -684,7 +685,7 @@ package com.junkbyte.console.view.mainPanel
 		private function onScrollBarScroll(e:Event):void
 		{
 			_lockScrollUpdate = true;
-			_traceField.scrollV = _scrollBar.scroll;
+			_traceField.scrollV = _scrollBar.scroll + 1;
 			_lockScrollUpdate = false;
 		}
 
@@ -697,6 +698,11 @@ package com.junkbyte.console.view.mainPanel
 				_updateTraces();
 				_scrollBar.scrollPercent = p;
 			}
+		}
+		
+		private function onScrollEnded(e:Event):void
+		{
+			onTraceScroll();
 		}
 
 		private function onMouseWheel(e:MouseEvent):void

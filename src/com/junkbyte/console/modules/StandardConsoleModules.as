@@ -72,7 +72,6 @@ package com.junkbyte.console.modules
 			console.modules.registerModule(new GraphingCentralModule());
 			console.modules.registerModule(new FPSGraphingModule());
 			console.modules.registerModule(new MemoryGraphingModule());
-			console.modules.registerModule(new GraphingPanelsCentralModule());
 		}
 		
 		private static var imports:Array = [CustomGraphingModule];

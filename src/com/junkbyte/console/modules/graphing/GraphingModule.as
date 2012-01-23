@@ -101,6 +101,10 @@ package com.junkbyte.console.modules.graphing
 
 		protected function onUpdateData(msDelta:uint):void
 		{
+			if(console.paused)
+			{
+				return;
+			}
 			timeSinceUpdate += msDelta;
 
 			if (timeSinceUpdate >= _group.updateFrequencyMS)

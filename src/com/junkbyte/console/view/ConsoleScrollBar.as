@@ -31,8 +31,8 @@ package com.junkbyte.console.view
     import flash.geom.Rectangle;
 
     [Event(name = "scroll", type = "flash.events.Event")]
-    [Event(name = "startedScrolling", type = "com.junkbyte.console.view.ConsoleScrollBar")]
-    [Event(name = "stoppedScrolling", type = "com.junkbyte.console.view.ConsoleScrollBar")]
+    [Event(name = "startedScrolling", type = "flash.events.Event")]
+    [Event(name = "stoppedScrolling", type = "flash.events.Event")]
     public class ConsoleScrollBar extends ConsoleDisplayModule
     {
         public static const STARTED_SCROLLING:String = "startedScrolling";

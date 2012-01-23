@@ -5,7 +5,6 @@ package com.junkbyte.console.modules.graphing
 
 	[Event(name = "addGroup", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
 	[Event(name = "removeGroup", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
-	[Event(name = "push", type = "com.junkbyte.console.modules.graphing.GraphingEvent")]
 	public class GraphingCentralModule extends ConsoleModule
 	{
 
