@@ -53,7 +53,7 @@ package com.junkbyte.console.view.mainPanel
 		private var minimizerMenu:ConsoleMenuItem;
 		private var hasChannelsPanel:Boolean;
 
-		public var mini:Boolean;
+		private var _mini:Boolean;
 
 		public function MainPanelMenu(parentPanel:ConsolePanel)
 		{
@@ -91,7 +91,7 @@ package com.junkbyte.console.view.mainPanel
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			console.logger.logs.addEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
 			console.mainPanel.addEventListener(MainPanel.VIEWING_CHANNELS_CHANGED, onChannelsChanged);
-			
+
 			ConsoleTextRoller.register(_textField, textRollOverHandler, linkHandler);
 
 			initBuildInMenus();
@@ -122,13 +122,23 @@ package com.junkbyte.console.view.mainPanel
 
 		private function updateMinimizeMenu(e:Event = null):void
 		{
-			minimizerMenu.name = mini ? "‹" : "›";
-			minimizerMenu.tooltip = mini ? "Expand menu" : "Minimize menu";
+			minimizerMenu.name = _mini ? "‹" : "›";
+			minimizerMenu.tooltip = _mini ? "Expand menu" : "Minimize menu";
 		}
 
 		protected function onMinimizeMenuClick():void
 		{
-			mini = !mini;
+			mini = !_mini;
+		}
+
+		public function get mini():Boolean
+		{
+			return _mini;
+		}
+
+		public function set mini(value:Boolean):void
+		{
+			_mini = value;
 			updateMinimizeMenu();
 			minimizerMenu.announceChanged();
 		}
@@ -222,10 +232,15 @@ package com.junkbyte.console.view.mainPanel
 			_needsUpdate = true;
 		}
 
-		public function update():void
+		public function invalidate():void
+		{
+			_needsUpdate = true;
+		}
+
+		protected function update():void
 		{
 			var str:String = "<r><high><menu><b> ";
-			if (mini || !style.topMenu)
+			if (_mini || !style.topMenu)
 			{
 				str += printMinimizedMenu();
 			}

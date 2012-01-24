@@ -28,6 +28,7 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.interfaces.ICommandLine;
 	import com.junkbyte.console.interfaces.IConsoleModule;
+	import com.junkbyte.console.interfaces.IMainMenu;
 	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.userdata.IConsoleUserData;
@@ -61,11 +62,14 @@ package com.junkbyte.console.view.mainPanel
 		private var _hint:String;
 		private var _cl:ICommandLine;
 
+		private var menu:CommandLineMenu;
+
 		public function MainPanelCL(parentPanel:ConsolePanel)
 		{
 			super(parentPanel);
 			addModuleRegisteryCallback(new ModuleTypeMatcher(IConsoleUserData), userInfoRegistered, userInfoUnregistered);
 			addModuleRegisteryCallback(new ModuleTypeMatcher(ICommandLine), commandLineRegistered, commandLineUnregistered);
+			addModuleRegisteryCallback(new ModuleTypeMatcher(IMainMenu), onMainMenuRegistered, onMainMenuUnregistered);
 
 			_cmdsHistory = new Array();
 			//
@@ -171,10 +175,25 @@ package com.junkbyte.console.view.mainPanel
 
 		protected function addMenus():void
 		{
+		}
+
+		protected function onMainMenuRegistered(module:IMainMenu):void
+		{
+			if (menu == null)
+			{
+				menu = new CommandLineMenu(mainPanel);
+				menu.sortPriority = -40;
+			}
+
+			module.addMenu(menu);
+		}
+
+		protected function onMainMenuUnregistered(module:IMainMenu):void
+		{
 			var clmenu:CommandLineMenu = new CommandLineMenu(mainPanel);
 			clmenu.sortPriority = -40;
-			
-			mainPanel.menu.addMenu(clmenu);
+
+			module.removeMenu(menu);
 		}
 
 		override public function setArea(x:Number, y:Number, width:Number, height:Number):void
@@ -336,7 +355,7 @@ package com.junkbyte.console.view.mainPanel
 		{
 			if (e.keyCode == Keyboard.ENTER)
 			{
-				mainPanel.traces.updateToBottom();
+				mainPanel.updateToBottom();
 				setHints();
 				if (mainPanel.enteringLogin)
 				{
