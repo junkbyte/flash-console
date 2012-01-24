@@ -28,6 +28,7 @@ package
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
+	import com.junkbyte.console.modules.commandLine.SlashCommandLine;
 	import com.junkbyte.console.modules.graphing.GraphingCentralModule;
 	import com.junkbyte.console.modules.graphing.GraphingGroup;
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingGroup;
@@ -35,6 +36,7 @@ package
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingModule;
 	import com.junkbyte.console.modules.graphing.fps.FPSGraphingModule;
 	import com.junkbyte.console.modules.graphing.memory.MemoryGraphingModule;
+	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
@@ -77,9 +79,8 @@ package
 			Cc.mainPanel.setPanelSize(640, 220);
 
 			//StandardConsoleModules.registerToConsole();
-
-			CLog.log(Cc.modules.getAllModules().join(", "));
 			
+			Cc.modules.registerModule(new SlashCommandLine());
 			
 			Cc.modules.registerModule(new GraphingCentralModule());
 			
@@ -95,6 +96,14 @@ package
 			group = new CustomGraphingGroup();
 			group.addLine(new CustomGraphingLine(this, "num", "num", 0xFF0000));
 			Cc.modules.registerModule(new CustomGraphingModule(group));
+			
+			
+			Cc.modules.registerModule(new ConsoleReferencingModule());
+			
+			
+			CLog.log(Cc.modules.getAllModules());
+			CLog.info("Main:", this);
+			
 			//
 			// End of setup
 			//

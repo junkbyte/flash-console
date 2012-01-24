@@ -170,7 +170,7 @@ package com.junkbyte.console.logging
 		{
 			if (!channel)
 			{
-				channel = console.mainPanel.traces.reportChannel;
+				channel = console.mainPanel.reportChannel;
 			}
 			addLine([obj], priority, channel, skipSafe, 0);
 		}

@@ -90,7 +90,8 @@ package com.junkbyte.console.view.mainPanel
 
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			console.logger.logs.addEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
-
+			console.mainPanel.addEventListener(MainPanel.VIEWING_CHANNELS_CHANGED, onChannelsChanged);
+			
 			ConsoleTextRoller.register(_textField, textRollOverHandler, linkHandler);
 
 			initBuildInMenus();
@@ -232,7 +233,7 @@ package com.junkbyte.console.view.mainPanel
 			{
 				if (hasChannelsPanel == false)
 				{
-					str += console.mainPanel.traces.getChannelsLink(true);
+					str += console.mainPanel.getChannelsLink(true);
 				}
 				str += printMenus();
 			}

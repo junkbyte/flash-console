@@ -23,7 +23,7 @@ package com.junkbyte.console.core
 			}
 		}
 		
-		public function apply(arguments:Array):void
+		public function apply(arguments:Array = null):void
 		{
 			var len:uint = _list.length;
 			for (var i:uint = 0; i < len; i++)

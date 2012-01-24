@@ -3,16 +3,17 @@ package com.junkbyte.console.view.menus
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IKeyStates;
-	import com.junkbyte.console.view.mainPanel.MainPanelLogs;
+	import com.junkbyte.console.view.mainPanel.ConsoleOutputDisplay;
+	import com.junkbyte.console.view.mainPanel.MainPanel;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
-
+	
 	import flash.events.Event;
 
 	public class LogPriorityMenu extends ConsoleMenuItem
 	{
-		private var logsPanel:MainPanelLogs;
+		private var logsPanel:MainPanel;
 
-		public function LogPriorityMenu(logsPanel:MainPanelLogs)
+		public function LogPriorityMenu(logsPanel:MainPanel)
 		{
 			this.logsPanel = logsPanel;
 			super("P0", onMenuClick, null, "Priority filter::shift: previous priority\n(skips unused priorites)");
@@ -21,13 +22,13 @@ package com.junkbyte.console.view.menus
 		override public function onMenuAdded(module:IConsoleModule):void
 		{
 			super.onMenuAdded(module);
-			logsPanel.addEventListener(MainPanelLogs.FILTER_PRIORITY_CHANGED, onDispatch);
+			logsPanel.addEventListener(MainPanel.FILTER_PRIORITY_CHANGED, onDispatch);
 			update();
 		}
 
 		override public function onMenuRemoved(module:IConsoleModule):void
 		{
-			logsPanel.removeEventListener(MainPanelLogs.FILTER_PRIORITY_CHANGED, onDispatch);
+			logsPanel.removeEventListener(MainPanel.FILTER_PRIORITY_CHANGED, onDispatch);
 			super.onMenuRemoved(module);
 		}
 

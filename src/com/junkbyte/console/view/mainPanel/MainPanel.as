@@ -28,13 +28,19 @@ package com.junkbyte.console.view.mainPanel
 
 	import com.junkbyte.console.ConsoleChannels;
 	import com.junkbyte.console.ConsoleLevel;
+	import com.junkbyte.console.core.CallbackDispatcher;
 	import com.junkbyte.console.events.ConsolePanelEvent;
+	import com.junkbyte.console.interfaces.IKeyStates;
 	import com.junkbyte.console.logging.ConsoleLogs;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
+	import com.junkbyte.console.utils.makeConsoleChannel;
 	import com.junkbyte.console.view.ChannelsPanel;
 	import com.junkbyte.console.view.ConsolePanel;
+	import com.junkbyte.console.view.menus.LogPriorityMenu;
 	import com.junkbyte.console.view.menus.PauseLogDisplayMenu;
+	import com.junkbyte.console.view.menus.SaveToClipboardMenu;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
+	import com.junkbyte.console.vos.Log;
 	
 	import flash.events.Event;
 	import flash.events.TextEvent;
@@ -42,22 +48,27 @@ package com.junkbyte.console.view.mainPanel
 	import flash.system.Security;
 	import flash.system.SecurityPanel;
 
-	public class MainPanel extends ConsolePanel
+	public class MainPanel extends ConsolePanel implements ConsoleOutputProvider
 	{
-
+		
+		public static const VIEWING_CHANNELS_CHANGED:String = "viewingChannelsChanged";
+		public static const FILTER_PRIORITY_CHANGED:String = "filterPriorityChanged";
 		public static const COMMAND_LINE_VISIBLITY_CHANGED:String = "commandLineVisibilityChanged";
 
 		private var _menu:MainPanelMenu;
 
-		private var _traces:MainPanelLogs;
-
+		private var _outputDisplay:ConsoleOutputDisplay;
 		private var _commandArea:MainPanelCL;
-
 		private var _needUpdateMenu:Boolean;
 
 		private var _enteringLogin:Boolean;
-
 		private var _movedFrom:Point;
+		
+		private var _viewingChannels:Vector.<String> = new Vector.<String>();
+		private var _ignoredChannels:Vector.<String> = new Vector.<String>();
+		private var _priority:uint;
+		
+		protected var outputUpdateDispatcher:CallbackDispatcher = new CallbackDispatcher();
 
 		public function MainPanel()
 		{
@@ -79,15 +90,16 @@ package com.junkbyte.console.view.mainPanel
 
 			//
 			_menu = new MainPanelMenu(this);
-			_traces = new MainPanelLogs(this);
+			_outputDisplay = new ConsoleOutputDisplay(this);
+			
+			_outputDisplay.setDataProvider(this); // test
+
 			_commandArea = new MainPanelCL(this);
 
 			_menu.addEventListener(Event.CHANGE, onMenuChanged);
 
-			modules.registerModule(_traces);
-
+			modules.registerModule(_outputDisplay);
 			modules.registerModule(_menu);
-
 			modules.registerModule(_commandArea);
 
 			startPanelResizer();
@@ -96,9 +108,32 @@ package com.junkbyte.console.view.mainPanel
 
 			setPanelSize(480, 100);
 
-			addMenus();
-
 			addToLayer();
+			addMenus();
+		}
+		
+		protected function addMenus():void
+		{
+			var logPriorityMenu:LogPriorityMenu = new LogPriorityMenu(this);
+			logPriorityMenu.sortPriority = -80;
+			console.mainPanel.menu.addMenu(logPriorityMenu);
+			
+			var saveMenu:SaveToClipboardMenu = new SaveToClipboardMenu();
+			saveMenu.sortPriority = -50;
+			
+			console.mainPanel.menu.addMenu(saveMenu);
+			
+			var clearLogsMenu:ConsoleMenuItem = new ConsoleMenuItem("C", logger.logs.clear, null, "Clear log");
+			clearLogsMenu.sortPriority = -80;
+			console.mainPanel.menu.addMenu(clearLogsMenu);
+			
+			var closeMenu:ConsoleMenuItem = new ConsoleMenuItem("X", removeFromParent, null, "Close::Type password to show again");
+			closeMenu.sortPriority = -90;
+			menu.addMenu(closeMenu);
+			
+			var pauseMenu:PauseLogDisplayMenu = new PauseLogDisplayMenu();
+			pauseMenu.sortPriority = -60;
+			menu.addMenu(pauseMenu);
 		}
 
 		public function get menu():MainPanelMenu
@@ -106,29 +141,14 @@ package com.junkbyte.console.view.mainPanel
 			return _menu;
 		}
 
-		public function get traces():MainPanelLogs
+		public function get traces():ConsoleOutputDisplay
 		{
-			return _traces;
+			return _outputDisplay;
 		}
 
 		public function get commandArea():MainPanelCL
 		{
 			return _commandArea;
-		}
-
-		public function setViewingChannels(... channels:Array):void
-		{
-			traces.setViewingChannels.apply(this, channels);
-		}
-
-		public function setIgnoredChannels(... channels:Array):void
-		{
-			traces.setIgnoredChannels.apply(this, channels);
-		}
-
-		public function set minimumPriority(level:uint):void
-		{
-			traces.priority = level;
 		}
 
 		private function onStartedDragging(e:Event):void
@@ -144,7 +164,7 @@ package com.junkbyte.console.view.mainPanel
 				logger.report("//", ConsoleLevel.CONSOLE_EVENT);
 				logger.report("// <b>Enter remoting password</b> in CommandLine below...", ConsoleLevel.CONSOLE_EVENT);
 			}
-			_traces.requestLogin(on);
+			//_outputDisplay.requestLogin(on);
 			_commandArea.requestLogin(on);
 			_enteringLogin = on;
 		}
@@ -184,7 +204,7 @@ package com.junkbyte.console.view.mainPanel
 
 			var traceY:Number = mini ? 0 : (_menu.area.y + _menu.area.height - 6);
 			var traceHeight:Number = height - (_commandArea.isVisible ? (style.menuFontSize + 4) : 0) - traceY;
-			_traces.setArea(0, traceY, width, traceHeight);
+			_outputDisplay.setArea(0, traceY, width, traceHeight);
 
 		}
 
@@ -211,17 +231,6 @@ package com.junkbyte.console.view.mainPanel
 		private function _updateMenu():void
 		{
 			_menu.update();
-		}
-
-		protected function addMenus():void
-		{
-			var closeMenu:ConsoleMenuItem = new ConsoleMenuItem("X", removeFromParent, null, "Close::Type password to show again");
-			closeMenu.sortPriority = -90;
-			menu.addMenu(closeMenu);
-
-			var pauseMenu:PauseLogDisplayMenu = new PauseLogDisplayMenu();
-			pauseMenu.sortPriority = -60;
-			menu.addMenu(pauseMenu);
 		}
 
 		private function onMenuChanged(e:Event):void
@@ -311,7 +320,7 @@ package com.junkbyte.console.view.mainPanel
 			}
 			else if (t.indexOf("channel_") == 0)
 			{
-				traces.onChannelPressed(t.substring(8));
+				onChannelPressed(t.substring(8));
 			}
 			else if (t.indexOf("cl_") == 0)
 			{
@@ -398,6 +407,268 @@ package com.junkbyte.console.view.mainPanel
 				}
 				_movedFrom = null;
 			}
+		}
+		
+		
+		
+		public function getFullOutput():String
+		{
+			var str:String = "";
+			var line:Log = console.logger.logs.last;
+			var showch:Boolean = _viewingChannels.length != 1;
+			while (line)
+			{
+				if (lineShouldShow(line))
+				{
+					str = makeLine(line, showch) + str;
+				}
+				line = line.prev;
+			}
+			return str;
+		}
+		
+		public function getOutputFromBottom(maxLines:uint, maxChars:uint):String
+		{
+			var lines:Array = new Array();
+			var linesLeft:int = maxLines;
+			
+			var line:Log = console.logger.logs.last;
+			var showch:Boolean = _viewingChannels.length != 1;
+			while (line)
+			{
+				if (lineShouldShow(line))
+				{
+					lines.push(makeLine(line, showch));
+					var numlines:int = Math.ceil(line.text.length / maxChars);
+					linesLeft -= numlines;
+					if (linesLeft <= 0)
+					{
+						break;
+					}
+				}
+				line = line.prev;
+			}
+			return lines.reverse().join("");
+		}
+		
+		public function set priority(p:uint):void
+		{
+			_priority = p;
+			// central.so[PRIORITY_HISTORY] = _priority;
+			announceOutputChanged();
+			dispatchEvent(new Event(FILTER_PRIORITY_CHANGED));
+		}
+		
+		public function get priority():uint
+		{
+			return _priority;
+		}
+		
+		//
+		public function incPriority(down:Boolean):void
+		{
+			var top:uint = 10;
+			var bottom:uint;
+			var line:Log = console.logger.logs.last;
+			var p:int = _priority;
+			_priority = 0;
+			var i:uint = 32000;
+			// just for crash safety, it wont look more than 32000 lines.
+			while (line && i > 0)
+			{
+				i--;
+				if (lineShouldShow(line))
+				{
+					if (line.priority > p && top > line.priority)
+					{
+						top = line.priority;
+					}
+					if (line.priority < p && bottom < line.priority)
+					{
+						bottom = line.priority;
+					}
+				}
+				line = line.prev;
+			}
+			if (down)
+			{
+				if (bottom == p)
+				{
+					p = 10;
+				}
+				else
+				{
+					p = bottom;
+				}
+			}
+			else
+			{
+				if (top == p)
+				{
+					p = 0;
+				}
+				else
+				{
+					p = top;
+				}
+			}
+			priority = p;
+		}
+		
+		public function getChannelsLink(limited:Boolean = false):String
+		{
+			var str:String = "<chs>";
+			var channels:Array = console.logger.logs.getChannels();
+			var len:int = channels.length;
+			if (limited && len > style.maxChannelsInMenu)
+			{
+				len = style.maxChannelsInMenu;
+			}
+			var filtering:Boolean = _viewingChannels.length > 0 || _ignoredChannels.length > 0;
+			for (var i:int = 0; i < len; i++)
+			{
+				var channel:String = channels[i];
+				var channelTxt:String = ((!filtering && i == 0) || (filtering && i != 0 && chShouldShow(channel))) ? "<ch><b>" + channel + "</b></ch>" : channel;
+				str += "<a href=\"event:channel_" + channel + "\">[" + channelTxt + "]</a> ";
+			}
+			if (limited)
+			{
+				str += "<ch><a href=\"event:channels\"><b>" + (channels.length > len ? "..." : "") + "</b>^^ </a></ch>";
+			}
+			str += "</chs> ";
+			return str;
+		}
+		
+		public function onChannelPressed(chn:String):void
+		{
+			var current:Vector.<String>;
+			
+			var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
+			
+			if (keyStates != null && keyStates.ctrlKeyDown && chn != ConsoleChannels.GLOBAL)
+			{
+				current = toggleCHList(_ignoredChannels, chn);
+				setIgnoredChannels.apply(this, current);
+			}
+			else if (keyStates != null && keyStates.shiftKeyDown && chn != ConsoleChannels.GLOBAL && _viewingChannels[0] != ConsoleChannels.INSPECTING)
+			{
+				current = toggleCHList(_viewingChannels, chn);
+				setViewingChannels.apply(this, current);
+			}
+			else
+			{
+				console.mainPanel.setViewingChannels(chn);
+			}
+		}
+		
+		private function toggleCHList(current:Vector.<String>, chn:String):Vector.<String>
+		{
+			current = current.concat();
+			var ind:int = current.indexOf(chn);
+			if (ind >= 0)
+			{
+				current.splice(ind, 1);
+				if (current.length == 0)
+				{
+					current.push(ConsoleChannels.GLOBAL);
+				}
+			}
+			else
+			{
+				current.push(chn);
+			}
+			return current;
+		}
+		
+		public function lineShouldShow(line:Log):Boolean
+		{
+			return (chShouldShow(line.channel) && (_priority == 0 || line.priority >= _priority));
+			//(_filterText && _viewingChannels.indexOf(ConsoleChannels.FILTERING) >= 0 && line.text.toLowerCase().indexOf(_filterText) >= 0) || (_filterRegExp && _viewingChannels.indexOf(ConsoleChannels.FILTERING) >= 0 && line.text.search(_filterRegExp) >= 0))
+		}
+		
+		private function chShouldShow(ch:String):Boolean
+		{
+			return ((_viewingChannels.length == 0 || _viewingChannels.indexOf(ch) >= 0) && (_ignoredChannels.length == 0 || _ignoredChannels.indexOf(ch) < 0));
+		}
+		
+		public function get reportChannel():String
+		{
+			return _viewingChannels.length == 1 ? _viewingChannels[0] : ConsoleChannels.CONSOLE;
+		}
+		
+		public function setViewingChannels(... channels:Array):void
+		{
+			var a:Array = new Array();
+			for each (var item:Object in channels)
+			{
+				a.push(makeConsoleChannel(item));
+			}
+			
+			_ignoredChannels.splice(0, _ignoredChannels.length);
+			_viewingChannels.splice(0, _viewingChannels.length);
+			if (a.indexOf(ConsoleChannels.GLOBAL) < 0 && a.indexOf(null) < 0)
+			{
+				for each (var ch:String in a)
+				{
+					_viewingChannels.push(ch);
+				}
+			}
+			announceOutputChanged();
+			announceChannelInterestChanged();
+		}
+		
+		private function announceChannelInterestChanged():void
+		{
+			dispatchEvent(new Event(VIEWING_CHANNELS_CHANGED));
+		}
+		
+		public function setIgnoredChannels(... channels:Array):void
+		{
+			var a:Array = new Array();
+			for each (var item:Object in channels)
+			{
+				a.push(makeConsoleChannel(item));
+			}
+			
+			_ignoredChannels.splice(0, _ignoredChannels.length);
+			_viewingChannels.splice(0, _viewingChannels.length);
+			if (a.indexOf(ConsoleChannels.GLOBAL) < 0 && a.indexOf(null) < 0)
+			{
+				for each (var ch:String in a)
+				{
+					_ignoredChannels.push(ch);
+				}
+			}
+			announceOutputChanged();
+			announceChannelInterestChanged();
+		}
+		
+		public function addUpdateCallback(callback:Function):void
+		{
+			outputUpdateDispatcher.add(callback);
+		}
+		
+		public function removeUpdateCallback(callback:Function):void
+		{
+			outputUpdateDispatcher.remove(callback);
+		}
+		
+		protected function announceOutputChanged():void
+		{
+			outputUpdateDispatcher.apply();
+		}
+		
+		private function makeLine(line:Log, showch:Boolean):String
+		{
+			var str:String = "";
+			var txt:String = line.text;
+			if (showch && line.channel != ConsoleChannels.DEFAULT)
+			{
+				txt = "[<a href=\"event:channel_" + line.channel + "\">" + line.channel + "</a>] " + txt;
+			}
+			var ptag:String = "p" + line.priority;
+			str += "<p><" + ptag + ">" + txt + "</" + ptag + "></p>";
+			return str;
 		}
 	}
 }
