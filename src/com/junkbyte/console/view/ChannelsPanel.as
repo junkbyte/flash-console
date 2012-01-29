@@ -44,6 +44,7 @@ package com.junkbyte.console.view
 		{
 			super();
 			sprite.name = getModuleName();
+
 		}
 
 		override public function getModuleName():String
@@ -111,7 +112,7 @@ package com.junkbyte.console.view
 		{
 			txtField.wordWrap = false;
 			txtField.width = 80;
-			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> " + console.mainPanel.getChannelsLink();
+			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> " + console.logsFilter.getChannelsLink();
 			txtField.htmlText = str + "</high>";
 			if (txtField.width > 160)
 			{
@@ -135,7 +136,7 @@ package com.junkbyte.console.view
 			}
 			else if (e.text.substring(0, 8) == "channel_")
 			{
-				console.mainPanel.onChannelPressed(e.text.substring(8));
+				console.logsFilter.onChannelPressed(e.text.substring(8));
 			}
 			txtField.setSelection(0, 0);
 			e.stopPropagation();

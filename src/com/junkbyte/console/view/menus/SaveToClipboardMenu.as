@@ -27,7 +27,7 @@ package com.junkbyte.console.view.menus
 			}
 			else
 			{
-				var string:String = getLogsWOptions(!keyStates.shiftKeyDown, keyStates.ctrlKeyDown ? console.layer.mainPanel.lineShouldShow : null);
+				var string:String = getLogsWOptions(!keyStates.shiftKeyDown, keyStates.ctrlKeyDown ? console.logsFilter.lineShouldShow : null);
 				if (keyStates.altKeyDown)
 				{
 					saveToFile(string);
@@ -38,11 +38,11 @@ package com.junkbyte.console.view.menus
 				}
 			}
 		}
-		
+
 		override public function getTooltip():String
 		{
 			var string:String = "Save to clipboard";
-			
+
 			if (getKeyStates() != null)
 			{
 				string += "::shift: no channel name\nctrl: use viewing filters\nalt: save to file";

@@ -29,12 +29,13 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.events.ConsoleLogEvent;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
 	import com.junkbyte.console.interfaces.IMainMenu;
+	import com.junkbyte.console.logging.ConsoleLogsFilter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ChannelsPanel;
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.helpers.ConsoleTextRoller;
 	import com.junkbyte.console.vos.ConsoleMenuItem;
-
+	
 	import flash.events.Event;
 	import flash.events.TextEvent;
 	import flash.geom.Rectangle;
@@ -90,7 +91,7 @@ package com.junkbyte.console.view.mainPanel
 
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			console.logger.logs.addEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
-			console.mainPanel.addEventListener(MainPanel.VIEWING_CHANNELS_CHANGED, onChannelsChanged);
+			console.logsFilter.addEventListener(ConsoleLogsFilter.CHANNEL_INTERESTS_CHANGED, onChannelsChanged);
 
 			ConsoleTextRoller.register(_textField, textRollOverHandler, linkHandler);
 
@@ -163,7 +164,7 @@ package com.junkbyte.console.view.mainPanel
 			hasChannelsPanel = false;
 			_needsUpdate = true;
 		}
-
+		
 		private function onChannelsChanged(e:Event):void
 		{
 			if (!hasChannelsPanel)
@@ -248,7 +249,7 @@ package com.junkbyte.console.view.mainPanel
 			{
 				if (hasChannelsPanel == false)
 				{
-					str += console.mainPanel.getChannelsLink(true);
+					str += console.logsFilter.getChannelsLink(style.maxChannelsInMenu);
 				}
 				str += printMenus();
 			}

@@ -11,14 +11,15 @@ package com.junkbyte.console.view.mainPanel
 
 		public function DefaultOutputProvider()
 		{
+
 		}
 
 		public function getFullOutput():String
 		{
 			var str:String = "";
 			var line:Log = console.logger.logs.last;
-			var showch:Boolean = console.mainPanel.viewingChannels.length != 1;
-			var lineShouldShow:Function = console.mainPanel.lineShouldShow;
+			var showch:Boolean = console.logsFilter.viewingChannels.length != 1;
+			var lineShouldShow:Function = console.logsFilter.lineShouldShow;
 			while (line)
 			{
 				if (lineShouldShow(line))
@@ -36,8 +37,8 @@ package com.junkbyte.console.view.mainPanel
 			var linesLeft:int = maxLines;
 
 			var line:Log = console.logger.logs.last;
-			var showch:Boolean = console.mainPanel.viewingChannels.length != 1;
-			var lineShouldShow:Function = console.mainPanel.lineShouldShow;
+			var showch:Boolean = console.logsFilter.viewingChannels.length != 1;
+			var lineShouldShow:Function = console.logsFilter.lineShouldShow;
 			while (line)
 			{
 				if (lineShouldShow(line))

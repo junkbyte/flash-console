@@ -33,8 +33,8 @@ package com.junkbyte.console.view
     import flash.display.Sprite;
     import flash.events.Event;
 
-    [Event(name = "addedToConsoleLayer", type = "com.junkbyte.console.events.ConsolePanelEvent")]
-    [Event(name = "removedFromConsoleLayer", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+    [Event(name = "panelAdded", type = "com.junkbyte.console.events.ConsolePanelEvent")]
+    [Event(name = "panelRemoved", type = "com.junkbyte.console.events.ConsolePanelEvent")]
     public class ConsoleDisplayModule extends ConsoleModule
     {
 

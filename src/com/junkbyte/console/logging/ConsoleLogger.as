@@ -46,40 +46,19 @@ package com.junkbyte.console.logging
 			super();
 
 			_processors.push(new StandardLogProcessor());
-
-			listenForLogsRegistery();
-		}
-
-		public function registerToStaticCLog():void
-		{
-			CLog = logger;
+			
+			addModuleRegisteryCallback(new ModuleTypeMatcher(ConsoleLogs), onLogsRegistered);
 		}
 
 		override public function getModuleName():String
 		{
 			return ConsoleModuleNames.LOGGER;
 		}
-
-		override protected function registeredToConsole():void
-		{
-			super.registeredToConsole();
-			initAndRegisterLogsModule();
-		}
-
-		protected function initAndRegisterLogsModule():void
-		{
-			modules.registerModule(new ConsoleLogs());
-		}
-
-		protected function listenForLogsRegistery():void
-		{
-			addModuleRegisteryCallback(new ModuleTypeMatcher(ConsoleLogs), onLogsRegistered);
-		}
-
+		
 		// this is so that if anyone wants to extend Logs and register it, it'll catch that new module as replacement.
-		protected function onLogsRegistered(logs:ConsoleLogs):void
+		protected function onLogsRegistered(logsModule:ConsoleLogs):void
 		{
-			_logs = logs;
+			_logs = logsModule;
 		}
 
 		public function get logs():ConsoleLogs
@@ -170,7 +149,7 @@ package com.junkbyte.console.logging
 		{
 			if (!channel)
 			{
-				channel = console.mainPanel.reportChannel;
+				channel = console.logsFilter.reportChannel;
 			}
 			addLine([obj], priority, channel, skipSafe, 0);
 		}

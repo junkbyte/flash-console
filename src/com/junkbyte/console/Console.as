@@ -30,10 +30,12 @@ package com.junkbyte.console
 	import com.junkbyte.console.core.ConsoleTicker;
 	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.logging.ConsoleLogger;
+	import com.junkbyte.console.logging.ConsoleLogs;
+	import com.junkbyte.console.logging.ConsoleLogsFilter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ConsoleLayer;
 	import com.junkbyte.console.view.mainPanel.MainPanel;
-
+	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
@@ -96,7 +98,7 @@ package com.junkbyte.console
 		{
 			style.updateStyleSheet();
 			initModulesManager();
-			registerLoggerModule();
+			registerLoggingModules();
 			initConsoleLayer();
 			registerTickerModule();
 		}
@@ -106,9 +108,18 @@ package com.junkbyte.console
 			_modules = new ConsoleModulesManager(this);
 		}
 
-		protected function registerLoggerModule():void
+		protected function registerLoggingModules():void
 		{
-			modules.registerModule(CLog != null ? CLog : new ConsoleLogger());
+			modules.registerModule(new ConsoleLogs());
+			modules.registerModule(new ConsoleLogsFilter());
+			if(CLog != null && CLog.console == null)
+			{
+				modules.registerModule(CLog);
+			}
+			else
+			{
+				modules.registerModule(new ConsoleLogger());
+			}
 		}
 
 		protected function initConsoleLayer():void
@@ -190,6 +201,11 @@ package com.junkbyte.console
 		public function get logger():ConsoleLogger
 		{
 			return modules.getModuleByName(ConsoleModuleNames.LOGGER) as ConsoleLogger;
+		}
+		
+		public function get logsFilter():ConsoleLogsFilter
+		{
+			return modules.getModuleByName(ConsoleModuleNames.LOGS_FILTER) as ConsoleLogsFilter;
 		}
 
 		public function get mainPanel():MainPanel
