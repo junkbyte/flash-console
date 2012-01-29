@@ -42,10 +42,15 @@ package com.junkbyte.console.core
 		protected var _modulesByName:Object = new Object();
 
 		protected var _console:Console;
+		
+		private var _textLinks:ConsoleTextLinks
 
 		public function ConsoleModulesManager(console:Console)
 		{
 			_console = console;
+			
+			_textLinks = new ConsoleTextLinks();
+			registerModule(_textLinks);
 
 			super();
 		}
@@ -166,6 +171,11 @@ package com.junkbyte.console.core
 					delete _modulesByName[moduleName];
 				}
 			}
+		}
+		
+		public function get textLinks():ConsoleTextLinks
+		{
+			return _textLinks;
 		}
 	}
 }

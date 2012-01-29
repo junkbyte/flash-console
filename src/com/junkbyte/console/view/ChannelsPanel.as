@@ -136,7 +136,7 @@ package com.junkbyte.console.view
 			}
 			else if (e.text.substring(0, 8) == "channel_")
 			{
-				console.logsFilter.onLinkClicked(e.text);
+				modules.textLinks.onLinkClicked(e.text);
 			}
 			txtField.setSelection(0, 0);
 			e.stopPropagation();

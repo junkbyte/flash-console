@@ -276,9 +276,9 @@ package com.junkbyte.console.view.mainPanel
 			}
 			return str;
 		}
-
 		private function linkHandler(e:TextEvent):void
 		{
+			sprite.stopDrag();
 			_textField.setSelection(0, 0);
 			var t:String = e.text;
 			if (t.substring(0, 5) == "menu_")
@@ -288,6 +288,10 @@ package com.junkbyte.console.view.mainPanel
 				{
 					menu.onClick();
 				}
+			}
+			else
+			{
+				modules.textLinks.onLinkClicked(e.text);
 			}
 		}
 

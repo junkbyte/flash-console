@@ -102,8 +102,8 @@ package com.junkbyte.console.modules.remoting
 			ticker.addUpdateViewCallback(onDataUpdated);
 			
 			
-			console.logsFilter.addLinkCallback("settings", onSettingsLinkClicked);
-			console.logsFilter.addLinkCallback("remote", onRemoteLinkClicked);
+			modules.textLinks.addLinkCallback("settings", onSettingsLinkClicked);
+			modules.textLinks.addLinkCallback("remote", onRemoteLinkClicked);
 		}
 		
 		private function onSettingsLinkClicked(link:String):void

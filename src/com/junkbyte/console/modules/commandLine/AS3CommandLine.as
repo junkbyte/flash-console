@@ -85,7 +85,7 @@ package com.junkbyte.console.modules.commandLine
 			_prevScope = new WeakRef(console);
 			_saved.set("C", console);
 			
-			console.logsFilter.addLinkCallback(/cl_.*/, onCLLinkClicked);
+			modules.textLinks.addLinkCallback(/cl_.*/, onCLLinkClicked);
 		}
 		
 		private function onCLLinkClicked(link:String):void

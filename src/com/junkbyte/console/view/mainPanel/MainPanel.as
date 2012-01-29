@@ -91,16 +91,14 @@ package com.junkbyte.console.view.mainPanel
 			modules.registerModule(_commandArea);
 
 			startPanelResizer();
-
-			sprite.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
-
+			
 			setPanelSize(480, 100);
 
 			addToLayer();
 			addMenus();
 			
 			
-			console.logsFilter.addLinkCallback("channels", onChannelsLinkClicked);
+			modules.textLinks.addLinkCallback("channels", onChannelsLinkClicked);
 		}
 
 		public function setOutputProvider(provider:ConsoleOutputProvider):void
@@ -208,18 +206,7 @@ package com.junkbyte.console.view.mainPanel
 			updateMenuArea();
 			updateTraceArea();
 		}
-
-		private function linkHandler(e:TextEvent):void
-		{
-			_menu.textField.setSelection(0, 0);
-			sprite.stopDrag();
-			
-			console.logsFilter.onLinkClicked(e.text);
-			
-			_menu.textField.setSelection(0, 0);
-			e.stopPropagation();
-			
-		}
+		
 
 		private function onChannelsLinkClicked(link:String):void
 		{

@@ -30,10 +30,11 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.ConsoleScrollBar;
-
+	
 	import flash.display.Shape;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.events.TextEvent;
 	import flash.text.TextField;
 
 	public class ConsoleOutputDisplay extends MainPanelSubArea
@@ -58,6 +59,8 @@ package com.junkbyte.console.view.mainPanel
 			_traceField.wordWrap = true;
 			_traceField.multiline = true;
 			_traceField.addEventListener(Event.SCROLL, onTraceScroll);
+			
+			_traceField.addEventListener(TextEvent.LINK, linkHandler, false, 0, true);
 			//
 			_bottomLine = new Shape();
 			_bottomLine.name = "blinkLine";
@@ -134,6 +137,13 @@ package com.junkbyte.console.view.mainPanel
 		{
 			_atBottom = true;
 			updateBottom();
+		}
+		
+		private function linkHandler(e:TextEvent):void
+		{
+			sprite.stopDrag();
+			
+			modules.textLinks.onLinkClicked(e.text);
 		}
 
 		override public function setArea(x:Number, y:Number, width:Number, height:Number):void
