@@ -112,7 +112,7 @@ package com.junkbyte.console.view
 		{
 			txtField.wordWrap = false;
 			txtField.width = 80;
-			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> " + console.logsFilter.getChannelsLink();
+			var str:String = "<high><menu> <b><a href=\"event:close\">X</a></b></menu> " + modules.logsFilter.getChannelsLink();
 			txtField.htmlText = str + "</high>";
 			if (txtField.width > 160)
 			{

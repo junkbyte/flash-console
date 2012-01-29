@@ -27,7 +27,7 @@ package com.junkbyte.console.view.menus
 			}
 			else
 			{
-				var string:String = getLogsWOptions(!keyStates.shiftKeyDown, keyStates.ctrlKeyDown ? console.logsFilter.lineShouldShow : null);
+				var string:String = getLogsWOptions(!keyStates.shiftKeyDown, keyStates.ctrlKeyDown ? modules.logsFilter.lineShouldShow : null);
 				if (keyStates.altKeyDown)
 				{
 					saveToFile(string);

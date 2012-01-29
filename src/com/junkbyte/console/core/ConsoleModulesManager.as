@@ -30,6 +30,8 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.events.ConsoleModuleEvent;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IConsoleModuleMatcher;
+	import com.junkbyte.console.logging.ConsoleLogsFilter;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	
 	import flash.events.EventDispatcher;
 
@@ -176,6 +178,11 @@ package com.junkbyte.console.core
 		public function get textLinks():ConsoleTextLinks
 		{
 			return _textLinks;
+		}
+		
+		public function get logsFilter():ConsoleLogsFilter
+		{
+			return getModuleByName(ConsoleModuleNames.LOGS_FILTER) as ConsoleLogsFilter;
 		}
 	}
 }

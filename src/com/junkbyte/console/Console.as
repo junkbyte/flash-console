@@ -202,11 +202,6 @@ package com.junkbyte.console
 		{
 			return modules.getModuleByName(ConsoleModuleNames.LOGGER) as ConsoleLogger;
 		}
-		
-		public function get logsFilter():ConsoleLogsFilter
-		{
-			return modules.getModuleByName(ConsoleModuleNames.LOGS_FILTER) as ConsoleLogsFilter;
-		}
 
 		public function get mainPanel():MainPanel
 		{

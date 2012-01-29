@@ -36,8 +36,8 @@ package com.junkbyte.console.view.mainPanel
 		{
 			var str:String = "";
 			var line:Log = console.logger.logs.last;
-			var showch:Boolean = console.logsFilter.viewingChannels.length != 1;
-			var lineShouldShow:Function = console.logsFilter.lineShouldShow;
+			var showch:Boolean = modules.logsFilter.viewingChannels.length != 1;
+			var lineShouldShow:Function = modules.logsFilter.lineShouldShow;
 			while (line)
 			{
 				if (lineShouldShow(line))
@@ -55,8 +55,8 @@ package com.junkbyte.console.view.mainPanel
 			var linesLeft:int = maxLines;
 
 			var line:Log = console.logger.logs.last;
-			var showch:Boolean = console.logsFilter.viewingChannels.length != 1;
-			var lineShouldShow:Function = console.logsFilter.lineShouldShow;
+			var showch:Boolean = modules.logsFilter.viewingChannels.length != 1;
+			var lineShouldShow:Function = modules.logsFilter.lineShouldShow;
 			while (line)
 			{
 				if (lineShouldShow(line))

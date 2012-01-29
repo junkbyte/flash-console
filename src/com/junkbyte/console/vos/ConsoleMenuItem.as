@@ -26,9 +26,10 @@
 package com.junkbyte.console.vos
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.core.ConsoleModulesManager;
 	import com.junkbyte.console.interfaces.IConsoleMenuItem;
 	import com.junkbyte.console.interfaces.IConsoleModule;
-
+	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 
@@ -110,6 +111,11 @@ package com.junkbyte.console.vos
 		protected function get console():Console
 		{
 			return module != null ? module.console : null;
+		}
+		
+		protected function get modules():ConsoleModulesManager
+		{
+			return console == null ? null: console.modules;
 		}
 	}
 }

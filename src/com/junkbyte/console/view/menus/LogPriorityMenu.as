@@ -19,13 +19,13 @@ package com.junkbyte.console.view.menus
 		override public function onMenuAdded(module:IConsoleModule):void
 		{
 			super.onMenuAdded(module);
-			console.logsFilter.addEventListener(ConsoleLogsFilter.FILTER_PRIORITY_CHANGED, onDispatch);
+			modules.logsFilter.addEventListener(ConsoleLogsFilter.FILTER_PRIORITY_CHANGED, onDispatch);
 			update();
 		}
 
 		override public function onMenuRemoved(module:IConsoleModule):void
 		{
-			console.logsFilter.removeEventListener(ConsoleLogsFilter.FILTER_PRIORITY_CHANGED, onDispatch);
+			modules.logsFilter.removeEventListener(ConsoleLogsFilter.FILTER_PRIORITY_CHANGED, onDispatch);
 			super.onMenuRemoved(module);
 		}
 
@@ -33,7 +33,7 @@ package com.junkbyte.console.view.menus
 		{
 			var keyStates:IKeyStates = console.modules.findModulesByMatcher(new ModuleTypeMatcher(IKeyStates)) as IKeyStates;
 
-			console.logsFilter.incPriority(keyStates != null && keyStates.shiftKeyDown);
+			modules.logsFilter.incPriority(keyStates != null && keyStates.shiftKeyDown);
 		}
 
 		protected function onDispatch(event:Event):void
@@ -44,8 +44,8 @@ package com.junkbyte.console.view.menus
 
 		protected function update():void
 		{
-			active = console.logsFilter.priority > 0;
-			name = "P" + console.logsFilter.priority;
+			active = modules.logsFilter.priority > 0;
+			name = "P" + modules.logsFilter.priority;
 		}
 	}
 }

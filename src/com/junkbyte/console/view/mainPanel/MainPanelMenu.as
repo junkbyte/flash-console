@@ -91,7 +91,7 @@ package com.junkbyte.console.view.mainPanel
 
 			display.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			console.logger.logs.addEventListener(ConsoleLogEvent.CHANNELS_CHANGED, onChannelsChanged);
-			console.logsFilter.addEventListener(ConsoleLogsFilter.CHANNEL_INTERESTS_CHANGED, onChannelsChanged);
+			modules.logsFilter.addEventListener(ConsoleLogsFilter.CHANNEL_INTERESTS_CHANGED, onChannelsChanged);
 
 			ConsoleTextRoller.register(_textField, textRollOverHandler, linkHandler);
 
@@ -249,7 +249,7 @@ package com.junkbyte.console.view.mainPanel
 			{
 				if (hasChannelsPanel == false)
 				{
-					str += console.logsFilter.getChannelsLink(style.maxChannelsInMenu);
+					str += modules.logsFilter.getChannelsLink(style.maxChannelsInMenu);
 				}
 				str += printMenus();
 			}
