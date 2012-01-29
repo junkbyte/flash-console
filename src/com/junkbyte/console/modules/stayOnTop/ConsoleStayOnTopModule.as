@@ -1,10 +1,7 @@
 package com.junkbyte.console.modules.stayOnTop
 {
-    import com.junkbyte.console.Console;
     import com.junkbyte.console.ConsoleLevel;
     import com.junkbyte.console.core.ConsoleModule;
-    import com.junkbyte.console.core.ConsoleTicker;
-    import com.junkbyte.console.events.ConsoleEvent;
     import com.junkbyte.console.view.ConsoleLayer;
     
     import flash.display.DisplayObjectContainer;
@@ -23,16 +20,14 @@ package com.junkbyte.console.modules.stayOnTop
         {
             super.registeredToConsole();
 			
-			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addUpdateViewCallback(onUpdateView);
+			modules.ticker.addUpdateViewCallback(onUpdateView);
         }
 		
 		override protected function unregisteredFromConsole():void
 		{
 			super.unregisteredFromConsole();
 			
-			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeUpdateViewCallback(onUpdateView);
+			modules.ticker.removeUpdateViewCallback(onUpdateView);
 		}
 
         private function onUpdateView(deltaTime:uint):void

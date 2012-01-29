@@ -1,7 +1,7 @@
 package com.junkbyte.console.core
 {
 
-	public class CallbackDispatcher
+	public class CcCallbackDispatcher
 	{
 
 		protected var _list:Vector.<Function> = new Vector.<Function>();

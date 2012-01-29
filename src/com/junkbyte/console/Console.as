@@ -97,10 +97,13 @@ package com.junkbyte.console
 		protected function init():void
 		{
 			style.updateStyleSheet();
+			
+			_layer = new ConsoleLayer();
+			
 			initModulesManager();
 			registerLoggingModules();
-			initConsoleLayer();
-			registerTickerModule();
+			
+			_layer.initUsingConsole(this);
 		}
 
 		protected function initModulesManager():void
@@ -120,17 +123,6 @@ package com.junkbyte.console
 			{
 				modules.registerModule(new ConsoleLogger());
 			}
-		}
-
-		protected function initConsoleLayer():void
-		{
-			_layer = new ConsoleLayer();
-			_layer.initUsingConsole(this);
-		}
-
-		protected function registerTickerModule():void
-		{
-			modules.registerModule(new ConsoleTicker());
 		}
 
 		protected function sayIntro():void

@@ -26,7 +26,7 @@
 package com.junkbyte.console.logging
 {
 	import com.junkbyte.console.ConsoleChannels;
-	import com.junkbyte.console.core.CallbackDispatcher;
+	import com.junkbyte.console.core.CcCallbackDispatcher;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleLogEvent;
@@ -54,7 +54,7 @@ package com.junkbyte.console.logging
 		protected var remoter:IRemoter;
 		private var _length:uint;
 		
-		private var addDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		private var addDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 		private var addArray:Array = new Array(1);
 
 		// private var _lines:uint; // number of lines since start.

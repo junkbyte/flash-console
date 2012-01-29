@@ -45,16 +45,28 @@ package com.junkbyte.console.core
 
 		protected var _console:Console;
 		
-		private var _textLinks:ConsoleTextLinks
+		private var _textLinks:ConsoleTextLinks;
 
 		public function ConsoleModulesManager(console:Console)
 		{
 			_console = console;
 			
-			_textLinks = new ConsoleTextLinks();
-			registerModule(_textLinks);
 
 			super();
+			
+			registerTextLinksModule();
+			registerTickerModule();
+		}
+		
+		protected function registerTextLinksModule():void
+		{
+			_textLinks = new ConsoleTextLinks();
+			registerModule(_textLinks);
+		}
+		
+		protected function registerTickerModule():void
+		{
+			registerModule(new ConsoleTicker());
 		}
 
 		public function getAllModules():Vector.<IConsoleModule>
@@ -183,6 +195,11 @@ package com.junkbyte.console.core
 		public function get logsFilter():ConsoleLogsFilter
 		{
 			return getModuleByName(ConsoleModuleNames.LOGS_FILTER) as ConsoleLogsFilter;
+		}
+		
+		public function get ticker():ConsoleTicker
+		{
+			return getModuleByName(ConsoleModuleNames.TICKER) as ConsoleTicker;
 		}
 	}
 }

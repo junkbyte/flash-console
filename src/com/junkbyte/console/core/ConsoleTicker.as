@@ -1,6 +1,8 @@
 package com.junkbyte.console.core
 {
 
+	import com.junkbyte.console.modules.ConsoleModuleNames;
+	
 	import flash.events.Event;
 	import flash.utils.getTimer;
 
@@ -9,14 +11,19 @@ package com.junkbyte.console.core
 
 		protected var lastTimer:Number;
 
-		protected var dataDispatcher:CallbackDispatcher = new CallbackDispatcher();
-		protected var viewDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		protected var dataDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
+		protected var viewDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 		
 		protected var deltaArray:Array = new Array(1);
 
 		public function ConsoleTicker()
 		{
 
+		}
+		
+		override public function getModuleName():String
+		{
+			return ConsoleModuleNames.TICKER;
 		}
 
 		override protected function registeredToConsole():void

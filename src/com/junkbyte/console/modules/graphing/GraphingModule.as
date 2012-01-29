@@ -1,9 +1,8 @@
 package com.junkbyte.console.modules.graphing
 {
 	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.core.ConsoleTicker;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
-
+	
 	import flash.events.Event;
 
 	public class GraphingModule extends ConsoleModule
@@ -74,16 +73,14 @@ package com.junkbyte.console.modules.graphing
 
 			graphModule.registerGroup(_group);
 
-			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addUpdateDataCallback(onUpdateData);
+			modules.ticker.addUpdateDataCallback(onUpdateData);
 
 			pushValues();
 		}
 
 		protected function onGroupClose(event:Event):void
 		{
-			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeUpdateDataCallback(onUpdateData);
+			modules.ticker.removeUpdateDataCallback(onUpdateData);
 			
 			_group.removeEventListener(Event.CLOSE, onGroupClose);
 			_group = null;

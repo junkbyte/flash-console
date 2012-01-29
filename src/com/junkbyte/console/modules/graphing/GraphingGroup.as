@@ -1,6 +1,6 @@
 package com.junkbyte.console.modules.graphing
 {
-	import com.junkbyte.console.core.CallbackDispatcher;
+	import com.junkbyte.console.core.CcCallbackDispatcher;
 	import com.junkbyte.console.view.ConsolePanel;
 
 	import flash.events.Event;
@@ -21,7 +21,7 @@ package com.junkbyte.console.modules.graphing
 
 		public var lines:Vector.<GraphingLine> = new Vector.<GraphingLine>();
 
-		private var pushDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		private var pushDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 		private var pushDeltaArray:Array = new Array(2);
 
 		public function GraphingGroup()

@@ -34,6 +34,7 @@ package com.junkbyte.console.modules
 		public static const LOGS_FILTER:String = "logsFilter";
 		public static const TOOLTIPS:String = "tooltips";
 		public static const MAIN_PANEL:String = "mainPanel";
+		public static const TICKER:String = "ticker";
 		
 		public static const KEYBINDER:String = "keyBinder";
 		public static const KEY_STATES:String = "keyStates";

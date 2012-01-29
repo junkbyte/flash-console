@@ -1,7 +1,7 @@
 package com.junkbyte.console.view.mainPanel
 {
 	import com.junkbyte.console.ConsoleChannels;
-	import com.junkbyte.console.core.CallbackDispatcher;
+	import com.junkbyte.console.core.CcCallbackDispatcher;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ModuleNameMatcher;
 	import com.junkbyte.console.logging.ConsoleLogs;
@@ -10,7 +10,7 @@ package com.junkbyte.console.view.mainPanel
 
 	public class ConsoleMainOutputProvider extends ConsoleModule implements ConsoleOutputProvider
 	{
-		protected var outputUpdateDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		protected var outputUpdateDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 
 		public function ConsoleMainOutputProvider()
 		{

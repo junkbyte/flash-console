@@ -27,8 +27,7 @@ package com.junkbyte.console.modules.garbageCollectionMonitor
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ConsoleModulesManager;
-	import com.junkbyte.console.core.ConsoleTicker;
-
+	
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
@@ -54,8 +53,7 @@ package com.junkbyte.console.modules.garbageCollectionMonitor
 		override public function registeredToConsole(console:Console):void
 		{
 			super.registeredToConsole(console);
-			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addUpdateDataCallback(onUpdateData);
+			modules.ticker.addUpdateDataCallback(onUpdateData);
 		}
 
 		override public function getModuleName():String

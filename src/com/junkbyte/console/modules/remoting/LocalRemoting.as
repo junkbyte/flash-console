@@ -24,19 +24,10 @@
 */
 package com.junkbyte.console.modules.remoting 
 {
-	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
-	import com.junkbyte.console.core.ConsoleTicker;
-	import com.junkbyte.console.events.ConsoleEvent;
 	import com.junkbyte.console.interfaces.IRemoter;
-	import com.junkbyte.console.modules.ConsoleModuleNames;
 	
-	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
-	import flash.events.IOErrorEvent;
-	import flash.events.ProgressEvent;
-	import flash.events.SecurityErrorEvent;
-	import flash.events.StatusEvent;
 	import flash.net.LocalConnection;
 	import flash.net.Socket;
 	import flash.system.Security;
@@ -98,8 +89,7 @@ package com.junkbyte.console.modules.remoting
 		{
 			super.registeredToConsole(console);
 			
-			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.addUpdateViewCallback(onDataUpdated);
+			modules.ticker.addUpdateViewCallback(onDataUpdated);
 			
 			
 			modules.textLinks.addLinkCallback("settings", onSettingsLinkClicked);
@@ -124,8 +114,7 @@ package com.junkbyte.console.modules.remoting
 		{
 			super.unregisteredFromConsole(console);
 			
-			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
-			ticker.removeUpdateViewCallback(onDataUpdated);
+			modules.ticker.removeUpdateViewCallback(onDataUpdated);
 		}
 		
 		public function onDataUpdated(msDelta:uint):void
