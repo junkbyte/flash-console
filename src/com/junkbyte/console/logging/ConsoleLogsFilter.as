@@ -26,6 +26,7 @@
 package com.junkbyte.console.logging
 {
 	import com.junkbyte.console.ConsoleChannels;
+	import com.junkbyte.console.ConsoleLevel;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.interfaces.IKeyStates;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
@@ -45,6 +46,8 @@ package com.junkbyte.console.logging
 		private var _ignoredChannels:Vector.<String> = new Vector.<String>();
 		private var _priority:uint;
 
+		private var _linkMaps:Vector.<LinkMap> = new Vector.<LinkMap>();
+
 		public function ConsoleLogsFilter()
 		{
 			super();
@@ -53,6 +56,13 @@ package com.junkbyte.console.logging
 		override public function getModuleName():String
 		{
 			return ConsoleModuleNames.LOGS_FILTER;
+		}
+
+		override protected function registeredToConsole():void
+		{
+			super.registeredToConsole();
+
+			console.logsFilter.addLinkCallback(/channel_.*/, onChannelLinkClicked);
 		}
 
 		public function getChannelsLink(maxChannels:uint = uint.MAX_VALUE):String
@@ -79,8 +89,9 @@ package com.junkbyte.console.logging
 			return str;
 		}
 
-		public function onChannelPressed(chn:String):void
+		protected function onChannelLinkClicked(link:String):void
 		{
+			var chn:String = link.substring(8);
 			var current:Vector.<String>;
 
 			var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
@@ -123,7 +134,6 @@ package com.junkbyte.console.logging
 		public function set priority(p:uint):void
 		{
 			_priority = p;
-			//_defaultOutputProvider.changed();
 			dispatchEvent(new Event(FILTER_PRIORITY_CHANGED));
 		}
 
@@ -215,7 +225,6 @@ package com.junkbyte.console.logging
 					_viewingChannels.push(ch);
 				}
 			}
-			//_defaultOutputProvider.changed();
 			announceChannelInterestChanged();
 		}
 
@@ -241,7 +250,6 @@ package com.junkbyte.console.logging
 					_ignoredChannels.push(ch);
 				}
 			}
-			//_defaultOutputProvider.changed();
 			announceChannelInterestChanged();
 		}
 
@@ -254,5 +262,98 @@ package com.junkbyte.console.logging
 		{
 			dispatchEvent(new Event(CHANNEL_INTERESTS_CHANGED));
 		}
+		
+		
+		
+		
+		
+		public function onLinkClicked(link:String):void
+		{
+			var linkMap:LinkMap = findLinkMapForTerm(link);
+			if (linkMap == null)
+			{
+				report("Unsupported link: [" + link + "].", ConsoleLevel.CONSOLE_EVENT);
+			}
+			else
+			{
+				linkMap.callback(link);
+			}
+		}
+		
+		public function addLinkCallback(expression:*, callback:Function):void
+		{
+			var linkMap:LinkMap = new LinkMap(expression);
+			linkMap.callback = callback;
+			_linkMaps.push(linkMap);
+		}
+		
+		public function removeLinkCallback(expression:*, callback:Function):void
+		{
+			for (var i:int = _linkMaps.length - 1; i >= 0; i--)
+			{
+				if (_linkMaps[i].equals(expression) && _linkMaps[i].callback == callback)
+				{
+					_linkMaps.splice(i, 1);
+				}
+			}
+		}
+		
+		private function findLinkMapForTerm(link:String):LinkMap
+		{
+			for each (var linkMap:LinkMap in _linkMaps)
+			{
+				if (linkMap.matches(link))
+				{
+					return linkMap;
+				}
+			}
+			return null;
+		}
+	}
+}
+
+class LinkMap
+{
+
+	public var string:String;
+	public var regexp:RegExp;
+	public var callback:Function;
+
+	public function LinkMap(expression:*)
+	{
+		if (expression is String)
+		{
+			string = expression as String;
+		}
+		else if (expression is RegExp)
+		{
+			regexp = expression as RegExp;
+		}
+		else
+		{
+			throw new Error("Unknow link callback exp: " + expression);
+		}
+	}
+
+	public function matches(term:String):Boolean
+	{
+		if (regexp == null)
+		{
+			return string == term;
+		}
+		return term.replace(regexp, "") == "";
+	}
+
+	public function equals(expression:*):Boolean
+	{
+		if (regexp == null && expression is String)
+		{
+			return string == expression;
+		}
+		else if (regexp != null && expression is RegExp)
+		{
+			return regexp.source == RegExp(expression).source;
+		}
+		return false;
 	}
 }

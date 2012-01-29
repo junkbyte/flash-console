@@ -31,8 +31,7 @@ package com.junkbyte.console.events
 
 	public class ConsoleLogEvent extends Event
 	{
-		public static const ENTRTY_ADDED:String = "entryadded";
-		public static const ENTRIES_CHANGED:String = "entriesChanged";
+		public static const ENTRIES_CLEARED:String = "entriesCleared";
 		public static const CHANNEL_ADDED:String = "channelAdded";
 		public static const CHANNELS_CHANGED:String = "channelsChanged";
 

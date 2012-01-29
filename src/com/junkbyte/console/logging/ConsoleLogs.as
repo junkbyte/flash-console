@@ -26,6 +26,7 @@
 package com.junkbyte.console.logging
 {
 	import com.junkbyte.console.ConsoleChannels;
+	import com.junkbyte.console.core.CallbackDispatcher;
 	import com.junkbyte.console.core.ConsoleModule;
 	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.events.ConsoleLogEvent;
@@ -52,6 +53,9 @@ package com.junkbyte.console.logging
 		public var last:Log;
 		protected var remoter:IRemoter;
 		private var _length:uint;
+		
+		private var addDispatcher:CallbackDispatcher = new CallbackDispatcher();
+		private var addArray:Array = new Array(1);
 
 		// private var _lines:uint; // number of lines since start.
 		public function ConsoleLogs()
@@ -111,10 +115,8 @@ package com.junkbyte.console.logging
 		public function addEntry(entry:Log):void
 		{
 			add(entry);
-
-			var event:ConsoleLogEvent = new ConsoleLogEvent(ConsoleLogEvent.ENTRTY_ADDED);
-			event.entry = entry;
-			dispatchEvent(event);
+			addArray[0] = entry;
+			addDispatcher.apply(addArray);
 		}
 
 		public function add(line:Log):void
@@ -127,7 +129,6 @@ package com.junkbyte.console.logging
 			{
 				remove(first);
 			}
-			announceLogsChanged();
 		}
 
 		public function clear(channel:String = null):void
@@ -153,17 +154,22 @@ package com.junkbyte.console.logging
 				_channels = new Object();
 			}
 			announceChannelChanged();
-			announceLogsChanged();
+			dispatchEvent(new ConsoleLogEvent(ConsoleLogEvent.ENTRIES_CLEARED));
 		}
 
 		private function announceChannelChanged():void
 		{
 			dispatchEvent(new ConsoleLogEvent(ConsoleLogEvent.CHANNELS_CHANGED));
 		}
-
-		private function announceLogsChanged():void
+		
+		public function addEntryAddedCallback(callback:Function):void
 		{
-			dispatchEvent(new ConsoleLogEvent(ConsoleLogEvent.ENTRIES_CHANGED));
+			addDispatcher.add(callback);
+		}
+		
+		public function removeEntryAddedCallback(callback:Function):void
+		{
+			addDispatcher.remove(callback);
 		}
 
 		public function getAllLog(splitter:String = "\r\n"):String

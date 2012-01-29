@@ -49,7 +49,7 @@ package com.junkbyte.console.modules.commandLine
 
 			addModuleRegisteryCallback(new ModuleTypeMatcher(IRemoter), remoterRegistered, remoterUnregistered);
 		}
-
+		
 		protected function remoterRegistered(remoter:IRemoter):void
 		{
 			remoter.registerCallback("cmd", function(bytes:ByteArray):void
@@ -61,11 +61,6 @@ package com.junkbyte.console.modules.commandLine
 		protected function remoterUnregistered(remoter:IRemoter):void
 		{
 			remoter.registerCallback("cmd", null);
-		}
-
-		override public function getModuleName():String
-		{
-			return ConsoleModuleNames.COMMAND_LINE;
 		}
 
 		public function getHintsFor(str:String, max:uint):Array

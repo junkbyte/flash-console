@@ -40,6 +40,7 @@ package com.junkbyte.console.modules.remoting
 	import flash.net.LocalConnection;
 	import flash.net.Socket;
 	import flash.system.Security;
+	import flash.system.SecurityPanel;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 
@@ -99,7 +100,25 @@ package com.junkbyte.console.modules.remoting
 			
 			var ticker:ConsoleTicker = modules.findFirstModuleByClass(ConsoleTicker) as ConsoleTicker;
 			ticker.addUpdateViewCallback(onDataUpdated);
+			
+			
+			console.logsFilter.addLinkCallback("settings", onSettingsLinkClicked);
+			console.logsFilter.addLinkCallback("remote", onRemoteLinkClicked);
 		}
+		
+		private function onSettingsLinkClicked(link:String):void
+		{
+			logger.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
+			Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
+		}
+		
+		private function onSettingsLinkClicked(link:String):void
+		{
+			central.remoter.remoting = Remoting.RECIEVER;
+			} else if(t.indexOf("ref")==0){
+			//	central.refs.handleRefEvent(t);
+		}
+			
 		
 		override protected function unregisteredFromConsole():void
 		{

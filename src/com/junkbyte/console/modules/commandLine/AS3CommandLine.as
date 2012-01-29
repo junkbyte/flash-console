@@ -26,13 +26,14 @@ package com.junkbyte.console.modules.commandLine
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.core.ModuleTypeMatcher;
+	import com.junkbyte.console.interfaces.ICommandLine;
 	import com.junkbyte.console.interfaces.IConsoleModule;
 	import com.junkbyte.console.interfaces.IRemoter;
 	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.modules.referencing.ConsoleReferencingModule;
 	import com.junkbyte.console.utils.EscHTML;
 	import com.junkbyte.console.utils.getQualifiedShortClassName;
-	import com.junkbyte.console.core.ModuleTypeMatcher;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
 	
@@ -41,7 +42,6 @@ package com.junkbyte.console.modules.commandLine
 	import flash.utils.ByteArray;
 	import flash.utils.describeType;
 	import flash.utils.getQualifiedClassName;
-	import com.junkbyte.console.interfaces.ICommandLine;
 
 	public class AS3CommandLine extends ConsoleModule implements ICommandLine
 	{
@@ -84,6 +84,18 @@ package com.junkbyte.console.modules.commandLine
 			_scope = console;
 			_prevScope = new WeakRef(console);
 			_saved.set("C", console);
+			
+			console.logsFilter.addLinkCallback(/cl_.*/, onCLLinkClicked);
+		}
+		
+		private function onCLLinkClicked(link:String):void
+		{
+			var ind:int = link.indexOf("_", 3);
+			handleScopeEvent(uint(link.substring(3, ind<0?link.length:ind)));
+			/*if (ind >= 0)
+			{
+				_commandArea.inputText = link.substring(ind + 1);
+			}*/
 		}
 		
 		override public function getDependentModules():Vector.<ModuleTypeMatcher>

@@ -3,15 +3,33 @@ package com.junkbyte.console.view.mainPanel
 	import com.junkbyte.console.ConsoleChannels;
 	import com.junkbyte.console.core.CallbackDispatcher;
 	import com.junkbyte.console.core.ConsoleModule;
+	import com.junkbyte.console.core.ModuleNameMatcher;
+	import com.junkbyte.console.logging.ConsoleLogs;
+	import com.junkbyte.console.modules.ConsoleModuleNames;
 	import com.junkbyte.console.vos.Log;
 
-	public class DefaultOutputProvider extends ConsoleModule implements ConsoleOutputProvider
+	public class ConsoleMainOutputProvider extends ConsoleModule implements ConsoleOutputProvider
 	{
 		protected var outputUpdateDispatcher:CallbackDispatcher = new CallbackDispatcher();
 
-		public function DefaultOutputProvider()
+		public function ConsoleMainOutputProvider()
 		{
-
+			addModuleRegisteryCallback(new ModuleNameMatcher(ConsoleModuleNames.LOGS), onLogsAdded, onLogsRemoved);
+		}
+		
+		private function onLogsAdded(logs:ConsoleLogs):void
+		{
+			logs.addEntryAddedCallback(onLogsEntryAdded);
+		}
+		
+		private function onLogsRemoved(logs:ConsoleLogs):void
+		{
+			logs.removeEntryAddedCallback(onLogsEntryAdded);
+		}
+		
+		private function onLogsEntryAdded(entry:Log):void
+		{
+			changed();
 		}
 
 		public function getFullOutput():String

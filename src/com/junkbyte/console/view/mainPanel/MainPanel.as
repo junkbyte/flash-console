@@ -54,7 +54,7 @@ package com.junkbyte.console.view.mainPanel
 		private var _enteringLogin:Boolean;
 		private var _movedFrom:Point;
 
-		protected var _defaultOutputProvider:DefaultOutputProvider;
+		protected var _defaultOutputProvider:ConsoleMainOutputProvider;
 
 		public function MainPanel()
 		{
@@ -74,7 +74,7 @@ package com.junkbyte.console.view.mainPanel
 			super.initToConsole();
 			sprite.name = ConsoleModuleNames.MAIN_PANEL;
 
-			_defaultOutputProvider = new DefaultOutputProvider();
+			_defaultOutputProvider = new ConsoleMainOutputProvider();
 			modules.registerModule(_defaultOutputProvider);
 			//
 			_menu = new MainPanelMenu(this);
@@ -98,6 +98,9 @@ package com.junkbyte.console.view.mainPanel
 
 			addToLayer();
 			addMenus();
+			
+			
+			console.logsFilter.addLinkCallback("channels", onChannelsLinkClicked);
 		}
 
 		public function setOutputProvider(provider:ConsoleOutputProvider):void
@@ -210,45 +213,15 @@ package com.junkbyte.console.view.mainPanel
 		{
 			_menu.textField.setSelection(0, 0);
 			sprite.stopDrag();
-			var t:String = e.text;
-			if (t == "channels")
-			{
-				toggleChannelsPanel();
-			}
-			/*else if(t == "priority"){
-				var keyStates:IKeyStates = modules.getModuleByName(ConsoleModuleNames.KEY_STATES) as IKeyStates;
-
-				traces.incPriority(keyStates != null && keyStates.shiftKeyDown);
-			}*/
-			else if (t == "settings")
-			{
-				logger.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", ConsoleLevel.CONSOLE_STATUS);
-				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
-			}
-			else if (t == "remote")
-			{
-				//central.remoter.remoting = Remoting.RECIEVER;
-				//} else if(t.indexOf("ref")==0){
-				//	central.refs.handleRefEvent(t);
-			}
-			else if (t.indexOf("channel_") == 0)
-			{
-				console.logsFilter.onChannelPressed(t.substring(8));
-			}
-			else if (t.indexOf("cl_") == 0)
-			{
-				var ind:int = t.indexOf("_", 3);
-				//central.cl.handleScopeEvent(uint(t.substring(3, ind<0?t.length:ind)));
-				if (ind >= 0)
-				{
-					_commandArea.inputText = t.substring(ind + 1);
-				}
-			}
+			
+			console.logsFilter.onLinkClicked(e.text);
+			
 			_menu.textField.setSelection(0, 0);
 			e.stopPropagation();
+			
 		}
 
-		private function toggleChannelsPanel():void
+		private function onChannelsLinkClicked(link:String):void
 		{
 			var channelsPanel:ChannelsPanel = modules.getModuleByName(ConsoleModuleNames.CHANNELS_PANEL) as ChannelsPanel;
 			if (channelsPanel != null)
