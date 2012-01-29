@@ -122,7 +122,7 @@ package com.junkbyte.console.modules.graphing
 				var value:Number = values[X];
 				str += " <font color='#" + line.color.toString(16) + "'>" + value + "</font>";
 			}
-			str += createMenuString() + "</low></r>";
+			str += getMenuString() + "</low></r>";
 			textField.htmlText = str;
 			textField.scrollH = textField.maxScrollH;
 		}
@@ -144,7 +144,6 @@ package com.junkbyte.console.modules.graphing
 			{
 				str += "<menu><a href=\"event:" + menu + "\">" + menu + "</a> ";
 			}
-
 			return str + "</menu>";
 		}
 
