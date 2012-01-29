@@ -15,12 +15,14 @@ package com.junkbyte.console.modules.graphing
 		protected var _graph:GraphingBitmap;
 		protected var textField:TextField;
 
+		protected var _menuString:String;
+
 		public function GraphingPanelModule(group:GraphingGroup)
 		{
 			super();
 
 			_group = group;
-			
+
 		}
 
 		public function get group():GraphingGroup
@@ -120,21 +122,46 @@ package com.junkbyte.console.modules.graphing
 				var value:Number = values[X];
 				str += " <font color='#" + line.color.toString(16) + "'>" + value + "</font>";
 			}
-			str += " | <menu><a href=\"event:reset\">R</a>";
-			str += " <a href=\"event:close\">X</a></menu></low></r>";
+			str += createMenuString() + "</low></r>";
 			textField.htmlText = str;
 			textField.scrollH = textField.maxScrollH;
+		}
+
+		protected function getMenuString():String
+		{
+			if (_menuString == null)
+			{
+				_menuString = createMenuString();
+			}
+			return _menuString;
+		}
+		
+		// TODO , use menu feature, like in main menu
+		protected function createMenuString():String
+		{
+			var str:String = " | <menu>";
+			for each (var menu:String in getMenuKeys())
+			{
+				str += "<menu><a href=\"event:" + menu + "\">" + menu + "</a> ";
+			}
+
+			return str + "</menu>";
+		}
+
+		protected function getMenuKeys():Vector.<String>
+		{
+			return Vector.<String>(["R", "X"]);
 		}
 
 		protected function onTextLinkHandler(e:TextEvent):void
 		{
 			e.stopPropagation();
 			TextField(e.currentTarget).setSelection(0, 0);
-			if (e.text == "reset")
+			if (e.text == "R")
 			{
 				reset();
 			}
-			else if (e.text == "close")
+			else if (e.text == "X")
 			{
 				group.close();
 			}

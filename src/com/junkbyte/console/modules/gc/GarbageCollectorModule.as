@@ -7,10 +7,10 @@ package com.junkbyte.console.modules.gc
     
     import flash.system.System;
 
-    public class GarbageCollectModule extends ConsoleModule implements IConsoleOnDemandModule
+    public class GarbageCollectorModule extends ConsoleModule implements IConsoleOnDemandModule
     {
 		
-        public function GarbageCollectModule()
+        public function GarbageCollectorModule()
         {
             super();
         }

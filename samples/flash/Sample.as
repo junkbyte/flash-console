@@ -29,6 +29,7 @@ package
 	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.ConsoleVersion;
 	import com.junkbyte.console.modules.commandLine.SlashCommandLine;
+	import com.junkbyte.console.modules.gc.GarbageCollectorModule;
 	import com.junkbyte.console.modules.graphing.GraphingCentralModule;
 	import com.junkbyte.console.modules.graphing.GraphingGroup;
 	import com.junkbyte.console.modules.graphing.custom.CustomGraphingGroup;
@@ -85,6 +86,8 @@ package
 			Cc.modules.registerModule(new GraphingCentralModule());
 			
 			Cc.modules.registerModule(new FPSGraphingModule(true));
+			
+			Cc.modules.registerModule(new GarbageCollectorModule());
 			
 			Cc.modules.registerModule(new MemoryGraphingModule(true));
 			
