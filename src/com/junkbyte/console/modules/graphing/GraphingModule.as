@@ -11,7 +11,7 @@ package com.junkbyte.console.modules.graphing
 
 		protected var timeSinceUpdate:uint;
 
-		private var _group:GraphingGroup;
+		protected var _group:GraphingGroup;
 
 		public function GraphingModule()
 		{
@@ -117,7 +117,7 @@ package com.junkbyte.console.modules.graphing
 			{
 				if (values.length != _group.lines.length)
 				{
-					throw new Error("Graphing: getValues() must retun the same number of lenght as group.lines.length.");
+					throw new Error("Graphing: getValues() must retun the same number of length as group.lines.length.");
 				}
 				_group.push(values);
 			}

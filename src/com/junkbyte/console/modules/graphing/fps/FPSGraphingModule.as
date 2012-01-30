@@ -90,7 +90,7 @@ package com.junkbyte.console.modules.graphing.fps
 		override protected function createGraphingGroup():GraphingGroup
 		{
 			var group:FPSGraphingGroup = new FPSGraphingGroup();
-			group.updateFrequencyMS = 200;
+			group.updateFrequencyMS = 250;
 			group.fixedMin = 0;
 			group.fixedMax = stage.frameRate;
 
@@ -105,7 +105,17 @@ package com.junkbyte.console.modules.graphing.fps
 		override protected function onUpdateData(msDelta:uint):void
 		{
 			frames++;
-			super.onUpdateData(msDelta);
+			if(console.paused)
+			{
+				return;
+			}
+			timeSinceUpdate += msDelta;
+			
+			while (timeSinceUpdate >= _group.updateFrequencyMS)
+			{
+				pushValues();
+				timeSinceUpdate = timeSinceUpdate - _group.updateFrequencyMS;
+			}
 		}
 
 		override protected function getValues():Vector.<Number>

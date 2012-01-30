@@ -230,7 +230,7 @@ package com.junkbyte.console.view.mainPanel
 
 		protected function onMenuChanged(event:Event):void
 		{
-			_needsUpdate = true;
+			invalidate();
 		}
 
 		public function invalidate():void
@@ -276,6 +276,7 @@ package com.junkbyte.console.view.mainPanel
 			}
 			return str;
 		}
+		
 		private function linkHandler(e:TextEvent):void
 		{
 			sprite.stopDrag();
