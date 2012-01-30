@@ -104,11 +104,11 @@ package com.junkbyte.console.modules.graphing.fps
 		
 		override protected function onUpdateData(msDelta:uint):void
 		{
-			frames++;
 			if(console.paused)
 			{
 				return;
 			}
+			frames++;
 			timeSinceUpdate += msDelta;
 			
 			while (timeSinceUpdate >= _group.updateFrequencyMS)
