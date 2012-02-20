@@ -43,12 +43,12 @@ package com.junkbyte.console.addons.htmlexport
 	 * <ul>
 	 * <li>Preserves channels and priorities.</li>
 	 * <li>It also have all those filtering features in HTML page.</li>
-	 * <li>Add to Console menu by calling ConsoleHtmlExport.register();</li>
+	 * <li>Add to Console menu by calling ConsoleHtmlExport.addMenuToConsole();</li>
 	 * </ul>
 	 * 
 	 * REQUIRES Flash Player 11.0 OR com.adobe.serialization.json.JSON library.
 	 */
-	public class ConsoleHtmlExport
+	public class ConsoleHtmlExportAddon
 	{
 		[Embed(source = "template.html", mimeType = "application/octet-stream")]
 		private static var EmbeddedTemplate:Class;
@@ -60,28 +60,28 @@ package com.junkbyte.console.addons.htmlexport
 		protected var console:Console;
 		
 		/**
-		 * Regiter to Console by adding 'export' menu item at the top menu.
+		 * Adding 'export' menu item at the top menu of Console.
 		 * 
 		 * @param console Instance to Console. You do not need to pass this param if you use Cc.
 		 * 
 		 * @return New ConsoleHTMLExport instance created by this method.
 		 */
-		public static function register(console:Console = null):ConsoleHtmlExport
+		public static function addMenuToConsole(console:Console = null):ConsoleHtmlExportAddon
 		{
 			if (console == null)
 			{
 				console = Cc.instance;
 			}
-			var exporter:ConsoleHtmlExport;
+			var exporter:ConsoleHtmlExportAddon;
 			if (console)
 			{
-				exporter = new ConsoleHtmlExport(console);
+				exporter = new ConsoleHtmlExportAddon(console);
 				console.addMenu("export", exporter.exportToFile, new Array(), "Export logs to HTML");
 			}
 			return exporter;
 		}
 
-		public function ConsoleHtmlExport(console:Console):void
+		public function ConsoleHtmlExportAddon(console:Console):void
 		{
 			if (console == null)
 			{

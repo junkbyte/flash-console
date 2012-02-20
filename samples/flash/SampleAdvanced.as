@@ -25,8 +25,9 @@
 package 
 {
 	import com.junkbyte.console.Cc;
+	import com.junkbyte.console.addons.autoFocus.CommandLineAutoFocusAddon;
 	import com.junkbyte.console.addons.displaymap.DisplayMapAddon;
-	import com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport;
+	import com.junkbyte.console.addons.htmlexport.ConsoleHtmlExportAddon;
 	
 	import flash.display.*;
 	import flash.geom.Rectangle;
@@ -106,13 +107,14 @@ package
 			// register 'export' button, which exports logs to HTML. (This is an addon).
 			// source file located at samples/addons/  com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport
 			// requires JSON: com.adobe.serialization.json.JSON
-			ConsoleHtmlExport.register();
-			
+			ConsoleHtmlExportAddon.addMenuToConsole();
 			
 			
 			DisplayMapAddon.registerCommand();
-			DisplayMapAddon.addToMenu("DM"); // click on DM button at top menu to start.
+			DisplayMapAddon.addToMenu("DM"); // DisplayMapper. click on DM button at top menu to start.
 			
+			
+			CommandLineAutoFocusAddon.registerToConsole(); // this addon auto focus to commandline when console becomes visible
 			
 			// Test of Cc.stack,  If you have debugger version installed you will see a stack trace like:
 			// HELLO
