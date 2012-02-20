@@ -27,7 +27,7 @@ package com.junkbyte.console.addons.displaymap
     import com.junkbyte.console.Cc;
     import com.junkbyte.console.Console;
     import com.junkbyte.console.view.ConsolePanel;
-
+    
     import flash.display.DisplayObject;
 	
 	/**
@@ -45,10 +45,10 @@ package com.junkbyte.console.addons.displaymap
 		/**
 		 * Start DisplayMapAddon
 		 * 
-		 * @param targetDisplay Starting display object in mapping.
+		 * @param startingContainer Starting DisplayObject to map.
 		 * @param console Instance to Console. You do not need to pass this param if you use Cc.
 		 */
-        public static function start(targetDisplay:DisplayObject, console:Console = null):void
+        public static function start(targetDisplay:DisplayObject, console:Console = null):DisplayMapPanel
         {
             if (console == null)
             {
@@ -56,11 +56,12 @@ package com.junkbyte.console.addons.displaymap
             }
             if (console == null)
             {
-                return;
+                return null;
             }
             var mapPanel:DisplayMapPanel = new DisplayMapPanel(console);
             mapPanel.start(targetDisplay);
             console.panels.addPanel(mapPanel);
+			return mapPanel;
         }
 		
 		/**
@@ -100,9 +101,10 @@ package com.junkbyte.console.addons.displaymap
 		 * Add DisplayMapAddon to console top menu.
 		 * 
 		 * @param menuName Name of menu. Default = 'DM'
+		 * @param startingContainer Starting DisplayObject to map. When null, it uses console's parent display.
 		 * @param console Instance to Console. You do not need to pass this param if you use Cc.
 		 */
-        public static function addToMenu(menuName:String = "DM", console:Console = null):void
+        public static function addToMenu(menuName:String = "DM", startingContainer:DisplayObject = null, console:Console = null):void
         {
             if (console == null)
             {
@@ -112,10 +114,24 @@ package com.junkbyte.console.addons.displaymap
             {
                 return;
             }
-
+			
             var callbackFunction:Function = function():void
             {
-                start(console.parent);
+				var panel:DisplayMapPanel = console.panels.getPanel(DisplayMapPanel.NAME) as DisplayMapPanel;
+				if(panel)
+				{
+					panel.close();
+				}
+				else
+				{
+					if(startingContainer == null)
+					{
+						startingContainer = console.parent;
+					}
+					panel = start(startingContainer);
+					panel.x = console.mouseX - panel.width * 0.5;
+					panel.y = console.mouseY + 10;
+				}
             }
             console.addMenu(menuName, callbackFunction);
         }

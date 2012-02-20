@@ -24,9 +24,10 @@
 */
 package 
 {
-	import com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport;
 	import com.junkbyte.console.Cc;
-
+	import com.junkbyte.console.addons.displaymap.DisplayMapAddon;
+	import com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport;
+	
 	import flash.display.*;
 	import flash.geom.Rectangle;
 
@@ -106,6 +107,11 @@ package
 			// source file located at samples/addons/  com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport
 			// requires JSON: com.adobe.serialization.json.JSON
 			ConsoleHtmlExport.register();
+			
+			
+			
+			DisplayMapAddon.registerCommand();
+			DisplayMapAddon.addToMenu("DM"); // click on DM button at top menu to start.
 			
 			
 			// Test of Cc.stack,  If you have debugger version installed you will see a stack trace like:

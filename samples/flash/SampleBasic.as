@@ -27,7 +27,6 @@ package
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
-	import com.junkbyte.console.addons.displaymap.DisplayMapAddon;
 	
 	import flash.display.*;
 	import flash.events.*;
@@ -37,7 +36,7 @@ package
 	[SWF(width='640',height='480',backgroundColor='0xDDDDDD',frameRate='30')]
 	public class SampleBasic extends MovieClip{
 		
-		[Embed(source="SampleAssets.swf", symbol="SampleScreenClip", mimeType="application/x-shockwave-flash" )]
+		[Embed(source="../SampleAssets.swf", symbol="SampleScreenClip", mimeType="application/x-shockwave-flash" )]
         public var ScreenClipClass:Class;
         public var screenClip:Sprite;
         
@@ -64,10 +63,6 @@ package
 			//
 			// End of setup
 			//
-			
-			DisplayMapAddon.registerCommand();
-			DisplayMapAddon.addToMenu(); // click on DM button at top menu to start.
-			
 			
 			demoBasics();
 			
