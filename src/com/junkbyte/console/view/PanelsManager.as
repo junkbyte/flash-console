@@ -62,8 +62,8 @@ package com.junkbyte.console.view
 			}else{
 				console.addChild(panel);
 			}
-			panel.addEventListener(ConsolePanel.DRAGGING, onPanelStartDragScale, false,0, true);
-			panel.addEventListener(ConsolePanel.SCALING, onPanelStartDragScale, false,0, true);
+			panel.addEventListener(ConsolePanel.DRAGGING_STARTED, onPanelStartDragScale, false,0, true);
+			panel.addEventListener(ConsolePanel.SCALING_STARTED, onPanelStartDragScale, false,0, true);
 		}
 		public function removePanel(n:String):void{
 			var panel:ConsolePanel = console.getChildByName(n) as ConsolePanel;

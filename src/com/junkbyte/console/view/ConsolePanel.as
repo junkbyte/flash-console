@@ -38,14 +38,43 @@ package com.junkbyte.console.view {
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
-
+	
 	/**
-	 * @private
+	 * Dispatched when dragging / moving started
 	 */
+	[Event(name="draggingStarted", type="flash.events.Event")]
+	/**
+	 * Dispatched when dragging / moving stopped
+	 */
+	[Event(name="draggingEnded", type="flash.events.Event")]
+	
+	/**
+	 * Dispatched when scaling panel started
+	 */
+	[Event(name="scalingStarted", type="flash.events.Event")]
+	/**
+	 * Dispatched when scaling panel stopped
+	 */
+	[Event(name="scalingEnded", type="flash.events.Event")]
+	
+	/**
+	 * Dispatched when visible property is set
+	 */
+	[Event(name="visibilityChanged", type="flash.events.Event")]
+	
+	/**
+	 * Dispatched when started dragging
+	 */
+	[Event(name="close", type="flash.events.Event")]
+	
 	public class ConsolePanel extends Sprite {
 		
-		public static const DRAGGING:String = "DRAGGING";
-		public static const SCALING:String = "SCALING";
+		public static const DRAGGING_STARTED:String = "draggingStarted";
+		public static const DRAGGING_ENDED:String = "draggingEnded";
+		
+		public static const SCALING_STARTED:String = "scalingStarted";
+		public static const SCALING_ENDED:String = "scalingEnded";
+		
 		public static const VISIBLITY_CHANGED:String = "visibilityChanged";
 		
 		//[Event(name="TEXT_ROLL", type="flash.events.TextEvent")]
@@ -64,6 +93,9 @@ package com.junkbyte.console.view {
 		protected var minHeight:int = 18;
 		
 		private var _movedFrom:Point;
+		/**
+		 * Specifies whether this panel can be moved from GUI.
+		 */
 		public var moveable:Boolean = true;
 		
 		public function ConsolePanel(m:Console) {
@@ -96,12 +128,17 @@ package com.junkbyte.console.view {
 			width = w;
 			height = h;
 		}
+		
+		/**
+		 * Close / remove the panel.
+		 */
 		public function close():void {
 			stopDragging();
 			console.panels.tooltip();
 			if(parent){
 				parent.removeChild(this);
 			}
+			dispatchEvent(new Event(Event.CLOSE));
 		}
 		
 		override public function set visible(b:Boolean):void
@@ -117,11 +154,13 @@ package com.junkbyte.console.view {
 			if(scaler) scaler.x = n;
 			bg.width = n;
 		}
+		
 		override public function set height(n:Number):void{
 			if(n < minHeight) n = minHeight;
 			if(scaler) scaler.y = n;
 			bg.height = n;
 		}
+		
 		override public function get width():Number{
 			return bg.width;
 		}
@@ -131,6 +170,9 @@ package com.junkbyte.console.view {
 		//
 		// MOVING
 		//
+		/**
+		 * @private
+		 */
 		public function registerSnaps(X:Array, Y:Array):void{
 			_snaps = [X,Y];
 		}
@@ -153,7 +195,7 @@ package com.junkbyte.console.view {
 			_movedFrom = new Point(x, y);
 			_dragOffset = new Point(mouseX,mouseY); // using this way instead of startDrag, so that it can control snapping.
 			_snaps = [[],[]];
-			dispatchEvent(new Event(DRAGGING));
+			dispatchEvent(new Event(DRAGGING_STARTED));
 			stage.addEventListener(MouseEvent.MOUSE_UP, onDraggerMouseUp, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onDraggerMouseMove, false, 0, true);
 		}
@@ -181,7 +223,11 @@ package com.junkbyte.console.view {
 				_resizeTxt.parent.removeChild(_resizeTxt);
 			}
 			_resizeTxt = null;
+			dispatchEvent(new Event(DRAGGING_ENDED));
 		}
+		/**
+		 * @private
+		 */
 		public function moveBackSafePosition():void{
 			if(_movedFrom != null){
 				// This will only work if stage size is not altered OR stage.align is top left
@@ -195,9 +241,13 @@ package com.junkbyte.console.view {
 		//
 		// SCALING
 		//
+		/**
+		 * Specifies whether this panel can be scaled from GUI.
+		 */
 		public function get scalable():Boolean{
 			return scaler?true:false;
 		}
+		
 		public function set scalable(b:Boolean):void{
 			if(b && !scaler){
 				var size:uint = 8+(style.controlSize*0.5);
@@ -222,6 +272,7 @@ package com.junkbyte.console.view {
 				scaler = null;
 			}
 		}
+		
 		private function onScalerMouseDown(e:Event):void{
 			_resizeTxt = makeTF("resizingField", true);
 			_resizeTxt.mouseEnabled = false;
@@ -234,7 +285,7 @@ package com.junkbyte.console.view {
 			_snaps = [[],[]];
 			scaler.stage.addEventListener(MouseEvent.MOUSE_UP,onScalerMouseUp, false, 0, true);
 			scaler.stage.addEventListener(MouseEvent.MOUSE_MOVE,updateScale, false, 0, true);
-			dispatchEvent(new Event(SCALING));
+			dispatchEvent(new Event(SCALING_STARTED));
 		}
 		private function updateScale(e:Event = null):void{
 			var p:Point = returnSnappedFor(x+mouseX-_dragOffset.x, y+mouseY-_dragOffset.x);
@@ -259,9 +310,13 @@ package com.junkbyte.console.view {
 				_resizeTxt.parent.removeChild(_resizeTxt);
 			}
 			_resizeTxt = null;
+			dispatchEvent(new Event(SCALING_ENDED));
 		}
 		//
 		//
+		/**
+		 * @private
+		 */
 		public function makeTF(n:String, back:Boolean = false):TextField
 		{
 			var txt:TextField = new TextField();
