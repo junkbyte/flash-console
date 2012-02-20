@@ -29,7 +29,10 @@ package com.junkbyte.console.view.mainPanel
 		
 		private function onLogsEntryAdded(entry:Log):void
 		{
-			changed();
+			if(!console.paused)
+			{
+				changed();
+			}
 		}
 
 		public function getFullOutput():String

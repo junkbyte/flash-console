@@ -90,15 +90,7 @@ package com.junkbyte.console.modules.graphing.fps
 		override protected function createGraphingGroup():GraphingGroup
 		{
 			var group:FPSGraphingGroup = new FPSGraphingGroup();
-			group.updateFrequencyMS = 250;
-			group.fixedMin = 0;
 			group.fixedMax = stage.frameRate;
-
-			var line:GraphingLine = new GraphingLine();
-			line.key = "fps";
-			line.color = 0xFFCC00;
-
-			group.lines.push(line);
 			return group;
 		}
 		

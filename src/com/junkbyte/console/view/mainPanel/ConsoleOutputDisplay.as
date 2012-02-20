@@ -178,7 +178,6 @@ package com.junkbyte.console.view.mainPanel
 			}
 			if (_needsUpdate)
 			{
-				_needsUpdate = false;
 				_updateTraces(true);
 			}
 		}
@@ -191,6 +190,7 @@ package com.junkbyte.console.view.mainPanel
 
 		private function _updateTraces(onlyBottom:Boolean = false):void
 		{
+			_needsUpdate = false;
 			if (_atBottom)
 			{
 				updateBottom();

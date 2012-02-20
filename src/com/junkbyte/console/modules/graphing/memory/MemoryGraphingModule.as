@@ -63,15 +63,7 @@ package com.junkbyte.console.modules.graphing.memory
 
 		override protected function createGraphingGroup():GraphingGroup
 		{
-			var group:MemoryGraphingGroup = new MemoryGraphingGroup();
-			group.updateFrequencyMS = 1000;
-
-			var line:GraphingLine = new GraphingLine();
-			line.key = "mb";
-			line.color = 0xFFCC00;
-
-			group.lines.push(line);
-			return group;
+			return new MemoryGraphingGroup();
 		}
 
 		override protected function getValues():Vector.<Number>
