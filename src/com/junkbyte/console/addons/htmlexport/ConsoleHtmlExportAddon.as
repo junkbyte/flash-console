@@ -31,7 +31,7 @@ package com.junkbyte.console.addons.htmlexport
 	import com.junkbyte.console.ConsoleStyle;
 	import com.junkbyte.console.view.MainPanel;
 	import com.junkbyte.console.vos.Log;
-	
+
 	import flash.net.FileReference;
 	import flash.utils.ByteArray;
 	import flash.utils.describeType;
@@ -39,13 +39,13 @@ package com.junkbyte.console.addons.htmlexport
 
 	/**
 	 * This addon allows you to export logs from flash console to a HTML file.
-	 * 
+	 *
 	 * <ul>
 	 * <li>Preserves channels and priorities.</li>
 	 * <li>It also have all those filtering features in HTML page.</li>
 	 * <li>Add to Console menu by calling ConsoleHtmlExport.addMenuToConsole();</li>
 	 * </ul>
-	 * 
+	 *
 	 * REQUIRES Flash Player 11.0 OR com.adobe.serialization.json.JSON library.
 	 */
 	public class ConsoleHtmlExportAddon
@@ -58,15 +58,16 @@ package com.junkbyte.console.addons.htmlexport
 		public var referencesDepth:uint = 1;
 
 		protected var console:Console;
-		
+
 		/**
 		 * Adding 'export' menu item at the top menu of Console.
-		 * 
+		 *
+		 * @param menuName Name of menu. Default = 'export'
 		 * @param console Instance to Console. You do not need to pass this param if you use Cc.
-		 * 
+		 *
 		 * @return New ConsoleHTMLExport instance created by this method.
 		 */
-		public static function addMenuToConsole(console:Console = null):ConsoleHtmlExportAddon
+		public static function addToMenu(menuName:String = "export", console:Console = null):ConsoleHtmlExportAddon
 		{
 			if (console == null)
 			{
@@ -76,7 +77,7 @@ package com.junkbyte.console.addons.htmlexport
 			if (console)
 			{
 				exporter = new ConsoleHtmlExportAddon(console);
-				console.addMenu("export", exporter.exportToFile, new Array(), "Export logs to HTML");
+				console.addMenu(menuName, exporter.exportToFile, new Array(), "Export logs to HTML");
 			}
 			return exporter;
 		}
@@ -92,7 +93,7 @@ package com.junkbyte.console.addons.htmlexport
 
 		/**
 		 * Trigger 'save to file' dialogue to save console logs in HTML file.
-		 * 
+		 *
 		 * @param fileName Initial file name to use in save dialogue.
 		 */
 		public function exportToFile(fileName:String = null):void
@@ -122,8 +123,7 @@ package com.junkbyte.console.addons.htmlexport
 			fileName += ".html";
 			return fileName;
 		}
-		
-		
+
 		/**
 		 * Generate HTML String of Console logs.
 		 */

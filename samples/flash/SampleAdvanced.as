@@ -107,7 +107,7 @@ package
 			// register 'export' button, which exports logs to HTML. (This is an addon).
 			// source file located at samples/addons/  com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport
 			// requires JSON: com.adobe.serialization.json.JSON
-			ConsoleHtmlExportAddon.addMenuToConsole();
+			ConsoleHtmlExportAddon.addToMenu();
 			
 			
 			DisplayMapAddon.registerCommand();

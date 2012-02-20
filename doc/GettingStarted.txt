@@ -1,4 +1,5 @@
 #summary for v2.5
+#labels Featured,Phase-Deploy,Phase-Implementation
 
 <wiki:toc max_depth="2" />
 
@@ -265,4 +266,7 @@ Cc.startOnStage(this); // finally start with these styles
 
 example: bin/sampleStyle.swf for demo. (src: `samples/flash/SampleStyle.as`).
 
-Asdoc: http://console.junkbyte.com/2.5/asdoc/com/junkbyte/console/ConsoleStyle.html
+Asdoc: http://console.junkbyte.com/2.6/asdoc/com/junkbyte/console/ConsoleStyle.html
+
+=Addons=
+There are a few addons available for console. See [Addons]

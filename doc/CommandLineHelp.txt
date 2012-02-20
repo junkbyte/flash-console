@@ -1,4 +1,5 @@
 #summary for v2.5
+#labels Featured,Phase-Implementation
 =Command Line: help and tutorial=
 
 ==This document applies to v2.5 or above only==
@@ -72,14 +73,14 @@ getChildByName('root1')
   * If you do /inspect again you should get slightly different results this time.
 {{{
 /inspect
-}}}
+}}} 
   * Lets demonstrate another command, /map - which maps the display list of your current scope.
 {{{
 /map
 }}} 
   * You should get a tree like structure list mapping the display list
   * You can click on any of the names in the log to change to the scope of that displayObject.
-  * Lets go to the head, *click on 'head {MovieClip}'* - near the bottom. _(you need to click on the word 'head' to change scope, if you click on '{MovieClip}', it'll inspect that object)_
+  * Lets go to the head, *click on 'head {MovieClip}'* - near the bottom. _(you need to click on the word head to change scope, if you click on '{MovieClip}', it'll inspect that object)_ 
   * it should say "Changed to {MovieClip}"
 
   * The head have animation on the timeline, so you can play it.
