@@ -32,7 +32,7 @@
 
 ==== Basics ====
   * For this tutorial, we will use the sample flash provided in download or found online at: http://www.junkbyte.com/flash-console/. 
-  * The document class file is located at samples/flash/Sample.as
+  * The document class file is located at samples/flash/SampleBasic.as
 
   * Command line starts with its parent display as first scope (by default). You should see 'Stage' on the left of commandLine at the moment, meaning the stage is your current scope. If you write:
 {{{

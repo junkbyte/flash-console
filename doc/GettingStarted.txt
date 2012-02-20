@@ -1,4 +1,4 @@
-#summary for v2.5
+#summary for v2.6
 #labels Featured,Phase-Deploy,Phase-Implementation
 
 <wiki:toc max_depth="2" />
@@ -7,13 +7,13 @@
 
   * The main class you need to use for console is `Cc`, (`com.junkbyte.console.Cc`).
   * `Cc` stands for Console controller which acts as singleton adapter for `Console` (`com.junkbyte.console.Console`).
-  * Asdoc: http://console.junkbyte.com/2.5/asdoc/com/junkbyte/console/Cc.html
+  * Asdoc: http://console.junkbyte.com/2.6/asdoc/com/junkbyte/console/Cc.html
 
   * When you no longer need console in your project, you can remove `Cc.startOnStage(..)` and all other calls through Cc will stop working silently.
 
 =Basics=
 
-For easy reference, please see `samples/flash/Sample.as` for working sample.
+For easy reference, please see `samples/flash/SampleBasic.as` for working sample.
 
 ==Start on stage==
 {{{
@@ -52,7 +52,7 @@ ch.info("Hello!", "Works just like other logging methods but this way you keep t
 
 ==UI==
 
-[http://console.junkbyte.com/2.5/console_controls.png]
+[http://console.junkbyte.com/2.6/console_controls.png]
 
 see: doc/console_controls.png
 
@@ -68,7 +68,7 @@ Cc.config.maxLines = 2000; // change maximum log lines to 2000, default is 1000
 Cc.startOnStage(this); // finally start with these config
 }}}
 
-Asdoc: http://console.junkbyte.com/2.5/asdoc/com/junkbyte/console/ConsoleConfig.html
+Asdoc: http://console.junkbyte.com/2.6/asdoc/com/junkbyte/console/ConsoleConfig.html
 
 ----
 
