@@ -38,7 +38,10 @@ package com.junkbyte.console.view
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	import flash.utils.Dictionary;
-
+	
+	/**
+	 * @private
+	 */
 	public class RollerPanel extends ConsolePanel{
 		
 		public static const NAME:String = "rollerPanel";

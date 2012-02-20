@@ -27,14 +27,15 @@ package
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleChannel;
-
+	import com.junkbyte.console.addons.displaymap.DisplayMapAddon;
+	
 	import flash.display.*;
 	import flash.events.*;
 	import flash.text.TextField;
 	import flash.utils.*;
 
 	[SWF(width='640',height='480',backgroundColor='0xDDDDDD',frameRate='30')]
-	public class Sample extends MovieClip{
+	public class SampleBasic extends MovieClip{
 		
 		[Embed(source="SampleAssets.swf", symbol="SampleScreenClip", mimeType="application/x-shockwave-flash" )]
         public var ScreenClipClass:Class;
@@ -42,10 +43,13 @@ package
         
 		private var _spamcount:int;
 		
-		public function Sample() {
+		public function SampleBasic() {
+			
 			//
 			// SET UP - only required once
 			//
+			Cc.config.style.backgroundAlpha = 1;
+			
 			Cc.startOnStage(this, "`"); // "`" - change for password. This will start hidden
 			Cc.visible = true; // Show console, because having password hides console.
 			
@@ -61,7 +65,10 @@ package
 			// End of setup
 			//
 			
-			// show the demo logging stuff there...
+			DisplayMapAddon.registerCommand();
+			DisplayMapAddon.addToMenu(); // click on DM button at top menu to start.
+			
+			
 			demoBasics();
 			
 			setupUI();

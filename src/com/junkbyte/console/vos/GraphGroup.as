@@ -26,6 +26,9 @@ package com.junkbyte.console.vos {
 	import flash.utils.ByteArray;
 	import flash.geom.Rectangle;
 
+	/**
+	 * @private
+	 */
 	public class GraphGroup {
 		
 		public static const FPS:uint = 1;

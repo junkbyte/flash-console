@@ -25,6 +25,9 @@
 package com.junkbyte.console.vos {
 	import flash.utils.Dictionary;
 	
+	/**
+	 * @private
+	 */
 	public class WeakRef{
 		
 		private var _val:*;

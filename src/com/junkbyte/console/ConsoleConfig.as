@@ -36,6 +36,7 @@ package com.junkbyte.console {
 		/**
 		 * Set Password required to connect from remote.
 		 * <p>
+		 * Must be set before starting remote.
 		 * Set to null (deafult) to use keystrokePassword.
 		 * Set to "" (blank string), to disable remoting password.
 		 * </p>
@@ -133,7 +134,39 @@ package com.junkbyte.console {
 		public var traceCall:Function = function (ch:String, line:String, ...args):void{
 			trace("["+ch+"] "+line);
 		};
-
+		
+		
+		/**
+		 * Specifies whether to show timestamps in Console.
+		 */
+		public var showTimestamp:Boolean = false;
+		
+		
+		/**
+		 * Time stamp formatter.
+		 * <p>
+		 * Function must accept a single uint param and return a formatted string.
+		 * </p>
+		 * <p>
+		 * Default formatter returns as 'MM:SS' (10:20)
+		 * </p>
+		 */
+		public var timeStampFormatter:Function = function(timer:uint):String
+		{
+			var s:uint = timer*0.001;
+			return makeTimeDigit(s/60)+":"+makeTimeDigit(s%60);
+		};
+		
+		private function makeTimeDigit(v:uint):String{
+			if(v < 10) return "0"+v;
+			return String(v);
+		}
+		
+		/**
+		 * Specifies whether to show line numbers in console.
+		 */
+		public var showLineNumber:Boolean = false;
+		
 		// Work in progress
 		//public var rolloverStackToolTip:Boolean = false;
 		
@@ -285,6 +318,9 @@ package com.junkbyte.console {
 		//                //
 		////////////////////
 		
+		/**
+		 * Get style configuration used.
+		 */
 		public function get style():ConsoleStyle{
 			return _style;
 		}

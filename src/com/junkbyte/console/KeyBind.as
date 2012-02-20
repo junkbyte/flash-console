@@ -36,7 +36,7 @@ package com.junkbyte.console
 		 * @param ctrl Set true if ctrl key needs to be pressed to trigger
 		 * @param alt Set true if alt key needs to be pressed to trigger
 		 */
-		public function KeyBind(v:*, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false)
+		public function KeyBind(v:*, shift:Boolean = false, ctrl:Boolean = false, alt:Boolean = false, onUp:Boolean = false)
 		{
 			_key = String(v).toUpperCase();
 			if(v is uint){
@@ -49,6 +49,7 @@ package com.junkbyte.console
 			if(shift) _key+="+shift";
 			if(ctrl) _key+="+ctrl";
 			if(alt) _key+="+alt";
+			if(onUp) _key+="+up";
 			
 		}
 		

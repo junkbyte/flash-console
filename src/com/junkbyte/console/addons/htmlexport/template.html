@@ -3,9 +3,10 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Console log</title>
-<style type="text/css">
+<style type="text/css" id="stylesheet">
 body {
-	background-color:#BACKGROUND_COLOR;
+	background-color:#000;
+	color:#CCC;
 	font-family: Verdana, Arial, sans-serif;
 	font-size: 12px;
 }
@@ -28,14 +29,14 @@ menu{
 	width:180px;
 	top:4px;
 	right:1px;
-	color:#TEXT_COLOR;
+	color:#FFF;
 }
 #searchField{
 	color:inherit;
 	width:140px;
 	border-width:1px;
-	border-color:#TEXT_COLOR;
-	background-color:#BACKGROUND_COLOR;
+	border-color:#FF8800;
+	background-color:#111;
 }
 #logsElement{
     position: fixed;
@@ -47,24 +48,120 @@ menu{
     word-wrap: break-word;
 	line-height:120%;
 }
-#REPLACE_STYLES_FROM_FLASH{}
 </style>
 <script type="text/javascript">
-	var logs = [{text:'REPLACE_LOGS_FROM_FLASH'}];
+	var data = {text:'HTML_REPLACEMENT'};	
+	
+	var config = data.config;
+	var style = config.style;
+	var logs = data.logs;
+	var uidata = data.ui;
+	
+	var viewingPriority = uidata.viewingPriority;
+	
+	var viewingChannels = null;
+	if(uidata.viewingChannels)
+	{
+		viewingChannels = convertChannelsListToMap(uidata.viewingChannels);
+	}
+	
+	var ignoredChannels = null;
+	if(uidata.ignoredChannels)
+	{
+		ignoredChannels = convertChannelsListToMap(uidata.ignoredChannels);
+	}
+	
+	function convertChannelsListToMap(channels)
+	{
+		var object = {};
+		for (var X in channels)
+		{
+			object[channels[X]] = true;
+		}
+		return object;
+	}
+</script>
+<script type="text/javascript">
+	function updateStyle()
+	{
+		setStylesFromObject(style.styleSheet);
+		
+		var body = getStyleByName("body");
+		body.color = safeColorString(style.lowColor);
+		body.backgroundColor = safeColorString(style.backgroundColor);
+		var searchElement = getStyleByName("#searchElement");
+		searchElement.color = safeColorString(style.menuColor);
+		var searchField = getStyleByName("#searchField");
+		searchField.backgroundColor = safeColorString(style.backgroundColor);
+		searchField.borderColor = safeColorString(style.menuColor);
+	}
+	
+	function getStyleByName(name)
+	{
+		var sheet = getStyleSheetElement().sheet;
+		var rules = new Array();
+		if (sheet.cssRules) rules = sheet.cssRules;
+		else if (sheet.rules) rules = sheet.rules;
+		
+		for (var X in rules)
+		{
+			if(rules[X].selectorText == name)
+			{
+				return rules[X].style;
+			}
+		}
+		return null;
+	}
+	function setStylesFromObject(object)
+	{
+		var result = "";
+		for (var styleName in object)
+		{
+			var style = object[styleName];
+			var parts = "";
+			for (var key in style)
+			{
+				var value = style[key];
+				if(key == "color")
+				{
+					value = safeColorString(value.substring(1));
+				}
+				key = key.replace(/([A-Z])/g,"-$1").toLowerCase();
+				parts += key+":"+value+"; ";
+			}
+			result += styleName + " {" +parts+"}\r\n";
+		}
+		
+		getStyleSheetElement().innerHTML += result;
+	}
+	
+	function getStyleSheetElement()
+	{
+		return document.getElementById('stylesheet');
+	}
+	
+	function safeColorString(col)
+	{
+		col = col.toString(16);
+		while(col.length < 6)
+		{
+			col = "0"+col;
+		}
+		return "#"+col;
+	}
 </script>
 <script type="text/javascript">
 	
 	var channels = new Object();
 	var priorities = new Object();
 	
-	var viewingPriority = #VIWING_PRIORITY;
-	var viewingChannels = #VIEWING_CHANNELS;
-	var ignoredChannels = #IGNORED_CHANNELS;
 	var searchTerm = null;
 	var searchExp = false;
 	
 	var shiftKeyPressed = false;
 	var ctrlKeyPressed = false;
+	var focusHistory;
+	var scrollBeforeFocus;
 	
 	var logsElement;
 	var menuElement;
@@ -83,16 +180,24 @@ menu{
 	{
 		logsElement = document.getElementById("logsElement");
 		menuElement = document.getElementById("menuElement");
+		
+		var refSearchExpression = /<a(\s+)href=\'event:ref_(\d+)\'>/g;
 		var len = logs.length;
 		for (var i = 0; i<len; i++)
 		{
 			var log = logs[i];
+			log.text = processLogText(log.text);
 			channels[log.ch] = true;
 			priorities[log.priority] = true;
 		}
-		
+		updateStyle();
 		updateMenu();
 		updateLogs();
+	}
+	
+	function processLogText(string)
+	{
+		return string.replace(/<a(\s+)href=\'event:(.*?)\'>/g,"<a href=\"javascript:flashEvent('$2')\">");
 	}
 	
 	function updateMenu()
@@ -282,14 +387,115 @@ menu{
 	{
 		var txt = "[" + makeJSLink(log.ch, "channelClicked(\""+log.ch+"\")" ) + "] " + log.text;
 		var ptag = "p"+log.priority;
-		txt = "<"+ptag+">" + txt + "</"+ptag+">";
-		return txt + "<br/>";
+		return "<"+ptag+">" + txt + "</"+ptag+"><br/>";
 	}
 	
 	function makeJSLink(text, linkFunction)
 	{
 		return "<a href='javascript:"+linkFunction+";'>"+text+"</a>";
 	}
+	
+	function flashEvent(event)
+	{
+		if(event.indexOf("ref_") == 0)
+		{
+			focusRef(event.substring(4));
+		}
+	}
+	
+	function focusRef(id)
+	{
+		var object = data.references[id];
+		if(object == null)
+		{
+			alert("Sorry. Reference not found.");
+			return;
+		}
+		
+		if(focusHistory == null)
+		{
+			scrollBeforeFocus = logsElement.scrollTop;
+			focusHistory = new Array();
+		}
+		if(getCurrentFocus() != id)
+		{
+			focusHistory.push(id);
+		}
+		
+		var menuText = getInspectMenuText();
+		logsElement.innerHTML = menuText + "<br/><br/>" + getInspectText(object) + "<br/>" + menuText;
+		scrollToBottom();
+	}
+	
+	function exitFocus()
+	{
+		focusHistory = null;
+		updateLogs();
+		logsElement.scrollTop = scrollBeforeFocus;
+	}
+	
+	function prevFocus()
+	{
+		if(focusHistory != null && focusHistory.length > 1)
+		{
+			focusHistory.pop();
+			focusRef(getCurrentFocus());
+		}
+	}
+	
+	function getCurrentFocus()
+	{
+		if(focusHistory != null && focusHistory.length > 0)
+		{
+			return focusHistory[focusHistory.length - 1];
+		}
+		return null;
+	}
+	
+	function getInspectText(object)
+	{
+		var text = "";
+		
+		text += "<b>"+object.name+"</b><br/>";
+		text += "<br/>";
+		
+		text += makeRefPart(object.constants, "Constants");
+		text += makeRefPart(object.accessors, "Accessors");
+		text += makeRefPart(object.staticAccessors, "Static Accessors");
+		text += makeRefPart(object.variables, "Variables");
+		text += makeRefPart(object.staticVariables, "Static Variables");
+		text += makeRefPart(object.dynamicVariables, "Dynamic Variables");
+		
+		return "<p4>"+text+"</p4>";
+	}
+	
+	function getInspectMenuText()
+	{
+		var text = "<menu><b>[<a href='javascript:exitFocus()'>exit</a>] ";
+		if(focusHistory != null&& focusHistory.length > 1)
+		{
+			text += " [<a href='javascript:prevFocus()'>previous</a>]";
+		}
+		text += "</b></menu>";
+		return text;
+	}
+	
+	function makeRefPart(object, name)
+	{
+		var result = "<b><p5>"+name+"</p5></b><br/>";
+		var haveChildren = false;
+		for (var X in object)
+		{
+			haveChildren = true;
+			result += "&nbsp;<p3> &nbsp;<p4>"+X+"</p4> = "+processLogText(object[X])+"</p3><br/>";
+		}
+		if(haveChildren)
+		{
+			return result + "<br/>";
+		}
+		return "";
+	}
+	
 </script>
 </head>
 <body onLoad="init()">

@@ -371,7 +371,7 @@ package com.junkbyte.console {
 		 * @param container	Display object to start mapping from
 		 * @param maxDepth	Maximum child depth. 0 = unlimited
 		 */
-		public static function mapch(channel:String, container:DisplayObjectContainer, maxDepth:uint = 0):void{
+		public static function mapch(channel:*, container:DisplayObjectContainer, maxDepth:uint = 0):void{
 			if(_console ) _console.mapch(channel, container, maxDepth);
 		}
 		/**

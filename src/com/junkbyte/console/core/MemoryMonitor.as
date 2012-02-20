@@ -30,7 +30,10 @@ package com.junkbyte.console.core
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
-
+	
+	/**
+	 * @private
+	 */
 	public class MemoryMonitor extends ConsoleCore{
 		
 		private var _namesList:Object;

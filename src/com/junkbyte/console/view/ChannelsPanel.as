@@ -27,7 +27,10 @@ package com.junkbyte.console.view {
 	
 	import flash.events.TextEvent;
 	import flash.text.TextFieldAutoSize;		
-
+	
+	/**
+	 * @private
+	 */
 	public class ChannelsPanel extends ConsolePanel{
 		
 		public static const NAME:String = "channelsPanel";

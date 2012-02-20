@@ -32,7 +32,10 @@ package com.junkbyte.console.core {
 	import com.junkbyte.console.vos.GraphGroup;
 
 	import flash.geom.Rectangle;
-
+	
+	/**
+	 * @private
+	 */
 	public class Graphing extends ConsoleCore{
 		
 		private var _groups:Array = [];
@@ -54,7 +57,7 @@ package com.junkbyte.console.core {
 			});
 			remoter.registerCallback("removeGroup", function(bytes:ByteArray):void{
 				removeGroup(bytes.readUTF());
-			});;
+			});
 			remoter.registerCallback("graph", handleRemoteGraph, true);
 			
 		}
@@ -174,7 +177,7 @@ package com.junkbyte.console.core {
 			}else if(b != memoryMonitor){
 				if(b) {
 					_memGroup = addSpecialGroup(GraphGroup.MEM);
-					_memGroup.freq = 10;
+					_memGroup.freq = 20;
 				} else{
 					var index:int = _groups.indexOf(_memGroup);
 					if(index>=0) _groups.splice(index, 1);
@@ -229,16 +232,7 @@ package com.junkbyte.console.core {
 						group.updateMinMax(v);
 						interest.setValue(v, averaging);
 					}else{
-						for each(var i:GraphInterest in interests){
-							try{
-								v = i.getCurrentValue();
-								i.setValue(v, averaging);
-							}catch(e:Error){
-								report("Error with graph value for key ["+i.key+"] in ["+group.name+"]. "+e, 10);
-								remove(group.name, i.obj, i.prop);
-							}
-							group.updateMinMax(v);
-						}
+						updateExternalGraphGroup(group);
 					}
 				}
 			}
@@ -253,6 +247,21 @@ package com.junkbyte.console.core {
 			}
 			return _groups;
 		}
+		
+		private function updateExternalGraphGroup(group:GraphGroup):void
+		{
+			for each(var i:GraphInterest in group.interests){
+				try{
+					var v:Number = i.getCurrentValue();
+					i.setValue(v, group.averaging);
+				}catch(e:Error){
+					report("Error with graph value for key ["+i.key+"] in ["+group.name+"]. "+e, 10);
+					remove(group.name, i.obj, i.prop);
+				}
+				group.updateMinMax(v);
+			}
+		}
+		
 		private function handleRemoteGraph(bytes:ByteArray = null):void{
 			if(bytes && bytes.length){
 				bytes.position = 0;

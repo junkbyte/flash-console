@@ -32,7 +32,10 @@ package com.junkbyte.console.core
 
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-
+	
+	/**
+	 * @private
+	 */
 	public class ConsoleTools extends ConsoleCore{
 		
 		public function ConsoleTools(console:Console) {

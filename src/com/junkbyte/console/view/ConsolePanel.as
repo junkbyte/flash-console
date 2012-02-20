@@ -39,10 +39,14 @@ package com.junkbyte.console.view {
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 
+	/**
+	 * @private
+	 */
 	public class ConsolePanel extends Sprite {
 		
 		public static const DRAGGING:String = "DRAGGING";
 		public static const SCALING:String = "SCALING";
+		public static const VISIBLITY_CHANGED:String = "visibilityChanged";
 		
 		//[Event(name="TEXT_ROLL", type="flash.events.TextEvent")]
 		private static const TEXT_ROLL:String = "TEXT_ROLL";
@@ -98,6 +102,12 @@ package com.junkbyte.console.view {
 			if(parent){
 				parent.removeChild(this);
 			}
+		}
+		
+		override public function set visible(b:Boolean):void
+		{
+			super.visible = b;
+			dispatchEvent(new Event(VISIBLITY_CHANGED));
 		}
 		//
 		// SIZE
@@ -190,20 +200,21 @@ package com.junkbyte.console.view {
 		}
 		public function set scalable(b:Boolean):void{
 			if(b && !scaler){
+				var size:uint = 8+(style.controlSize*0.5);
 				scaler = new Sprite();
 				scaler.name = "scaler";
 				scaler.graphics.beginFill(0, 0);
-				scaler.graphics.drawRect(-10, -18, 10, 18);
+				scaler.graphics.drawRect(-size*1.5, -size*1.5, size*1.5, size*1.5);
 	            scaler.graphics.endFill();
 				scaler.graphics.beginFill(style.controlColor, style.backgroundAlpha);
 	            scaler.graphics.moveTo(0, 0);
-	            scaler.graphics.lineTo(-10, 0);
-	            scaler.graphics.lineTo(0, -10);
+	            scaler.graphics.lineTo(-size, 0);
+	            scaler.graphics.lineTo(0, -size);
 	            scaler.graphics.endFill();
 				scaler.buttonMode = true;
 				scaler.doubleClickEnabled = true;
 				scaler.addEventListener(MouseEvent.MOUSE_DOWN,onScalerMouseDown, false, 0, true);
-	            addChild(scaler);
+	            addChildAt(scaler, getChildIndex(bg)+1);
 			}else if(!b && scaler){
 				if(contains(scaler)){
 					removeChild(scaler);

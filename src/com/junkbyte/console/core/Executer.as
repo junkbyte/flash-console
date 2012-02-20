@@ -29,7 +29,10 @@ package com.junkbyte.console.core
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getDefinitionByName;
-
+	
+	/**
+	 * @private
+	 */
 	public class Executer extends EventDispatcher{
 		
 		public static const RETURNED:String = "returned";
@@ -211,7 +214,7 @@ package com.junkbyte.console.core
 		// aaa.bbb.ccc(1/2,3).ddd += fff+$g.hhh();
 		//
 		private function execOperations(str:String):ExeValue{
-			var reg:RegExp = /\s*(((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^]|\=\=?|\!\=|\>\>?\>?|\<\<?)\=?)|=|\~|\sis\s|typeof\s)\s*/g;
+			var reg:RegExp = /\s*(((\|\||\&\&|[+|\-|*|\/|\%|\||\&|\^]|\=\=?|\!\=|\>\>?\>?|\<\<?)\=?)|=|\~|\sis\s|typeof|delete\s)\s*/g;
 			var result:Object = reg.exec(str);
 			var seq:Array = [];
 			if(result == null){
@@ -466,6 +469,8 @@ package com.junkbyte.console.core
 					return v1.value is v2.value;
 				case "typeof":
 					return typeof v2.value;
+				case "delete":
+					return delete v2.obj[v2.prop];
 				case "==":
 					return v1.value==v2.value;
 				case "===":

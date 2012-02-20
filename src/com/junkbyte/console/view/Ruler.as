@@ -43,7 +43,10 @@ package com.junkbyte.console.view {
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
 	import flash.ui.Mouse;		
-
+	
+	/**
+	 * @private
+	 */
 	public class Ruler extends Sprite{
 		
 		private var _master:Console;

@@ -5,7 +5,7 @@
 
 ==Flash Console==
 
-  * Version 2.51 (May 2011)
+  * Version 2.6 (Feb 2012)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -26,11 +26,22 @@ http://code.google.com/p/flash-console/issues/
 
 == Credits ==
   * Created by Lu Aye Oo
-  * Logo by Nick Holliday
+  * Icon by Nick Holliday
 
 
 == Change Log ==
 
+===2.6 ===
+  * Addons are now included in Console.swc
+  * DisplayMap addon, Allows inspecting of display tree
+  * Removed Cc.remotingPassword. use Cc.config.remotingPassword (should be set before starting remote)
+  * Basic timestamp display support. Use Cc.config.showTimestamp = true;
+  * Line number display support. Use Cc.config.showLineNumber = true;
+  * Key binds allow for key down or key up state
+  * Multi line top menu
+  * Support for delete operation in commandLine
+  * Fixed Issue 90. UTF8 chars failing to send to remote
+  
 ===2.52 ===
   * Multi-line support with slash commands. E.g. "/base; /explode" will now work
   * Added config.commandLineInputPassThrough which allows replacing command input execution

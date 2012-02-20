@@ -48,6 +48,9 @@ package com.junkbyte.console {
 		/** Color of scroll bar, scaler, etc. Some gets alpha applied */
 		public var controlColor:uint = 0x990000;
 		
+		/** Size of controls, scroll bar, scaler, etc */
+		public var controlSize:uint = 5;
+		
 		/** Command line background and text color. Background gets alpha so it is less visible. */
 		public var commandLineColor:uint = 0x10AA00;
 		
@@ -56,6 +59,9 @@ package com.junkbyte.console {
 		
 		/** Font color for less important / smaller text */
 		public var lowColor:uint = 0xC0C0C0; 
+		
+		/** Font color for log header text (line number, channel and time stamp) */
+		public var logHeaderColor:uint = 0xC0C0C0; 
 		
 		/** Font color for menu */
 		public var menuColor:uint = 0xFF8800;
@@ -124,6 +130,7 @@ package com.junkbyte.console {
 			//
 			highColor = 0x000000;
 			lowColor = 0x333333;
+			logHeaderColor = 0x444444;
 			menuColor = 0xCC1100;
 			menuHighlightColor = 0x881100;
 			channelsColor = 0x000000;
@@ -192,6 +199,7 @@ package com.junkbyte.console {
 			_css.setStyle("p10",{color:hesh(priority10), fontWeight:'bold', display:'inline'});
 			_css.setStyle("p-1",{color:hesh(priorityC1), display:'inline'});
 			_css.setStyle("p-2",{color:hesh(priorityC2), display:'inline'});
+			_css.setStyle("logs",{color:hesh(logHeaderColor), display:'inline'});
 		}
 		/**
 		 * Style sheet used by Console.

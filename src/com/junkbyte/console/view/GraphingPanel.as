@@ -30,8 +30,12 @@ package com.junkbyte.console.view {
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.events.TextEvent;
-	import flash.text.TextField;		
-
+	import flash.text.TextField;
+	import flash.text.TextFormat;
+	
+	/**
+	 * @private
+	 */
 	public class GraphingPanel extends ConsolePanel {
 		//
 		public static const FPS:String = "fpsPanel";
@@ -40,6 +44,8 @@ package com.junkbyte.console.view {
 		private var _group:GraphGroup;
 		private var _interest:GraphInterest;
 		private var _infoMap:Object = new Object();
+		
+		private var _menuString:String;
 		//
 		private var _type:String;
 		//
@@ -59,11 +65,22 @@ package com.junkbyte.console.view {
 			minWidth = 32;
 			minHeight = 26;
 			//
-			lowTxt = makeTF("lowestField", false);
+			var textFormat:TextFormat = new TextFormat();
+			var lowStyle:Object = style.styleSheet.getStyle("low");
+			textFormat.font = lowStyle.fontFamily;
+			textFormat.size = lowStyle.fontSize;
+			textFormat.color = style.lowColor;
+			
+			lowTxt = new TextField();
+			lowTxt.name = "lowestField";
+			lowTxt.defaultTextFormat = textFormat;
 			lowTxt.mouseEnabled = false;
 			lowTxt.height = style.menuFontSize+2;
 			addChild(lowTxt);
-			highTxt = makeTF("highestField", false);
+			
+			highTxt = new TextField();
+			highTxt.name = "highestField";
+			highTxt.defaultTextFormat = textFormat;
 			highTxt.mouseEnabled = false;
 			highTxt.height = style.menuFontSize+2;
 			highTxt.y = style.menuFontSize-4;
@@ -83,6 +100,14 @@ package com.junkbyte.console.view {
 			graph.name = "graph";
 			graph.y = style.menuFontSize;
 			addChild(graph);
+			//
+			
+			_menuString = "<menu>";
+			if(_type == MEM){
+				_menuString += " <a href=\"event:gc\">G</a> ";
+			}
+			_menuString += "<a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></low></r>";
+			
 			//
 			init(W,H,true);
 		}
@@ -153,17 +178,16 @@ package com.junkbyte.console.view {
 			var lowest:Number = group.low;
 			var highest:Number = group.hi;
 			var diffGraph:Number = highest-lowest;
-			var keys:Object = {};
 			var listchanged:Boolean = false;
 			if(draw) {
-				(group.inv?highTxt:lowTxt).text = isNaN(group.low)?"":"<low>"+group.low+"</low>";
-				(group.inv?lowTxt:highTxt).text = isNaN(group.hi)?"":"<low>"+group.hi+"</low>";
+				TextField(group.inv?highTxt:lowTxt).text = String(group.low);
+				TextField(group.inv?lowTxt:highTxt).text = String(group.hi);
 				graph.graphics.clear();
 			}
-			for each(var interest:GraphInterest in interests){
+			var interest:GraphInterest;
+			for each(interest in interests){
 				_interest = interest;
 				var n:String = _interest.key;
-				keys[n] = true;
 				var info:Array = _infoMap[n];
 				if(info == null){
 					listchanged = true;
@@ -185,13 +209,13 @@ package com.junkbyte.console.view {
 						history.push(_interest.v);
 					}
 				}
-				var len:int = history.length;
 				var maxLen:int = Math.floor(W)+10;
-				if(len > maxLen){
-					history.splice(0, (len-maxLen));
-					len = history.length;
+				while(history.length > maxLen)
+				{
+					history.shift();
 				}
 				if(draw) {
+					var len:int = history.length;
 					graph.graphics.lineStyle(1, _interest.col);
 					var maxi:int = W>len?len:W;
 					for(var i:int = 1; i<maxi; i++){
@@ -216,33 +240,42 @@ package com.junkbyte.console.view {
 				}
 			}
 			for(var X:String in _infoMap){
-				if(keys[X] == undefined){
+				var found:Boolean;
+				for each(interest in interests){
+					if(interest.key == X)
+					{
+						found = true;
+					}
+				}
+				if(!found){
 					listchanged = true;
 					delete _infoMap[X];
 				}
 			}
 			if(draw && (listchanged || _type)) updateKeyText();
 		}
+		
 		public function updateKeyText():void{
 			var str:String = "<r><low>";
 			if(_type){
 				if(isNaN(_interest.v)){
-					str += "no input<menu>";
+					str += "no input";
 				}else if(_type == FPS){
-					str += _interest.v.toFixed(1)+" | "+_interest.avg.toFixed(1)+" <menu><a href=\"event:reset\">R</a>";
+					str += _interest.avg.toFixed(1);
 				}else{
-					str += _interest.v.toFixed(2)+"mb <menu><a href=\"event:gc\">G</a> <a href=\"event:reset\">R</a>";
+					str += _interest.v+"mb";
 				}
 			}else{
 				for(var X:String in _infoMap){
 					str += " <font color='#"+_infoMap[X][0]+"'>"+X+"</font>";
 				}
-				str += " | <menu><a href=\"event:reset\">R</a>";
+				str += " |";
 			}
-			str += " <a href=\"event:close\">X</a></menu></low></r>";
-			txtField.htmlText = str;
+			txtField.htmlText = str+_menuString;
 			txtField.scrollH = txtField.maxScrollH;
 		}
+		
+		
 		protected function linkHandler(e:TextEvent):void{
 			TextField(e.currentTarget).setSelection(0, 0);
 			if(e.text == "reset"){

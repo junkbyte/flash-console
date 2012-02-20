@@ -32,7 +32,10 @@ package com.junkbyte.console.core
 
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
-
+	
+	/**
+	 * @private
+	 */
 	public class CommandLine extends ConsoleCore{
 		
 		private static const DISABLED:String = "<b>Advanced CommandLine is disabled.</b>\nEnable by setting `Cc.config.commandLineAllowed = true;´\nType <b>/commands</b> for permitted commands.";

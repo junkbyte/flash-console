@@ -25,7 +25,10 @@
 	import flash.utils.ByteArray;
 	import com.junkbyte.console.core.Executer;
 	import com.junkbyte.console.vos.WeakRef;
-
+	
+	/**
+	 * @private
+	 */
 	public class GraphInterest {
 		
 		private var _ref:WeakRef;

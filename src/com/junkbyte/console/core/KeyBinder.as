@@ -32,6 +32,8 @@ package com.junkbyte.console.core
 	import flash.events.KeyboardEvent;
 
 	/**
+	 * @private
+	 * 
 	 * Suppse this could be 'view' ?
 	 */
 	public class KeyBinder extends ConsoleCore{
@@ -60,8 +62,16 @@ package com.junkbyte.console.core
 			}
 		}
 		public function keyDownHandler(e:KeyboardEvent):void{
+			handleKeyEvent(e, false);
+		}
+		public function keyUpHandler(e:KeyboardEvent):void{
+			handleKeyEvent(e, true);
+		}
+		
+		private function handleKeyEvent(e:KeyboardEvent, isKeyUp:Boolean):void
+		{
 			var char:String = String.fromCharCode(e.charCode);
-			if(config.keystrokePassword != null && char && char == config.keystrokePassword.substring(_passInd,_passInd+1)){
+			if(isKeyUp && config.keystrokePassword != null && char && char == config.keystrokePassword.substring(_passInd,_passInd+1)){
 				_passInd++;
 				if(_passInd >= config.keystrokePassword.length){
 					_passInd = 0;
@@ -71,7 +81,10 @@ package com.junkbyte.console.core
 						}else {
 							console.visible = !console.visible;
 						}
-						console.panels.mainPanel.moveBackSafePosition();
+						if(console.visible && console.panels.mainPanel.visible){
+							console.panels.mainPanel.visible = true;
+							console.panels.mainPanel.moveBackSafePosition();
+						}
 					}else if(_warns < 3){
 						_warns++;
 						report("Password did not trigger because you have focus on an input TextField.", 8);
@@ -80,11 +93,11 @@ package com.junkbyte.console.core
 			}
 			else
 			{
-				_passInd = 0;
-				var bind:KeyBind = new KeyBind(e.keyCode, e.shiftKey, e.ctrlKey, e.altKey);
+				if(isKeyUp) _passInd = 0;
+				var bind:KeyBind = new KeyBind(e.keyCode, e.shiftKey, e.ctrlKey, e.altKey, isKeyUp);
 				tryRunKey(bind.key);
 				if(char){
-					bind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey);
+					bind = new KeyBind(char, e.shiftKey, e.ctrlKey, e.altKey, isKeyUp);
 					tryRunKey(bind.key);
 				}
 			}

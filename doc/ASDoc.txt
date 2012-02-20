@@ -3,4 +3,4 @@
 
 
 
-please see: http://console.junkbyte.com/2.51/asdoc
+please see: http://console.junkbyte.com/2.6/asdoc

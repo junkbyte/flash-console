@@ -1,11 +1,11 @@
 /*
-*
+* 
 * Copyright (c) 2008-2010 Lu Aye Oo
-*
+* 
 * @author 		Lu Aye Oo
-*
+* 
 * http://code.google.com/p/flash-console/
-*
+* 
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,37 +20,44 @@
 * 2. Altered source versions must be plainly marked as such, and must not be
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
-*
+* 
 */
-package com.junkbyte.console.core
+package com.junkbyte.console.addons.memoryRecorder
 {
 	import com.junkbyte.console.Console;
-	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.KeyBind;
 
-	import flash.events.EventDispatcher;
-
-	/**
-	 * @private
-	 */
-	public class ConsoleCore extends EventDispatcher
+	public class MemoryRecorderAddon
 	{
-		protected var console:Console;
-		protected var config:ConsoleConfig;
 
-		public function ConsoleCore(c:Console)
+		public static function registerToConsole(console:Console, key:String = "r"):void
 		{
-			console = c;
-			config = console.config;
+			MemoryRecorder.instance.reportCallback = function(... args:Array):void
+			{
+				args.unshift("R");
+				console.infoch.apply(null, args);
+			}
+
+			var onMemoryRecorderStart:Function = function():void
+			{
+				if (MemoryRecorder.instance.running == false)
+				{
+					MemoryRecorder.instance.start();
+				}
+			}
+
+			var onMemoryRecorderEnd:Function = function():void
+			{
+				if (MemoryRecorder.instance.running)
+				{
+					console.clear("R");
+					MemoryRecorder.instance.end();
+				}
+			}
+
+			console.bindKey(new KeyBind(key), onMemoryRecorderStart);
+			console.bindKey(new KeyBind(key, false, false, false, true), onMemoryRecorderEnd);
 		}
 
-		protected function get remoter():Remoting
-		{
-			return console.remoter;
-		}
-
-		protected function report(obj:* = "", priority:int = 0, skipSafe:Boolean = true, ch:String = null):void
-		{
-			console.report(obj, priority, skipSafe, ch);
-		}
 	}
 }

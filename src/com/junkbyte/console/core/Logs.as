@@ -28,7 +28,10 @@ package com.junkbyte.console.core
 	import flash.events.Event;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.Log;
-
+	
+	/**
+	 * @private
+	 */
 	public class Logs extends ConsoleCore{
 		
 		private var _channels:Object;
@@ -36,21 +39,23 @@ package com.junkbyte.console.core
 		private var _lastRepeat:Log;
 		private var _newRepeat:Log;
 		private var _hasNewLog:Boolean;
+		private var _timer:uint;
 		
-		private var first:Log;
+		public var first:Log;
 		public var last:Log;
 		
 		private var _length:uint;
-		//private var _lines:uint; // number of lines since start.
+		private var _lines:uint; // number of lines since start.
 		
 		public function Logs(console:Console){
 			super(console);
 			_channels = new Object();
 			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
 			remoter.registerCallback("log", function(bytes:ByteArray):void{
-				add(Log.FromBytes(bytes));
+				registerLog(Log.FromBytes(bytes));
 			});
 		}
+		
 		private function onRemoteConnection(e:Event):void{
 			var log:Log = first;
 			while(log){
@@ -58,6 +63,7 @@ package com.junkbyte.console.core
 				log = log.next;
 			}
 		}
+		
 		private function send2Remote(line:Log):void{
 			if(remoter.canSend) {
 				var bytes:ByteArray = new ByteArray();
@@ -65,7 +71,9 @@ package com.junkbyte.console.core
 				remoter.send("log", bytes);
 			}
 		}
-		public function update():Boolean{
+		
+		public function update(time:uint):Boolean{
+			_timer = time;
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){
 				if(_lastRepeat) remove(_lastRepeat);
@@ -77,13 +85,27 @@ package com.junkbyte.console.core
 			_hasNewLog = false;
 			return b;
 		}
+		
 		public function add(line:Log):void{
+			_lines++;
+			line.line = _lines;
+			line.time = _timer;
+			
+			registerLog(line);
+		}
+		
+		private function registerLog(line:Log):void{
 			_hasNewLog = true;
 			addChannel(line.ch);
+			
+			line.lineStr = line.line +" ";
+			line.chStr = "[<a href=\"event:channel_"+line.ch+"\">"+line.ch+"</a>] ";
+			line.timeStr = config.timeStampFormatter(line.time) + " ";
+			
 			send2Remote(line);
 			if (line.repeat) {
 				if(_repeating > 0 && _lastRepeat){
-					//line.line = _lastRepeat.line;
+					line.line = _lastRepeat.line;
 					_newRepeat = line;
 					return;
 				}else{
@@ -91,8 +113,6 @@ package com.junkbyte.console.core
 					_lastRepeat = line;
 				}
 			}
-			//_lines++;
-			//line.line = _lines;
 			//
 			push(line);
 			while(_length > config.maxLines && config.maxLines > 0){
@@ -103,6 +123,7 @@ package com.junkbyte.console.core
 				config.traceCall(line.ch, line.plainText(), line.priority);
 			}
 		}
+		
 		public function clear(channel:String = null):void{
 			if(channel){
 				var line:Log = first;
@@ -120,6 +141,7 @@ package com.junkbyte.console.core
 				_channels = new Object();
 			}
 		}
+		
 		public function getLogsAsString(splitter:String, incChNames:Boolean = true, filter:Function = null):String{
 			var str:String = "";
 			var line:Log = first;
@@ -132,6 +154,7 @@ package com.junkbyte.console.core
 			}
 			return str;
 		}
+		
 		public function getChannels():Array{
 			var arr:Array = new Array(Console.GLOBAL_CHANNEL);
 			addIfexist(Console.DEFAULT_CHANNEL, arr);
@@ -144,9 +167,11 @@ package com.junkbyte.console.core
 			}
 			return arr.concat(others.sort(Array.CASEINSENSITIVE));
 		}
+		
 		private function addIfexist(n:String, arr:Array):void{
 			if(_channels.hasOwnProperty(n)) arr.push(n);
 		}
+		
 		public function cleanChannels():void{
 			_channels = new Object();
 			var line:Log = first;
@@ -155,6 +180,7 @@ package com.junkbyte.console.core
 				line = line.next;
 			}
 		}
+		
 		public function addChannel(n:String):void{
 			_channels[n] = null;
 		}

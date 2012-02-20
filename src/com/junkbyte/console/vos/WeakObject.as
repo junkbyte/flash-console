@@ -26,6 +26,9 @@ package com.junkbyte.console.vos {
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
+	/**
+	 * @private
+	 */
 	public dynamic class WeakObject extends Proxy{
 		
 		private var _item:Array;
