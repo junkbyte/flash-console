@@ -11,7 +11,7 @@
 	<property name="src.ver.file" value="${src.dir}/com/junkbyte/console/Console.as" />
 	<property name="src.air.config.file" value="${samples.dir}/remote_air/ConsoleRemoteAIR-app.xml" />
 	
-	<property name="swc.classes" value="com.junkbyte.console.Cc com.junkbyte.console.ConsoleChannel" />
+	<property name="src.package.path" value="${src.dir}/com/junkbyte/console/" />
 	
 	<property file="${build.dir}/local.properties" />
 
@@ -89,8 +89,9 @@
 	<target name="swc">
 		<echo message="Compiling SWC" />
 		<property file="${build.dir}/project.properties"/>
-		<compc output="${bin.dir}/Console.swc" include-classes="${swc.classes}">
+		<compc output="${bin.dir}/Console.swc">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
+			<include-sources dir="${src.package.path}" includes="*" />
 			<compiler.source-path path-element="${src.dir}" />
 		</compc>
 	</target>
@@ -153,7 +154,7 @@
 		<exec executable="${FLEX_HOME}/bin/asdoc.exe" failonerror="true" osfamily="windows">
 			<arg line="-output '${asdoc.dir}'" />
 			<arg line="-source-path '${src.dir}'" />
-			<arg line="-doc-sources ${src.dir}/com/junkbyte/console/" />
+			<arg line="-doc-sources ${src.package.path}" />
 			<arg line="-main-title 'Flash-Console v${build.version}'" />
 			<arg line="-window-title 'Flash-Console v${build.version}'" />
 			<arg line="-footer 'Flash-Console v${build.version}'" />
@@ -161,7 +162,7 @@
 		<exec executable="${FLEX_HOME}/bin/asdoc" failonerror="true" osfamily="mac">
 			<arg line="-output '${asdoc.dir}'" />
 			<arg line="-source-path '${src.dir}'" />
-			<arg line="-doc-sources ${src.dir}/com/junkbyte/console/" />
+			<arg line="-doc-sources ${src.package.path}" />
 			<arg line="-main-title 'Flash-Console v${build.version}'" />
 			<arg line="-window-title 'Flash-Console v${build.version}'" />
 			<arg line="-footer 'Flash-Console v${build.version}'" />
