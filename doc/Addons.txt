@@ -34,3 +34,9 @@ They are not compiled as part of SWC package at the moment as some may require a
   
 ==`CommandLine` Auto focus==
   * Sets focus to commandLine input field whenever Console becomes visible, e.g after entering password key.
+  
+  
+==Ruler addon==
+  * Ruler addon let you measure the distance and angle between two points on screen
+  * Add to menu: `RulerAddon.addToMenu();`
+  * Start ruler tool by pressing on 'ruler' at the top menu

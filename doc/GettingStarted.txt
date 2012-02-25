@@ -222,10 +222,6 @@ Cc.addMenu("hi", Cc.log, ["Hello from top menu"], "Says hello!");
    * This adds a link 'hi' on top menu. Rolling over the link will show the tooltip "Says hello!"
    * Clicking on the link will print in console "Hello from top menu".
 
-==Ruler tool==
-  * Start ruler tool by pressing on RL at the top menu
-  * Ruler tool let you measure the distance and angle between two points
-
 ==Garbage collection monitor==
 {{{
 import flash.display.Sprite;
