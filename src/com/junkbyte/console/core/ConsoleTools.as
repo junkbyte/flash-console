@@ -162,7 +162,7 @@ package com.junkbyte.console.core
 			var txt:String = "";
 			var lines:Array = str.split(/\n\sat\s/);
 			var len:int = lines.length;
-			var reg:RegExp = new RegExp("Function|"+getQualifiedClassName(Console)+"|"+getQualifiedClassName(Cc));
+			var reg:RegExp = config.stackTraceIgnoreExpression;
 			var found:Boolean = false;
 			for (var i:int = 2; i < len; i++){
 				if(!found && (lines[i].search(reg) != 0)){

@@ -21,7 +21,6 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 *
-* REQUIRES Flash Player 11.0 OR com.adobe.serialization.json.JSON
 */
 package com.junkbyte.console.addons.htmlexport
 {
@@ -47,6 +46,7 @@ package com.junkbyte.console.addons.htmlexport
 	 * </ul>
 	 *
 	 * REQUIRES Flash Player 11.0 OR com.adobe.serialization.json.JSON library.
+	 * If you are using com.adobe.serialization.json.JSON, make sure you reference the class somewhere so that it get compiled.
 	 */
 	public class ConsoleHtmlExportAddon
 	{

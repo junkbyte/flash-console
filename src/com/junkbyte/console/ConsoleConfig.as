@@ -1,11 +1,11 @@
 ﻿/*
-* 
+*
 * Copyright (c) 2008-2010 Lu Aye Oo
-* 
+*
 * @author 		Lu Aye Oo
-* 
+*
 * http://code.google.com/p/flash-console/
-* 
+*
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,19 +20,22 @@
 * 2. Altered source versions must be plainly marked as such, and must not be
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
-* 
+*
 */
-package com.junkbyte.console {
+package com.junkbyte.console
+{
+	import avmplus.getQualifiedClassName;
 
-	public class ConsoleConfig {
-		
+	public class ConsoleConfig
+	{
+
 		/**
 		 * 	Password sequence to toggle console's visibility. If password is set, console will start hidden. Set Cc.visible = ture to unhide at start.
 		 * 	Must be ASCII chars. Example passwords: ` OR debug.
 		 * 	Password will not trigger if you have focus on an input TextField.
 		 */
 		public var keystrokePassword:String;
-		
+
 		/**
 		 * Set Password required to connect from remote.
 		 * <p>
@@ -42,19 +45,19 @@ package com.junkbyte.console {
 		 * </p>
 		 */
 		public var remotingPassword:String;
-		
+
 		//////////////////////
 		//                  //
 		//  LOGGING CONIFG  //
 		//                  //
 		//////////////////////
-		
+
 		/**
 		 * Maximum number of logs Console should remember.
 		 * 0 = unlimited. Setting to very high will take up more memory and potentially slow down.
 		 */
 		public var maxLines:uint = 1000;
-		
+
 		/**
 		 * Frames before repeating line is forced to print to next line.
 		 * <p>
@@ -63,35 +66,35 @@ package com.junkbyte.console {
 		 * </p>
 		 */
 		public var maxRepeats:int = 75;
-		
+
 		/**
 		 * Auto stack trace logs for this priority and above
 		 * default priortiy = 10; fatal level
 		 */
 		public var autoStackPriority:int = Console.FATAL;
-		
+
 		/**
 		 * Default stack trace depth
 		 */
 		public var defaultStackDepth:int = 2;
-		
-		/** 
+
+		/**
 		 * Object linking allows you click on individual objects you have logged to inspect the detials in a specific view.
 		 * The down side is that it will take a little more memory to keep a WEAK reference to all objects pass for logging.
 		 * Potentially a security risk as users will be able to explore your code interface.
 		 */
 		public var useObjectLinking:Boolean = true;
-		
+
 		/**
 		 * Seconds in which object links should be hard referenced for.
-		 * If you logged a temp object (object that is not referenced anywhere else), it will become a link in console. 
-		 * However it will get garbage collected almost straight away which prevents you from clicking on the object link. 
+		 * If you logged a temp object (object that is not referenced anywhere else), it will become a link in console.
+		 * However it will get garbage collected almost straight away which prevents you from clicking on the object link.
 		 * (You will normally get this message: "Reference no longer exists")
 		 * This feature allow you to set how many seconds console should hard reference object logs.
 		 * Example, if you set 120, you will get 2 mins guaranteed time that any object link will work since it first appeared.
 		 * Default is 0, meaning everything is weak linked straight away.
 		 * Recommend not to use too high numbers. possibly 120 (2 minutes) is max you should set.
-		 * 
+		 *
 		 * Example:
 		 * <code>
 		 * Cc.log("This is a temp object:", new Object());
@@ -100,7 +103,7 @@ package com.junkbyte.console {
 		 * </code>
 		 */
 		public var objectHardReferenceTimer:uint = 0;
-		
+
 		/**
 		 * Use flash's build in (or external) trace().
 		 * <p>
@@ -112,7 +115,7 @@ package com.junkbyte.console {
 		 * @see traceCall
 		 */
 		public var tracing:Boolean;
-		
+
 		/**
 		 * Assign custom trace function.
 		 * <p>
@@ -131,17 +134,15 @@ package com.junkbyte.console {
 		 * </p>
 		 * @see tracing
 		 */
-		public var traceCall:Function = function (ch:String, line:String, ...args):void{
-			trace("["+ch+"] "+line);
+		public var traceCall:Function = function(ch:String, line:String, ... args):void {
+			trace("[" + ch + "] " + line);
 		};
-		
-		
+
 		/**
 		 * Specifies whether to show timestamps in Console.
 		 */
 		public var showTimestamp:Boolean = false;
-		
-		
+
 		/**
 		 * Time stamp formatter.
 		 * <p>
@@ -153,61 +154,106 @@ package com.junkbyte.console {
 		 */
 		public var timeStampFormatter:Function = function(timer:uint):String
 		{
-			var s:uint = timer*0.001;
-			return makeTimeDigit(s/60)+":"+makeTimeDigit(s%60);
+			var s:uint = timer * 0.001;
+			return makeTimeDigit(s / 60) + ":" + makeTimeDigit(s % 60);
 		};
-		
-		private function makeTimeDigit(v:uint):String{
-			if(v < 10) return "0"+v;
+
+		private function makeTimeDigit(v:uint):String
+		{
+			if (v < 10)
+			{
+				return "0" + v;
+			}
 			return String(v);
 		}
-		
+
 		/**
 		 * Specifies whether to show line numbers in console.
 		 */
 		public var showLineNumber:Boolean = false;
-		
-		// Work in progress
-		//public var rolloverStackToolTip:Boolean = false;
-		
+
+		private var _stackIgnoredExp:RegExp = new RegExp("Function|" + addDotSlash(getQualifiedClassName(Console)) + "|" + addDotSlash(getQualifiedClassName(Cc)));
+
+		/**
+		 * @private
+		 * Use internally by console to ignore certain classes in stack traces.
+		 */
+		public function get stackTraceIgnoreExpression():RegExp
+		{
+			return _stackIgnoredExp;
+		}
+
+		/**
+		 * Add class to ignore in stack trace.
+		 * <ul>
+		 * <li>This stops the stack from going down further when it reaches this class.</li>
+		 * <li>By default the stack stops when reaching Console or Cc.</li>
+		 * <li>Useful to ignore if you have many pass backs and wrappers before reaching the log calls to Console.</li>
+		 * <li>Currently no way to remove once added.</li>
+		 * </ul>
+		 *
+		 * @param classToIgnore Class to ignore.
+		 *
+		 */
+		public function addStackTraceIgnoreClass(classToIgnore:Class):void
+		{
+			var stringToAdd:String = "|" + addDotSlash(getQualifiedClassName(classToIgnore));
+
+			var expressionStr:String = _stackIgnoredExp.source;
+
+			var index:int = expressionStr.indexOf(stringToAdd);
+			var end:int = index + stringToAdd.length;
+			if (index < 0 || (end < expressionStr.length && expressionStr.charAt(end) != "|"))
+			{
+				expressionStr += stringToAdd;
+
+				_stackIgnoredExp = new RegExp(expressionStr + stringToAdd);
+			}
+		}
+
+		private function addDotSlash(string:String):String
+		{
+			return string.replace(/\./g, "\\.")
+		}
+
 		///////////////////////
 		//                   //
 		//  REMOTING CONFIG  //
 		//                   //
 		///////////////////////
-		
-		/** 
-		 * Shared connection name used for remoting 
+
+		/**
+		 * Shared connection name used for remoting
 		 * You can change this if you don't want to use default channel
 		 * Other remotes with different remoting channel won't be able to connect your flash.
 		 * Start with _ to work in any domain + platform (air/swf - local / network)
 		 * Note that local to network sandbox still apply.
 		 */
 		public var remotingConnectionName:String = "_Console";
-		
+
 		/**
 		 * allowDomain and allowInsecureDomain of remoting LocalConnection.
 		 * Default: "*"
 		 * see LocalConnection -> allowDomain for info.
 		 */
 		public var allowedRemoteDomain:String = "*";
-		
+
 		///////////////////
 		//               //
 		//  MISC CONFIG  //
 		//               //
 		///////////////////
-		
+
 		/**
 		 * Full Command line features usage allowance.
 		 * <p>
-		 * CommandLine is a big security risk for your code and flash. 
+		 * CommandLine is a big security risk for your code and flash.
 		 * It is a very good practice to disable it after development phase.
 		 * On the other hand having it on full access will let you debug the code easier.
 		 * </p>
 		 */
 		public var commandLineAllowed:Boolean;
-		
+
 		/**
 		 * CommandLine autoscoping
 		 * <p>
@@ -215,7 +261,7 @@ package com.junkbyte.console {
 		 * </p>
 		 */
 		public var commandLineAutoScope:Boolean;
-		
+
 		/**
 		 * CommandLine input pass through function
 		 * <p>
@@ -232,25 +278,25 @@ package com.junkbyte.console {
 		 * </p>
 		 */
 		public var commandLineInputPassThrough:Function;
-		
+
 		/**
 		 * Commandline auto hinting and auto-completion
 		 * <p>
-		 * When using config.commandLineInputPassThrough feature, 
+		 * When using config.commandLineInputPassThrough feature,
 		 * it maybe be convenient to turn off commandLineAutoCompleteEnabled.
 		 * </p>
 		 */
 		public var commandLineAutoCompleteEnabled:Boolean = true;
-		
+
 		/**
 		 * Key binding availability
 		 * <p>
-		 * While turned off, you can still bind keys. 
+		 * While turned off, you can still bind keys.
 		 * Just that it will not trigger so long as the keyBindsEnabled is set to false.
 		 * </p>
 		 */
 		public var keyBindsEnabled:Boolean = true;
-		
+
 		/**
 		 * Display Roller availability
 		 * <p>
@@ -258,12 +304,12 @@ package com.junkbyte.console {
 		 * </p>
 		 */
 		public var displayRollerEnabled:Boolean = true;
-		
+
 		/**
 		 * Ruler tool availability
 		 */
 		public var rulerToolEnabled:Boolean = true;
-		
+
 		/**
 		 * Determine if Console should hide mouse cursor when using Ruler tool.
 		 * <p>
@@ -272,16 +318,16 @@ package com.junkbyte.console {
 		 * </p>
 		 */
 		public var rulerHidesMouse:Boolean = true;
-		
-		/** 
+
+		/**
 		 * Local shared object used for storing user data such as command line history
 		 * Set to null to disable storing to local shared object.
 		 */
 		public var sharedObjectName:String = "com.junkbyte/Console/UserData";
-		
+
 		/** Local shared object path */
 		public var sharedObjectPath:String = "/";
-			
+
 		/**
 		 * Remembers viewing filters such as channels and priority level over different sessions.
 		 * <ul>
@@ -292,48 +338,50 @@ package com.junkbyte.console {
 		 * </ul>
 		 */
 		public var rememberFilterSettings:Boolean;
-		
+
 		/**
 		 * Keeping Console on top of display list.
 		 * <p>
 		 * When turned on (by default), console will always try to put it self on top of the parent's display list.
-		 * For example, if console is started in root, when a child display is added in root, console will move it self to the 
+		 * For example, if console is started in root, when a child display is added in root, console will move it self to the
 		 * top of root's display list to try to overlay the new child display. - making sure that console don't get covered.
 		 * </p>
 		 * <p>
-		 * However, if Console's parent display (root in example) is covered by another display (example: adding a child directly to stage), 
+		 * However, if Console's parent display (root in example) is covered by another display (example: adding a child directly to stage),
 		 * console will not be able to pull it self above it as it is in root, not stage.
 		 * If console is added on stage in the first place, there won't be an issue as described above. Use Cc.startOnStage(...).
 		 * </p>
 		 * <p>
-		 * Keeping it turned on may have other side effects if another display is also trying to put it self on top, 
+		 * Keeping it turned on may have other side effects if another display is also trying to put it self on top,
 		 * they could be jumping layers as they fight for the top layer.
 		 * </p>
 		 */
 		public var alwaysOnTop:Boolean = true;
-		
+
 		////////////////////
 		//                //
 		//  STYLE CONFIG  //
 		//                //
 		////////////////////
-		
+
 		/**
 		 * Get style configuration used.
 		 */
-		public function get style():ConsoleStyle{
+		public function get style():ConsoleStyle
+		{
 			return _style;
 		}
-		
+
 		/////////////////////
 		//                 //
 		//  END OF CONFIG  //
 		//                 //
 		/////////////////////
-		
+
 		private var _style:ConsoleStyle;
-		
-		public function ConsoleConfig(){
+
+		public function ConsoleConfig()
+		{
 			_style = new ConsoleStyle();
 		}
 	}
