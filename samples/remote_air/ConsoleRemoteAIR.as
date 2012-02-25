@@ -23,74 +23,101 @@
  * 
  */
 package {
-	import flash.events.ProgressEvent;
-	import flash.net.Socket;
-
+	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
+	import com.junkbyte.console.addons.htmlexport.ConsoleHtmlExportAddon;
 	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.view.ConsolePanel;
-
+	import com.junkbyte.console.view.PanelsManager;
+	
 	import flash.display.MovieClip;
+	import flash.display.NativeWindowDisplayState;
+	import flash.display.NativeWindowResize;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
-	import flash.filters.GlowFilter;
-	import flash.text.TextField;
+	import flash.events.ProgressEvent;
 	import flash.events.ServerSocketConnectEvent;
-	import flash.net.ServerSocket;
 	import flash.filesystem.File;
-	import flash.filesystem.FileStream;
 	import flash.filesystem.FileMode;
-	import flash.display.NativeWindowDisplayState;
-	import flash.display.NativeWindowResize;
+	import flash.filesystem.FileStream;
+	import flash.filters.GlowFilter;
+	import flash.net.ServerSocket;
+	import flash.net.Socket;
+	import flash.text.TextField;
 
 	public class ConsoleRemoteAIR extends MovieClip {
-		private var _c : Console;
+		
 		private var _serverSocket : ServerSocket;
+		
+		private var _autoClear:Boolean = true;
 
 		public function ConsoleRemoteAIR() {
-			var config : ConsoleConfig = new ConsoleConfig();
-			config.maxLines = 2000;
-			config.style.backgroundAlpha = 0.55;
-			config.commandLineAllowed = true;
-			_c = new Console(null, config);
-			addChild(_c);
-			_c.visible = true;
-			_c.remoter.remoting = Remoting.RECIEVER;
-			_c.commandLine = true;
-			_c.x = 10;
-			_c.y = 10;
-			_c.addMenu("top", toggleOnTop, null, "Toggle always in front");
-			_c.addMenu("save", saveToFile, null, "Save to file");
-			var menu : TextField = _c.panels.mainPanel.getChildByName("menuField") as TextField;
+			Cc.config.maxLines = 2000;
+			Cc.config.style.backgroundAlpha = 0.55;
+			Cc.config.commandLineAllowed = true;
+			
+			Cc.start(this);
+			
+			var panels:PanelsManager = console.panels;
+			
+			console.remoter.addEventListener(Event.CONNECT, onRemotingConnect);
+			console.remoter.remoting = Remoting.RECIEVER;
+			Cc.commandLine = true;
+			Cc.x = 10;
+			Cc.y = 10;
+			Cc.addMenu("top", toggleOnTop, null, "Toggle always in front");
+			Cc.addMenu("auto-clear", toggleAutoClear, null, "Toggle auto clear on new connection");
+			
+			ConsoleHtmlExportAddon.addToMenu("save");
+			
+			var menu : TextField = panels.mainPanel.getChildByName("menuField") as TextField;
 			menu.doubleClickEnabled = true;
 			menu.addEventListener(MouseEvent.DOUBLE_CLICK, ondouble);
-			_c.panels.mainPanel.addEventListener(ConsolePanel.DRAGGING_STARTED, moveHandle);
-			_c.panels.mainPanel.addEventListener(ConsolePanel.SCALING_STARTED, scaleHandle);
+			panels.mainPanel.addEventListener(ConsolePanel.DRAGGING_STARTED, moveHandle);
+			panels.mainPanel.addEventListener(ConsolePanel.SCALING_STARTED, scaleHandle);
 
-			_c.filters = new Array(new GlowFilter(0, 0.7, 5, 5));
+			Cc.instance.filters = new Array(new GlowFilter(0, 0.7, 5, 5));
 
-			_c.panels.mainPanel.addEventListener(Event.CLOSE, onMainPanelClose);
+			panels.mainPanel.addEventListener(Event.CLOSE, onMainPanelClose);
 			stage.frameRate = 60;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			stage.addEventListener(Event.RESIZE, onStageResize);
 			onStageResize();
 			
-			_c.addSlashCommand("listen", function (params:String = ""):void{
+			Cc.addSlashCommand("listen", function (params:String = ""):void{
 				var parts:Array = params.split(/\s+/);
 				bindServer(parts[0], parts[1]);
 			});
-			_c.cl.localCommands.push("listen");
-			_c.report("Use <b>/listen <i>ip port</i></b> command to listen to socket connection.", -2);
-			_c.report("Example <b>/listen 127.0.0.1 200</b> command to listen to socket connection.", -1);
+			console.cl.localCommands.push("listen");
+			console.report("Use <b>/listen <i>ip port</i></b> command to listen to socket connection.", -2);
+			console.report("Example <b>/listen 127.0.0.1 200</b> command to listen to socket connection.", -1);
 		}
 
+		private function onRemotingConnect(event:Event):void
+		{
+			if(_autoClear)
+			{
+				Cc.clear();
+			}
+		}
+		
+		public function get console():Console
+		{
+			return Cc.instance;
+		}
+		
 		private function toggleOnTop() : void {
 			stage.nativeWindow.alwaysInFront = !stage.nativeWindow.alwaysInFront;
-			_c.report("Always in front " + (stage.nativeWindow.alwaysInFront ? "enabled." : "disabled"), -1);
+			console.report("Always in front " + (stage.nativeWindow.alwaysInFront ? "enabled." : "disabled"), -1);
+		}
+		
+		private function toggleAutoClear() : void {
+			_autoClear = !_autoClear;
+			console.report("Auto clear on new connection " + (_autoClear ? "enabled." : "disabled"), -1);
 		}
 
 		private function onMainPanelClose(e : Event) : void {
@@ -103,7 +130,7 @@ package {
 				docsDir.browseForSave("Save Log As");
 				docsDir.addEventListener(Event.SELECT, saveData);
 			} catch (err : Error) {
-				_c.error("Failed:", err.message);
+				console.error("Failed:", err.message);
 			}
 		}
 
@@ -117,16 +144,16 @@ package {
 					file.nativePath = path + ".txt";
 				}
 			}
-			var str : String = _c.getAllLog(File.lineEnding);
+			var str : String = console.getAllLog(File.lineEnding);
 			var stream : FileStream = new FileStream();
 			try {
 				stream.open(file, FileMode.WRITE);
 				stream.writeUTFBytes(str);
 				stream.close();
-				_c.report("Saved log to " + file.nativePath, -1);
+				console.report("Saved log to " + file.nativePath, -1);
 			} catch(e : Error) {
 				// maybe read-only , etc
-				_c.report("There was a problem saving the log to " + file.nativePath + "\n" + e, 10);
+				console.report("There was a problem saving the log to " + file.nativePath + "\n" + e, 10);
 			}
 		}
 
@@ -143,13 +170,13 @@ package {
 		}
 
 		private function scaleHandle(e : Event) : void {
-			_c.panels.mainPanel.stopScaling();
+			console.panels.mainPanel.stopScaling();
 			stage.nativeWindow.startResize(NativeWindowResize.BOTTOM_RIGHT);
 		}
 
 		private function onStageResize(e : Event = null) : void {
-			_c.width = stage.stageWidth - 20;
-			_c.height = stage.stageHeight - 20;
+			console.width = stage.stageWidth - 20;
+			console.height = stage.stageHeight - 20;
 		}
 
 		public function bindServer(host : String, port : int) : void {
@@ -160,18 +187,18 @@ package {
 			_serverSocket.bind(port, host);
 			_serverSocket.addEventListener(ServerSocketConnectEvent.CONNECT, onConnect);
 			_serverSocket.listen();
-			_c.report("Listening to: " + _serverSocket.localAddress + ":" + _serverSocket.localPort, -1);
+			console.report("Listening to: " + _serverSocket.localAddress + ":" + _serverSocket.localPort, -1);
 		}
 
 		private function onConnect(event : ServerSocketConnectEvent) : void {
 			var clientSocket : Socket = event.socket;
 			clientSocket.addEventListener(ProgressEvent.SOCKET_DATA, onClientSocketData);
-			_c.report("Connection from " + clientSocket.remoteAddress + ":" + clientSocket.remotePort);
+			console.report("Connection from " + clientSocket.remoteAddress + ":" + clientSocket.remotePort);
 		}
 
 		private function onClientSocketData(event : ProgressEvent) : void {
 			var clientSocket : Socket = event.currentTarget as Socket;
-			_c.remoter.handleSocket(clientSocket);
+			console.remoter.handleSocket(clientSocket);
 		}
 	}
 }

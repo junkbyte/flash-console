@@ -231,7 +231,7 @@ package com.junkbyte.console.view
 		 */
 		public function addMenu(key:String, f:Function, args:Array, rollover:String):void{
 			if(key){
-				key = key.replace(/[^\w]*/g, "");
+				key = key.replace(/[^\w\-]*/g, "");
 				if(f == null){
 					delete _extraMenus[key];
 				}else{

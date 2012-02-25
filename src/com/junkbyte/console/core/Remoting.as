@@ -38,7 +38,7 @@ package com.junkbyte.console.core
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 
-	[Event(name="CONNECT", type="flash.events.Event")]
+	[Event(name="connect", type="flash.events.Event")]
 	/**
 	 * @private
 	 */
@@ -293,7 +293,7 @@ package com.junkbyte.console.core
 		
 		private function printHowToGlobalSetting():void{
 			report("Make sure your flash file is 'trusted' in Global Security Settings.", -2);
-			report("Go to Settings Manager [<a href='event:settings'>click here</a>] &gt; 'Global Security Settings Panel' (on left) &gt; add the location of the local flash (swf) file.", -2);
+			report("Go to Settings Manager [<a href='event:settings'>click here</a>] &gt; 'Global Security Settings Panel'  &gt; add the location of the local flash (swf) file.", -2);
 		}
 		
 		private function generateId():String{
@@ -333,6 +333,7 @@ package com.junkbyte.console.core
 		private function loginSuccess():void{
 			console.setViewingChannels();
 			report("Login Successful", -1);
+			dispatchEvent(new Event(Event.CONNECT));
 		}
 		private function requestLogin():void{
 			if(remoting != Remoting.RECIEVER) return;
