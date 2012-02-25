@@ -9,7 +9,7 @@ package com.junkbyte.console.modules.graphing.fps
 		public function FPSGraphingGroup()
 		{
 			super();
-			updateFrequencyMS = 250;
+			updateFrequencyMS = 500;
 			fixedMin = 0;
 
 			var line:GraphingLine = new GraphingLine();

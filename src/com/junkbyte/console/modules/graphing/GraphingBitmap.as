@@ -2,7 +2,9 @@ package com.junkbyte.console.modules.graphing
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 
 	public class GraphingBitmap
@@ -13,8 +15,8 @@ package com.junkbyte.console.modules.graphing
 		protected var _bm:Bitmap;
 		protected var _bmd:BitmapData;
 
-		protected var lastLow:Number;
-		protected var lastHigh:Number;
+		protected var lowestValue:Number;
+		protected var highestValue:Number;
 		protected var lastValues:Object = new Object();
 
 		public function GraphingBitmap(panel:GraphingPanelModule, group:GraphingGroup)
@@ -23,10 +25,10 @@ package com.junkbyte.console.modules.graphing
 			_group = group;
 			initDisplay();
 		}
-		
+
 		protected function initDisplay():void
 		{
-			
+
 			_bm = new Bitmap();
 			_panel.addChild(_bm);
 		}
@@ -52,14 +54,14 @@ package com.junkbyte.console.modules.graphing
 
 		public function reset():void
 		{
-			lastLow = lastHigh = NaN;
+			lowestValue = highestValue = NaN;
 			lastValues = new Object();
 		}
 
 		public function push(values:Vector.<Number>):void
 		{
-			var lowest:Number = isNaN(_group.fixedMin) ? lastLow : _group.fixedMin;
-			var highest:Number = isNaN(_group.fixedMax) ? lastHigh : _group.fixedMax;
+			var lowest:Number = isNaN(_group.fixedMin) ? lowestValue : _group.fixedMin;
+			var highest:Number = isNaN(_group.fixedMax) ? highestValue : _group.fixedMax;
 
 			for each (var v:Number in values)
 			{
@@ -73,34 +75,46 @@ package com.junkbyte.console.modules.graphing
 				}
 			}
 
-			if (lastLow != lowest || lastHigh != highest)
+			if (lowestValue != lowest || highestValue != highest)
 			{
 				scaleBitmapData(lowest, highest);
 			}
-			draw(highest, lowest, values);
-			lastLow = lowest;
-			lastHigh = highest;
+			draw(values);
 		}
 
 		protected function scaleBitmapData(newLow:Number, newHigh:Number):void
 		{
 			var scaleBMD:BitmapData = _bmd.clone();
-
 			_bmd.fillRect(new Rectangle(0, 0, _bmd.width, _bmd.height), 0);
 
-			var oldDiff:Number = lastHigh - lastLow;
 			var newDiff:Number = newHigh - newLow;
 
+			if (newDiff != 0)
+			{
+				var valuePerPixel:Number = newDiff /_bmd.height;
+				var valuePerHalfPixel:Number = valuePerPixel * 0.5;
+				newHigh += valuePerHalfPixel;
+				newLow -= valuePerHalfPixel;
+				
+				newDiff = newHigh - newLow;
+			}
+
+			var oldDiff:Number = highestValue - lowestValue;
+
 			var matrix:Matrix = new Matrix();
-			matrix.ty = (newHigh - lastHigh) / oldDiff * _bmd.height;
+			matrix.ty = (newHigh - highestValue) / oldDiff * _bmd.height;
 			matrix.scale(1, oldDiff / newDiff);
 			_bmd.draw(scaleBMD, matrix, null, null, null, true);
+			
 			scaleBMD.dispose();
+
+			lowestValue = newLow;
+			highestValue = newHigh;
 		}
 
-		protected function draw(highest:Number, lowest:Number, values:Vector.<Number>):void
+		protected function draw(values:Vector.<Number>):void
 		{
-			var diffGraph:Number = highest - lowest;
+			var diffGraph:Number = highestValue - lowestValue;
 			var pixX:uint = _bmd.width - 1;
 
 			var H:int = _bmd.height;
@@ -114,18 +128,18 @@ package com.junkbyte.console.modules.graphing
 			{
 				var interest:GraphingLine = _group.lines[i];
 				var value:Number = values[i];
-				var pixY:int = ((value - lowest) / diffGraph) * H;
+				var pixY:int = ((value - lowestValue) / diffGraph) * H;
 				pixY = makePercentValue(pixY);
 
 				var lastValue:Number = lastValues[i];
 
 				if (isNaN(lastValue) == false)
 				{
-					var pixY2:int = ((lastValue - lowest) / diffGraph) * H;
+					var pixY2:int = ((lastValue - lowestValue) / diffGraph) * H;
 					pixY2 = makePercentValue(pixY2);
 					var min:int = Math.min(pixY, pixY2);
 					var max:int = Math.max(pixY, pixY2);
-					_bmd.fillRect(new Rectangle(pixX, min, 1, Math.max(1, max - min)), interest.color + 0xFF000000);
+					_bmd.fillRect(new Rectangle(pixX, min, 1, Math.max(1, max - min)), interest.color + 0xCC000000);
 				}
 				_bmd.setPixel32(pixX, pixY, interest.color + 0xFF000000);
 
