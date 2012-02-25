@@ -28,7 +28,7 @@
 	
 	<target name="BuildAll" description="Build everything!" depends="incrementBuildNumber">
 		<antcall target="compileSrc" />
-		<antcall target="compileASDoc" />
+		<antcall target="ASDoc" />
 	</target>
 
 	<target name="compileSrc" depends="updateVersion">
@@ -89,11 +89,30 @@
 	<target name="swc">
 		<echo message="Compiling SWC" />
 		<property file="${build.dir}/project.properties"/>
-		<compc output="${bin.dir}/Console.swc">
+		
+		<property name="swc.file" value="${bin.dir}/Console.swc" />
+		<compc output="${swc.file}">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
 			<include-sources dir="${src.package.path}" includes="*" />
 			<compiler.source-path path-element="${src.dir}" />
 		</compc>
+		
+		<delete dir="${temp.dir}" failOnError="false" includeEmptyDirs="true" />
+		<mkdir dir="${temp.dir}" />
+		
+		<antcall target="compileASDoc">
+			<param name="output" value="${temp.dir}" />
+			<param name="xmlonly" value="true" />
+		</antcall>
+		
+		<zip destfile="${swc.file}" update="true">
+			<zipfileset dir="${temp.dir}/tempdita" prefix="docs">
+				<include name="*.*"/>
+				<exclude name="ASDoc_Config.xml"/>
+				<exclude name="overviews.xml"/>
+			</zipfileset>
+		</zip>
+		<delete dir="${temp.dir}" failOnError="false" includeEmptyDirs="true" />
 	</target>
 
 	<target name="packageAir">
@@ -147,20 +166,29 @@
 	</target>
 
 	<!-- http://livedocs.adobe.com/flex/3/html/help.html?content=asdoc_9.html#142061 -->
-	<target name="compileASDoc" description="Generate ASDOC">
+	<target name="ASDoc" description="Generate ASDOC">
 		<delete dir="${asdoc.dir}" failOnError="false" includeEmptyDirs="true" />
 		<mkdir dir="${asdoc.dir}" />
+		<antcall target="compileASDoc">
+			<param name="output" value="${asdoc.dir}" />
+			<param name="xmlonly" value="false" />
+		</antcall>
+	</target>
+	
+	<target name="compileASDoc">
 		<property file="${build.dir}/project.properties"/>
-		<exec executable="${FLEX_HOME}/bin/asdoc.exe" failonerror="true" osfamily="windows">
-			<arg line="-output '${asdoc.dir}'" />
-			<arg line="-source-path '${src.dir}'" />
-			<arg line="-doc-sources ${src.package.path}" />
-			<arg line="-main-title 'Flash-Console v${build.version}'" />
-			<arg line="-window-title 'Flash-Console v${build.version}'" />
-			<arg line="-footer 'Flash-Console v${build.version}'" />
-		</exec>
-		<exec executable="${FLEX_HOME}/bin/asdoc" failonerror="true" osfamily="mac">
-			<arg line="-output '${asdoc.dir}'" />
+		
+		<condition property="asdoc.executable" value="asdoc.exe">
+			<os family="windows"/>
+		</condition>
+		<condition property="asdoc.executable" value="asdoc">
+			<os family="mac"/>
+		</condition>
+		
+		<exec executable="${FLEX_HOME}/bin/${asdoc.executable}" failonerror="true">
+			<arg line="-keep-xml=${xmlonly}" />
+			<arg line="-skip-xsl=${xmlonly}" />
+			<arg line="-output '${output}'" />
 			<arg line="-source-path '${src.dir}'" />
 			<arg line="-doc-sources ${src.package.path}" />
 			<arg line="-main-title 'Flash-Console v${build.version}'" />
