@@ -28,6 +28,7 @@ package
 	import com.junkbyte.console.addons.autoFocus.CommandLineAutoFocusAddon;
 	import com.junkbyte.console.addons.displaymap.DisplayMapAddon;
 	import com.junkbyte.console.addons.htmlexport.ConsoleHtmlExportAddon;
+	import com.junkbyte.console.addons.ruler.RulerAddon;
 	
 	import flash.display.*;
 	import flash.geom.Rectangle;
@@ -108,6 +109,8 @@ package
 			// source file located at samples/addons/  com.junkbyte.console.addons.htmlexport.ConsoleHtmlExport
 			// requires JSON: com.adobe.serialization.json.JSON
 			ConsoleHtmlExportAddon.addToMenu();
+			
+			RulerAddon.addToMenu();
 			
 			
 			DisplayMapAddon.registerCommand();

@@ -47,7 +47,13 @@ package com.junkbyte.console.addons.ruler
 	import flash.ui.Mouse;
 
 	/**
-	 * @private
+	 * Screen ruler addon.
+	 * <p>
+	 * Measure the distance and angle between two points on screen.
+	 * </p>
+	 * <p>
+	 * Register to console using <code>RulerAddon.addToMenu();</code>
+	 * </p>
 	 */
 	public class RulerAddon extends Sprite
 	{
@@ -62,15 +68,12 @@ package com.junkbyte.console.addons.ruler
 		public static var hideMouseWhenActive:Boolean = true;
 
 		/**
-		 * Screen ruler addon.
-		 * <p>
-		 * Measure the distance and angle between two points on screen.
-		 * </p>
-		 * <p>
-		 * Register to console using <code>RulerAddon.addToMenu();</code>
-		 * </p>
+		 * Add screen ruler addon to console menu.
+		 * 
+		 * @param menuName Name of menu. Default = 'ruler'
+		 * @param console Instance to Console. You do not need to pass this param if you use Cc.
 		 */
-		public static function addToMenu(menuName:String = "RL", console:Console = null):void
+		public static function addToMenu(menuName:String = "ruler", console:Console = null):void
 		{
 			if (console == null)
 			{
