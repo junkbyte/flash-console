@@ -36,7 +36,6 @@ package com.junkbyte.console.view
 		
 		private var console:Console;
 		private var _mainPanel:MainPanel;
-		private var _ruler:Ruler;
 		
 		private var _chsPanel:ChannelsPanel;
 		private var _fpsPanel:GraphingPanel;
@@ -300,7 +299,7 @@ package com.junkbyte.console.view
 		 * @private
 		 */
 		public function tooltip(str:String = null, panel:ConsolePanel = null):void{
-			if(str && !rulerActive){
+			if(str){
 				var split:Array = str.split("::");
 				str = split[0];
 				if(split.length > 1) str += "<br/><low>"+split[1]+"</low>";
@@ -335,28 +334,6 @@ package com.junkbyte.console.view
 			}else if(console.contains(_tooltipField)){
 				console.removeChild(_tooltipField);
 			}
-		}
-		//
-		//
-		//
-		public function startRuler():void{
-			if(rulerActive){
-				return;
-			}
-			_ruler = new Ruler(console);
-			_ruler.addEventListener(Event.COMPLETE, onRulerExit, false, 0, true);
-			console.addChild(_ruler);
-			_mainPanel.updateMenu();
-		}
-		public function get rulerActive():Boolean{
-			return (_ruler && console.contains(_ruler))?true:false;
-		}
-		private function onRulerExit(e:Event):void{
-			if(_ruler && console.contains(_ruler)){
-				console.removeChild(_ruler);
-			}
-			_ruler = null;
-			_mainPanel.updateMenu();
 		}
 		//
 		//

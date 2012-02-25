@@ -306,20 +306,6 @@ package com.junkbyte.console
 		public var displayRollerEnabled:Boolean = true;
 
 		/**
-		 * Ruler tool availability
-		 */
-		public var rulerToolEnabled:Boolean = true;
-
-		/**
-		 * Determine if Console should hide mouse cursor when using Ruler tool.
-		 * <p>
-		 * You may want to turn it off if your app/game don't use system mouse.
-		 * Default: true
-		 * </p>
-		 */
-		public var rulerHidesMouse:Boolean = true;
-
-		/**
 		 * Local shared object used for storing user data such as command line history
 		 * Set to null to disable storing to local shared object.
 		 */

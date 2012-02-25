@@ -38,7 +38,7 @@ package com.junkbyte.console.addons.autoFocus
 
 			var commandField:TextField = mainPanel.getChildByName("commandField") as TextField;
 
-			if (commandField && commandField.stage)
+			if (commandField && commandField.visible && commandField.stage)
 			{
 				commandField.stage.focus = commandField;
 				var textLen:uint = commandField.text.length;

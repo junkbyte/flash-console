@@ -797,8 +797,6 @@ package com.junkbyte.console.view
 				if(console.remoter.remoting != Remoting.RECIEVER){
 					if(config.displayRollerEnabled)
 					str += doActive(" <a href=\"event:roller\">Ro</a>", console.displayRoller);
-					if(config.rulerToolEnabled)
-					str += doActive(" <a href=\"event:ruler\">RL</a>", console.panels.rulerActive);
 				}
 				str += " ¦</b>";
 				str += " <a href=\"event:copy\">Sv</a>";
@@ -867,7 +865,6 @@ package com.junkbyte.console.view
 					fps:"Frames Per Second",
 					mm:"Memory Monitor",
 					roller:"Display Roller::Map the display list under your mouse",
-					ruler:"Screen Ruler::Measure the distance and angle between two points on screen.",
 					command:"Command Line",
 					copy:"Save to clipboard::shift: no channel name\nctrl: use viewing filters\nalt: save to file",
 					clear:"Clear log",
@@ -916,9 +913,6 @@ package com.junkbyte.console.view
 				console.memoryMonitor = !console.memoryMonitor;
 			}else if(t == "roller"){
 				console.displayRoller = !console.displayRoller;
-			}else if(t == "ruler"){
-				console.panels.tooltip();
-				console.panels.startRuler();
 			}else if(t == "command"){
 				commandLine = !commandLine;
 			} else if (t == "copy") {
@@ -1127,6 +1121,7 @@ package com.junkbyte.console.view
 			setHints();
 		}
 		private function setHints(hints:Array = null):void{
+			var cmdText:String = _cmdField.text;
 			if(hints && hints.length){
 				_hint = hints[0][0];
 				if(hints.length > 1){
@@ -1136,16 +1131,22 @@ package com.junkbyte.console.view
 						if(next.charAt(i) == _hint.charAt(i)){
 							matched = true;
 						}else{
-							if(matched && _cmdField.text.length < i) _hint = _hint.substring(0, i);
+							if(matched && cmdText.length < i) 
+							{
+								_hint = _hint.substring(0, i);
+							}
 							break;
 						}
 					}
 				}
 				var strs:Array = new Array();
-				for each(var hint:Array in hints) strs.push("<p3>"+hint[0]+"</p3> <p0>"+(hint[1]?hint[1]:"")+"</p0>");
+				for each(var hint:Array in hints) 
+				{
+					strs.push("<p3>"+hint[0]+"</p3> <p0>"+(hint[1]?hint[1]:"")+"</p0>");
+				}
 				_hintField.htmlText = "<p>"+strs.reverse().join("\n")+"</p>";
 				_hintField.visible = true;
-				var r:Rectangle = _cmdField.getCharBoundaries(_cmdField.text.length-1);
+				var r:Rectangle = _cmdField.getCharBoundaries(cmdText.length-1);
 				if(!r) r = new Rectangle();
 				_hintField.x = _cmdField.x + r.x + r.width+ 30;
 				_hintField.y = height-_hintField.height;
