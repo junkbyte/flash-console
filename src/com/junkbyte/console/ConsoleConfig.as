@@ -24,7 +24,7 @@
 */
 package com.junkbyte.console
 {
-	import avmplus.getQualifiedClassName;
+	import flash.utils.getQualifiedClassName;
 
 	public class ConsoleConfig
 	{
