@@ -367,11 +367,11 @@ package com.junkbyte.console.view
 			var matrix:Matrix = new Matrix();
 			if(_group.inv)
 			{
-				matrix.ty = (lowestValue - newLow) / newDiff * _bmd.height;
+				matrix.ty = (lowestValue - newLow) / oldDiff * _bmd.height;
 			}
 			else
 			{
-				matrix.ty = ( newHigh - highestValue) / newDiff * _bmd.height;
+				matrix.ty = ( newHigh - highestValue) / oldDiff * _bmd.height;
 			}
 			matrix.scale(1, oldDiff / newDiff);
 			_bmd.draw(scaleBMD, matrix, null, null, null, true);
