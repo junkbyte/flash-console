@@ -23,15 +23,16 @@
 * 
 */
 package com.junkbyte.console.core {
-	import flash.utils.ByteArray;
 	import com.junkbyte.console.Console;
-	import flash.system.System;
-	import flash.utils.getTimer;
-
-	import com.junkbyte.console.vos.GraphInterest;
+	import com.junkbyte.console.vos.GraphFPSGroup;
 	import com.junkbyte.console.vos.GraphGroup;
-
+	import com.junkbyte.console.vos.GraphInterest;
+	
+	import flash.display.StageAlign;
+	import flash.events.Event;
 	import flash.geom.Rectangle;
+	import flash.system.System;
+	import flash.utils.ByteArray;
 	
 	/**
 	 * @private
@@ -45,7 +46,8 @@ package com.junkbyte.console.core {
 		private var _memGroup:GraphGroup;
 		
 		private var _hadGraph:Boolean;
-		private var _previousTime:Number = -1;
+		
+		private var _groupAddedDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 		
 		public function Graphing(m:Console){
 			super(m);
@@ -84,8 +86,8 @@ package com.junkbyte.console.core {
 					return;
 				}
 			}
-			if(rect) group.rect = rect;
-			if(inverse) group.inv = inverse;
+			group.rect = rect;
+			group.inverted = inverse;
 			var interest:GraphInterest = new GraphInterest(key, col);
 			var v:Number = NaN;
 			try{
@@ -100,7 +102,7 @@ package com.junkbyte.console.core {
 				group.interests.push(interest);
 				if(newGroup){
 					_map[n] = group;
-					_groups.push(group);
+					registerGroup(group);
 				}
 			}
 		}
@@ -108,9 +110,8 @@ package com.junkbyte.console.core {
 		public function fixRange(n:String, low:Number = NaN, high:Number = NaN):void{
 			var group:GraphGroup = _map[n];
 			if(!group) return;
-			group.low = low;
-			group.hi = high;
-			group.fixed = !(isNaN(low)||isNaN(high));
+			group.fixedMin = low;
+			group.fixedMax = high;
 		}
 		public function remove(n:String, obj:Object = null, prop:String = null):void{
 			if(obj==null&&prop==null){	
@@ -151,14 +152,10 @@ package com.junkbyte.console.core {
 				remoter.send("fps", bytes);
 			}else if(b != fpsMonitor){
 				if(b) {
-					_fpsGroup = addSpecialGroup(GraphGroup.FPS);
-					_fpsGroup.low = 0;
-					_fpsGroup.fixed = true;
-					_fpsGroup.averaging = 30;
+					_fpsGroup = new GraphFPSGroup();
+					registerGroup(_fpsGroup);
 				} else{
-					_previousTime = -1;
-					var index:int = _groups.indexOf(_fpsGroup);
-					if(index>=0) _groups.splice(index, 1);
+					unregisterGroup(_fpsGroup);
 					_fpsGroup = null;
 				}
 				console.panels.mainPanel.updateMenu();
@@ -176,30 +173,82 @@ package com.junkbyte.console.core {
 				remoter.send("mem", bytes);
 			}else if(b != memoryMonitor){
 				if(b) {
-					_memGroup = addSpecialGroup(GraphGroup.MEM);
-					_memGroup.freq = 20;
+					_memGroup = new GraphGroup("consoleMemoryMonitor");
+					
+					_memGroup.rect.x = 80;
+					_memGroup.rect.y = 15;
+					_memGroup.align = StageAlign.RIGHT;
+					
+					var graph:GraphInterest = new GraphInterest("mb");
+					graph.col = 0x5060FF;
+					graph.setGetValueCallback(getMemoryValue);
+					
+					_memGroup.interests.push(graph);
+					_memGroup.freq = 1000;
+					
+					registerGroup(_memGroup);
 				} else{
-					var index:int = _groups.indexOf(_memGroup);
-					if(index>=0) _groups.splice(index, 1);
+					unregisterGroup(_memGroup);
 					_memGroup = null;
 				}
 				console.panels.mainPanel.updateMenu();
 			}
 		}
-		private function addSpecialGroup(type:int):GraphGroup{
-			var group:GraphGroup = new GraphGroup("special");
-			group.type = type;
-			_groups.push(group);
-			var graph:GraphInterest = new GraphInterest("special");
-			if(type == GraphGroup.FPS) {
-				graph.col = 0xFF3333;
-			}else{
-				graph.col = 0x5060FF;
-			}
-			group.interests.push(graph);
-			return group;
+		
+		private function getMemoryValue(graph:GraphInterest):Number
+		{
+			return Math.round(System.totalMemory/10485.76)/100;
 		}
-		public function update(fps:Number = 0):Array{
+		
+		public function registerGroup(group:GraphGroup):void
+		{
+			if(_groups.indexOf(group) < 0)
+			{
+				_groups.push(group);
+				group.addEventListener(Event.CLOSE, onGroupClose);
+				
+				_groupAddedDispatcher.apply([group]);
+			}
+		}
+		
+		public function addGroupAddedListener(listener:Function):void
+		{
+			_groupAddedDispatcher.add(listener);
+		}
+		
+		public function removeGroupAddedListener(listener:Function):void
+		{
+			_groupAddedDispatcher.remove(listener);
+		}
+
+		private function onGroupClose(event:Event):void
+		{
+			var group:GraphGroup = event.currentTarget as GraphGroup;
+			group.removeEventListener(Event.CLOSE, onGroupClose);
+			
+			unregisterGroup(group);
+		}
+		
+		private function unregisterGroup(group:GraphGroup):void
+		{
+			var index:int = _groups.indexOf(group);
+			if(index>=0) 
+			{
+				_groups.splice(index, 1);
+			}
+		}
+		
+		
+		public function update(timeDelta:uint, fps:Number = 0):void
+		{
+			for each(var group:GraphGroup in _groups)
+			{
+				group.tick(timeDelta);
+				group.updateIfApproate();
+			}
+			
+			
+			/*
 			var interest:GraphInterest;
 			var v:Number;
 			for each(var group:GraphGroup in _groups){
@@ -217,7 +266,7 @@ package com.junkbyte.console.core {
 					var averaging:uint = group.averaging;
 					var interests:Array = group.interests;
 					if(typ == GraphGroup.FPS){
-						group.hi = fps;
+						group.fixedMax = fps;
 						interest = interests[0];
 						var time:int = getTimer();
 						if(_previousTime >= 0){
@@ -244,7 +293,7 @@ package com.junkbyte.console.core {
 				remoter.send("graph", ga);
 				_hadGraph = _groups.length>0;
 			}
-			return _groups;
+			*/
 		}
 		
 		private function updateExternalGraphGroup(group:GraphGroup):void
@@ -252,7 +301,7 @@ package com.junkbyte.console.core {
 			for each(var i:GraphInterest in group.interests){
 				try{
 					var v:Number = i.getCurrentValue();
-					i.setValue(v, group.averaging);
+					///i.setValue(v, group.averaging);
 				}catch(e:Error){
 					report("Error with graph value for key ["+i.key+"] in ["+group.name+"]. "+e, 10);
 					remove(group.name, i.obj, i.prop);
@@ -267,9 +316,9 @@ package com.junkbyte.console.core {
 				while(bytes.bytesAvailable){
 					a.push(GraphGroup.FromBytes(bytes));
 				}
-				console.panels.updateGraphs(a);
+				//console.panels.updateGraphs(a);
 			}else{
-				console.panels.updateGraphs(new Array());
+				//console.panels.updateGraphs(new Array());
 			}
 		}
 	}

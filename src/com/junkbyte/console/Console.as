@@ -24,8 +24,6 @@
 */
 package com.junkbyte.console 
 {
-	import flash.utils.getTimer;
-	import flash.system.Capabilities;
 	import com.junkbyte.console.core.CommandLine;
 	import com.junkbyte.console.core.ConsoleTools;
 	import com.junkbyte.console.core.Graphing;
@@ -37,7 +35,7 @@ package com.junkbyte.console
 	import com.junkbyte.console.view.PanelsManager;
 	import com.junkbyte.console.view.RollerPanel;
 	import com.junkbyte.console.vos.Log;
-
+	
 	import flash.display.DisplayObjectContainer;
 	import flash.display.LoaderInfo;
 	import flash.display.Sprite;
@@ -47,6 +45,8 @@ package com.junkbyte.console
 	import flash.events.KeyboardEvent;
 	import flash.geom.Rectangle;
 	import flash.net.SharedObject;
+	import flash.system.Capabilities;
+	import flash.utils.getTimer;
 	/**
 	 * Console is the main class. 
 	 * Please see com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
@@ -89,6 +89,8 @@ package com.junkbyte.console
 		
 		private var _so:SharedObject;
 		private var _soData:Object = {};
+		
+		private var _lastTime:uint;
 		
 		/**
 		 * Console is the main class. However please use Cc for singleton Console adapter.
@@ -136,6 +138,9 @@ package com.junkbyte.console
 			
 			//report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
 			report("<b>Console v"+VERSION+VERSION_STAGE+"</b> build "+BUILD+". "+Capabilities.playerType+" "+Capabilities.version+".", -2);
+			
+			
+			_lastTime = getTimer();
 			
 			// must have enterFrame here because user can start without a parent display and use remoting.
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
@@ -396,15 +401,15 @@ package com.junkbyte.console
 		//
 		//
 		private function _onEnterFrame(e:Event):void{
+			
 			var time:int = getTimer();
 			var hasNewLog:Boolean = _logs.update(time);
+			var timeDelta:uint = time - _lastTime;
+			_lastTime = time;
 			_refs.update(time);
+			
 			_mm.update();
-			var graphsList:Array;
-			if(remoter.remoting != Remoting.RECIEVER)
-			{
-			 	graphsList = _graphing.update(stage?stage.frameRate:0);
-			}
+			_graphing.update(timeDelta, stage?stage.frameRate:0);
 			_remoter.update();
 			
 			// VIEW UPDATES ONLY
@@ -415,7 +420,6 @@ package com.junkbyte.console
 					report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
 				_panels.update(_paused, hasNewLog);
-				if(graphsList) _panels.updateGraphs(graphsList);
 			}
 		}
 		//

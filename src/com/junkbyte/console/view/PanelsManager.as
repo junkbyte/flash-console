@@ -26,11 +26,12 @@ package com.junkbyte.console.view
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.GraphGroup;
-
+	
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
+	import flash.utils.Dictionary;
 
 	public class PanelsManager{
 		
@@ -40,7 +41,7 @@ package com.junkbyte.console.view
 		private var _chsPanel:ChannelsPanel;
 		private var _fpsPanel:GraphingPanel;
 		private var _memPanel:GraphingPanel;
-		private var _graphsMap:Object = {};
+		private var _graphsMap:Dictionary = new Dictionary();
 		private var _graphPlaced:uint = 0;
 		
 		private var _tooltipField:TextField;
@@ -54,7 +55,11 @@ package com.junkbyte.console.view
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
 			_tooltipField.multiline = true;
 			addPanel(_mainPanel);
+			
+			
+			console.graphing.addGroupAddedListener(onGraphingGroupAdded);
 		}
+		
 		public function addPanel(panel:ConsolePanel):void{
 			if(console.contains(_tooltipField)){
 				console.addChildAt(panel, console.getChildIndex(_tooltipField));
@@ -119,9 +124,7 @@ package com.junkbyte.console.view
 				}
 			}
 		}
-		/**
-		 * @private
-		 */
+		/*
 		public function updateGraphs(graphs:Array):void{
 			var usedMap:Object;
 			var fpsGroup:GraphGroup;
@@ -153,7 +156,7 @@ package com.junkbyte.console.view
 						}
 						if(rect.width<=0 || isNaN(rect.width))  rect.width = size;
 						if(rect.height<=0 || isNaN(rect.height)) rect.height = size;
-						panel = new GraphingPanel(console, rect.width,rect.height);
+						panel = new GraphingPanel(console, group);
 						panel.x = rect.x;
 						panel.y = rect.y;
 						panel.name = "graph_"+n;
@@ -179,7 +182,7 @@ package com.junkbyte.console.view
 			//
 			if(fpsGroup != null){
 				if (_fpsPanel == null) {
-					_fpsPanel = new GraphingPanel(console, 80 ,40, GraphingPanel.FPS);
+					_fpsPanel = new GraphingPanel(console, fpsGroup, GraphingPanel.FPS);
 					_fpsPanel.name = GraphingPanel.FPS;
 					_fpsPanel.x = _mainPanel.x+_mainPanel.width-160;
 					_fpsPanel.y = _mainPanel.y+15;
@@ -195,7 +198,7 @@ package com.junkbyte.console.view
 			//
 			if(memGroup != null){
 				if(_memPanel == null){
-					_memPanel = new GraphingPanel(console, 80 ,40, GraphingPanel.MEM);
+					_memPanel = new GraphingPanel(console, memGroup, GraphingPanel.MEM);
 					_memPanel.name = GraphingPanel.MEM;
 					_memPanel.x = _mainPanel.x+_mainPanel.width-80;
 					_memPanel.y = _mainPanel.y+15;
@@ -209,24 +212,33 @@ package com.junkbyte.console.view
 			}
 			_canDraw = false;
 		}
-		/**
-		 * @private
-		 */
-		public function removeGraph(group:GraphGroup):void
+		*/
+		
+		private function onGraphingGroupAdded(group:GraphGroup):void
 		{
-			if(_fpsPanel && group == _fpsPanel.group){
-				_fpsPanel.close();
-				_fpsPanel = null;
-			}else if(_memPanel && group == _memPanel.group){
-				_memPanel.close();
-				_memPanel = null;
-			}else{
-				var graph:GraphingPanel = _graphsMap[group.name];
-				if(graph){
-					graph.close();
-					delete _graphsMap[group.name];
-				}
+			group.addEventListener(Event.CLOSE, onGraphGroupClose);
+			
+			var graph:GraphingPanel = new GraphingPanel(console, group);
+			_graphsMap[group] = graph;
+			addPanel(graph);
+		}
+
+		private function onGraphGroupClose(event:Event):void
+		{
+			var group:GraphGroup = event.currentTarget as GraphGroup;
+			group.removeEventListener(Event.CLOSE, onGraphGroupClose);
+			
+			var graph:GraphingPanel = getGraphOfGroup(group);
+			if(graph)
+			{
+				delete _graphsMap[group];
+				graph.close();
 			}
+		}
+		
+		private function getGraphOfGroup(group:GraphGroup):GraphingPanel
+		{
+			return _graphsMap[group];
 		}
 		//
 		//

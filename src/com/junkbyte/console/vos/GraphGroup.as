@@ -23,27 +23,38 @@
 * 
 */
 package com.junkbyte.console.vos {
-	import flash.utils.ByteArray;
+	import com.junkbyte.console.core.CcCallbackDispatcher;
+	
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.geom.Rectangle;
+	import flash.utils.ByteArray;
 
-	/**
-	 * @private
-	 */
-	public class GraphGroup {
+
+	[Event(name="close", type="flash.events.Event")]
+	public class GraphGroup extends EventDispatcher{
 		
 		public static const FPS:uint = 1;
 		public static const MEM:uint = 2;
 	
 		public var type:uint;
 		public var name:String;
-		public var freq:int = 1; // update every n number of frames.
-		public var low:Number;
-		public var hi:Number;
-		public var fixed:Boolean;
-		public var averaging:uint;
-		public var inv:Boolean;
+		
+		public var freq:int = 1; // 0 = every frame, 500 = twice per second, 1000 = once every second
+		
+		public var fixedMin:Number;
+		public var fixedMax:Number;
+		
+		public var inverted:Boolean;
 		public var interests:Array = [];
-		public var rect:Rectangle;
+		
+		
+		public var align:String;
+		public var rect:Rectangle = new Rectangle(0, 0, 80, 40);
+		//
+		protected var _values:Array = new Array();
+		protected var sinceLastUpdate:uint;
+		protected var updateDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 		//
 		//
 		public var idle:int;
@@ -51,26 +62,79 @@ package com.junkbyte.console.vos {
 		public function GraphGroup(n:String){
 			name = n;
 		}
+		
+		public function tick(timeDelta:uint):void
+		{
+			sinceLastUpdate += timeDelta;
+		}
+		
+		public function shouldUpdate():Boolean
+		{
+			if(freq == 0)
+			{
+				return true;
+			}
+			return sinceLastUpdate >= freq;
+		}
+		
+		public function updateIfApproate():void
+		{
+			if(shouldUpdate())
+			{
+				update();
+			}
+		}
+		
+		public function update():void
+		{
+			sinceLastUpdate = 0;
+			dispatchUpdates();
+		}
+
+		protected function dispatchUpdates():void
+		{
+			for (var i:int = interests.length - 1; i >= 0; i--)
+			{
+				var graph:GraphInterest = interests[i];
+				var v:Number = graph.getCurrentValue();
+				_values[i] = v;
+			}
+			updateDispatcher.apply(_values);
+		}
+		
+		public function addUpdateListener(listener:Function):void
+		{
+			updateDispatcher.add(listener);
+		}
+		
+		public function removeUpdateListener(listener:Function):void
+		{
+			updateDispatcher.remove(listener);
+		}
+		
+		public function close():void
+		{
+			updateDispatcher.clear();
+			dispatchEvent(new Event(Event.CLOSE));
+		}
 		//
 		//
 		//
 		public function toBytes(bytes:ByteArray):void{
 			bytes.writeUTF(name);
-			bytes.writeUnsignedInt(type);
 			bytes.writeUnsignedInt(idle);
-			bytes.writeDouble(low);
-			bytes.writeDouble(hi);
-			bytes.writeBoolean(inv);
+			bytes.writeDouble(fixedMin);
+			bytes.writeDouble(fixedMax);
+			bytes.writeBoolean(inverted);
 			bytes.writeUnsignedInt(interests.length);
 			for each(var gi:GraphInterest in interests) gi.toBytes(bytes);
 		}
 		public static function FromBytes(bytes:ByteArray):GraphGroup{
 			var g:GraphGroup = new GraphGroup(bytes.readUTF());
-			g.type = bytes.readUnsignedInt();
 			g.idle = bytes.readUnsignedInt();
-			g.low = bytes.readDouble();
-			g.hi = bytes.readDouble();
-			g.inv = bytes.readBoolean();
+			g.fixedMin = bytes.readDouble();
+			g.fixedMax = bytes.readDouble();
+			g.inverted = bytes.readBoolean();
 			var len:uint = bytes.readUnsignedInt();
 			while(len){
 				g.interests.push(GraphInterest.FromBytes(bytes));

@@ -27,9 +27,10 @@ package com.junkbyte.console.view
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
-
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.display.StageAlign;
 	import flash.events.TextEvent;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
@@ -47,7 +48,6 @@ package com.junkbyte.console.view
 		//
 		private var _group:GraphGroup;
 		private var _interest:GraphInterest;
-		private var _infoMap:Object = new Object();
 
 		private var _menuString:String;
 		//
@@ -65,9 +65,10 @@ package com.junkbyte.console.view
 		private var lineRect:Rectangle = new Rectangle(0, 0, 1);
 
 		//
-		public function GraphingPanel(m:Console, W:int, H:int, type:String = null)
+		public function GraphingPanel(m:Console, group:GraphGroup, type:String = null)
 		{
 			super(m);
+			_group = group;
 			_type = type;
 			registerDragger(bg);
 			minWidth = 32;
@@ -114,16 +115,20 @@ package com.junkbyte.console.view
 			}
 			_menuString += "<a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></low></r>";
 
+			_group.addUpdateListener(onGroupUpdate);
 			//
-			init(W, H, true);
-		}
-
-		private function stop():void
-		{
-			if (_group)
+			var rect:Rectangle = group.rect;
+			var w:Number = Math.max(minWidth, rect.width);
+			var h:Number = Math.max(minHeight, rect.height);
+			var mainPanel:MainPanel = console.panels.mainPanel;
+			x = mainPanel.x+rect.x;
+			y = mainPanel.x+rect.y;
+			if(group.align == StageAlign.RIGHT)
 			{
-				console.graphing.remove(_group.name);
+				x = mainPanel.x+mainPanel.width-x;
 			}
+			
+			init(w, h, true);
 		}
 
 		public function get group():GraphGroup
@@ -181,78 +186,47 @@ package com.junkbyte.console.view
 		//
 		public function update(group:GraphGroup, draw:Boolean):void
 		{
-			_group = group;
-			if(group.idle>0)
-			{
-				return;
-			}
-			var interests:Array = group.interests;
+			
+		}
+		
+		protected function onGroupUpdate(...values:Array):void
+		{
+			var interests:Array = _group.interests;
 			var listchanged:Boolean = false;
 			var interest:GraphInterest;
 			
-			var lowest:Number = isNaN(_group.low) ? lowestValue : _group.low;
-			var highest:Number = isNaN(_group.hi) ? highestValue : _group.hi;
-			for each (interest in interests)
+			var lowest:Number = isNaN(_group.fixedMin) ? lowestValue : _group.fixedMin;
+			var highest:Number = isNaN(_group.fixedMax) ? highestValue : _group.fixedMax;
+			var numInterests:uint = interests.length;
+			for (var i:uint = 0; i<numInterests; i++)
 			{
-				_interest = interest;
-				var n:String = _interest.key;
-				var info:String = _infoMap[n];
-				if (info == null)
-				{
-					listchanged = true;
-					// used to use InterestInfo
-					info = _interest.col.toString(16);
-					_infoMap[n] = info;
-				}
+				interest = interests[i];
 
-				var v:Number = interest.v;
-				if (isNaN(_group.low) && (isNaN(lowest) || v < lowest))
+				var v:Number = values[i];
+				if (isNaN(_group.fixedMin) && (isNaN(lowest) || v < lowest))
 				{
 					lowest = v;
 				}
-				if (isNaN(_group.hi) && (isNaN(highest) || v > highest))
+				if (isNaN(_group.fixedMax) && (isNaN(highest) || v > highest))
 				{
 					highest = v;
 				}
 			}
-			for (var X:String in _infoMap)
+			
+			updateKeyText(values);
+			
+			if(lowestValue != lowest || highestValue != highest)
 			{
-				var found:Boolean;
-				for each (interest in interests)
-				{
-					if (interest.key == X)
-					{
-						found = true;
-					}
-				}
-				if (!found)
-				{
-					listchanged = true;
-					delete _infoMap[X];
-				}
+				scaleBitmapData(lowest, highest);
 			}
 			
-
-			if (draw)
-			{
-				if (listchanged || _type)
-				{
-					updateKeyText();
-				}
-
-				if(lowestValue != lowest || highestValue != highest)
-				{
-					scaleBitmapData(lowest, highest);
-				}
-				
-				TextField(group.inv ? highTxt : lowTxt).text = lowestValue.toFixed(1);
-				TextField(group.inv ? lowTxt : highTxt).text = highestValue.toFixed(1);
-				
-				pushBMD();
-			}
+			TextField(group.inverted ? highTxt : lowTxt).text = lowest.toFixed(1);
+			TextField(group.inverted ? lowTxt : highTxt).text = highest.toFixed(1);
+			
+			pushBMD(values);
 		}
 
-		protected function pushBMD():void
+		protected function pushBMD(values:Array):void
 		{
 			var diffValue:Number = highestValue - lowestValue;
 			var pixX:uint = _bmd.width - 1;
@@ -268,7 +242,7 @@ package com.junkbyte.console.view
 			for (var i:int = interests.length - 1; i >= 0; i--)
 			{
 				var interest:GraphInterest = interests[i];
-				var value:Number = interest.v;
+				var value:Number = values[i];;
 				var pixY:int = getPixelValue(value);
 
 				var lastValue:Number = lastValues[i];
@@ -316,7 +290,7 @@ package com.junkbyte.console.view
 				return _bmd.height * 0.5;
 			}
 			value = ((value - lowestValue) / (highestValue - lowestValue)) * _bmd.height;
-			if (!_group.inv)
+			if (!_group.inverted)
 			{
 				value = _bmd.height - value;
 			}
@@ -350,13 +324,13 @@ package com.junkbyte.console.view
 			var valuePerHalfPixel:Number = valuePerPixel * 0.5;
 			newHigh += valuePerPixel;
 			newLow -= valuePerPixel;
-			if (!isNaN(_group.hi) && newHigh > _group.hi)
+			if (!isNaN(_group.fixedMax) && newHigh > _group.fixedMax)
 			{
-				newHigh = _group.hi;
+				newHigh = _group.fixedMax;
 			}
-			if (!isNaN(_group.low) && newLow < _group.low)
+			if (!isNaN(_group.fixedMin) && newLow < _group.fixedMin)
 			{
-				newLow = _group.low;
+				newLow = _group.fixedMin;
 			}
 			//
 
@@ -365,7 +339,7 @@ package com.junkbyte.console.view
 			var oldDiff:Number = highestValue - lowestValue;
 
 			var matrix:Matrix = new Matrix();
-			if(_group.inv)
+			if(_group.inverted)
 			{
 				matrix.ty = (lowestValue - newLow) / oldDiff * _bmd.height;
 			}
@@ -382,31 +356,15 @@ package com.junkbyte.console.view
 			highestValue = newHigh;
 		}
 
-		public function updateKeyText():void
+		public function updateKeyText(values:Array):void
 		{
 			var str:String = "<r><low>";
-			if (_type)
+			
+			var numInterests:uint = _group.interests.length;
+			for (var i:uint = 0; i<numInterests; i++)
 			{
-				if (isNaN(_interest.v))
-				{
-					str += "no input";
-				}
-				else if (_type == FPS)
-				{
-					str += _interest.avg.toFixed(1);
-				}
-				else
-				{
-					str += _interest.v + "mb";
-				}
-			}
-			else
-			{
-				for (var X:String in _infoMap)
-				{
-					str += " <font color='#" + _infoMap[X] + "'>" + X + "</font>";
-				}
-				str += " |";
+				var interest:GraphInterest = _group.interests[i];
+				str += "<font color='#" + interest.col.toString(16) + "'>" + values[i] + interest.key+"</font> ";
 			}
 			txtField.htmlText = str + _menuString;
 			txtField.scrollH = txtField.maxScrollH;
@@ -421,19 +379,7 @@ package com.junkbyte.console.view
 			}
 			else if (e.text == "close")
 			{
-				if (_type == FPS)
-				{
-					console.fpsMonitor = false;
-				}
-				else if (_type == MEM)
-				{
-					console.memoryMonitor = false;
-				}
-				else
-				{
-					stop();
-				}
-				console.panels.removeGraph(_group);
+				_group.close();
 			}
 			else if (e.text == "gc")
 			{
