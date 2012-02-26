@@ -4,37 +4,45 @@ package com.junkbyte.console.vos
 
 	public class GraphFPSGroup extends GraphGroup
 	{
+		public static const NAME:String = "consoleFPSGraph";
+		
 		private var _numFrames:uint;
 
 		public function GraphFPSGroup()
 		{
-			super("consoleFPSMonitor");
+			super(NAME);
 
 			rect.x = 160;
 			rect.y = 15;
 			align = StageAlign.RIGHT;
+			
 
 			var graph:GraphInterest = new GraphInterest("fps");
 			graph.col = 0xFF3333;
 			graph.setGetValueCallback(getNumFrames);
 
 			interests.push(graph);
+			
+			_values.length = 1;
+			
 			freq = 500;
 			fixedMin = 0;
 		}
-
-		override public function updateIfApproate():void
+		
+		override public function tick(timeDelta:uint):void
 		{
 			_numFrames++;
-			while (shouldUpdate())
+			sinceLastUpdate += timeDelta;
+			
+			while(sinceLastUpdate >= freq)
 			{
-				update();
+				sinceLastUpdate -= freq;
+				dispatchUpdates();
 			}
 		}
 
-		override public function update():void
+		override protected function dispatchUpdates():void
 		{
-			sinceLastUpdate -= freq;
 			_values[0] = _numFrames * (1000 / freq);
 			_numFrames = 0;
 			updateDispatcher.apply(_values);

@@ -205,13 +205,6 @@ package com.junkbyte.console
 		}
 		
 		/**
-		 * @copy com.junkbyte.console.Cc#fixGraphRange()
-		 */
-		public function fixGraphRange(name:String, min:Number = NaN, max:Number = NaN):void{
-			_graphing.fixRange(name, min, max);
-		}
-		
-		/**
 		 * @copy com.junkbyte.console.Cc#removeGraph()
 		 */
 		public function removeGraph(name:String, obj:Object = null, property:String = null):void{

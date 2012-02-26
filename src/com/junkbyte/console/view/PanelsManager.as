@@ -236,7 +236,7 @@ package com.junkbyte.console.view
 			}
 		}
 		
-		private function getGraphOfGroup(group:GraphGroup):GraphingPanel
+		public function getGraphOfGroup(group:GraphGroup):GraphingPanel
 		{
 			return _graphsMap[group];
 		}

@@ -51,8 +51,6 @@ package com.junkbyte.console.view
 
 		private var _menuString:String;
 		//
-		private var _type:String;
-		//
 		protected var _bm:Bitmap;
 		protected var _bmd:BitmapData;
 
@@ -65,11 +63,11 @@ package com.junkbyte.console.view
 		private var lineRect:Rectangle = new Rectangle(0, 0, 1);
 
 		//
-		public function GraphingPanel(m:Console, group:GraphGroup, type:String = null)
+		public function GraphingPanel(m:Console, group:GraphGroup)
 		{
 			super(m);
 			_group = group;
-			_type = type;
+			name = group.name;
 			registerDragger(bg);
 			minWidth = 32;
 			minHeight = 26;
@@ -79,7 +77,12 @@ package com.junkbyte.console.view
 			textFormat.font = lowStyle.fontFamily;
 			textFormat.size = lowStyle.fontSize;
 			textFormat.color = style.lowColor;
-
+			
+			_bm = new Bitmap();
+			_bm.name = "graph";
+			_bm.y = style.menuFontSize - 2;
+			addChild(_bm);
+			
 			lowTxt = new TextField();
 			lowTxt.name = "lowestField";
 			lowTxt.defaultTextFormat = textFormat;
@@ -102,17 +105,12 @@ package com.junkbyte.console.view
 			registerDragger(txtField); // so that we can still drag from textfield
 			addChild(txtField);
 			//
-			_bm = new Bitmap();
-			_bm.name = "graph";
-			_bm.y = style.menuFontSize - 2;
-			addChild(_bm);
-			//
 
 			_menuString = "<menu>";
-			if (_type == MEM)
+			/*if (_type == MEM)
 			{
 				_menuString += " <a href=\"event:gc\">G</a> ";
-			}
+			}*/
 			_menuString += "<a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></low></r>";
 
 			_group.addUpdateListener(onGroupUpdate);
@@ -122,7 +120,7 @@ package com.junkbyte.console.view
 			var h:Number = Math.max(minHeight, rect.height);
 			var mainPanel:MainPanel = console.panels.mainPanel;
 			x = mainPanel.x+rect.x;
-			y = mainPanel.x+rect.y;
+			y = mainPanel.y+rect.y;
 			if(group.align == StageAlign.RIGHT)
 			{
 				x = mainPanel.x+mainPanel.width-x;
@@ -220,8 +218,8 @@ package com.junkbyte.console.view
 				scaleBitmapData(lowest, highest);
 			}
 			
-			TextField(group.inverted ? highTxt : lowTxt).text = lowest.toFixed(1);
-			TextField(group.inverted ? lowTxt : highTxt).text = highest.toFixed(1);
+			TextField(group.inverted ? highTxt : lowTxt).text = lowest.toPrecision(3);
+			TextField(group.inverted ? lowTxt : highTxt).text = highest.toPrecision(3);
 			
 			pushBMD(values);
 		}
@@ -308,7 +306,7 @@ package com.junkbyte.console.view
 		protected function scaleBitmapData(newLow:Number, newHigh:Number):void
 		{
 			var scaleBMD:BitmapData = _bmd.clone();
-			_bmd.fillRect(new Rectangle(0, 0, _bmd.width, _bmd.height), 0);
+			_bmd.fillRect(_bmd.rect, 0);
 
 			var newDiff:Number = newHigh - newLow;
 			

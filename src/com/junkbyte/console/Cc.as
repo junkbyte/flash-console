@@ -530,24 +530,6 @@ package com.junkbyte.console {
 			if(_console) _console.addGraph(panelName, obj, property, color, idKey, rectArea, inverse);
 		}
 		/**
-		 * Fix graph's range.
-		 * When fixed, graph will only show within the fixed value however offset the real values may be.
-		 * <p>
-		 * For example: if the graph is fixed between 100 and 200, and the graph value at one point is 300, 
-		 * graph will not expand to accompany up to value 10, but remain fixed to 100 - 200 range.
-		 * Pass NaN to min or max to unfix graph.
-		 * No effect if no graph of the name exists.
-		 * </p>
-		 *
-		 * @param panelName Name of graph panel
-		 * @param min Minimum value. pass NaN to unfix.
-		 * @param max Maximum value. pass NaN to unfix.
-		 * 
-		 */
-		public static function fixGraphRange(panelName:String, min:Number = NaN, max:Number = NaN):void{
-			if(_console) _console.fixGraphRange(panelName, min, max);
-		}
-		/**
 		 * Remove graph panel
 		 * Leave obj and prop params blank to remove the whole graph.
 		 *
