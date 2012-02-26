@@ -16,6 +16,8 @@ package com.junkbyte.console.modules.graphing
 		protected var lowestValue:Number;
 		protected var highestValue:Number;
 		protected var lastValues:Object = new Object();
+		
+		private var lineRect:Rectangle = new Rectangle(0, 0, 1);
 
 		public function GraphingBitmap(panel:GraphingPanelModule, group:GraphingGroup)
 		{
@@ -84,28 +86,25 @@ package com.junkbyte.console.modules.graphing
 		{
 			var scaleBMD:BitmapData = _bmd.clone();
 			_bmd.fillRect(new Rectangle(0, 0, _bmd.width, _bmd.height), 0);
-
+			
 			var newDiff:Number = newHigh - newLow;
-
-			if (newDiff != 0)
-			{
-				var valuePerPixel:Number = newDiff / _bmd.height;
-				var valuePerHalfPixel:Number = valuePerPixel * 0.5;
-				newHigh += valuePerHalfPixel;
-				newLow -= valuePerHalfPixel;
-
-				newDiff = newHigh - newLow;
-			}
-
+			
+			var valuePerPixel:Number = newDiff / _bmd.height;
+			var valuePerHalfPixel:Number = valuePerPixel * 0.5;
+			newHigh += valuePerHalfPixel;
+			newLow -= valuePerHalfPixel;
+			
+			newDiff = newHigh - newLow;
+			
 			var oldDiff:Number = highestValue - lowestValue;
-
+			
 			var matrix:Matrix = new Matrix();
-			matrix.ty = (newHigh - highestValue) / oldDiff * _bmd.height;
+			matrix.ty = (lowestValue - newLow) / newDiff * _bmd.height;
 			matrix.scale(1, oldDiff / newDiff);
 			_bmd.draw(scaleBMD, matrix, null, null, null, true);
-
+			
 			scaleBMD.dispose();
-
+			
 			lowestValue = newLow;
 			highestValue = newHigh;
 		}
@@ -137,18 +136,29 @@ package com.junkbyte.console.modules.graphing
 				{
 					var prevPixY:int = ((lastValue - lowestValue) / diffValue) * bmdHeight;
 					prevPixY = makePercentValue(prevPixY);
+					
+					lineRect.x = pixX;
 					var half:Number;
 					if (pixY < prevPixY)
 					{
 						half = (prevPixY - pixY) * 0.5;
-						_bmd.fillRect(new Rectangle(pixX, pixY, 1, half), connectionColor);
-						_bmd.fillRect(new Rectangle(pixX - 1, pixY + half, 1, half), connectionColor);
+						lineRect.y = pixY;
+						lineRect.height = half;
+						_bmd.fillRect(lineRect, connectionColor);
+						lineRect.x--;
+						lineRect.y = pixY + half;
+						_bmd.fillRect(lineRect, connectionColor);
 					}
 					else
 					{
 						half = (pixY - prevPixY) * 0.5;
-						_bmd.fillRect(new Rectangle(pixX - 1, prevPixY, 1, half), connectionColor);
-						_bmd.fillRect(new Rectangle(pixX, prevPixY + half, 1, half), connectionColor);
+						lineRect.y = prevPixY + half;
+						lineRect.height = half;
+						
+						_bmd.fillRect(lineRect, connectionColor);
+						lineRect.x--;
+						lineRect.y = prevPixY;
+						_bmd.fillRect(lineRect, connectionColor);
 					}
 				}
 				_bmd.setPixel32(pixX, pixY, interest.color + 0xFF000000);
