@@ -99,7 +99,14 @@ package com.junkbyte.console.modules.graphing
 			var oldDiff:Number = highestValue - lowestValue;
 			
 			var matrix:Matrix = new Matrix();
-			matrix.ty = (lowestValue - newLow) / newDiff * _bmd.height;
+			if(_group.inverted)
+			{
+				matrix.ty = (lowestValue - newLow) / oldDiff * _bmd.height;
+			}
+			else
+			{
+				matrix.ty = ( newHigh - highestValue) / oldDiff * _bmd.height;
+			}
 			matrix.scale(1, oldDiff / newDiff);
 			_bmd.draw(scaleBMD, matrix, null, null, null, true);
 			
