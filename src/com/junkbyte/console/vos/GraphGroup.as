@@ -51,16 +51,6 @@ package com.junkbyte.console.vos {
 		public function GraphGroup(n:String){
 			name = n;
 		}
-		public function updateMinMax(v:Number):void{
-			if(!isNaN(v) && !fixed){
-				if(isNaN(low)) {
-					low = v;
-					hi = v;
-				}
-				if(v > hi) hi = v;
-				if(v < low) low = v;
-			}
-		}
 		//
 		//
 		//

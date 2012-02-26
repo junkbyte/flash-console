@@ -182,9 +182,16 @@ package com.junkbyte.console.view
 		public function update(group:GraphGroup, draw:Boolean):void
 		{
 			_group = group;
+			if(group.idle>0)
+			{
+				return;
+			}
 			var interests:Array = group.interests;
 			var listchanged:Boolean = false;
 			var interest:GraphInterest;
+			
+			var lowest:Number = isNaN(_group.low) ? lowestValue : _group.low;
+			var highest:Number = isNaN(_group.hi) ? highestValue : _group.hi;
 			for each (interest in interests)
 			{
 				_interest = interest;
@@ -224,29 +231,28 @@ package com.junkbyte.console.view
 					delete _infoMap[X];
 				}
 			}
-			if (draw && (listchanged || _type))
-			{
-				updateKeyText();
-			}
+			
 
 			if (draw)
 			{
+				if (listchanged || _type)
+				{
+					updateKeyText();
+				}
 
-				var lowest:Number = isNaN(_group.low) ? lowestValue : _group.low;
-				var highest:Number = isNaN(_group.hi) ? highestValue : _group.hi;
-
-				TextField(group.inv ? highTxt : lowTxt).text = String(lowest);
-				TextField(group.inv ? lowTxt : highTxt).text = String(highest);
-
-				if (lowestValue != lowest || highestValue != highest)
+				if(lowestValue != lowest || highestValue != highest)
 				{
 					scaleBitmapData(lowest, highest);
 				}
-				drawBMD();
+				
+				TextField(group.inv ? highTxt : lowTxt).text = lowestValue.toFixed(1);
+				TextField(group.inv ? lowTxt : highTxt).text = highestValue.toFixed(1);
+				
+				pushBMD();
 			}
 		}
 
-		protected function drawBMD():void
+		protected function pushBMD():void
 		{
 			var diffValue:Number = highestValue - lowestValue;
 			var pixX:uint = _bmd.width - 1;
@@ -267,7 +273,7 @@ package com.junkbyte.console.view
 
 				var lastValue:Number = lastValues[i];
 
-				var connectionColor:uint = interest.col + 0xBB000000;
+				var connectionColor:uint = interest.col + 0xFF000000;
 
 				if (isNaN(lastValue) == false)
 				{
@@ -296,7 +302,7 @@ package com.junkbyte.console.view
 						_bmd.fillRect(lineRect, connectionColor);
 					}
 				}
-				_bmd.setPixel32(pixX, pixY, interest.col + 0xFF000000);
+				_bmd.setPixel32(pixX, pixY, connectionColor);
 
 				lastValues[i] = value;
 			}
@@ -305,6 +311,10 @@ package com.junkbyte.console.view
 
 		protected function getPixelValue(value:Number):Number
 		{
+			if(highestValue == lowestValue)
+			{
+				return _bmd.height * 0.5;
+			}
 			value = ((value - lowestValue) / (highestValue - lowestValue)) * _bmd.height;
 			if (!_group.inv)
 			{
@@ -327,18 +337,42 @@ package com.junkbyte.console.view
 			_bmd.fillRect(new Rectangle(0, 0, _bmd.width, _bmd.height), 0);
 
 			var newDiff:Number = newHigh - newLow;
-
+			
+			if(newDiff == 0)
+			{
+				lowestValue = newLow;
+				highestValue = newHigh;
+				return;
+			}
+			//
+			// Try to pixel round outside given value so that it reduces the need to rescale.
 			var valuePerPixel:Number = newDiff / _bmd.height;
 			var valuePerHalfPixel:Number = valuePerPixel * 0.5;
-			newHigh += valuePerHalfPixel;
-			newLow -= valuePerHalfPixel;
+			newHigh += valuePerPixel;
+			newLow -= valuePerPixel;
+			if (!isNaN(_group.hi) && newHigh > _group.hi)
+			{
+				newHigh = _group.hi;
+			}
+			if (!isNaN(_group.low) && newLow < _group.low)
+			{
+				newLow = _group.low;
+			}
+			//
 
 			newDiff = newHigh - newLow;
 
 			var oldDiff:Number = highestValue - lowestValue;
 
 			var matrix:Matrix = new Matrix();
-			matrix.ty = (lowestValue - newLow) / newDiff * _bmd.height;
+			if(_group.inv)
+			{
+				matrix.ty = (lowestValue - newLow) / newDiff * _bmd.height;
+			}
+			else
+			{
+				matrix.ty = ( newHigh - highestValue) / newDiff * _bmd.height;
+			}
 			matrix.scale(1, oldDiff / newDiff);
 			_bmd.draw(scaleBMD, matrix, null, null, null, true);
 

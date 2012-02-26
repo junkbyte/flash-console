@@ -229,7 +229,6 @@ package com.junkbyte.console.core {
 					}else if(typ == GraphGroup.MEM){
 						interest = interests[0];
 						v = Math.round(System.totalMemory/10485.76)/100;
-						group.updateMinMax(v);
 						interest.setValue(v, averaging);
 					}else{
 						updateExternalGraphGroup(group);
@@ -258,7 +257,6 @@ package com.junkbyte.console.core {
 					report("Error with graph value for key ["+i.key+"] in ["+group.name+"]. "+e, 10);
 					remove(group.name, i.obj, i.prop);
 				}
-				group.updateMinMax(v);
 			}
 		}
 		
