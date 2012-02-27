@@ -216,10 +216,17 @@ package com.junkbyte.console.view
 			if(lowestValue != lowest || highestValue != highest)
 			{
 				scaleBitmapData(lowest, highest);
+				if(group.inverted)
+				{
+					highTxt.text = makeValueString(lowest);
+					lowTxt.text = makeValueString(highest);
+				}
+				else
+				{
+					lowTxt.text = makeValueString(lowest);
+					highTxt.text = makeValueString(highest);
+				}
 			}
-			
-			TextField(group.inverted ? highTxt : lowTxt).text = lowest.toPrecision(3);
-			TextField(group.inverted ? lowTxt : highTxt).text = highest.toPrecision(3);
 			
 			pushBMD(values);
 		}
@@ -257,6 +264,7 @@ package com.junkbyte.console.view
 						half = (prevPixY - pixY) * 0.5;
 						lineRect.y = pixY;
 						lineRect.height = half;
+						
 						_bmd.fillRect(lineRect, connectionColor);
 						lineRect.x--;
 						lineRect.y = pixY + half;
@@ -362,10 +370,20 @@ package com.junkbyte.console.view
 			for (var i:uint = 0; i<numInterests; i++)
 			{
 				var interest:GraphInterest = _group.interests[i];
-				str += "<font color='#" + interest.col.toString(16) + "'>" + values[i] + interest.key+"</font> ";
+				str += "<font color='#" + interest.col.toString(16) + "'>" + makeValueString(values[i]) + interest.key+"</font> ";
 			}
 			txtField.htmlText = str + _menuString;
 			txtField.scrollH = txtField.maxScrollH;
+		}
+		
+		private function makeValueString(value:Number):String
+		{
+			var precision:uint = _group.numberDisplayPrecision;
+			if(precision == 0 || value == 0)
+			{
+				return String(value);
+			}
+			return value.toPrecision(precision);
 		}
 
 		protected function linkHandler(e:TextEvent):void

@@ -25,7 +25,7 @@
 package com.junkbyte.console.vos
 {
 	import com.junkbyte.console.core.CcCallbackDispatcher;
-
+	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.geom.Rectangle;
@@ -34,10 +34,6 @@ package com.junkbyte.console.vos
 	[Event(name = "close", type = "flash.events.Event")]
 	public class GraphGroup extends EventDispatcher
 	{
-
-		public static const FPS:uint = 1;
-		public static const MEM:uint = 2;
-
 		public var name:String;
 
 		public var freq:int = 1; // 0 = every frame, 500 = twice per second, 1000 = once every second
@@ -57,6 +53,8 @@ package com.junkbyte.console.vos
 
 		public var inverted:Boolean;
 		public var interests:Array = [];
+		
+		public var numberDisplayPrecision:uint = 3;
 
 		public var align:String;
 		public var rect:Rectangle = new Rectangle(0, 0, 80, 40);
