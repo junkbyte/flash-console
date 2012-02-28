@@ -25,6 +25,7 @@
 package com.junkbyte.console.view 
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.core.LogReferences;
 	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.vos.Log;
@@ -446,8 +447,8 @@ package com.junkbyte.console.view
 			 	&&
 				(
 					chShouldShow(line.ch)
-			 		|| (_filterText && _viewingChannels.indexOf(Console.FILTER_CHANNEL) >= 0 && line.text.toLowerCase().indexOf(_filterText)>=0 )
-			 		|| (_filterRegExp && _viewingChannels.indexOf(Console.FILTER_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )
+			 		|| (_filterText && _viewingChannels.indexOf(ConsoleChannel.FILTER_CHANNEL) >= 0 && line.text.toLowerCase().indexOf(_filterText)>=0 )
+			 		|| (_filterRegExp && _viewingChannels.indexOf(ConsoleChannel.FILTER_CHANNEL)>=0 && line.text.search(_filterRegExp)>=0 )
 			 	) 
 			);
 		}
@@ -461,7 +462,7 @@ package com.junkbyte.console.view
 		 * @private
 		 */
 		public function get reportChannel():String{
-			return _viewingChannels.length == 1?_viewingChannels[0]:Console.CONSOLE_CHANNEL;
+			return _viewingChannels.length == 1?_viewingChannels[0]:ConsoleChannel.CONSOLE_CHANNEL;
 		}
 		/*public function get viewingChannels():Array{
 			return _viewingChannels;
@@ -479,7 +480,7 @@ package com.junkbyte.console.view
 			}
 			_ignoredChannels.splice(0);
 			_viewingChannels.splice(0);
-			if(a.indexOf(Console.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
+			if(a.indexOf(ConsoleChannel.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
 				for each(var ch:String in a) 
 				{
 					if(ch) _viewingChannels.push(ch);
@@ -512,7 +513,7 @@ package com.junkbyte.console.view
 			
 			_ignoredChannels.splice(0);
 			_viewingChannels.splice(0);
-			if(a.indexOf(Console.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
+			if(a.indexOf(ConsoleChannel.GLOBAL_CHANNEL) < 0 && a.indexOf(null) < 0){
 				for each(var ch:String in a) 
 				{
 					if(ch) _ignoredChannels.push(ch);
@@ -550,15 +551,15 @@ package com.junkbyte.console.view
 			}
 		}
 		private function startFilter():void{
-			console.clear(Console.FILTER_CHANNEL);
-			console.logs.addChannel(Console.FILTER_CHANNEL);
-			setViewingChannels(Console.FILTER_CHANNEL);
+			console.clear(ConsoleChannel.FILTER_CHANNEL);
+			console.logs.addChannel(ConsoleChannel.FILTER_CHANNEL);
+			setViewingChannels(ConsoleChannel.FILTER_CHANNEL);
 		}
 		private function endFilter():void{
 			_filterRegExp = null;
 			_filterText = null;
-			if(_viewingChannels.length == 1 && _viewingChannels[0] == Console.FILTER_CHANNEL){
-				setViewingChannels(Console.GLOBAL_CHANNEL);
+			if(_viewingChannels.length == 1 && _viewingChannels[0] == ConsoleChannel.FILTER_CHANNEL){
+				setViewingChannels(ConsoleChannel.GLOBAL_CHANNEL);
 			}
 		}
 		private function makeLine(line:Log, showch:Boolean):String{
@@ -839,13 +840,13 @@ package com.junkbyte.console.view
 		public function onMenuRollOver(e:TextEvent, src:ConsolePanel = null):void{
 			if(src==null) src = this;
 			var txt:String = e.text?e.text.replace("event:",""):"";
-			if(txt == "channel_"+Console.GLOBAL_CHANNEL){
+			if(txt == "channel_"+ConsoleChannel.GLOBAL_CHANNEL){
 				txt = "View all channels";
-			}else if(txt == "channel_"+Console.DEFAULT_CHANNEL) {
+			}else if(txt == "channel_"+ConsoleChannel.DEFAULT_CHANNEL) {
 				txt = "Default channel::Logs with no channel";
-			}else if(txt == "channel_"+ Console.CONSOLE_CHANNEL) {
+			}else if(txt == "channel_"+ ConsoleChannel.CONSOLE_CHANNEL) {
 				txt = "Console's channel::Logs generated from Console";
-			}else if(txt == "channel_"+ Console.FILTER_CHANNEL) {
+			}else if(txt == "channel_"+ ConsoleChannel.FILTER_CHANNEL) {
 				txt = _filterRegExp?String(_filterRegExp):_filterText;
 				txt = "Filtering channel"+"::*"+txt+"*";
 			}else if(txt == "channel_"+LogReferences.INSPECTING_CHANNEL) {
@@ -958,11 +959,11 @@ package com.junkbyte.console.view
 		 */
 		public function onChannelPressed(chn:String):void{
 			var current:Array;
-			if(_ctrl && chn != Console.GLOBAL_CHANNEL){
+			if(_ctrl && chn != ConsoleChannel.GLOBAL_CHANNEL){
 				current = toggleCHList(_ignoredChannels, chn);
 				setIgnoredChannels.apply(this, current);
 			}
-			else if(_shift && chn != Console.GLOBAL_CHANNEL && _viewingChannels[0] != LogReferences.INSPECTING_CHANNEL){
+			else if(_shift && chn != ConsoleChannel.GLOBAL_CHANNEL && _viewingChannels[0] != LogReferences.INSPECTING_CHANNEL){
 				current = toggleCHList(_viewingChannels, chn);
 				setViewingChannels.apply(this, current);
 			}else{
@@ -975,7 +976,7 @@ package com.junkbyte.console.view
 			if(ind>=0){
 				current.splice(ind,1);
 				if(current.length == 0){
-					current.push(Console.GLOBAL_CHANNEL);
+					current.push(ConsoleChannel.GLOBAL_CHANNEL);
 				}
 			}else{
 				current.push(chn);

@@ -25,6 +25,7 @@
 package com.junkbyte.console.view 
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.console_internal;
 	import com.junkbyte.console.vos.GraphGroup;
 	
 	import flash.events.Event;
@@ -39,10 +40,7 @@ package com.junkbyte.console.view
 		private var _mainPanel:MainPanel;
 		
 		private var _chsPanel:ChannelsPanel;
-		private var _fpsPanel:GraphingPanel;
-		private var _memPanel:GraphingPanel;
 		private var _graphsMap:Dictionary = new Dictionary();
-		private var _graphPlaced:uint = 0;
 		
 		private var _tooltipField:TextField;
 		private var _canDraw:Boolean;
@@ -115,7 +113,7 @@ package com.junkbyte.console.view
 		/**
 		 * @private
 		 */
-		public function update(paused:Boolean, lineAdded:Boolean):void{
+		console_internal function update(paused:Boolean, lineAdded:Boolean):void{
 			_canDraw = !paused;
 			_mainPanel.update(!paused && lineAdded);
 			if(!paused) {
@@ -124,95 +122,6 @@ package com.junkbyte.console.view
 				}
 			}
 		}
-		/*
-		public function updateGraphs(graphs:Array):void{
-			var usedMap:Object;
-			var fpsGroup:GraphGroup;
-			var memGroup:GraphGroup;
-			_graphPlaced = 0;
-			for each(var group:GraphGroup in graphs){
-				if(group.type == GraphGroup.FPS) {
-					fpsGroup = group;
-				}else if(group.type == GraphGroup.MEM) {
-					memGroup = group;
-				}else{
-					var n:String = group.name;
-					var panel:GraphingPanel = _graphsMap[n] as GraphingPanel;
-					if(!panel){
-						var rect:Rectangle = group.rect;
-						if(rect == null) rect = new Rectangle(NaN,NaN, 0, 0);
-						var size:Number = 100;
-						if(isNaN(rect.x) || isNaN(rect.y)){
-							if(_mainPanel.width < 150){
-								size = 50;
-							}
-							var maxX:Number = Math.floor(_mainPanel.width/size)-1;
-							if(maxX <=1) maxX = 2;
-							var ix:int = _graphPlaced%maxX;
-							var iy:int = Math.floor(_graphPlaced/maxX);
-							rect.x = _mainPanel.x+size+(ix*size);
-							rect.y = _mainPanel.y+(size*0.6)+(iy*size);
-							_graphPlaced++;
-						}
-						if(rect.width<=0 || isNaN(rect.width))  rect.width = size;
-						if(rect.height<=0 || isNaN(rect.height)) rect.height = size;
-						panel = new GraphingPanel(console, group);
-						panel.x = rect.x;
-						panel.y = rect.y;
-						panel.name = "graph_"+n;
-						_graphsMap[n] = panel;
-						addPanel(panel);
-					}
-					if(usedMap == null)
-					{
-						usedMap = {};
-					}
-					usedMap[n] = true;
-					panel.update(group, _canDraw);
-				}
-			}
-			
-			for(var X:String in _graphsMap){
-				if(usedMap == null || !usedMap[X]){
-					_graphsMap[X].close();
-					delete _graphsMap[X];
-				}
-			}
-			//
-			//
-			if(fpsGroup != null){
-				if (_fpsPanel == null) {
-					_fpsPanel = new GraphingPanel(console, fpsGroup, GraphingPanel.FPS);
-					_fpsPanel.name = GraphingPanel.FPS;
-					_fpsPanel.x = _mainPanel.x+_mainPanel.width-160;
-					_fpsPanel.y = _mainPanel.y+15;
-					addPanel(_fpsPanel);
-					_mainPanel.updateMenu();
-				}
-				_fpsPanel.update(fpsGroup, _canDraw);
-			}else if(_fpsPanel!=null){
-				removePanel(GraphingPanel.FPS);
-				_fpsPanel = null;
-			}
-			//
-			//
-			if(memGroup != null){
-				if(_memPanel == null){
-					_memPanel = new GraphingPanel(console, memGroup, GraphingPanel.MEM);
-					_memPanel.name = GraphingPanel.MEM;
-					_memPanel.x = _mainPanel.x+_mainPanel.width-80;
-					_memPanel.y = _mainPanel.y+15;
-					addPanel(_memPanel);
-					_mainPanel.updateMenu();
-				}
-				_memPanel.update(memGroup, _canDraw);
-			}else if(_memPanel!=null){
-				removePanel(GraphingPanel.MEM);
-				_memPanel = null;
-			}
-			_canDraw = false;
-		}
-		*/
 		
 		private function onGraphingGroupAdded(group:GraphGroup):void
 		{
@@ -228,7 +137,7 @@ package com.junkbyte.console.view
 			var group:GraphGroup = event.currentTarget as GraphGroup;
 			group.removeEventListener(Event.CLOSE, onGraphGroupClose);
 			
-			var graph:GraphingPanel = getGraphOfGroup(group);
+			var graph:GraphingPanel = getGraphByGroup(group);
 			if(graph)
 			{
 				delete _graphsMap[group];
@@ -236,7 +145,7 @@ package com.junkbyte.console.view
 			}
 		}
 		
-		public function getGraphOfGroup(group:GraphGroup):GraphingPanel
+		public function getGraphByGroup(group:GraphGroup):GraphingPanel
 		{
 			return _graphsMap[group];
 		}
@@ -288,21 +197,6 @@ package com.junkbyte.console.view
 				}
 				updateMenu();
 			}
-		}
-		//
-		//
-		//
-		/**
-		 * @private
-		 */
-		public function get memoryMonitor():Boolean{
-			return _memPanel!=null;
-		}
-		/**
-		 * @private
-		 */
-		public function get fpsMonitor():Boolean{
-			return _fpsPanel!=null;
 		}
 		//
 		//

@@ -63,7 +63,7 @@ package com.junkbyte.console.view {
 	[Event(name="visibilityChanged", type="flash.events.Event")]
 	
 	/**
-	 * Dispatched when started dragging
+	 * Dispatched when closed
 	 */
 	[Event(name="close", type="flash.events.Event")]
 	

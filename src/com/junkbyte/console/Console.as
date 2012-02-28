@@ -34,6 +34,7 @@ package com.junkbyte.console
 	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.view.PanelsManager;
 	import com.junkbyte.console.view.RollerPanel;
+	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.Log;
 	
 	import flash.display.DisplayObjectContainer;
@@ -47,6 +48,9 @@ package com.junkbyte.console
 	import flash.net.SharedObject;
 	import flash.system.Capabilities;
 	import flash.utils.getTimer;
+	
+	use namespace console_internal;
+
 	/**
 	 * Console is the main class. 
 	 * Please see com.junkbyte.console.Cc for documentation as it shares the same properties and methods structure.
@@ -59,18 +63,7 @@ package com.junkbyte.console
 		public static const VERSION_STAGE:String = "DEV";
 		public static const BUILD:int = 611;
 		public static const BUILD_DATE:String = "2012/02/22 00:11";
-		//
-		public static const LOG:uint = 1;
-		public static const INFO:uint = 3;
-		public static const DEBUG:uint = 6;
-		public static const WARN:uint = 8;
-		public static const ERROR:uint = 9;
-		public static const FATAL:uint = 10;
-		//
-		public static const GLOBAL_CHANNEL:String = " * ";
-		public static const DEFAULT_CHANNEL:String = "-";
-		public static const CONSOLE_CHANNEL:String = "C";
-		public static const FILTER_CHANNEL:String = "~";
+		
 		//
 		private var _config:ConsoleConfig;
 		private var _panels:PanelsManager;
@@ -193,15 +186,19 @@ package com.junkbyte.console
 			if(!str){
 				str = String(error);
 			}
-			report(str, FATAL, false);
+			report(str, ConsoleLevel.FATAL, false);
 		}
 		
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#addGraph()
 		 */
-		public function addGraph(name:String, obj:Object, property:String, color:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void{
-			_graphing.add(name, obj, property, color, key, rect, inverse);
+		public function addGraph(name:String, obj:Object, property:String, color:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):GraphGroup{
+			return _graphing.add(name, obj, property, color, key, rect, inverse);
+		}
+		
+		public function addGraphGroup(group:GraphGroup):void{
+			return _graphing.addGroup(group);
 		}
 		
 		/**
@@ -311,7 +308,7 @@ package com.junkbyte.console
 		 * @copy com.junkbyte.console.Cc#map()
 		 */
 		public function map(container:DisplayObjectContainer, maxstep:uint = 0):void{
-			_tools.map(container, maxstep, DEFAULT_CHANNEL);
+			_tools.map(container, maxstep, ConsoleChannel.DEFAULT_CHANNEL);
 		}
 		
 		/**
@@ -325,7 +322,7 @@ package com.junkbyte.console
 		 * @copy com.junkbyte.console.Cc#inspect()
 		 */
 		public function inspect(obj:Object, showInherit:Boolean = true):void{
-			_refs.inspect(obj, showInherit, DEFAULT_CHANNEL);
+			_refs.inspect(obj, showInherit, ConsoleChannel.DEFAULT_CHANNEL);
 		}
 		
 		/**
@@ -507,14 +504,14 @@ package com.junkbyte.console
 		 * @copy com.junkbyte.console.Cc#add()
 		 */
 		public function add(string:*, priority:int = 2, isRepeating:Boolean = false):void{
-			addLine([string], priority, DEFAULT_CHANNEL, isRepeating);
+			addLine([string], priority, ConsoleChannel.DEFAULT_CHANNEL, isRepeating);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#stack()
 		 */
 		public function stack(string:*, depth:int = -1, priority:int = 5):void{
-			addLine([string], priority, DEFAULT_CHANNEL, false, false, depth>=0?depth:_config.defaultStackDepth);
+			addLine([string], priority, ConsoleChannel.DEFAULT_CHANNEL, false, false, depth>=0?depth:_config.defaultStackDepth);
 		}
 		
 		/**
@@ -531,42 +528,42 @@ package com.junkbyte.console
 		 * @copy com.junkbyte.console.Cc#log()
 		 */
 		public function log(...strings):void{
-			addLine(strings, LOG);
+			addLine(strings, ConsoleLevel.LOG);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#info()
 		 */
 		public function info(...strings):void{
-			addLine(strings, INFO);
+			addLine(strings, ConsoleLevel.INFO);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#debug()
 		 */
 		public function debug(...strings):void{
-			addLine(strings, DEBUG);
+			addLine(strings, ConsoleLevel.DEBUG);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#warn()
 		 */
 		public function warn(...strings):void{
-			addLine(strings, WARN);
+			addLine(strings, ConsoleLevel.WARN);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#error()
 		 */
 		public function error(...strings):void{
-			addLine(strings, ERROR);
+			addLine(strings, ConsoleLevel.ERROR);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#fatal()
 		 */
 		public function fatal(...strings):void{
-			addLine(strings, FATAL);
+			addLine(strings, ConsoleLevel.FATAL);
 		}
 		
 		/**
@@ -580,42 +577,42 @@ package com.junkbyte.console
 		 * @copy com.junkbyte.console.Cc#logch()
 		 */
 		public function logch(channel:*, ...strings):void{
-			addLine(strings, LOG, channel);
+			addLine(strings, ConsoleLevel.LOG, channel);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#infoch()
 		 */
 		public function infoch(channel:*, ...strings):void{
-			addLine(strings, INFO, channel);
+			addLine(strings, ConsoleLevel.INFO, channel);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#debugch()
 		 */
 		public function debugch(channel:*, ...strings):void{
-			addLine(strings, DEBUG, channel);
+			addLine(strings, ConsoleLevel.DEBUG, channel);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#warnch()
 		 */
 		public function warnch(channel:*, ...strings):void{
-			addLine(strings, WARN, channel);
+			addLine(strings, ConsoleLevel.WARN, channel);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#errorch()
 		 */
 		public function errorch(channel:*, ...strings):void{
-			addLine(strings, ERROR, channel);
+			addLine(strings, ConsoleLevel.ERROR, channel);
 		}
 		
 		/**
 		 * @copy com.junkbyte.console.Cc#fatalch()
 		 */
 		public function fatalch(channel:*, ...strings):void{
-			addLine(strings, FATAL, channel);
+			addLine(strings, ConsoleLevel.FATAL, channel);
 		}
 		
 		/**
@@ -629,7 +626,7 @@ package com.junkbyte.console
 		 * @copy com.junkbyte.console.Cc#addHTML()
 		 */
 		public function addHTML(...strings):void{
-			addLine(strings, 2, DEFAULT_CHANNEL, false, testHTML(strings));
+			addLine(strings, 2, ConsoleChannel.DEFAULT_CHANNEL, false, testHTML(strings));
 		}
 		
 		/**
@@ -720,7 +717,7 @@ package com.junkbyte.console
 		public static function MakeChannelName(obj:*):String{
 			if(obj is String) return obj as String;
 			else if(obj) return LogReferences.ShortClassName(obj);
-			return DEFAULT_CHANNEL;
+			return ConsoleChannel.DEFAULT_CHANNEL;
 		}
 	}
 }

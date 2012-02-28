@@ -23,9 +23,11 @@
 * 
 */
 package com.junkbyte.console {
-	import flash.display.LoaderInfo;
+	import com.junkbyte.console.vos.GraphGroup;
+	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.LoaderInfo;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 
@@ -197,7 +199,7 @@ package com.junkbyte.console {
 		 * @param ...strings	Strings to be logged, any type can be passed and will be converted to string or a link if it is an object/class.
 		 */
 		public static function logch(channel:*, ...strings):void{
-			if(_console) _console.addCh(channel, strings, Console.LOG);
+			if(_console) _console.addCh(channel, strings, ConsoleLevel.LOG);
 		}
 		/**
 		 * Add log line with priority 3 to channel
@@ -207,7 +209,7 @@ package com.junkbyte.console {
 		 * @param ...strings	Strings to be logged, any type can be passed and will be converted to string or a link if it is an object/class.
 		 */
 		public static function infoch(channel:*, ...strings):void{
-			if(_console) _console.addCh(channel, strings, Console.INFO);
+			if(_console) _console.addCh(channel, strings, ConsoleLevel.INFO);
 		}
 		/**
 		 * Add log line with priority 5 to channel
@@ -217,7 +219,7 @@ package com.junkbyte.console {
 		 * @param ...strings	Strings to be logged, any type can be passed and will be converted to string or a link if it is an object/class.
 		 */
 		public static function debugch(channel:*, ...strings):void{
-			if(_console) _console.addCh(channel, strings, Console.DEBUG);
+			if(_console) _console.addCh(channel, strings, ConsoleLevel.DEBUG);
 		}
 		/**
 		 * Add log line with priority 7 to channel
@@ -227,7 +229,7 @@ package com.junkbyte.console {
 		 * @param ...strings	Strings to be logged, any type can be passed and will be converted to string or a link if it is an object/class.
 		 */
 		public static function warnch(channel:*, ...strings):void{
-			if(_console) _console.addCh(channel, strings, Console.WARN);
+			if(_console) _console.addCh(channel, strings, ConsoleLevel.WARN);
 		}
 		/**
 		 * Add log line with priority 9 to channel
@@ -237,7 +239,7 @@ package com.junkbyte.console {
 		 * @param ...strings	Strings to be logged, any type can be passed and will be converted to string or a link if it is an object/class.
 		 */
 		public static function errorch(channel:*, ...strings):void{
-			if(_console) _console.addCh(channel, strings, Console.ERROR);
+			if(_console) _console.addCh(channel, strings, ConsoleLevel.ERROR);
 		}
 		/**
 		 * Add log line with priority 10 to channel
@@ -247,7 +249,7 @@ package com.junkbyte.console {
 		 * @param ...strings	Strings to be logged, any type can be passed and will be converted to string or a link if it is an object/class.
 		 */
 		public static function fatalch(channel:*, ...strings):void{
-			if(_console) _console.addCh(channel, strings, Console.FATAL);
+			if(_console) _console.addCh(channel, strings, ConsoleLevel.FATAL);
 		}
 		/**
 		 * Add a stack trace of where it is called from at the end of the line. Requires debug player.
@@ -526,8 +528,15 @@ package com.junkbyte.console {
 		 * @param inverse (optional) invert the graph, meaning the highest value at the bottom and lowest at the top.
 		 * 
 		 */
-		public static function addGraph(panelName:String, obj:Object, property:String, color:Number = -1, idKey:String = null, rectArea:Rectangle = null, inverse:Boolean = false):void{
-			if(_console) _console.addGraph(panelName, obj, property, color, idKey, rectArea, inverse);
+		public static function addGraph(panelName:String, obj:Object, property:String, color:Number = -1, idKey:String = null, rectArea:Rectangle = null, inverse:Boolean = false):GraphGroup{
+			if(_console) return _console.addGraph(panelName, obj, property, color, idKey, rectArea, inverse);
+			return null;
+		}
+		/**
+		 * Add graph group
+		 */
+		public static function addGraphGroup(group:GraphGroup):void{
+			if(_console) _console.addGraphGroup(group);
 		}
 		/**
 		 * Remove graph panel

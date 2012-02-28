@@ -24,10 +24,12 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.utils.ByteArray;
-	import flash.events.Event;
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.ConsoleChannel;
 	import com.junkbyte.console.vos.Log;
+	
+	import flash.events.Event;
+	import flash.utils.ByteArray;
 	
 	/**
 	 * @private
@@ -156,11 +158,11 @@ package com.junkbyte.console.core
 		}
 		
 		public function getChannels():Array{
-			var arr:Array = new Array(Console.GLOBAL_CHANNEL);
-			addIfexist(Console.DEFAULT_CHANNEL, arr);
-			addIfexist(Console.FILTER_CHANNEL, arr);
+			var arr:Array = new Array(ConsoleChannel.GLOBAL_CHANNEL);
+			addIfexist(ConsoleChannel.DEFAULT_CHANNEL, arr);
+			addIfexist(ConsoleChannel.FILTER_CHANNEL, arr);
 			addIfexist(LogReferences.INSPECTING_CHANNEL, arr);
-			addIfexist(Console.CONSOLE_CHANNEL, arr);
+			addIfexist(ConsoleChannel.CONSOLE_CHANNEL, arr);
 			var others:Array = new Array();
 			for(var X:String in _channels){
 				if(arr.indexOf(X)<0) others.push(X);

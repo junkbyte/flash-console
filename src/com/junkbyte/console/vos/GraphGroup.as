@@ -54,7 +54,7 @@ package com.junkbyte.console.vos
 		public var inverted:Boolean;
 		public var interests:Array = [];
 		
-		public var numberDisplayPrecision:uint = 3;
+		public var numberDisplayPrecision:uint = 4;
 
 		public var align:String;
 		public var rect:Rectangle = new Rectangle(0, 0, 80, 40);

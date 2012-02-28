@@ -27,6 +27,12 @@ package com.junkbyte.console {
 	
 	public class ConsoleChannel {
 		
+		public static const GLOBAL_CHANNEL:String = " * ";
+		public static const DEFAULT_CHANNEL:String = "-";
+		public static const CONSOLE_CHANNEL:String = "C";
+		public static const FILTER_CHANNEL:String = "~";
+		
+		
 		private var _c:*; // because it could be Console or Cc. This is the cheapest way I think...
 		private var _name:String;
 		
@@ -40,7 +46,7 @@ package com.junkbyte.console {
 		 */
 		public function ConsoleChannel(n:*, c:Console = null){
 			_name = Console.MakeChannelName(n);
-			if (_name == Console.GLOBAL_CHANNEL) _name = Console.DEFAULT_CHANNEL;
+			if (_name == ConsoleChannel.GLOBAL_CHANNEL) _name = ConsoleChannel.DEFAULT_CHANNEL;
 			// allowed to pass in Console here incase you want to use a different console instance from whats used in Cc
 			_c = c?c:Cc;
 		}

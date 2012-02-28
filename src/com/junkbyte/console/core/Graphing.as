@@ -46,8 +46,6 @@ package com.junkbyte.console.core
 		private var _fpsGroup:GraphGroup;
 		private var _memGroup:GraphGroup;
 
-		private var _hadGraph:Boolean;
-
 		private var _groupAddedDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 
 		public function Graphing(m:Console)
@@ -66,12 +64,12 @@ package com.junkbyte.console.core
 
 		}
 
-		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):void
+		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):GraphGroup
 		{
 			if (obj == null)
 			{
 				report("ERROR: Graph [" + n + "] received a null object to graph property [" + prop + "].", 10);
-				return;
+				return null;
 			}
 			var group:GraphGroup = _map[n];
 			var newGroup:Boolean;
@@ -101,7 +99,7 @@ package com.junkbyte.console.core
 				if (i.key == key)
 				{
 					report("Graph with key [" + key + "] already exists in [" + n + "]", 10);
-					return;
+					return null;
 				}
 			}
 			if(rect) group.rect = rect;
@@ -115,7 +113,7 @@ package com.junkbyte.console.core
 			catch (e:Error)
 			{
 				report("Error with graph value for [" + key + "] in [" + n + "]. " + e, 10);
-				return;
+				return null;
 			}
 			if (isNaN(v))
 			{
@@ -130,6 +128,7 @@ package com.junkbyte.console.core
 					addGroup(group);
 				}
 			}
+			return group;
 		}
 
 		public function remove(n:String, obj:Object = null, prop:String = null):void
@@ -167,15 +166,19 @@ package com.junkbyte.console.core
 			else
 			{
 				var g:GraphGroup = _map[n];
+				if(g)
+				{
+					removeGroup(g);
+				}
 			}
 		}
 
 		public function get fpsMonitor():Boolean
 		{
-			if (remoter.remoting == Remoting.RECIEVER)
+			/*if (remoter.remoting == Remoting.RECIEVER)
 			{
 				return console.panels.fpsMonitor;
-			}
+			}*/
 			return _fpsGroup != null;
 		}
 
@@ -191,7 +194,7 @@ package com.junkbyte.console.core
 			{
 				if (b)
 				{
-					_fpsGroup = new GraphFPSGroup();
+					_fpsGroup = new GraphFPSGroup(console);
 					addGroup(_fpsGroup);
 				}
 				else
@@ -206,10 +209,10 @@ package com.junkbyte.console.core
 		//
 		public function get memoryMonitor():Boolean
 		{
-			if (remoter.remoting == Remoting.RECIEVER)
+			/*if (remoter.remoting == Remoting.RECIEVER)
 			{
 				return console.panels.memoryMonitor;
-			}
+			}*/
 			return _memGroup != null;
 		}
 
@@ -264,13 +267,13 @@ package com.junkbyte.console.core
 		private function onGroupClose(event:Event):void
 		{
 			var group:GraphGroup = event.currentTarget as GraphGroup;
-			group.removeEventListener(Event.CLOSE, onGroupClose);
 
 			removeGroup(group);
 		}
 
-		private function removeGroup(group:GraphGroup):void
+		public function removeGroup(group:GraphGroup):void
 		{
+			group.removeEventListener(Event.CLOSE, onGroupClose);
 			var index:int = _groups.indexOf(group);
 			if (index >= 0)
 			{
