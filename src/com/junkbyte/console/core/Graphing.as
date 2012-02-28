@@ -51,13 +51,16 @@ package com.junkbyte.console.core
 		public function Graphing(m:Console)
 		{
 			super(m);
-			remoter.registerCallback("fps", function(bytes:ByteArray):void {
+			remoter.registerCallback("fps", function(bytes:ByteArray):void
+			{
 				fpsMonitor = bytes.readBoolean();
 			});
-			remoter.registerCallback("mem", function(bytes:ByteArray):void {
+			remoter.registerCallback("mem", function(bytes:ByteArray):void
+			{
 				memoryMonitor = bytes.readBoolean();
 			});
-			remoter.registerCallback("removeGroup", function(bytes:ByteArray):void {
+			remoter.registerCallback("removeGroup", function(bytes:ByteArray):void
+			{
 				removeGroupByName(bytes.readUTF());
 			});
 			remoter.registerCallback("graph", handleRemoteGraph, true);
@@ -102,8 +105,10 @@ package com.junkbyte.console.core
 					return null;
 				}
 			}
-			if(rect) group.rect = rect;
-			if(inverse) group.inverted = inverse;
+			if (rect)
+				group.rect = rect;
+			if (inverse)
+				group.inverted = inverse;
 			var interest:GraphInterest = new GraphInterest(key, col);
 			var v:Number = NaN;
 			try
@@ -166,7 +171,7 @@ package com.junkbyte.console.core
 			else
 			{
 				var g:GraphGroup = _map[n];
-				if(g)
+				if (g)
 				{
 					removeGroup(g);
 				}
@@ -195,15 +200,26 @@ package com.junkbyte.console.core
 				if (b)
 				{
 					_fpsGroup = new GraphFPSGroup(console);
+					_fpsGroup.addEventListener(Event.CLOSE, onFPSGroupClose);
 					addGroup(_fpsGroup);
+					
+					console.panels.mainPanel.updateMenu();
 				}
 				else
 				{
-					removeGroup(_fpsGroup);
-					_fpsGroup = null;
+					_fpsGroup.close();
 				}
-				console.panels.mainPanel.updateMenu();
 			}
+		}
+		
+		private function onFPSGroupClose(event:Event):void
+		{
+			
+			var group:GraphGroup = event.currentTarget as GraphGroup;
+			group.removeEventListener(Event.CLOSE, onFPSGroupClose);
+			_fpsGroup = null;
+			
+			console.panels.mainPanel.updateMenu();
 		}
 
 		//
@@ -229,28 +245,38 @@ package com.junkbyte.console.core
 				if (b)
 				{
 					_memGroup = new GraphMemoryGroup();
+					_memGroup.addEventListener(Event.CLOSE, onMemGroupClose);
 					addGroup(_memGroup);
+					
+					console.panels.mainPanel.updateMenu();
 				}
 				else
 				{
-					removeGroup(_memGroup);
-					_memGroup = null;
+					_memGroup.close();
 				}
-				console.panels.mainPanel.updateMenu();
 			}
 		}
-		
-		
+
+		private function onMemGroupClose(event:Event):void
+		{
+
+			var group:GraphGroup = event.currentTarget as GraphGroup;
+			group.removeEventListener(Event.CLOSE, onMemGroupClose);
+			_memGroup = null;
+			
+			console.panels.mainPanel.updateMenu();
+		}
+
 		public function addGroupAddedListener(listener:Function):void
 		{
 			_groupAddedDispatcher.add(listener);
 		}
-		
+
 		public function removeGroupAddedListener(listener:Function):void
 		{
 			_groupAddedDispatcher.remove(listener);
 		}
-		
+
 		public function addGroup(group:GraphGroup):void
 		{
 			if (_groups.indexOf(group) < 0)

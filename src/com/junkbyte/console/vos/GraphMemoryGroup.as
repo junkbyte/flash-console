@@ -11,7 +11,7 @@ package com.junkbyte.console.vos
 		{
 			super(NAME);
 
-			rect.x = 80;
+			rect.x = 90;
 			rect.y = 15;
 			align = StageAlign.RIGHT;
 
