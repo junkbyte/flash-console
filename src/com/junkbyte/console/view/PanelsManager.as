@@ -36,8 +36,8 @@ package com.junkbyte.console.view
 
 	public class PanelsManager{
 		
-		private var console:Console;
-		private var _mainPanel:MainPanel;
+		protected var console:Console;
+		protected var _mainPanel:MainPanel;
 		
 		private var _chsPanel:ChannelsPanel;
 		private var _graphsMap:Dictionary = new Dictionary();
@@ -47,7 +47,7 @@ package com.junkbyte.console.view
 		
 		public function PanelsManager(master:Console) {
 			console = master;
-			_mainPanel = new MainPanel(console);
+			_mainPanel = createMainPanel();
 			_tooltipField = mainPanel.makeTF("tooltip", true);
 			_tooltipField.mouseEnabled = false;
 			_tooltipField.autoSize = TextFieldAutoSize.CENTER;
@@ -56,6 +56,11 @@ package com.junkbyte.console.view
 			
 			
 			console.graphing.addGroupAddedListener(onGraphingGroupAdded);
+		}
+		
+		protected function createMainPanel():MainPanel
+		{
+			return new MainPanel(console);
 		}
 		
 		public function addPanel(panel:ConsolePanel):void{

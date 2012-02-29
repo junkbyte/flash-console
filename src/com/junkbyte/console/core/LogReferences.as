@@ -256,11 +256,11 @@ package com.junkbyte.console.core
 			_dofull = false;
 			_history = null;
 			_hisIndex = 0;
-			if(remoter.remoting == Remoting.SENDER){
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeUTF("refexit");
-				remoter.send("ref", bytes);
-			}
+			
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeUTF("refexit");
+			remoter.send("ref", bytes);
+			
 			console.clear(LogReferences.INSPECTING_CHANNEL);
 		}
 		

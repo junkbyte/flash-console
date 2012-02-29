@@ -25,7 +25,7 @@
 package com.junkbyte.console.core 
 {
 	import com.junkbyte.console.Console;
-
+	
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -48,27 +48,25 @@ package com.junkbyte.console.core
 		public static const SENDER:uint = 1;
 		public static const RECIEVER:uint = 2;
 		
-		private var _callbacks:Object = new Object();
-		private var _mode:uint;
-		private var _local:LocalConnection;
-		private var _socket:Socket;
-		private var _sendBuffer:ByteArray = new ByteArray();
-		private var _recBuffers:Object = new Object();
-		private var _senders:Dictionary = new Dictionary();
+		protected var _callbacks:Object = new Object();
+		protected var _mode:uint;
+		protected var _local:LocalConnection;
+		protected var _socket:Socket;
+		protected var _sendBuffer:ByteArray = new ByteArray();
+		protected var _recBuffers:Object = new Object();
+		protected var _senders:Dictionary = new Dictionary();
 		
-		private var _lastLogin:String = "";
-		private var _loggedIn:Boolean;
+		protected var _lastLogin:String = "";
+		protected var _loggedIn:Boolean;
 		
-		private var _sendID:String;
-		private var _lastReciever:String;
+		protected var _sendID:String;
+		protected var _lastReciever:String;
 		
 		public function Remoting(m:Console) {
 			super(m);
 			registerCallback("login", function(bytes:ByteArray):void{
 				login(bytes.readUTF());
 			});
-			registerCallback("requestLogin", requestLogin);
-			registerCallback("loginFail", loginFail);
 			registerCallback("loginSuccess", loginSuccess);
 		}
 		public function update():void{
@@ -90,8 +88,7 @@ package com.junkbyte.console.core
 						_sendBuffer.readBytes(newbuffer);
 						_sendBuffer = newbuffer;
 					}
-					var target:String = config.remotingConnectionName+(remoting == Remoting.RECIEVER?SENDER:RECIEVER);
-					_local.send(target, "synchronize", _sendID, packet);
+					_local.send(localConnectionTarget, "synchronize", _sendID, packet);
 				}else{
 					_sendBuffer = new ByteArray();
 				}
@@ -99,6 +96,11 @@ package com.junkbyte.console.core
 			for (var id:String in _recBuffers){
 				processRecBuffer(id);
 			}
+		}
+		
+		protected function get localConnectionTarget():String
+		{
+			return config.remotingConnectionName+RECIEVER;
 		}
 
 		private function processRecBuffer(id:String):void
@@ -194,21 +196,6 @@ package com.junkbyte.console.core
 				}else{
 					send("requestLogin");
 				}
-			}else if(newMode == RECIEVER){
-				if(startSharedConnection(RECIEVER)){
-					_sendBuffer = new ByteArray();
-					_local.addEventListener(AsyncErrorEvent.ASYNC_ERROR , onRemoteAsyncError, false, 0, true);
-					_local.addEventListener(StatusEvent.STATUS, onRecieverStatus, false, 0, true);
-					report("<b>Remote started.</b> "+getInfo(),-1);
-					var sdt:String = Security.sandboxType;
-					if(sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK){
-						report("Untrusted local sandbox. You may not be able to listen for logs properly.", 10);
-						printHowToGlobalSetting();
-					}
-					login(_lastLogin);
-				}else{
-					report("Could not create remote service. You might have a console remote already running.", 10);
-				}
 			}else{
 				close();
 			}
@@ -273,33 +260,26 @@ package com.junkbyte.console.core
 				_loggedIn = false;
 			}
 		}
-		private function onRecieverStatus(e:StatusEvent):void{
-			if(remoting == Remoting.RECIEVER && e.level=="error"){
-				report("Problem communicating to client.", 10);
-			}
-		}
-		private function onRemotingSecurityError(e:SecurityErrorEvent):void{
+		
+		protected function onRemotingSecurityError(e:SecurityErrorEvent):void{
 			report("Remoting security error.", 9);
 			printHowToGlobalSetting();
 		}
-		private function onRemoteAsyncError(e:AsyncErrorEvent):void{
-			report("Problem with remote sync. [<a href='event:remote'>Click here</a>] to restart.", 10);
-			remoting = NONE;
-		}
 		
-		private function getInfo():String{
+		protected function getInfo():String{
 			return "<p4>channel:"+config.remotingConnectionName+" ("+Security.sandboxType+")</p4>";
 		}
 		
-		private function printHowToGlobalSetting():void{
+		protected function printHowToGlobalSetting():void{
 			report("Make sure your flash file is 'trusted' in Global Security Settings.", -2);
 			report("Go to Settings Manager [<a href='event:settings'>click here</a>] &gt; 'Global Security Settings Panel'  &gt; add the location of the local flash (swf) file.", -2);
 		}
 		
-		private function generateId():String{
+		protected function generateId():String{
 			return new Date().time+"."+Math.floor(Math.random()*100000);
 		}
-		private function startSharedConnection(targetmode:uint):Boolean{
+		
+		protected function startSharedConnection(targetmode:uint):Boolean{
 			close();
 			_mode = targetmode;
 			_local = new LocalConnection();
@@ -320,11 +300,6 @@ package com.junkbyte.console.core
 		public function registerCallback(key:String, fun:Function, latestOnly:Boolean = false):void{
 			_callbacks[key] = {fun:fun, latest:latestOnly};
 		}
-		private function loginFail():void{
-			if(remoting != Remoting.RECIEVER) return;
-			report("Login Failed", 10);
-			console.panels.mainPanel.requestLogin();
-		}
 		private function sendLoginSuccess():void{
 			_loggedIn = true;
 			send("loginSuccess");
@@ -335,29 +310,12 @@ package com.junkbyte.console.core
 			report("Login Successful", -1);
 			dispatchEvent(new Event(Event.CONNECT));
 		}
-		private function requestLogin():void{
-			if(remoting != Remoting.RECIEVER) return;
-			_sendBuffer = new ByteArray();
-			if(_lastLogin){
-				login(_lastLogin);
-			}else{
-				console.panels.mainPanel.requestLogin();
-			}
-		}
 		public function login(pass:String = ""):void{
-			if(remoting == Remoting.RECIEVER){
-				_lastLogin = pass;
-				report("Attempting to login...", -1);
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeUTF(pass);
-				send("login", bytes);
+			// once logged in, next login attempts will always be success
+			if(_loggedIn || checkLogin(pass)){
+				sendLoginSuccess();
 			}else{
-				// once logged in, next login attempts will always be success
-				if(_loggedIn || checkLogin(pass)){
-					sendLoginSuccess();
-				}else{
-					send("loginFail");
-				}
+				send("loginFail");
 			}
 		}
 

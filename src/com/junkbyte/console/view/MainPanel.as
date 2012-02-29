@@ -795,8 +795,8 @@ package com.junkbyte.console.view
 				
 				str += doActive(" <a href=\"event:command\">CL</a>", commandLine);
 				
-				if(console.remoter.remoting != Remoting.RECIEVER){
-					if(config.displayRollerEnabled)
+				if(config.displayRollerEnabled)
+				{
 					str += doActive(" <a href=\"event:roller\">Ro</a>", console.displayRoller);
 				}
 				str += " ¦</b>";
@@ -877,7 +877,7 @@ package com.junkbyte.console.view
 			}
 			console.panels.tooltip(txt, src);
 		}
-		private function linkHandler(e:TextEvent):void{
+		protected function linkHandler(e:TextEvent):void{
 			txtField.setSelection(0, 0);
 			stopDrag();
 			var t:String = e.text;
@@ -934,8 +934,6 @@ package com.junkbyte.console.view
 			}else if(t == "settings"){
 				console.report("A new window should open in browser. If not, try searching for 'Flash Player Global Security Settings panel' online :)", -1);
 				Security.showSettings(SecurityPanel.SETTINGS_MANAGER);
-			}else if(t == "remote"){
-				console.remoter.remoting = Remoting.RECIEVER;
 			}else if(t.indexOf("ref")==0){
 				console.refs.handleRefEvent(t);
 			}else if(t.indexOf("channel_")==0){
@@ -1108,9 +1106,10 @@ package com.junkbyte.console.view
 		private function setCLSelectionAtEnd():void{
 			_cmdField.setSelection(_cmdField.text.length, _cmdField.text.length);
 		}
-		private function updateCmdHint(e:Event = null):void{
+		
+		protected function updateCmdHint(e:Event = null):void{
 			var str:String = _cmdField.text;
-			if(str && config.commandLineAutoCompleteEnabled && console.remoter.remoting != Remoting.RECIEVER){
+			if(str && config.commandLineAutoCompleteEnabled){
 				try{
 					setHints(console.cl.getHintsFor(str, 5));
 					return;
@@ -1118,6 +1117,7 @@ package com.junkbyte.console.view
 			}
 			setHints();
 		}
+		
 		private function onCmdFocusOut(e:Event):void{
 			setHints();
 		}

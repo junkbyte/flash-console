@@ -268,10 +268,8 @@ package com.junkbyte.console.core
 					// scope changed
 					_prevScope.reference = _scope;
 					_scope = returned;
-					if(remoter.remoting == Remoting.SENDER){
-						_scopeStr = LogReferences.ShortClassName(_scope, false);
-						sendCmdScope2Remote();
-					}
+					_scopeStr = LogReferences.ShortClassName(_scope, false);
+					sendCmdScope2Remote();
 					report("Changed to "+console.refs.makeRefTyped(returned), -1);
 				}else{
 					if(say) report("Returned "+console.refs.makeString(returned), -1);

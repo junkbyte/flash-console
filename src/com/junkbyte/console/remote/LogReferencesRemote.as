@@ -16,5 +16,8 @@ package com.junkbyte.console.remote
 			bytes.writeUTF(str);
 			remoter.send("ref", bytes);
 		}
+		override public function exitFocus():void{
+			
+		}
 	}
 }

@@ -101,6 +101,7 @@ package com.junkbyte.console
 			if (password) {
 				_config.keystrokePassword = password;
 			}
+			_config.style.updateStyleSheet();
 			//
 			initModules();
 			
@@ -118,8 +119,6 @@ package com.junkbyte.console
 				}
 			}
 			
-			_config.style.updateStyleSheet();
-			_panels = new PanelsManager(this);
 			if(password) visible = false;
 			
 			//report("<b>Console v"+VERSION+VERSION_STAGE+" b"+BUILD+". Happy coding!</b>", -2);
@@ -143,6 +142,8 @@ package com.junkbyte.console
 			_graphing = new Graphing(this);
 			_mm = new MemoryMonitor(this);
 			_kb = new KeyBinder(this);
+			
+			_panels = new PanelsManager(this);
 		}
 
 

@@ -15,11 +15,12 @@ package com.junkbyte.console.remote
 		public function ConsoleRe(password:String = "", config:ConsoleConfig = null)
 		{
 			super(password, config);
+			_config.displayRollerEnabled = false;
 		}
 
 		override protected function initModules():void
 		{
-			_remoter = new Remoting(this);
+			_remoter = new RemotingRemote(this);
 			_logs = new LogsRemote(this);
 			_refs = new LogReferencesRemote(this);
 			_cl = new CommandLineRemote(this);
@@ -27,6 +28,8 @@ package com.junkbyte.console.remote
 			_graphing = new GraphingRemote(this);
 			_mm = new MemoryMonitorRemote(this);
 			_kb = new KeyBinder(this);
+			
+			_panels = new PanelsManagerRemote(this);
 		}
 	}
 }

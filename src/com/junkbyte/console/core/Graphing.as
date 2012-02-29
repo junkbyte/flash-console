@@ -178,20 +178,20 @@ package com.junkbyte.console.core
 
 		private function removeGroupByName(n:String):void
 		{
-			if (remoter.remoting == Remoting.RECIEVER)
+			/*if (remoter.remoting == Remoting.RECIEVER)
 			{
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeUTF(n);
 				remoter.send("removeGroup", bytes);
 			}
 			else
-			{
+			{*/
 				var g:GraphGroup = _map[n];
 				if (g)
 				{
 					removeGroup(g);
 				}
-			}
+			//}
 		}
 
 		public function get fpsMonitor():Boolean
@@ -201,14 +201,14 @@ package com.junkbyte.console.core
 
 		public function set fpsMonitor(b:Boolean):void
 		{
-			if (remoter.remoting == Remoting.RECIEVER)
+			/*if (remoter.remoting == Remoting.RECIEVER)
 			{
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeBoolean(b);
 				remoter.send("fps", bytes);
 			}
 			else if (b != fpsMonitor)
-			{
+			{*/
 				if (b)
 				{
 					_fpsGroup = new GraphFPSGroup(console);
@@ -221,7 +221,7 @@ package com.junkbyte.console.core
 				{
 					_fpsGroup.close();
 				}
-			}
+			//}
 		}
 		
 		private function onFPSGroupClose(event:Event):void
@@ -242,14 +242,14 @@ package com.junkbyte.console.core
 
 		public function set memoryMonitor(b:Boolean):void
 		{
-			if (remoter.remoting == Remoting.RECIEVER)
+			/*if (remoter.remoting == Remoting.RECIEVER)
 			{
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeBoolean(b);
 				remoter.send("mem", bytes);
 			}
 			else if (b != memoryMonitor)
-			{
+			{*/
 				if (b)
 				{
 					_memGroup = new GraphMemoryGroup();
@@ -262,7 +262,7 @@ package com.junkbyte.console.core
 				{
 					_memGroup.close();
 				}
-			}
+			//}
 		}
 
 		private function onMemGroupClose(event:Event):void
