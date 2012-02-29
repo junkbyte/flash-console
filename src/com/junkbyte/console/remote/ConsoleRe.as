@@ -15,6 +15,7 @@ package com.junkbyte.console.remote
 		public function ConsoleRe(password:String = "", config:ConsoleConfig = null)
 		{
 			super(password, config);
+			
 			_config.displayRollerEnabled = false;
 		}
 

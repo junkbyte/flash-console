@@ -16,20 +16,28 @@ package com.junkbyte.console.remote
 			registerCallback("requestLogin", requestLogin);
 			registerCallback("loginFail", loginFail);
 		}
-		
-		private function loginFail():void{
+
+		private function loginFail():void
+		{
 			report("Login Failed", 10);
 			console.panels.mainPanel.requestLogin();
 		}
-		private function requestLogin():void{
+
+		private function requestLogin():void
+		{
 			_sendBuffer = new ByteArray();
-			if(_lastLogin){
+			if (_lastLogin)
+			{
 				login(_lastLogin);
-			}else{
+			}
+			else
+			{
 				console.panels.mainPanel.requestLogin();
 			}
 		}
-		override public function login(pass:String = ""):void{
+
+		override public function login(pass:String = ""):void
+		{
 			_lastLogin = pass;
 			report("Attempting to login...", -1);
 			var bytes:ByteArray = new ByteArray();
@@ -37,16 +45,16 @@ package com.junkbyte.console.remote
 			send("login", bytes);
 		}
 
-		override public function set remoting(newMode:uint):void
+		override public function set remoting(newMode:Boolean):void
 		{
-			if (newMode == _mode)
+			if (newMode == _remoting)
 			{
 				return;
 			}
 			_sendID = generateId();
 			if (newMode)
 			{
-				if (startSharedConnection(RECIEVER))
+				if (startSharedConnection())
 				{
 					_sendBuffer = new ByteArray();
 					_local.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onRemoteAsyncError, false, 0, true);
@@ -72,6 +80,11 @@ package com.junkbyte.console.remote
 			console.panels.updateMenu();
 		}
 
+		override protected function get localConnectionSelf():String
+		{
+			return config.remotingConnectionName + RECIEVER;
+		}
+
 		override protected function get localConnectionTarget():String
 		{
 			return config.remotingConnectionName + SENDER;
@@ -84,10 +97,11 @@ package com.junkbyte.console.remote
 				report("Problem communicating to client.", 10);
 			}
 		}
-		
-		protected function onRemoteAsyncError(e:AsyncErrorEvent):void{
+
+		protected function onRemoteAsyncError(e:AsyncErrorEvent):void
+		{
 			report("Problem with remote sync. [<a href='event:remote'>Click here</a>] to restart.", 10);
-			remoting = NONE;
+			remoting = false;
 		}
 	}
 }

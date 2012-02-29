@@ -23,7 +23,7 @@ package com.junkbyte.console.remote
 			super.linkHandler(e);
 			if(e.text == "remote")
 			{
-				console.remoter.remoting = Remoting.RECIEVER;
+				console.remoter.remoting = true;
 			}
 		}
 	}

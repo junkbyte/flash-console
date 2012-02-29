@@ -431,7 +431,7 @@ package com.junkbyte.console
 			return _remoter.remoting == Remoting.SENDER;
 		}
 		public function set remoting(b:Boolean):void{
-			_remoter.remoting = b?Remoting.SENDER:Remoting.NONE;
+			_remoter.remoting = b;
 		}
 		
 		/**
