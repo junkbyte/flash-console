@@ -46,7 +46,7 @@ package com.junkbyte.console.core
 		
 		private var _scope:*;
 		private var _prevScope:WeakRef;
-		private var _scopeStr:String = "";
+		protected var _scopeStr:String = "";
 		private var _slashCmds:Object;
 		
 		public var localCommands:Array = new Array("filter", "filterexp");
@@ -65,7 +65,6 @@ package com.junkbyte.console.core
 			remoter.registerCallback("scope", function(bytes:ByteArray):void{
 				handleScopeEvent(bytes.readUnsignedInt());
 			});
-			remoter.registerCallback("cls", handleScopeString);
 			remoter.addEventListener(Event.CONNECT, sendCmdScope2Remote);
 			
 			addCLCmd("help", printHelp, "How to use command line");
@@ -96,19 +95,10 @@ package com.junkbyte.console.core
 		public function get base():Object {
 			return _saved.get("base");
 		}
-		public function handleScopeString(bytes:ByteArray):void{
-			_scopeStr = bytes.readUTF();
-		}
 		public function handleScopeEvent(id:uint):void{
-			if(remoter.remoting == Remoting.RECIEVER){
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeUnsignedInt(id);
-				remoter.send("scope", bytes);
-			}else{
-				var v:* = console.refs.getRefById(id);
-				if(v) console.cl.setReturned(v, true, false);
-				else console.report("Reference no longer exist.", -2);
-			}
+			var v:* = console.refs.getRefById(id);
+			if(v) console.cl.setReturned(v, true, false);
+			else console.report("Reference no longer exist.", -2);
 		}
 		public function store(n:String, obj:Object, strong:Boolean = false):void {
 			if(!n) {
@@ -189,20 +179,6 @@ package com.junkbyte.console.core
 		public function run(str:String, saves:Object = null):* {
 			if(!str) return;
 			str = str.replace(/\s*/,"");
-			if(remoter.remoting == Remoting.RECIEVER){
-				if(str.charAt(0) == "~"){
-					str = str.substring(1);
-				}else if(str.search(new RegExp("\/"+localCommands.join("|\/"))) != 0){
-					report("Run command at remote: "+str,-2);
-					
-					var bytes:ByteArray = new ByteArray();
-					bytes.writeUTF(str);
-					if(!console.remoter.send("cmd", bytes)){
-						report("Command could not be sent to client.", 10);
-					}
-					return null;
-				}
-			}
 			report("&gt; "+str, 4, false);
 			var v:* = null;
 			try{
@@ -292,7 +268,7 @@ package com.junkbyte.console.core
 					// scope changed
 					_prevScope.reference = _scope;
 					_scope = returned;
-					if(remoter.remoting != Remoting.RECIEVER){
+					if(remoter.remoting == Remoting.SENDER){
 						_scopeStr = LogReferences.ShortClassName(_scope, false);
 						sendCmdScope2Remote();
 					}

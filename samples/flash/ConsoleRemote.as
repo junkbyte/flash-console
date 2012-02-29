@@ -26,7 +26,8 @@ package
 {
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.core.Remoting;
-
+	import com.junkbyte.console.remote.ConsoleRe;
+	
 	import flash.display.*;
 	import flash.events.*;
 
@@ -38,19 +39,23 @@ package
 	
 	public class ConsoleRemote extends Sprite {
 
+		private var console:ConsoleRe;
 		public function ConsoleRemote() {
 			
-			Cc.start(this);
-			Cc.commandLine = true;
-			Cc.config.maxLines = 2000;
-			Cc.config.maxRepeats = 200;
-			Cc.config.commandLineAllowed = true;
+			console = new ConsoleRe();
+			
+			addChild(console);
+			
+			console.commandLine = true;
+			console.config.maxLines = 2000;
+			console.config.maxRepeats = 200;
+			console.config.commandLineAllowed = true;
 			
 			// Start remote service.
-			Cc.instance.remoter.remoting = Remoting.RECIEVER;
+			console.remoter.remoting = Remoting.RECIEVER;
 			// Disable scaling and moving
-			Cc.instance.panels.mainPanel.moveable = false;
-			Cc.instance.panels.mainPanel.scalable = false;
+			console.panels.mainPanel.moveable = false;
+			console.panels.mainPanel.scalable = false;
 			//
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -59,8 +64,8 @@ package
 			onStageResize();
 		}
 		private function onStageResize(e : Event = null) : void {
-			Cc.width = stage.stageWidth;
-			Cc.height = stage.stageHeight;
+			console.width = stage.stageWidth;
+			console.height = stage.stageHeight;
 		}
 	}
 }

@@ -33,7 +33,7 @@ package
 	import flash.display.*;
 	import flash.geom.Rectangle;
 
-	[SWF(width='700',height='300',backgroundColor='0xFFFFFF',frameRate='30')]
+	[SWF(width='700',height='300',backgroundColor='0xFFFFFF',frameRate='60')]
 	// Might want to add compile argument: -use-network=false -debug=true
 	
 	public dynamic class SampleAdvanced extends MovieClip{

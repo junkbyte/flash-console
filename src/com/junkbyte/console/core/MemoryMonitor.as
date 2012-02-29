@@ -25,7 +25,7 @@
 package com.junkbyte.console.core 
 {
 	import com.junkbyte.console.Console;
-
+	
 	import flash.system.System;
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
@@ -107,26 +107,17 @@ package com.junkbyte.console.core
 		}
 		
 		public function gc():void {
-			if(remoter.remoting == Remoting.RECIEVER){
-				try{
-					//report("Sending garbage collection request to client",-1);
-					remoter.send("gc");
-				}catch(e:Error){
-					report(e,10);
+			var ok:Boolean;
+			try{
+				// have to put in brackes cause some compilers will complain.
+				if(System["gc"] != null){
+					System["gc"]();
+					ok = true;
 				}
-			}else{
-				var ok:Boolean;
-				try{
-					// have to put in brackes cause some compilers will complain.
-					if(System["gc"] != null){
-						System["gc"]();
-						ok = true;
-					}
-				}catch(e:Error){ }
-				
-				var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
-				report(str,(ok?-1:10));
-			}
+			}catch(e:Error){ }
+			
+			var str:String = "Manual garbage collection "+(ok?"successful.":"FAILED. You need debugger version of flash player.");
+			report(str,(ok?-1:10));
 		}
 	}
 }

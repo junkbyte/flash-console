@@ -193,13 +193,7 @@ package com.junkbyte.console.core
 			}
 		}
 		public function handleRefEvent(str:String):void{
-			if(remoter.remoting == Remoting.RECIEVER){
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeUTF(str);
-				remoter.send("ref", bytes);
-			}else{
-				handleString(str);
-			}
+			handleString(str);
 		}
 		private function handleString(str:String):void{
 			if(str == "refexit"){

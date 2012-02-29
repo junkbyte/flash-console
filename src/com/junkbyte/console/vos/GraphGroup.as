@@ -117,7 +117,7 @@ package com.junkbyte.console.vos
 		//
 		//
 		//
-		public function toBytes(bytes:ByteArray):void
+		public function writeToBytes(bytes:ByteArray):void
 		{
 			bytes.writeUTF(name);
 			bytes.writeUnsignedInt(idle);

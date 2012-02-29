@@ -65,20 +65,20 @@ package com.junkbyte.console
 		public static const BUILD_DATE:String = "2012/02/22 00:11";
 		
 		//
-		private var _config:ConsoleConfig;
-		private var _panels:PanelsManager;
-		private var _cl:CommandLine;
-		private var _kb:KeyBinder;
-		private var _refs:LogReferences;
-		private var _mm:MemoryMonitor;
-		private var _graphing:Graphing;
-		private var _remoter:Remoting;
-		private var _tools:ConsoleTools;
+		protected var _config:ConsoleConfig;
+		protected var _panels:PanelsManager;
+		protected var _cl:CommandLine;
+		protected var _kb:KeyBinder;
+		protected var _refs:LogReferences;
+		protected var _mm:MemoryMonitor;
+		protected var _graphing:Graphing;
+		protected var _remoter:Remoting;
+		protected var _tools:ConsoleTools;
+		protected var _logs:Logs;
 		//
 		private var _topTries:int = 50;
 		private var _paused:Boolean;
 		private var _rollerKey:KeyBind;
-		private var _logs:Logs;
 		
 		private var _so:SharedObject;
 		private var _soData:Object = {};
@@ -102,14 +102,7 @@ package com.junkbyte.console
 				_config.keystrokePassword = password;
 			}
 			//
-			_remoter = new Remoting(this);
-			_logs = new Logs(this);
-			_refs = new LogReferences(this);
-			_cl = new CommandLine(this);
-			_tools =  new ConsoleTools(this);
-			_graphing = new Graphing(this);
-			_mm = new MemoryMonitor(this);
-			_kb = new KeyBinder(this);
+			initModules();
 			
 			cl.addCLCmd("remotingSocket", function(str:String = ""):void{
 				var args:Array = str.split(/\s+|\:/);
@@ -139,6 +132,20 @@ package com.junkbyte.console
 			addEventListener(Event.ENTER_FRAME, _onEnterFrame);
 			addEventListener(Event.ADDED_TO_STAGE, stageAddedHandle);
 		}
+
+		protected function initModules():void
+		{
+			_remoter = new Remoting(this);
+			_logs = new Logs(this);
+			_refs = new LogReferences(this);
+			_cl = new CommandLine(this);
+			_tools =  new ConsoleTools(this);
+			_graphing = new Graphing(this);
+			_mm = new MemoryMonitor(this);
+			_kb = new KeyBinder(this);
+		}
+
+
 		private function stageAddedHandle(e:Event=null):void{
 			if(_cl.base == null) _cl.base = parent;
 			if(loaderInfo){

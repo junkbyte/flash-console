@@ -29,7 +29,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
 	import com.junkbyte.console.vos.GraphMemoryGroup;
-
+	
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
@@ -51,6 +51,11 @@ package com.junkbyte.console.core
 		public function Graphing(m:Console)
 		{
 			super(m);
+			
+			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
+			
+			
+			/*
 			remoter.registerCallback("fps", function(bytes:ByteArray):void
 			{
 				fpsMonitor = bytes.readBoolean();
@@ -64,7 +69,18 @@ package com.junkbyte.console.core
 				removeGroupByName(bytes.readUTF());
 			});
 			remoter.registerCallback("graph", handleRemoteGraph, true);
+			*/
+		}
 
+		private function onRemoteConnection(event:Event):void
+		{
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeShort(_groups.length);
+			for each(var group:GraphGroup in _groups)
+			{
+				group.writeToBytes(bytes);
+			}
+			//remoter.send("graphGroups", bytes);
 		}
 
 		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):GraphGroup
@@ -180,10 +196,6 @@ package com.junkbyte.console.core
 
 		public function get fpsMonitor():Boolean
 		{
-			/*if (remoter.remoting == Remoting.RECIEVER)
-			{
-				return console.panels.fpsMonitor;
-			}*/
 			return _fpsGroup != null;
 		}
 
@@ -225,10 +237,6 @@ package com.junkbyte.console.core
 		//
 		public function get memoryMonitor():Boolean
 		{
-			/*if (remoter.remoting == Remoting.RECIEVER)
-			{
-				return console.panels.memoryMonitor;
-			}*/
 			return _memGroup != null;
 		}
 
@@ -259,7 +267,6 @@ package com.junkbyte.console.core
 
 		private function onMemGroupClose(event:Event):void
 		{
-
 			var group:GraphGroup = event.currentTarget as GraphGroup;
 			group.removeEventListener(Event.CLOSE, onMemGroupClose);
 			_memGroup = null;
