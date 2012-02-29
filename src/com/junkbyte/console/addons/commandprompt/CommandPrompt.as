@@ -25,6 +25,7 @@
 package com.junkbyte.console.addons.commandprompt {
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.ConsoleChannel;
 	
 	/**
 	 * Command prompt addon.
@@ -36,7 +37,7 @@ package com.junkbyte.console.addons.commandprompt {
 	 */
 	public class CommandPrompt {
 		
-		public var ch : String = Console.CONSOLE_CHANNEL;
+		public var ch : String = ConsoleChannel.CONSOLE_CHANNEL;
 		public var headerQuestion:String;
 		public var footerText:String;
 		public var defaultCallback:Function;
