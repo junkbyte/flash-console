@@ -64,7 +64,6 @@ package com.junkbyte.console.vos
 		protected var updateDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 		//
 		//
-		public var idle:int;
 
 		public function GraphGroup(n:String)
 		{
@@ -120,7 +119,6 @@ package com.junkbyte.console.vos
 		public function writeToBytes(bytes:ByteArray):void
 		{
 			bytes.writeUTF(name);
-			bytes.writeUnsignedInt(idle);
 			bytes.writeDouble(fixedMin);
 			bytes.writeDouble(fixedMax);
 			bytes.writeBoolean(inverted);
@@ -134,7 +132,6 @@ package com.junkbyte.console.vos
 		public static function FromBytes(bytes:ByteArray):GraphGroup
 		{
 			var g:GraphGroup = new GraphGroup(bytes.readUTF());
-			g.idle = bytes.readUnsignedInt();
 			g.fixedMin = bytes.readDouble();
 			g.fixedMax = bytes.readDouble();
 			g.inverted = bytes.readBoolean();
