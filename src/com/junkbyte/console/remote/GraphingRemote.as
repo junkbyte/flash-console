@@ -27,10 +27,12 @@ package com.junkbyte.console.remote
 
 		override protected function onRemoteConnection(event:Event):void
 		{
+			_closingFromRemoter = true;
 			while (_groups.length)
 			{
 				GraphGroup(_groups[0]).close();
 			}
+			_closingFromRemoter = false;
 		}
 
 		override public function update(timeDelta:uint, fps:Number = 0):void

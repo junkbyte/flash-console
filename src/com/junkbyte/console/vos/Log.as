@@ -52,7 +52,7 @@ package com.junkbyte.console.vos {
 			repeat = repeating;
 			html = ishtml;
 		}
-		public function toBytes(bytes:ByteArray):void{
+		public function writeToBytes(bytes:ByteArray):void{
 			var t:ByteArray = new ByteArray();
 			t.writeUTFBytes(text);// because writeUTF can't accept more than 65535
 			bytes.writeUnsignedInt(t.length);

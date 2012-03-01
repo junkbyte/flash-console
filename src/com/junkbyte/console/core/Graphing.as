@@ -303,7 +303,7 @@ package com.junkbyte.console.core
 
 		protected function syncAddGroup(group:GraphGroup):void
 		{
-			if (remoter.canSend)
+			if (remoter.connected)
 			{
 				var bytes:ByteArray = new ByteArray();
 				group.writeToBytes(bytes);
@@ -315,7 +315,7 @@ package com.junkbyte.console.core
 
 		protected function syncRemoveGroup(index:int):void
 		{
-			if (remoter.canSend)
+			if (remoter.connected)
 			{
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeShort(index);
@@ -325,7 +325,7 @@ package com.junkbyte.console.core
 
 		protected function syncGroupUpdate(group:GraphGroup, ... values:Array):void
 		{
-			if (remoter.canSend)
+			if (remoter.connected)
 			{
 				var index:int = _groups.indexOf(group);
 				if (index < 0)

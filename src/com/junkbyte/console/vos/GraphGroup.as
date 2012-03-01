@@ -140,12 +140,14 @@ package com.junkbyte.console.vos
 			bytes.writeFloat(rect.y);
 			bytes.writeFloat(rect.width);
 			bytes.writeFloat(rect.height);
-
-			bytes.writeUnsignedInt(interests.length);
+			
+			bytes.writeShort(numberDisplayPrecision);
+			
+			bytes.writeShort(interests.length);
 
 			for each (var gi:GraphInterest in interests)
 			{
-				gi.toBytes(bytes);
+				gi.writeToBytes(bytes);
 			}
 		}
 
@@ -163,8 +165,10 @@ package com.junkbyte.console.vos
 			rect.y = bytes.readFloat();
 			rect.width = bytes.readFloat();
 			rect.height = bytes.readFloat();
+			
+			g.numberDisplayPrecision = bytes.readShort();
 
-			var len:uint = bytes.readUnsignedInt();
+			var len:uint = bytes.readShort();
 			while (len)
 			{
 				g.interests.push(GraphInterest.FromBytes(bytes));

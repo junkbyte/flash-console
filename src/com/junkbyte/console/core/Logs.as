@@ -64,9 +64,9 @@ package com.junkbyte.console.core
 		}
 		
 		protected function send2Remote(line:Log):void{
-			if(remoter.canSend) {
+			if(remoter.connected) {
 				var bytes:ByteArray = new ByteArray();
-				line.toBytes(bytes);
+				line.writeToBytes(bytes);
 				remoter.send("log", bytes);
 			}
 		}

@@ -25,7 +25,8 @@
 package com.junkbyte.console.core
 {
 	import com.junkbyte.console.Console;
-
+	import com.junkbyte.console.ConsoleLevel;
+	
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
@@ -44,10 +45,6 @@ package com.junkbyte.console.core
 	public class Remoting extends ConsoleCore
 	{
 
-		public static const NONE:uint = 0;
-		public static const SENDER:uint = 1;
-		public static const RECIEVER:uint = 2;
-
 		protected var _callbacks:Object = new Object();
 		protected var _remoting:Boolean;
 		protected var _local:LocalConnection;
@@ -55,12 +52,11 @@ package com.junkbyte.console.core
 		protected var _sendBuffer:ByteArray = new ByteArray();
 		protected var _recBuffers:Object = new Object();
 		protected var _senders:Dictionary = new Dictionary();
-
-		protected var _lastLogin:String = "";
+		
 		protected var _loggedIn:Boolean;
 
-		protected var _sendID:String;
-		protected var _lastReciever:String;
+		protected var _selfId:String;
+		protected var _lastRecieverId:String;
 
 		public function Remoting(m:Console)
 		{
@@ -97,7 +93,7 @@ package com.junkbyte.console.core
 						_sendBuffer.readBytes(newbuffer);
 						_sendBuffer = newbuffer;
 					}
-					_local.send(localConnectionTarget, "synchronize", _sendID, packet);
+					_local.send(remoteLocalConnectionName, "synchronize", _selfId, packet);
 				}
 				else
 				{
@@ -110,14 +106,14 @@ package com.junkbyte.console.core
 			}
 		}
 
-		protected function get localConnectionSelf():String
+		protected function get selfLlocalConnectionName():String
 		{
-			return config.remotingConnectionName + SENDER;
+			return config.remotingConnectionName + "Sender";
 		}
 
-		protected function get localConnectionTarget():String
+		protected function get remoteLocalConnectionName():String
 		{
-			return config.remotingConnectionName + RECIEVER;
+			return config.remotingConnectionName + "Receiver";
 		}
 
 		private function processRecBuffer(id:String):void
@@ -125,11 +121,11 @@ package com.junkbyte.console.core
 			if (!_senders[id])
 			{
 				_senders[id] = true;
-				if (_lastReciever)
+				if (_lastRecieverId)
 				{
 					report("Remote switched to new sender [" + id + "] as primary.", -2);
 				}
-				_lastReciever = id;
+				_lastRecieverId = id;
 			}
 
 			var buffer:ByteArray = _recBuffers[id];
@@ -159,7 +155,11 @@ package com.junkbyte.console.core
 						buffer.readBytes(arg, 0, blen);
 					}
 					var callbackData:Object = _callbacks[cmd];
-					if (!callbackData.latest || id == _lastReciever)
+					if (callbackData == null)
+					{
+						report("Unknown remote commmand received [" + cmd + "].", ConsoleLevel.ERROR);
+					}
+					else if (!callbackData.latest || id == _lastRecieverId)
 					{
 						if (arg)
 						{
@@ -229,15 +229,15 @@ package com.junkbyte.console.core
 			}
 			return true;
 		}
-
+		
+		public function get connected():Boolean
+		{
+			return _remoting && _loggedIn;
+		}
+		
 		public function get remoting():Boolean
 		{
 			return _remoting;
-		}
-
-		public function get canSend():Boolean
-		{
-			return _remoting && _loggedIn;
 		}
 
 		public function set remoting(newMode:Boolean):void
@@ -246,7 +246,7 @@ package com.junkbyte.console.core
 			{
 				return;
 			}
-			_sendID = generateId();
+			_selfId = generateId();
 			if (newMode)
 			{
 				if (!startSharedConnection())
@@ -391,7 +391,7 @@ package com.junkbyte.console.core
 
 			try
 			{
-				_local.connect(localConnectionSelf);
+				_local.connect(selfLlocalConnectionName);
 			}
 			catch (err:Error)
 			{

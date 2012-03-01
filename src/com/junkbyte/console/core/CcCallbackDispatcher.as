@@ -4,14 +4,12 @@ package com.junkbyte.console.core
 	public class CcCallbackDispatcher
 	{
 
-		protected var _list:Array = new Array();
+		private var _list:Array = new Array();
 
 		public function add(callback:Function):void
 		{
-			if (_list.indexOf(callback) < 0)
-			{
-				_list.push(callback);
-			}
+			remove(callback);
+			_list.push(callback);
 		}
 
 		public function remove(callback:Function):void

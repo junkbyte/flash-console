@@ -428,7 +428,7 @@ package com.junkbyte.console
 		 * @copy com.junkbyte.console.Cc#remoting
 		 */
 		public function get remoting():Boolean{
-			return _remoter.remoting == Remoting.SENDER;
+			return _remoter.remoting;
 		}
 		public function set remoting(b:Boolean):void{
 			_remoter.remoting = b;

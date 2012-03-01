@@ -25,7 +25,6 @@
 package 
 {
 	import com.junkbyte.console.Cc;
-	import com.junkbyte.console.core.Remoting;
 	import com.junkbyte.console.remote.ConsoleRe;
 	
 	import flash.display.*;

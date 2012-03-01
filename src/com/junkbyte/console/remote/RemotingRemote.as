@@ -11,6 +11,9 @@ package com.junkbyte.console.remote
 
 	public class RemotingRemote extends Remoting
 	{
+		
+		protected var _lastLogin:String = "";
+		
 		public function RemotingRemote(m:Console)
 		{
 			super(m);
@@ -62,7 +65,7 @@ package com.junkbyte.console.remote
 			{
 				return;
 			}
-			_sendID = generateId();
+			_selfId = generateId();
 			if (newMode)
 			{
 				if (startSharedConnection())
@@ -91,14 +94,14 @@ package com.junkbyte.console.remote
 			console.panels.updateMenu();
 		}
 
-		override protected function get localConnectionSelf():String
+		override protected function get selfLlocalConnectionName():String
 		{
-			return config.remotingConnectionName + RECIEVER;
+			return super.remoteLocalConnectionName;
 		}
 
-		override protected function get localConnectionTarget():String
+		override protected function get remoteLocalConnectionName():String
 		{
-			return config.remotingConnectionName + SENDER;
+			return super.selfLlocalConnectionName;
 		}
 
 		protected function onRecieverStatus(e:StatusEvent):void

@@ -23,11 +23,11 @@
  * 
  */
 package {
-	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleConfig;
 	import com.junkbyte.console.addons.htmlexport.ConsoleHtmlExportAddon;
 	import com.junkbyte.console.core.Remoting;
+	import com.junkbyte.console.remote.ConsoleRe;
 	import com.junkbyte.console.view.ConsolePanel;
 	import com.junkbyte.console.view.PanelsManager;
 	
@@ -50,26 +50,30 @@ package {
 
 	public class ConsoleRemoteAIR extends MovieClip {
 		
+		private var console:Console;
+		
 		private var _serverSocket : ServerSocket;
 		
 		private var _autoClear:Boolean = true;
 
 		public function ConsoleRemoteAIR() {
-			Cc.config.maxLines = 2000;
-			Cc.config.style.backgroundAlpha = 0.55;
-			Cc.config.commandLineAllowed = true;
 			
-			Cc.start(this);
+			console = new ConsoleRe();
+			addChild(console);
+			
+			console.config.maxLines = 2000;
+			console.config.style.backgroundAlpha = 0.55;
+			console.config.commandLineAllowed = true;
 			
 			var panels:PanelsManager = console.panels;
 			
 			console.remoter.addEventListener(Event.CONNECT, onRemotingConnect);
 			console.remoter.remoting = true;
-			Cc.commandLine = true;
-			Cc.x = 10;
-			Cc.y = 10;
-			Cc.addMenu("top", toggleOnTop, null, "Toggle always in front");
-			Cc.addMenu("auto-clear", toggleAutoClear, null, "Toggle auto clear on new connection");
+			console.commandLine = true;
+			console.x = 10;
+			console.y = 10;
+			console.addMenu("top", toggleOnTop, null, "Toggle always in front");
+			console.addMenu("auto-clear", toggleAutoClear, null, "Toggle auto clear on new connection");
 			
 			ConsoleHtmlExportAddon.addToMenu("save");
 			
@@ -79,7 +83,7 @@ package {
 			panels.mainPanel.addEventListener(ConsolePanel.DRAGGING_STARTED, moveHandle);
 			panels.mainPanel.addEventListener(ConsolePanel.SCALING_STARTED, scaleHandle);
 
-			Cc.instance.filters = new Array(new GlowFilter(0, 0.7, 5, 5));
+			console.filters = new Array(new GlowFilter(0, 0.7, 5, 5));
 
 			panels.mainPanel.addEventListener(Event.CLOSE, onMainPanelClose);
 			stage.frameRate = 60;
@@ -88,7 +92,7 @@ package {
 			stage.addEventListener(Event.RESIZE, onStageResize);
 			onStageResize();
 			
-			Cc.addSlashCommand("listen", function (params:String = ""):void{
+			console.addSlashCommand("listen", function (params:String = ""):void{
 				var parts:Array = params.split(/\s+/);
 				bindServer(parts[0], parts[1]);
 			});
@@ -101,13 +105,8 @@ package {
 		{
 			if(_autoClear)
 			{
-				Cc.clear();
+				console.clear();
 			}
-		}
-		
-		public function get console():Console
-		{
-			return Cc.instance;
 		}
 		
 		private function toggleOnTop() : void {
