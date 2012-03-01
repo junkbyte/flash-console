@@ -279,9 +279,12 @@ package com.junkbyte.console.core
 			}
 		}
 		public function sendCmdScope2Remote(e:Event = null):void{
-			var bytes:ByteArray = new ByteArray();
-			bytes.writeUTF(_scopeStr);
-			console.remoter.send("cls", bytes);
+			if(remoter.connected)
+			{
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeUTF(_scopeStr);
+				console.remoter.send("cls", bytes);
+			}
 		}
 		private function reportError(e:Error):void{
 			var str:String = console.refs.makeString(e);

@@ -27,6 +27,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleLevel;
 	
+	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
@@ -123,7 +124,7 @@ package com.junkbyte.console.core
 				_senders[id] = true;
 				if (_lastRecieverId)
 				{
-					report("Remote switched to new sender [" + id + "] as primary.", -2);
+					report("Switched to [" + id + "] as primary remote.", -2);
 				}
 				_lastRecieverId = id;
 			}
@@ -249,12 +250,12 @@ package com.junkbyte.console.core
 			_selfId = generateId();
 			if (newMode)
 			{
-				if (!startSharedConnection())
+				if (!startLocalConnection())
 				{
 					report("Could not create remoting client service. You will not be able to control this console with remote.", 10);
+					return;
 				}
 				_sendBuffer = new ByteArray();
-				_local.addEventListener(StatusEvent.STATUS, onSenderStatus, false, 0, true);
 				report("<b>Remoting started.</b> " + getInfo(), -1);
 				_loggedIn = checkLogin("");
 				if (_loggedIn)
@@ -346,12 +347,18 @@ package com.junkbyte.console.core
 			synchronize(_senders[socket], bytes);
 		}
 
-		private function onSenderStatus(e:StatusEvent):void
+		protected function onLocalConnectionStatus(e:StatusEvent):void
 		{
 			if (e.level == "error" && !(_socket && _socket.connected))
 			{
 				_loggedIn = false;
 			}
+		}
+		
+		protected function onRemoteAsyncError(e:AsyncErrorEvent):void
+		{
+			report("Problem with remote sync. [<a href='event:remote'>Click here</a>] to restart.", 10);
+			remoting = false;
 		}
 
 		protected function onRemotingSecurityError(e:SecurityErrorEvent):void
@@ -376,7 +383,7 @@ package com.junkbyte.console.core
 			return new Date().time + "." + Math.floor(Math.random() * 100000);
 		}
 
-		protected function startSharedConnection():Boolean
+		protected function startLocalConnection():Boolean
 		{
 			close();
 			_remoting = true;
@@ -388,6 +395,8 @@ package com.junkbyte.console.core
 				_local.allowInsecureDomain(config.allowedRemoteDomain);
 			}
 			_local.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onRemotingSecurityError, false, 0, true);
+			_local.addEventListener(StatusEvent.STATUS, onLocalConnectionStatus, false, 0, true);
+			_local.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onRemoteAsyncError, false, 0, true);
 
 			try
 			{

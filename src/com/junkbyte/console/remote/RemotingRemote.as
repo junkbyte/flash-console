@@ -68,11 +68,10 @@ package com.junkbyte.console.remote
 			_selfId = generateId();
 			if (newMode)
 			{
-				if (startSharedConnection())
+				if (startLocalConnection())
 				{
 					_sendBuffer = new ByteArray();
 					_local.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onRemoteAsyncError, false, 0, true);
-					_local.addEventListener(StatusEvent.STATUS, onRecieverStatus, false, 0, true);
 					report("<b>Remote started.</b> " + getInfo(), -1);
 					var sdt:String = Security.sandboxType;
 					if (sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK)
@@ -103,19 +102,13 @@ package com.junkbyte.console.remote
 		{
 			return super.selfLlocalConnectionName;
 		}
-
-		protected function onRecieverStatus(e:StatusEvent):void
+		
+		override protected function onLocalConnectionStatus(e:StatusEvent):void
 		{
 			if (e.level == "error")
 			{
 				report("Problem communicating to client.", 10);
 			}
-		}
-
-		protected function onRemoteAsyncError(e:AsyncErrorEvent):void
-		{
-			report("Problem with remote sync. [<a href='event:remote'>Click here</a>] to restart.", 10);
-			remoting = false;
 		}
 	}
 }

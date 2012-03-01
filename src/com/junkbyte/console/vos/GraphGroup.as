@@ -40,7 +40,7 @@ package com.junkbyte.console.vos
 	{
 		public var name:String;
 
-		public var freq:int = 1; // 0 = every frame, 500 = twice per second, 1000 = once every second
+		public var freq:int = 0; // 0 = every frame, 500 = twice per second, 1000 = once every second
 
 		/**
 		 * Fix graph's range.

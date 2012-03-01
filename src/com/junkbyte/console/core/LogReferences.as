@@ -232,7 +232,10 @@ package com.junkbyte.console.core
 			}
 		}
 		public function focus(o:*, full:Boolean = false):void{
-			remoter.send("focus");
+			if(remoter.connected)
+			{
+				remoter.send("focus");
+			}
 			console.clear(LogReferences.INSPECTING_CHANNEL);
 			console.setViewingChannels(LogReferences.INSPECTING_CHANNEL);
 			
@@ -257,9 +260,12 @@ package com.junkbyte.console.core
 			_history = null;
 			_hisIndex = 0;
 			
-			var bytes:ByteArray = new ByteArray();
-			bytes.writeUTF("refexit");
-			remoter.send("ref", bytes);
+			if(remoter.connected)
+			{
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeUTF("refexit");
+				remoter.send("ref", bytes);
+			}
 			
 			console.clear(LogReferences.INSPECTING_CHANNEL);
 		}
