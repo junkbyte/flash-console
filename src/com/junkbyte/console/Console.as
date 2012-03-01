@@ -61,8 +61,8 @@ package com.junkbyte.console
 
 		public static const VERSION:Number = 2.7;
 		public static const VERSION_STAGE:String = "DEV";
-		public static const BUILD:int = 611;
-		public static const BUILD_DATE:String = "2012/02/22 00:11";
+		public static const BUILD:int = 612;
+		public static const BUILD_DATE:String = "2012/03/01 01:08";
 		
 		//
 		protected var _config:ConsoleConfig;

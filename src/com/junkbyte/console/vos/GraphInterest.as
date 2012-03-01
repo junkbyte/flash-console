@@ -1,11 +1,11 @@
 /*
-* 
+*
 * Copyright (c) 2008-2010 Lu Aye Oo
-* 
+*
 * @author 		Lu Aye Oo
-* 
+*
 * http://code.google.com/p/flash-console/
-* 
+*
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,87 +20,101 @@
 * 2. Altered source versions must be plainly marked as such, and must not be
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
-* 
-*/package com.junkbyte.console.vos {
+*
+*/
+package com.junkbyte.console.vos
+{
 	import com.junkbyte.console.core.Executer;
-	import com.junkbyte.console.core.Graphing;
-	import com.junkbyte.console.vos.WeakRef;
-	
+
 	import flash.utils.ByteArray;
-	
+
 	/**
 	 * @private
 	 */
-	public class GraphInterest {
-		
-		
+	public class GraphInterest
+	{
+
 		private var _ref:WeakRef;
 		public var _prop:String;
-		
-		private var _getValueCallback:Function;
-		
+
+		private var _getValueMethod:Function;
+
 		private var useExec:Boolean;
 		public var key:String;
 		public var col:Number;
-		
-		public function GraphInterest(keystr:String ="", color:Number = 0):void
+
+		public function GraphInterest(keystr:String = "", color:Number = 0):void
 		{
 			col = color;
 			key = keystr;
-			_getValueCallback = defaultValueCallback;
 		}
-		
+
 		public function setObject(object:Object, property:String):Number
 		{
 			_ref = new WeakRef(object);
 			_prop = property;
-			useExec = _prop.search(/[^\w\d]/) >= 0;
-			
+			_getValueMethod = getAppropriateGetValueMethod();
+
 			return getCurrentValue();
 		}
-		
+
 		public function setGetValueCallback(callback:Function):void
 		{
-			if(callback == null)
+			if (callback == null)
 			{
-				_getValueCallback = defaultValueCallback;
+				_getValueMethod = getAppropriateGetValueMethod();
 			}
 			else
 			{
-				_getValueCallback = callback;
+				_getValueMethod = callback;
 			}
 		}
-		
+
 		public function get obj():Object
 		{
-			return _ref!=null?_ref.reference:undefined;
+			return _ref != null ? _ref.reference : undefined;
 		}
-		
+
 		public function get prop():String
 		{
 			return _prop;
 		}
-		//
-		//
-		//
+
 		public function getCurrentValue():Number
 		{
-			return _getValueCallback(this);
+			return _getValueMethod(this);
+		}
+		
+		private function getAppropriateGetValueMethod():Function
+		{
+			if(_prop.search(/[^\w\d]/) >= 0)
+			{
+				return executerValueCallback;
+			}
+			return defaultValueCallback;
 		}
 		
 		private function defaultValueCallback(graph:GraphInterest):Number
 		{
-			return useExec?Executer.Exec(obj, _prop):obj[_prop];
+			return obj[_prop];
 		}
-		
+
+		private function executerValueCallback(graph:GraphInterest):Number
+		{
+			return Executer.Exec(obj, _prop);
+		}
+
 		//
 		//
 		//
-		public function toBytes(bytes:ByteArray):void{
+		public function toBytes(bytes:ByteArray):void
+		{
 			bytes.writeUTF(key);
 			bytes.writeUnsignedInt(col);
 		}
-		public static function FromBytes(bytes:ByteArray):GraphInterest{
+
+		public static function FromBytes(bytes:ByteArray):GraphInterest
+		{
 			var interest:GraphInterest = new GraphInterest(bytes.readUTF(), bytes.readUnsignedInt());
 			return interest;
 		}

@@ -19,10 +19,10 @@ package com.junkbyte.console.remote
 		{
 			super(m);
 
-			remoter.registerCallback("graphGroups", onRemotingGraphGroups);
-			remoter.registerCallback("addGraphGroup", onRemotingAddGraphGroup);
-			remoter.registerCallback("removeGraphGroup", onRemotingRemoveGraphGroup);
-			remoter.registerCallback("updateGraphGroup", onRemotingUpdateGraphGroup);
+			remoter.registerCallback("graphGroups", onRemotingGraphGroups, true);
+			remoter.registerCallback("addGraphGroup", onRemotingAddGraphGroup, true);
+			remoter.registerCallback("removeGraphGroup", onRemotingRemoveGraphGroup, true);
+			remoter.registerCallback("updateGraphGroup", onRemotingUpdateGraphGroup, true);
 		}
 
 		override protected function onRemoteConnection(event:Event):void

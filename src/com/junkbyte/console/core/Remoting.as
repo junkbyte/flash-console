@@ -400,9 +400,9 @@ package com.junkbyte.console.core
 			return true;
 		}
 
-		public function registerCallback(key:String, fun:Function, latestOnly:Boolean = false):void
+		public function registerCallback(key:String, fun:Function, lastestSenderOnly:Boolean = false):void
 		{
-			_callbacks[key] = {fun: fun, latest: latestOnly};
+			_callbacks[key] = {fun: fun, latest: lastestSenderOnly};
 		}
 
 		private function sendLoginSuccess():void
