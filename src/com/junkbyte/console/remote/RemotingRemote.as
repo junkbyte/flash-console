@@ -17,7 +17,8 @@ package com.junkbyte.console.remote
 		public function RemotingRemote(m:Console)
 		{
 			super(m);
-			registerCallback("requestLogin", requestLogin);
+			registerCallback("started", clientStarted);
+			registerCallback("loginRequest", requestLogin);
 			registerCallback("loginFail", loginFail);
 			registerCallback("loginSuccess", loginSuccess);
 		}
@@ -36,7 +37,12 @@ package com.junkbyte.console.remote
 			report("Login Successful", -1);
 			dispatchEvent(new Event(Event.CONNECT));
 		}
-
+		
+		private function clientStarted():void
+		{
+			login();
+		}
+		
 		private function requestLogin():void
 		{
 			_sendBuffer = new ByteArray();
@@ -58,39 +64,26 @@ package com.junkbyte.console.remote
 			bytes.writeUTF(pass);
 			send("login", bytes);
 		}
-
-		override public function set remoting(newMode:Boolean):void
+		
+		override protected function startRemoting():void
 		{
-			if (newMode == _remoting)
+			if (startLocalConnection())
 			{
-				return;
-			}
-			_selfId = generateId();
-			if (newMode)
-			{
-				if (startLocalConnection())
+				_sendBuffer = new ByteArray();
+				_local.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onRemoteAsyncError, false, 0, true);
+				report("<b>Remote started.</b> " + getInfo(), -1);
+				var sdt:String = Security.sandboxType;
+				if (sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK)
 				{
-					_sendBuffer = new ByteArray();
-					_local.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onRemoteAsyncError, false, 0, true);
-					report("<b>Remote started.</b> " + getInfo(), -1);
-					var sdt:String = Security.sandboxType;
-					if (sdt == Security.LOCAL_WITH_FILE || sdt == Security.LOCAL_WITH_NETWORK)
-					{
-						report("Untrusted local sandbox. You may not be able to listen for logs properly.", 10);
-						printHowToGlobalSetting();
-					}
-					login(_lastLogin);
+					report("Untrusted local sandbox. You may not be able to listen for logs properly.", 10);
+					printHowToGlobalSetting();
 				}
-				else
-				{
-					report("Could not create remote service. You might have a console remote already running.", 10);
-				}
+				login(_lastLogin);
 			}
 			else
 			{
-				close();
+				report("Could not create remote service. You might have a console remote already running.", 10);
 			}
-			console.panels.updateMenu();
 		}
 
 		override protected function get selfLlocalConnectionName():String

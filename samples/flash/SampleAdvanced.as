@@ -36,7 +36,7 @@ package
 	[SWF(width='700',height='300',backgroundColor='0xFFFFFF',frameRate='60')]
 	// Might want to add compile argument: -use-network=false -debug=true
 	
-	public dynamic class SampleAdvanced extends MovieClip{
+	public dynamic class SampleAdvanced extends Sprite{
 		
 		private var temp:Object = {object1:{subObj:{text:"Some randome text", number:123}, subArr:[2,3,4,5]}, object2:{arr:[3,4,5]}};
 		
@@ -56,7 +56,7 @@ package
 			Cc.config.commandLineAllowed = true;
 			Cc.width = 700;
 			Cc.height = 300;
-			Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
+			//Cc.config.remotingPassword = ""; // Just so that remote don't ask for password
 			Cc.remoting = true;
 			
 			Cc.addMenu("T1", Cc.log, ["Greetings 1"], "This is a test menu 1");

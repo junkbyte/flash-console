@@ -26,7 +26,7 @@ package com.junkbyte.console.core
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.ConsoleLevel;
-	
+
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -53,7 +53,7 @@ package com.junkbyte.console.core
 		protected var _sendBuffer:ByteArray = new ByteArray();
 		protected var _recBuffers:Object = new Object();
 		protected var _senders:Dictionary = new Dictionary();
-		
+
 		protected var _loggedIn:Boolean;
 
 		protected var _selfId:String;
@@ -230,12 +230,12 @@ package com.junkbyte.console.core
 			}
 			return true;
 		}
-		
+
 		public function get connected():Boolean
 		{
 			return _remoting && _loggedIn;
 		}
-		
+
 		public function get remoting():Boolean
 		{
 			return _remoting;
@@ -250,28 +250,25 @@ package com.junkbyte.console.core
 			_selfId = generateId();
 			if (newMode)
 			{
-				if (!startLocalConnection())
-				{
-					report("Could not create remoting client service. You will not be able to control this console with remote.", 10);
-					return;
-				}
-				_sendBuffer = new ByteArray();
-				report("<b>Remoting started.</b> " + getInfo(), -1);
-				_loggedIn = checkLogin("");
-				if (_loggedIn)
-				{
-					sendLoginSuccess();
-				}
-				else
-				{
-					send("requestLogin");
-				}
+				startRemoting();
 			}
 			else
 			{
 				close();
 			}
 			console.panels.updateMenu();
+		}
+
+		protected function startRemoting():void
+		{
+			if (!startLocalConnection())
+			{
+				report("Could not create remoting client service. You will not be able to control this console with remote.", 10);
+				return;
+			}
+			_sendBuffer = new ByteArray();
+			report("<b>Remoting started.</b> " + getInfo(), -1);
+			send("started");
 		}
 
 		public function remotingSocket(host:String, port:int = 0):void
@@ -313,7 +310,7 @@ package com.junkbyte.console.core
 			}
 			else
 			{
-				send("requestLogin");
+				send("loginRequest");
 			}
 			// not needed yet
 		}
@@ -349,12 +346,13 @@ package com.junkbyte.console.core
 
 		protected function onLocalConnectionStatus(e:StatusEvent):void
 		{
-			if (e.level == "error" && !(_socket && _socket.connected))
+			if (e.level == "error" && _loggedIn && !(_socket && _socket.connected))
 			{
+				report("Remote connection lost.", ConsoleLevel.ERROR);
 				_loggedIn = false;
 			}
 		}
-		
+
 		protected function onRemoteAsyncError(e:AsyncErrorEvent):void
 		{
 			report("Problem with remote sync. [<a href='event:remote'>Click here</a>] to restart.", 10);
@@ -423,7 +421,6 @@ package com.junkbyte.console.core
 
 		public function login(pass:String = ""):void
 		{
-			// once logged in, next login attempts will always be success
 			if (_loggedIn || checkLogin(pass))
 			{
 				sendLoginSuccess();

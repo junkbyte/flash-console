@@ -169,7 +169,7 @@ package com.junkbyte.console.vos
 			g.numberDisplayPrecision = bytes.readShort();
 
 			var len:uint = bytes.readShort();
-			while (len)
+			while (len > 0)
 			{
 				g.interests.push(GraphInterest.FromBytes(bytes));
 				len--;
