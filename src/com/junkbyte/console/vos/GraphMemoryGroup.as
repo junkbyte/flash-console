@@ -13,12 +13,12 @@ package com.junkbyte.console.vos
 
 			rect.x = 90;
 			rect.y = 15;
-			align = StageAlign.RIGHT;
+			alignRight = true;
 
 			var graph:GraphInterest = new GraphInterest("mb");
 			graph.col = 0x6090FF;
 			
-			_values.length = 1;
+			_updateArgs.length = 1;
 			
 			interests.push(graph);
 			freq = 1000;
@@ -26,8 +26,8 @@ package com.junkbyte.console.vos
 
 		override protected function dispatchUpdates():void
 		{
-			_values[0] = Math.round(System.totalMemory / 10485.76) / 100;
-			updateDispatcher.apply(_values);
+			_updateArgs[1] = Math.round(System.totalMemory / 10485.76) / 100;
+			updateDispatcher.apply(_updateArgs);
 		}
 	}
 }

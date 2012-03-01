@@ -18,5 +18,8 @@ package com.junkbyte.console.remote
 		{
 			registerLog(Log.FromBytes(bytes));
 		}
+		override protected function send2Remote(line:Log):void{
+			
+		}
 	}
 }

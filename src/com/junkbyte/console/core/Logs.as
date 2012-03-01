@@ -63,7 +63,7 @@ package com.junkbyte.console.core
 			}
 		}
 		
-		private function send2Remote(line:Log):void{
+		protected function send2Remote(line:Log):void{
 			if(remoter.canSend) {
 				var bytes:ByteArray = new ByteArray();
 				line.toBytes(bytes);

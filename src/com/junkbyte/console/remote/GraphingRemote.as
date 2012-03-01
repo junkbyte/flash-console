@@ -1,22 +1,112 @@
 package com.junkbyte.console.remote
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.console_internal;
 	import com.junkbyte.console.core.Graphing;
+	import com.junkbyte.console.vos.GraphGroup;
 
+	import flash.events.Event;
 	import flash.utils.ByteArray;
+
+	use namespace console_internal;
 
 	public class GraphingRemote extends Graphing
 	{
+
+		private var _closingFromRemoter:Boolean;
+
 		public function GraphingRemote(m:Console)
 		{
 			super(m);
 
 			remoter.registerCallback("graphGroups", onRemotingGraphGroups);
+			remoter.registerCallback("addGraphGroup", onRemotingAddGraphGroup);
+			remoter.registerCallback("removeGraphGroup", onRemotingRemoveGraphGroup);
+			remoter.registerCallback("updateGraphGroup", onRemotingUpdateGraphGroup);
+		}
+
+		override protected function onRemoteConnection(event:Event):void
+		{
+			while (_groups.length)
+			{
+				GraphGroup(_groups[0]).close();
+			}
+		}
+
+		override public function update(timeDelta:uint, fps:Number = 0):void
+		{
+
+		}
+
+		override protected function syncRemoveGroup(index:int):void
+		{
+			if (!_closingFromRemoter)
+			{
+				super.syncRemoveGroup(index);
+			}
+		}
+
+		override protected function syncAddGroup(group:GraphGroup):void
+		{
+
+		}
+
+		override protected function syncGroupUpdate(group:GraphGroup, ... values:Array):void
+		{
+
+		}
+
+		override protected function onRemotingRemoveGraphGroup(bytes:ByteArray):void
+		{
+			_closingFromRemoter = true;
+			super.onRemotingRemoveGraphGroup(bytes);
+			_closingFromRemoter = false;
 		}
 
 		private function onRemotingGraphGroups(bytes:ByteArray):void
 		{
-			report(bytes);
+			var count:uint = bytes.readShort();
+			_groups = new Array();
+			for (var i:uint = 0; i < count; i++)
+			{
+				addGroup(GraphGroup.FromBytes(bytes));
+			}
 		}
+
+		private function onRemotingAddGraphGroup(bytes:ByteArray):void
+		{
+			addGroup(GraphGroup.FromBytes(bytes));
+		}
+
+		private function onRemotingUpdateGraphGroup(bytes:ByteArray):void
+		{
+			var index:uint = bytes.readShort();
+			var group:GraphGroup = _groups[index];
+			if (group)
+			{
+				var values:Array = new Array();
+				while (bytes.bytesAvailable)
+				{
+					values.push(bytes.readDouble());
+				}
+				values.unshift(group);
+				group.applyUpdateDispather(values);
+			}
+		}
+
+		override public function set fpsMonitor(b:Boolean):void
+		{
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeBoolean(b);
+			remoter.send("fps", bytes);
+		}
+
+		override public function set memoryMonitor(b:Boolean):void
+		{
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeBoolean(b);
+			remoter.send("mem", bytes);
+		}
+
 	}
 }

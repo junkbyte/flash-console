@@ -68,7 +68,6 @@ package com.junkbyte.console.core
 			registerCallback("login", function(bytes:ByteArray):void {
 				login(bytes.readUTF());
 			});
-			registerCallback("loginSuccess", loginSuccess);
 		}
 
 		public function update():void
@@ -248,7 +247,7 @@ package com.junkbyte.console.core
 				return;
 			}
 			_sendID = generateId();
-			if (newMode == SENDER)
+			if (newMode)
 			{
 				if (!startSharedConnection())
 				{
@@ -410,13 +409,6 @@ package com.junkbyte.console.core
 		{
 			_loggedIn = true;
 			send("loginSuccess");
-			dispatchEvent(new Event(Event.CONNECT));
-		}
-
-		private function loginSuccess():void
-		{
-			console.setViewingChannels();
-			report("Login Successful", -1);
 			dispatchEvent(new Event(Event.CONNECT));
 		}
 

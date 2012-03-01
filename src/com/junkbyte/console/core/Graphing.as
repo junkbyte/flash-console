@@ -29,7 +29,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.vos.GraphGroup;
 	import com.junkbyte.console.vos.GraphInterest;
 	import com.junkbyte.console.vos.GraphMemoryGroup;
-	
+
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
@@ -40,47 +40,29 @@ package com.junkbyte.console.core
 	public class Graphing extends ConsoleCore
 	{
 
-		private var _groups:Array = [];
-		private var _map:Object = {};
+		protected var _groups:Array = [];
+		protected var _map:Object = {};
 
-		private var _fpsGroup:GraphGroup;
-		private var _memGroup:GraphGroup;
+		protected var _fpsGroup:GraphGroup;
+		protected var _memGroup:GraphGroup;
 
-		private var _groupAddedDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
+		protected var _groupAddedDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
 
 		public function Graphing(m:Console)
 		{
 			super(m);
-			
+
 			remoter.addEventListener(Event.CONNECT, onRemoteConnection);
-			
-			
-			/*
+
 			remoter.registerCallback("fps", function(bytes:ByteArray):void
 			{
-				fpsMonitor = bytes.readBoolean();
+				fpsMonitor = !fpsMonitor;
 			});
 			remoter.registerCallback("mem", function(bytes:ByteArray):void
 			{
-				memoryMonitor = bytes.readBoolean();
+				memoryMonitor = !memoryMonitor;
 			});
-			remoter.registerCallback("removeGroup", function(bytes:ByteArray):void
-			{
-				removeGroupByName(bytes.readUTF());
-			});
-			remoter.registerCallback("graph", handleRemoteGraph, true);
-			*/
-		}
-
-		private function onRemoteConnection(event:Event):void
-		{
-			var bytes:ByteArray = new ByteArray();
-			bytes.writeShort(_groups.length);
-			for each(var group:GraphGroup in _groups)
-			{
-				group.writeToBytes(bytes);
-			}
-			//remoter.send("graphGroups", bytes);
+			remoter.registerCallback("removeGraphGroup", onRemotingRemoveGraphGroup);
 		}
 
 		public function add(n:String, obj:Object, prop:String, col:Number = -1, key:String = null, rect:Rectangle = null, inverse:Boolean = false):GraphGroup
@@ -122,9 +104,13 @@ package com.junkbyte.console.core
 				}
 			}
 			if (rect)
+			{
 				group.rect = rect;
+			}
 			if (inverse)
+			{
 				group.inverted = inverse;
+			}
 			var interest:GraphInterest = new GraphInterest(key, col);
 			var v:Number = NaN;
 			try
@@ -154,13 +140,14 @@ package com.junkbyte.console.core
 
 		public function remove(n:String, obj:Object = null, prop:String = null):void
 		{
+			var group:GraphGroup = _map[n];
 			if (obj == null && prop == null)
 			{
-				removeGroupByName(n);
+				group.close();
 			}
-			else if (_map[n])
+			else if (group)
 			{
-				var interests:Array = _map[n].interests;
+				var interests:Array = group.interests;
 				for (var i:int = interests.length - 1; i >= 0; i--)
 				{
 					var interest:GraphInterest = interests[i];
@@ -171,27 +158,9 @@ package com.junkbyte.console.core
 				}
 				if (interests.length == 0)
 				{
-					removeGroupByName(n);
+					group.close();
 				}
 			}
-		}
-
-		private function removeGroupByName(n:String):void
-		{
-			/*if (remoter.remoting == Remoting.RECIEVER)
-			{
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeUTF(n);
-				remoter.send("removeGroup", bytes);
-			}
-			else
-			{*/
-				var g:GraphGroup = _map[n];
-				if (g)
-				{
-					removeGroup(g);
-				}
-			//}
 		}
 
 		public function get fpsMonitor():Boolean
@@ -201,36 +170,31 @@ package com.junkbyte.console.core
 
 		public function set fpsMonitor(b:Boolean):void
 		{
-			/*if (remoter.remoting == Remoting.RECIEVER)
+			if (b)
 			{
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeBoolean(b);
-				remoter.send("fps", bytes);
+				if (_fpsGroup)
+				{
+					return;
+				}
+				_fpsGroup = new GraphFPSGroup(console);
+				_fpsGroup.addEventListener(Event.CLOSE, onFPSGroupClose);
+				addGroup(_fpsGroup);
+
+				console.panels.mainPanel.updateMenu();
 			}
-			else if (b != fpsMonitor)
-			{*/
-				if (b)
-				{
-					_fpsGroup = new GraphFPSGroup(console);
-					_fpsGroup.addEventListener(Event.CLOSE, onFPSGroupClose);
-					addGroup(_fpsGroup);
-					
-					console.panels.mainPanel.updateMenu();
-				}
-				else
-				{
-					_fpsGroup.close();
-				}
-			//}
+			else if (_fpsGroup)
+			{
+				_fpsGroup.close();
+			}
 		}
-		
+
 		private function onFPSGroupClose(event:Event):void
 		{
-			
+
 			var group:GraphGroup = event.currentTarget as GraphGroup;
 			group.removeEventListener(Event.CLOSE, onFPSGroupClose);
 			_fpsGroup = null;
-			
+
 			console.panels.mainPanel.updateMenu();
 		}
 
@@ -242,27 +206,22 @@ package com.junkbyte.console.core
 
 		public function set memoryMonitor(b:Boolean):void
 		{
-			/*if (remoter.remoting == Remoting.RECIEVER)
+			if (b)
 			{
-				var bytes:ByteArray = new ByteArray();
-				bytes.writeBoolean(b);
-				remoter.send("mem", bytes);
+				if (_memGroup)
+				{
+					return;
+				}
+				_memGroup = new GraphMemoryGroup();
+				_memGroup.addEventListener(Event.CLOSE, onMemGroupClose);
+				addGroup(_memGroup);
+
+				console.panels.mainPanel.updateMenu();
 			}
-			else if (b != memoryMonitor)
-			{*/
-				if (b)
-				{
-					_memGroup = new GraphMemoryGroup();
-					_memGroup.addEventListener(Event.CLOSE, onMemGroupClose);
-					addGroup(_memGroup);
-					
-					console.panels.mainPanel.updateMenu();
-				}
-				else
-				{
-					_memGroup.close();
-				}
-			//}
+			else if (_memGroup)
+			{
+				_memGroup.close();
+			}
 		}
 
 		private function onMemGroupClose(event:Event):void
@@ -270,7 +229,7 @@ package com.junkbyte.console.core
 			var group:GraphGroup = event.currentTarget as GraphGroup;
 			group.removeEventListener(Event.CLOSE, onMemGroupClose);
 			_memGroup = null;
-			
+
 			console.panels.mainPanel.updateMenu();
 		}
 
@@ -293,24 +252,21 @@ package com.junkbyte.console.core
 
 				_groupAddedDispatcher.apply([group]);
 
-				group.update();
+				syncAddGroup(group);
 			}
 		}
 
-		private function onGroupClose(event:Event):void
+		protected function onGroupClose(event:Event):void
 		{
 			var group:GraphGroup = event.currentTarget as GraphGroup;
 
-			removeGroup(group);
-		}
-
-		public function removeGroup(group:GraphGroup):void
-		{
 			group.removeEventListener(Event.CLOSE, onGroupClose);
 			var index:int = _groups.indexOf(group);
 			if (index >= 0)
 			{
 				_groups.splice(index, 1);
+
+				syncRemoveGroup(index);
 			}
 		}
 
@@ -322,21 +278,68 @@ package com.junkbyte.console.core
 			}
 		}
 
-		private function handleRemoteGraph(bytes:ByteArray = null):void
+		protected function onRemoteConnection(event:Event):void
 		{
-			if (bytes && bytes.length)
+			var bytes:ByteArray = new ByteArray();
+			bytes.writeShort(_groups.length);
+			for each (var group:GraphGroup in _groups)
 			{
-				bytes.position = 0;
-				var a:Array = new Array();
-				while (bytes.bytesAvailable)
-				{
-					a.push(GraphGroup.FromBytes(bytes));
-				}
-					//console.panels.updateGraphs(a);
+				group.writeToBytes(bytes);
+
+				group.addUpdateListener(syncGroupUpdate);
 			}
-			else
+			remoter.send("graphGroups", bytes);
+		}
+
+		protected function onRemotingRemoveGraphGroup(bytes:ByteArray):void
+		{
+			var index:uint = bytes.readShort();
+			var group:GraphGroup = _groups[index];
+			if (group)
 			{
-				//console.panels.updateGraphs(new Array());
+				group.close();
+			}
+		}
+
+		protected function syncAddGroup(group:GraphGroup):void
+		{
+			if (remoter.canSend)
+			{
+				var bytes:ByteArray = new ByteArray();
+				group.writeToBytes(bytes);
+				remoter.send("addGraphGroup", bytes);
+
+				group.addUpdateListener(syncGroupUpdate);
+			}
+		}
+
+		protected function syncRemoveGroup(index:int):void
+		{
+			if (remoter.canSend)
+			{
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeShort(index);
+				remoter.send("removeGraphGroup", bytes);
+			}
+		}
+
+		protected function syncGroupUpdate(group:GraphGroup, ... values:Array):void
+		{
+			if (remoter.canSend)
+			{
+				var index:int = _groups.indexOf(group);
+				if (index < 0)
+				{
+					return;
+				}
+
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeShort(index);
+				for each (var value:Number in values)
+				{
+					bytes.writeDouble(value);
+				}
+				remoter.send("updateGraphGroup", bytes);
 			}
 		}
 	}

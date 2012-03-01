@@ -52,7 +52,7 @@ package
 			console.config.commandLineAllowed = true;
 			
 			// Start remote service.
-			console.remoter.remoting = Remoting.RECIEVER;
+			console.remoter.remoting = true;
 			// Disable scaling and moving
 			console.panels.mainPanel.moveable = false;
 			console.panels.mainPanel.scalable = false;

@@ -64,7 +64,7 @@ package {
 			var panels:PanelsManager = console.panels;
 			
 			console.remoter.addEventListener(Event.CONNECT, onRemotingConnect);
-			console.remoter.remoting = Remoting.RECIEVER;
+			console.remoter.remoting = true;
 			Cc.commandLine = true;
 			Cc.x = 10;
 			Cc.y = 10;

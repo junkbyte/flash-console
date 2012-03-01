@@ -121,7 +121,7 @@ package com.junkbyte.console.view
 			var mainPanel:MainPanel = console.panels.mainPanel;
 			x = mainPanel.x+rect.x;
 			y = mainPanel.y+rect.y;
-			if(group.align == StageAlign.RIGHT)
+			if(group.alignRight)
 			{
 				x = mainPanel.x+mainPanel.width-x;
 			}
@@ -187,7 +187,7 @@ package com.junkbyte.console.view
 			
 		}
 		
-		protected function onGroupUpdate(...values:Array):void
+		protected function onGroupUpdate(group:GraphGroup, ...values:Array):void
 		{
 			var interests:Array = _group.interests;
 			var listchanged:Boolean = false;

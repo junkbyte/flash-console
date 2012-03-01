@@ -2,8 +2,9 @@ package com.junkbyte.console.remote
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.Remoting;
-
+	
 	import flash.events.AsyncErrorEvent;
+	import flash.events.Event;
 	import flash.events.StatusEvent;
 	import flash.system.Security;
 	import flash.utils.ByteArray;
@@ -15,12 +16,22 @@ package com.junkbyte.console.remote
 			super(m);
 			registerCallback("requestLogin", requestLogin);
 			registerCallback("loginFail", loginFail);
+			registerCallback("loginSuccess", loginSuccess);
 		}
 
 		private function loginFail():void
 		{
 			report("Login Failed", 10);
+			
 			console.panels.mainPanel.requestLogin();
+		}
+		
+		private function loginSuccess():void
+		{
+			_loggedIn = true;
+			console.setViewingChannels();
+			report("Login Successful", -1);
+			dispatchEvent(new Event(Event.CONNECT));
 		}
 
 		private function requestLogin():void

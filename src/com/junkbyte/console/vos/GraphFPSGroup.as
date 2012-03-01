@@ -20,7 +20,7 @@ package com.junkbyte.console.vos
 			
 			rect.x = 170;
 			rect.y = 15;
-			align = StageAlign.RIGHT;
+			alignRight = true;
 			
 
 			var graph:GraphInterest = new GraphInterest("fps");
@@ -29,7 +29,7 @@ package com.junkbyte.console.vos
 
 			interests.push(graph);
 			
-			_values.length = 1;
+			_updateArgs.length = 1;
 			
 			freq = 200;
 			fixedMin = 0;
@@ -62,9 +62,9 @@ package com.junkbyte.console.vos
 
 		override protected function dispatchUpdates():void
 		{
-			_values[0] = _numFrames * (1000 / freq);
+			_updateArgs[1] = _numFrames * (1000 / freq);
 			_numFrames = 0;
-			updateDispatcher.apply(_values);
+			updateDispatcher.apply(_updateArgs);
 		}
 
 		private function getNumFrames(graph:GraphInterest):Number
