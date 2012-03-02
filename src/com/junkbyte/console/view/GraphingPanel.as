@@ -187,7 +187,7 @@ package com.junkbyte.console.view
 			
 		}
 		
-		protected function onGroupUpdate(group:GraphGroup, ...values:Array):void
+		protected function onGroupUpdate(groupvalues:Array):void
 		{
 			var interests:Array = _group.interests;
 			var listchanged:Boolean = false;
@@ -200,7 +200,7 @@ package com.junkbyte.console.view
 			{
 				interest = interests[i];
 
-				var v:Number = values[i];
+				var v:Number = groupvalues[i + 1];
 				if (isNaN(_group.fixedMin) && (isNaN(lowest) || v < lowest))
 				{
 					lowest = v;
@@ -211,7 +211,7 @@ package com.junkbyte.console.view
 				}
 			}
 			
-			updateKeyText(values);
+			updateKeyText(groupvalues);
 			
 			if(lowestValue != lowest || highestValue != highest)
 			{
@@ -228,10 +228,10 @@ package com.junkbyte.console.view
 				}
 			}
 			
-			pushBMD(values);
+			pushBMD(groupvalues);
 		}
 
-		protected function pushBMD(values:Array):void
+		protected function pushBMD(groupvalues:Array):void
 		{
 			var diffValue:Number = highestValue - lowestValue;
 			var pixX:uint = _bmd.width - 1;
@@ -247,7 +247,7 @@ package com.junkbyte.console.view
 			for (var i:int = interests.length - 1; i >= 0; i--)
 			{
 				var interest:GraphInterest = interests[i];
-				var value:Number = values[i];;
+				var value:Number = groupvalues[i + 1];
 				var pixY:int = getPixelValue(value);
 
 				var lastValue:Number = lastValues[i];
@@ -362,7 +362,7 @@ package com.junkbyte.console.view
 			highestValue = newHigh;
 		}
 
-		public function updateKeyText(values:Array):void
+		public function updateKeyText(groupvalues:Array):void
 		{
 			var str:String = "<r><low>";
 			
@@ -370,7 +370,7 @@ package com.junkbyte.console.view
 			for (var i:uint = 0; i<numInterests; i++)
 			{
 				var interest:GraphInterest = _group.interests[i];
-				str += "<font color='#" + interest.col.toString(16) + "'>" + makeValueString(values[i]) + interest.key+"</font> ";
+				str += "<font color='#" + interest.col.toString(16) + "'>" + makeValueString(groupvalues[i+1]) + interest.key+"</font> ";
 			}
 			txtField.htmlText = str + _menuString;
 			txtField.scrollH = txtField.maxScrollH;

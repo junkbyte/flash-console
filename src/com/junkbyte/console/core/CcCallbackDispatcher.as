@@ -21,12 +21,12 @@ package com.junkbyte.console.core
 			}
 		}
 
-		public function apply(arguments:Array = null):void
+		public function apply(param:Object):void
 		{
 			var len:uint = _list.length;
 			for (var i:uint = 0; i < len; i++)
 			{
-				_list[i].apply(null, arguments);
+				_list[i](param);
 			}
 		}
 

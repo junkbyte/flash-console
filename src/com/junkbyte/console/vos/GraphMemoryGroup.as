@@ -1,7 +1,11 @@
 package com.junkbyte.console.vos
 {
+	import com.junkbyte.console.console_internal;
+	
 	import flash.display.StageAlign;
 	import flash.system.System;
+	
+	use namespace console_internal;
 
 	public class GraphMemoryGroup extends GraphGroup
 	{
@@ -27,7 +31,7 @@ package com.junkbyte.console.vos
 		override protected function dispatchUpdates():void
 		{
 			_updateArgs[1] = Math.round(System.totalMemory / 10485.76) / 100;
-			updateDispatcher.apply(_updateArgs);
+			applyUpdateDispather(_updateArgs);
 		}
 	}
 }

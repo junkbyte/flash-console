@@ -1,8 +1,11 @@
 package com.junkbyte.console.vos
 {
 	import com.junkbyte.console.Console;
+	import com.junkbyte.console.console_internal;
 	
 	import flash.display.StageAlign;
+	
+	use namespace console_internal;
 
 	public class GraphFPSGroup extends GraphGroup
 	{
@@ -64,7 +67,7 @@ package com.junkbyte.console.vos
 		{
 			_updateArgs[1] = _numFrames * (1000 / freq);
 			_numFrames = 0;
-			updateDispatcher.apply(_updateArgs);
+			applyUpdateDispather(_updateArgs);
 		}
 
 		private function getNumFrames(graph:GraphInterest):Number

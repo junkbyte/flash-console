@@ -250,7 +250,7 @@ package com.junkbyte.console.core
 				_groups.push(group);
 				group.addEventListener(Event.CLOSE, onGroupClose);
 
-				_groupAddedDispatcher.apply([group]);
+				_groupAddedDispatcher.apply(group);
 
 				syncAddGroup(group);
 			}

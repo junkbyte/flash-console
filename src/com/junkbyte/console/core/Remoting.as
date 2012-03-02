@@ -135,7 +135,12 @@ package com.junkbyte.console.core
 				var pointer:uint = buffer.position = 0;
 				while (buffer.bytesAvailable)
 				{
-					var cmd:String = buffer.readUTF();
+					var cmdlen:uint = buffer.readByte();
+					if (buffer.bytesAvailable == 0)
+					{
+						break;
+					}
+					var cmd:String = buffer.readUTFBytes(cmdlen);
 					var arg:ByteArray = null;
 					if (buffer.bytesAvailable == 0)
 					{
@@ -192,12 +197,12 @@ package com.junkbyte.console.core
 
 		private function synchronize(id:String, obj:Object):void
 		{
-			if (!(obj is ByteArray))
+			var packet:ByteArray = obj as ByteArray;
+			if (packet == null)
 			{
 				report("Remoting sync error. Recieved non-ByteArray:" + obj, 9);
 				return;
 			}
-			var packet:ByteArray = obj as ByteArray;
 			var buffer:ByteArray = _recBuffers[id];
 			if (buffer)
 			{
@@ -217,7 +222,8 @@ package com.junkbyte.console.core
 				return false;
 			}
 			_sendBuffer.position = _sendBuffer.length;
-			_sendBuffer.writeUTF(command);
+			_sendBuffer.writeByte(command.length);
+			_sendBuffer.writeUTFBytes(command);
 			if (arg)
 			{
 				_sendBuffer.writeBoolean(true);
@@ -263,7 +269,7 @@ package com.junkbyte.console.core
 		{
 			if (!startLocalConnection())
 			{
-				report("Could not create remoting client service. You will not be able to control this console with remote.", 10);
+				report("Could not create remoting client service.", 10);
 				return;
 			}
 			_sendBuffer = new ByteArray();
@@ -312,7 +318,6 @@ package com.junkbyte.console.core
 			{
 				send("loginRequest");
 			}
-			// not needed yet
 		}
 
 		private function socketIOErrorHandler(e:Event):void
@@ -402,6 +407,8 @@ package com.junkbyte.console.core
 			}
 			catch (err:Error)
 			{
+				_remoting = false;
+				_local = null;
 				return false;
 			}
 			return true;

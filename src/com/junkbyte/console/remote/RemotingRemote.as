@@ -2,7 +2,7 @@ package com.junkbyte.console.remote
 {
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.core.Remoting;
-	
+
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
 	import flash.events.StatusEvent;
@@ -11,9 +11,9 @@ package com.junkbyte.console.remote
 
 	public class RemotingRemote extends Remoting
 	{
-		
+
 		protected var _lastLogin:String = "";
-		
+
 		public function RemotingRemote(m:Console)
 		{
 			super(m);
@@ -26,10 +26,10 @@ package com.junkbyte.console.remote
 		private function loginFail():void
 		{
 			report("Login Failed", 10);
-			
+
 			console.panels.mainPanel.requestLogin();
 		}
-		
+
 		private function loginSuccess():void
 		{
 			_loggedIn = true;
@@ -37,12 +37,12 @@ package com.junkbyte.console.remote
 			report("Login Successful", -1);
 			dispatchEvent(new Event(Event.CONNECT));
 		}
-		
+
 		private function clientStarted():void
 		{
-			login();
+			login(_lastLogin);
 		}
-		
+
 		private function requestLogin():void
 		{
 			_sendBuffer = new ByteArray();
@@ -64,7 +64,7 @@ package com.junkbyte.console.remote
 			bytes.writeUTF(pass);
 			send("login", bytes);
 		}
-		
+
 		override protected function startRemoting():void
 		{
 			if (startLocalConnection())
@@ -95,7 +95,7 @@ package com.junkbyte.console.remote
 		{
 			return super.selfLlocalConnectionName;
 		}
-		
+
 		override protected function onLocalConnectionStatus(e:StatusEvent):void
 		{
 			if (e.level == "error")
