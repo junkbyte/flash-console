@@ -133,7 +133,7 @@ package com.junkbyte.console.addons.displaymap
 					panel.y = console.mouseY + 10;
 				}
             }
-            console.addMenu(menuName, callbackFunction);
+            console.addMenu(menuName, callbackFunction, null, "Display map");
         }
     }
 }
