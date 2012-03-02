@@ -43,9 +43,6 @@ package com.junkbyte.console.view
 	public class GraphingPanel extends ConsolePanel
 	{
 		//
-		public static const FPS:String = "fpsPanel";
-		public static const MEM:String = "memoryPanel";
-		//
 		private var _group:GraphGroup;
 		private var _interest:GraphInterest;
 
@@ -177,14 +174,6 @@ package com.junkbyte.console.view
 				prevBMD.dispose();
 			}
 			_bm.bitmapData = _bmd;
-		}
-
-		//
-		//
-		//
-		public function update(group:GraphGroup, draw:Boolean):void
-		{
-			
 		}
 		
 		protected function onGroupUpdate(groupvalues:Array):void
