@@ -50,7 +50,7 @@ package com.junkbyte.console.vos
 			}
 			var fps:Number = 1000 / timeDelta;
 
-			var frames:int = Math.floor(fixedMax / fps);
+			var frames:uint = fixedMax / fps / historyLength;
 			if (frames == 0)
 			{
 				frames = 1
