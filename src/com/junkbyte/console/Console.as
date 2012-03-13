@@ -701,10 +701,6 @@ package com.junkbyte.console
 		 * @private
 		 */
 		public function get logs():Logs{return _logs;}
-		/**
-		 * @private
-		 */
-		public function get mapper():ConsoleTools{return _tools;}
 		
 		/**
 		 * @private
