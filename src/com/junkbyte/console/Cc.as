@@ -753,8 +753,8 @@ package com.junkbyte.console {
 			else return "";
 		}
 		/**
-		 * Get instance to Console
-		 * This is for debugging of console.
+		 * Get instance of Console
+		 * This is for debugging console.
 		 * PLEASE avoid using it!
 		 * 
 		 * @return Console class instance

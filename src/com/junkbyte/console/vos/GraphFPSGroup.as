@@ -44,21 +44,23 @@ package com.junkbyte.console.vos
 
 		override public function tick(timeDelta:uint):void
 		{
+			var frames:uint;
 			if (_console.stage)
 			{
 				fixedMax = _console.stage.frameRate;
+				
+				frames = fixedMax / fps / historyLength;
+				if (frames > maxLag)
+				{
+					frames = maxLag;
+				}
 			}
-			var fps:Number = 1000 / timeDelta;
-
-			var frames:uint = fixedMax / fps / historyLength;
 			if (frames == 0)
 			{
 				frames = 1
 			}
-			else if (frames > maxLag)
-			{
-				frames = maxLag;
-			}
+			
+			var fps:Number = 1000 / timeDelta;
 			while (frames > 0)
 			{
 				dispatchFPS(fps);
@@ -68,14 +70,15 @@ package com.junkbyte.console.vos
 
 		private function dispatchFPS(fps:Number):void
 		{
-			_historyTotal += fps;
 			var prevHistory:Number = _history[_historyIndex];
 			if (prevHistory > 0)
 			{
 				_historyTotal -= prevHistory
 			}
-
+			
+			_historyTotal += fps;
 			_history[_historyIndex] = fps;
+			
 			_historyIndex++;
 			if (_historyIndex >= historyLength)
 			{
