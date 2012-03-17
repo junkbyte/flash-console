@@ -44,6 +44,8 @@ package com.junkbyte.console.vos
 
 		override public function tick(timeDelta:uint):void
 		{
+			var fps:Number = 1000 / timeDelta;
+			
 			var frames:uint;
 			if (_console.stage)
 			{
@@ -60,7 +62,6 @@ package com.junkbyte.console.vos
 				frames = 1
 			}
 			
-			var fps:Number = 1000 / timeDelta;
 			while (frames > 0)
 			{
 				dispatchFPS(fps);
