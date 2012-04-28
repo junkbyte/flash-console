@@ -409,7 +409,8 @@ package com.junkbyte.console
 			
 			// VIEW UPDATES ONLY
 			if(visible && parent){
-				if(config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
+				if(config.alwaysOnTop && _topTries > 0 && parent.numChildren > parent.getChildIndex(this) + 1)
+				{
 					_topTries--;
 					parent.addChild(this);
 					report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
