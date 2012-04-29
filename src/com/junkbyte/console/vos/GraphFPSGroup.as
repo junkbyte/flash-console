@@ -91,7 +91,7 @@ package com.junkbyte.console.vos
 			{
 				fps = fixedMax;
 			}
-			_updateArgs[1] = Math.round(fps);
+			_updateArgs[0] = Math.round(fps);
 
 			applyUpdateDispather(_updateArgs);
 		}

@@ -53,7 +53,7 @@ package com.junkbyte.console.remote
 
 		}
 
-		override protected function syncGroupUpdate(groupvalues:Array):void
+		override protected function syncGroupUpdate(group:GraphGroup, values:Array):void
 		{
 
 		}
@@ -103,7 +103,6 @@ package com.junkbyte.console.remote
 				{
 					values.push(bytes.readDouble());
 				}
-				values.unshift(group);
 				group.applyUpdateDispather(values);
 			}
 		}

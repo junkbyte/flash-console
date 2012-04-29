@@ -273,8 +273,7 @@ package com.junkbyte.console.core
 			for each (var group:GraphGroup in _groups)
 			{
 				group.writeToBytes(bytes);
-
-				group.onUpdate.add(syncGroupUpdate);
+				setupSyncGroupUpdate(group);
 			}
 			remoter.send("graphGroups", bytes);
 		}
@@ -307,8 +306,7 @@ package com.junkbyte.console.core
 				var bytes:ByteArray = new ByteArray();
 				group.writeToBytes(bytes);
 				remoter.send("addGraphGroup", bytes);
-
-				group.onUpdate.add(syncGroupUpdate);
+				setupSyncGroupUpdate(group);
 			}
 		}
 
@@ -321,12 +319,21 @@ package com.junkbyte.console.core
 				remoter.send("removeGraphGroup", bytes);
 			}
 		}
+		
+		
+		protected function setupSyncGroupUpdate(group:GraphGroup):void
+		{
+			group.onUpdate.add(function (values:Array):void
+			{
+				syncGroupUpdate(group, values);
+			});
+		}
 
-		protected function syncGroupUpdate(groupvalues:Array):void
+		protected function syncGroupUpdate(group:GraphGroup, values:Array):void
 		{
 			if (remoter.connected)
 			{
-				var index:int = _groups.indexOf(groupvalues[0]);
+				var index:int = _groups.indexOf(group);
 				if (index < 0)
 				{
 					return;
@@ -334,10 +341,9 @@ package com.junkbyte.console.core
 
 				var bytes:ByteArray = new ByteArray();
 				bytes.writeShort(index);
-				var len:uint = groupvalues.length;
-				for (var i:uint = 1; i<len; i++)
+				for each(var value:Number in values)
 				{
-					bytes.writeDouble(groupvalues[i]);
+					bytes.writeDouble(value);
 				}
 				remoter.send("updateGraphGroup", bytes);
 			}

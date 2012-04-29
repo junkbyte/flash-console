@@ -46,7 +46,7 @@ package com.junkbyte.console.vos
 
 		override protected function dispatchUpdates():void
 		{
-			_updateArgs[1] = Math.round(System.totalMemory / 10485.76) / 100;
+			_updateArgs[0] = Math.round(System.totalMemory / 10485.76) / 100;
 			applyUpdateDispather(_updateArgs);
 		}
 	}

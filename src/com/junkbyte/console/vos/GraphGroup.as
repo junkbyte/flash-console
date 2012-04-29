@@ -77,7 +77,6 @@ package com.junkbyte.console.vos
 		public function GraphGroup(n:String)
 		{
 			name = n;
-			_updateArgs.push(this);
 		}
 
 		public function tick(timeDelta:uint):void
@@ -102,7 +101,7 @@ package com.junkbyte.console.vos
 			{
 				var graph:GraphInterest = interests[i];
 				var v:Number = graph.getCurrentValue();
-				_updateArgs[i + 1] = v;
+				_updateArgs[i] = v;
 			}
 			applyUpdateDispather(_updateArgs);
 		}
