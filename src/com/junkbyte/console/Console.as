@@ -401,7 +401,7 @@ package com.junkbyte.console
 		private function _onEnterFrame(e:Event):void{
 			
 			var time:int = getTimer();
-			var hasNewLog:Boolean = _logs.update(time);
+			_logs.update(time);
 			var timeDelta:uint = time - _lastTime;
 			_lastTime = time;
 			_refs.update(time);
@@ -412,12 +412,14 @@ package com.junkbyte.console
 			
 			// VIEW UPDATES ONLY
 			if(visible && parent){
-				if(config.alwaysOnTop && parent.getChildAt(parent.numChildren-1) != this && _topTries>0){
+				if(config.alwaysOnTop && _topTries > 0 && parent.numChildren > parent.getChildIndex(this) + 1)
+				{
 					_topTries--;
 					parent.addChild(this);
 					report("Moved console on top (alwaysOnTop enabled), "+_topTries+" attempts left.",-1);
 				}
-				_panels.update(_paused, hasNewLog);
+				_panels.update(_paused, _logs.hasNewLog);
+				_logs.hasNewLog = false;
 			}
 		}
 		//

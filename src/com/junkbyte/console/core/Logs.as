@@ -40,9 +40,9 @@ package com.junkbyte.console.core
 		private var _repeating:uint;
 		private var _lastRepeat:Log;
 		private var _newRepeat:Log;
-		private var _hasNewLog:Boolean;
 		private var _timer:uint;
 		
+		public var hasNewLog:Boolean;
 		public var first:Log;
 		public var last:Log;
 		
@@ -71,7 +71,7 @@ package com.junkbyte.console.core
 			}
 		}
 		
-		public function update(time:uint):Boolean{
+		public function update(time:uint):void{
 			_timer = time;
 			if(_repeating > 0) _repeating--;
 			if(_newRepeat){
@@ -80,9 +80,6 @@ package com.junkbyte.console.core
 				_newRepeat = null;
 				push(_lastRepeat);
 			}
-			var b:Boolean = _hasNewLog;
-			_hasNewLog = false;
-			return b;
 		}
 		
 		public function add(line:Log):void{
@@ -94,7 +91,7 @@ package com.junkbyte.console.core
 		}
 		
 		protected function registerLog(line:Log):void{
-			_hasNewLog = true;
+			hasNewLog = true;
 			addChannel(line.ch);
 			
 			line.lineStr = line.line +" ";
