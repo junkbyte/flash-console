@@ -81,7 +81,7 @@ package com.junkbyte.console.remote
 			
 			addGroup(group);
 			
-			group.onMenu.add(function (menukey:String)
+			group.onMenu.add(function (menukey:String):void
 			{
 				var index:int = _groups.indexOf(group);
 				if (index >= 0)
