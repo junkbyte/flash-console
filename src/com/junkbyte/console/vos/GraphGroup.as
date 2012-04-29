@@ -36,7 +36,7 @@ package com.junkbyte.console.vos
 	use namespace console_internal;
 
 	[Event(name = "close", type = "flash.events.Event")]
-	public class GraphGroup extends EventDispatcher
+	public class GraphGroup
 	{
 		public var name:String;
 
@@ -57,6 +57,7 @@ package com.junkbyte.console.vos
 
 		public var inverted:Boolean;
 		public var interests:Array = [];
+		public var menus:Array = [];
 
 		public var numberDisplayPrecision:uint = 4;
 
@@ -65,7 +66,10 @@ package com.junkbyte.console.vos
 		//
 		protected var _updateArgs:Array = new Array();
 		protected var sinceLastUpdate:uint;
-		protected var updateDispatcher:CcCallbackDispatcher = new CcCallbackDispatcher();
+		
+		protected var _onUpdate:CcCallbackDispatcher = new CcCallbackDispatcher();
+		protected var _onClose:CcCallbackDispatcher = new CcCallbackDispatcher();
+		protected var _onMenu:CcCallbackDispatcher = new CcCallbackDispatcher();
 
 		//
 		//
@@ -105,23 +109,30 @@ package com.junkbyte.console.vos
 		
 		console_internal function applyUpdateDispather(args:Array):void
 		{
-			updateDispatcher.apply(args);
+			_onUpdate.apply(args);
 		}
-
-		public function addUpdateListener(listener:Function):void
-		{
-			updateDispatcher.add(listener);
-		}
-
-		public function removeUpdateListener(listener:Function):void
-		{
-			updateDispatcher.remove(listener);
-		}
-
+		
 		public function close():void
 		{
-			updateDispatcher.clear();
-			dispatchEvent(new Event(Event.CLOSE));
+			_onClose.apply(this);
+			_onUpdate.clear();
+			_onClose.clear();
+			_onMenu.clear();
+		}
+		
+		public function get onUpdate():CcCallbackDispatcher
+		{
+			return _onUpdate;
+		}
+		
+		public function get onClose():CcCallbackDispatcher
+		{
+			return _onClose;
+		}
+		
+		public function get onMenu():CcCallbackDispatcher
+		{
+			return _onMenu;
 		}
 
 		//
@@ -144,10 +155,15 @@ package com.junkbyte.console.vos
 			bytes.writeShort(numberDisplayPrecision);
 			
 			bytes.writeShort(interests.length);
-
 			for each (var gi:GraphInterest in interests)
 			{
 				gi.writeToBytes(bytes);
+			}
+			
+			bytes.writeShort(menus.length);
+			for each (var menu:String in menus)
+			{
+				bytes.writeUTF(menu);
 			}
 		}
 
@@ -174,6 +190,14 @@ package com.junkbyte.console.vos
 				g.interests.push(GraphInterest.FromBytes(bytes));
 				len--;
 			}
+			
+			len = bytes.readShort();
+			while (len > 0)
+			{
+				g.menus.push(bytes.readUTF());
+				len--;
+			}
+			
 			return g;
 		}
 	}

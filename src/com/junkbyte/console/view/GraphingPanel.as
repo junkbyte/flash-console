@@ -102,15 +102,10 @@ package com.junkbyte.console.view
 			registerDragger(txtField); // so that we can still drag from textfield
 			addChild(txtField);
 			//
-
-			_menuString = "<menu>";
-			/*if (_type == MEM)
-			{
-				_menuString += " <a href=\"event:gc\">G</a> ";
-			}*/
-			_menuString += "<a href=\"event:reset\">R</a> <a href=\"event:close\">X</a></menu></low></r>";
-
-			_group.addUpdateListener(onGroupUpdate);
+			
+			setMenuString();
+			
+			_group.onUpdate.add(onGroupUpdate);
 			//
 			var rect:Rectangle = group.rect;
 			var w:Number = Math.max(minWidth, rect.width);
@@ -135,6 +130,17 @@ package com.junkbyte.console.view
 		{
 			lowestValue = highestValue = NaN;
 			lastValues = new Object();
+		}
+		
+		protected function setMenuString():void
+		{
+			_menuString = "<menu>";
+			var menus:Array = _group.menus.concat("R", "X");
+			for each(var menu:String in menus)
+			{
+				_menuString += " <a href=\"event:"+menu+"\">"+menu+"</a>";
+			}
+			_menuString += "</menu></low></r>";
 		}
 
 		override public function set height(n:Number):void
@@ -378,27 +384,29 @@ package com.junkbyte.console.view
 		protected function linkHandler(e:TextEvent):void
 		{
 			TextField(e.currentTarget).setSelection(0, 0);
-			if (e.text == "reset")
+			if (e.text == "R")
 			{
 				reset();
 			}
-			else if (e.text == "close")
+			else if (e.text == "X")
 			{
 				_group.close();
 			}
-			else if (e.text == "gc")
-			{
-				console.gc();
-			}
+			_group.onMenu.apply(e.text);
 			e.stopPropagation();
 		}
 
 		protected function onMenuRollOver(e:TextEvent):void
 		{
 			var txt:String = e.text ? e.text.replace("event:", "") : null;
-			if (txt == "gc")
+			// TODO use shared menu system.
+			if (txt == "G")
 			{
 				txt = "Garbage collect::Requires debugger version of flash player";
+			}
+			else
+			{
+				txt = null;
 			}
 			console.panels.tooltip(txt, this);
 		}

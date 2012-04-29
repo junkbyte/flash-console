@@ -55,7 +55,7 @@ package com.junkbyte.console.view
 			addPanel(_mainPanel);
 			
 			
-			console.graphing.addGroupAddedListener(onGraphingGroupAdded);
+			console.graphing.onGroupAdded.add(onGraphingGroupAdded);
 		}
 		
 		protected function createMainPanel():MainPanel
@@ -130,18 +130,15 @@ package com.junkbyte.console.view
 		
 		private function onGraphingGroupAdded(group:GraphGroup):void
 		{
-			group.addEventListener(Event.CLOSE, onGraphGroupClose);
+			group.onClose.add(onGraphGroupClose);
 			
 			var graph:GraphingPanel = new GraphingPanel(console, group);
 			_graphsMap[group] = graph;
 			addPanel(graph);
 		}
 
-		private function onGraphGroupClose(event:Event):void
+		private function onGraphGroupClose(group:GraphGroup):void
 		{
-			var group:GraphGroup = event.currentTarget as GraphGroup;
-			group.removeEventListener(Event.CLOSE, onGraphGroupClose);
-			
 			var graph:GraphingPanel = getGraphByGroup(group);
 			if(graph)
 			{

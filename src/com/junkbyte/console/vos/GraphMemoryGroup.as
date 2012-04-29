@@ -1,5 +1,6 @@
 package com.junkbyte.console.vos
 {
+	import com.junkbyte.console.Console;
 	import com.junkbyte.console.console_internal;
 	
 	import flash.display.StageAlign;
@@ -11,9 +12,12 @@ package com.junkbyte.console.vos
 	{
 		public static const NAME:String = "consoleMemoryGraph";
 		
-		public function GraphMemoryGroup()
+		private var console:Console;
+		
+		public function GraphMemoryGroup(console:Console)
 		{
 			super(NAME);
+			this.console = console;
 
 			rect.x = 90;
 			rect.y = 15;
@@ -26,6 +30,18 @@ package com.junkbyte.console.vos
 			
 			interests.push(graph);
 			freq = 1000;
+			
+			menus.push("G");
+			
+			onMenu.add(onMenuClick);
+		}
+		
+		protected function onMenuClick(key:String):void
+		{
+			if(key == "G")
+			{
+				console.gc();
+			}
 		}
 
 		override protected function dispatchUpdates():void

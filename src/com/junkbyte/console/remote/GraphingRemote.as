@@ -4,7 +4,7 @@ package com.junkbyte.console.remote
 	import com.junkbyte.console.console_internal;
 	import com.junkbyte.console.core.Graphing;
 	import com.junkbyte.console.vos.GraphGroup;
-
+	
 	import flash.events.Event;
 	import flash.utils.ByteArray;
 
@@ -53,7 +53,7 @@ package com.junkbyte.console.remote
 
 		}
 
-		override protected function syncGroupUpdate(group:GraphGroup, ... values:Array):void
+		override protected function syncGroupUpdate(groupvalues:Array):void
 		{
 
 		}
@@ -77,7 +77,19 @@ package com.junkbyte.console.remote
 
 		private function onRemotingAddGraphGroup(bytes:ByteArray):void
 		{
-			addGroup(GraphGroup.FromBytes(bytes));
+			var group:GraphGroup = GraphGroup.FromBytes(bytes);
+			
+			addGroup(group);
+			
+			group.onMenu.add(function (menukey:String)
+			{
+				var index:int = _groups.indexOf(group);
+				if (index >= 0)
+				{
+					syncMenuGroup(index, menukey);
+				}
+			}
+			);
 		}
 
 		private function onRemotingUpdateGraphGroup(bytes:ByteArray):void
@@ -109,6 +121,17 @@ package com.junkbyte.console.remote
 			bytes.writeBoolean(b);
 			remoter.send("mem", bytes);
 		}
-
+		
+		
+		protected function syncMenuGroup(groupIndex:int, menuKey:String):void
+		{
+			if (remoter.connected)
+			{
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeShort(groupIndex);
+				bytes.writeUTF(menuKey);
+				remoter.send("menuGraphGroup", bytes);
+			}
+		}
 	}
 }
