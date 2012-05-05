@@ -33,9 +33,12 @@ http://code.google.com/p/flash-console/issues/
 == Change Log ==
 
 ===2.7 DEV ===
+
+  * Allows slash commands with space and any other characters.
   * Ruler becomes an addon that you have to add to console menu.
   * Clears logs in remote air app on new connections. Can be toggled by clicking on 'auto-clear' top menu.
   * ASDOC included in SWC for help text in IDE.
+  * Remote version is now split from normal version. See ConsoleRemote.as for example.
 
 ===2.6 ===
   * Addons are now included in Console.swc

@@ -24,14 +24,14 @@
 */
 package com.junkbyte.console.core 
 {
-	import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;
 	import com.junkbyte.console.Console;
 	import com.junkbyte.console.vos.WeakObject;
 	import com.junkbyte.console.vos.WeakRef;
-
+	
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
+	import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
 	
 	/**
 	 * @private
@@ -47,7 +47,7 @@ package com.junkbyte.console.core
 		private var _scope:*;
 		private var _prevScope:WeakRef;
 		protected var _scopeStr:String = "";
-		private var _slashCmds:Object;
+		private var _slashCmds:Array;
 		
 		public var localCommands:Array = new Array("filter", "filterexp");
 		
@@ -55,7 +55,7 @@ package com.junkbyte.console.core
 			super(m);
 			_saved = new WeakObject();
 			_scope = m;
-			_slashCmds = new Object();
+			_slashCmds = new Array();
 			_prevScope = new WeakRef(m);
 			_saved.set("C", m);
 			
@@ -68,9 +68,9 @@ package com.junkbyte.console.core
 			remoter.addEventListener(Event.CONNECT, sendCmdScope2Remote);
 			
 			addCLCmd("help", printHelp, "How to use command line");
-			addCLCmd("save|store", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
-			addCLCmd("savestrong|storestrong", saveStrongCmd, "Save current scope as strong reference");
-			addCLCmd("saved|stored", savedCmd, "Show a list of all saved references");
+			addCLCmd("save", saveCmd, "Save current scope as weak reference. (same as Cc.store(...))");
+			addCLCmd("savestrong", saveStrongCmd, "Save current scope as strong reference");
+			addCLCmd("saved", savedCmd, "Show a list of all saved references");
 			addCLCmd("string", stringCmd, "Create String, useful to paste complex strings without worrying about \" or \'", false, null);
 			addCLCmd("commands", cmdsCmd, "Show a list of all slash commands", true);
 			addCLCmd("inspect", inspectCmd, "Inspect current scope");
@@ -83,7 +83,7 @@ package com.junkbyte.console.core
 			
 		}
 		public function set base(obj:Object):void {
-			if (base) {
+			if (this.base) {
 				report("Set new commandLine base from "+base+ " to "+ obj, 10);
 			}else{
 				_prevScope.reference = _scope;
@@ -122,10 +122,9 @@ package com.junkbyte.console.core
 		}
 		public function getHintsFor(str:String, max:uint):Array{
 			var all:Array = new Array();
-			for (var X:String in _slashCmds){
-				var cmd:Object = _slashCmds[X];
+			for each(var cmd:SlashCommand in _slashCmds){
 				if(config.commandLineAllowed || cmd.allow)
-				all.push(["/"+X+" ", cmd.d?cmd.d:null]);
+				all.push(["/"+cmd.n+" ", cmd.d?cmd.d:null]);
 			}
 			if(config.commandLineAllowed){
 				for (var Y:String in _saved){
@@ -158,23 +157,18 @@ package com.junkbyte.console.core
 			return config.commandLineAllowed?_scopeStr:"";
 		}
 		public function addCLCmd(n:String, callback:Function, desc:String, allow:Boolean = false, endOfArgsMarker:String = ";"):void{
-			var split:Array = n.split("|");
-			for(var i:int = 0; i<split.length; i++){
-				n = split[i];
-				_slashCmds[n] = new SlashCommand(n, callback, desc, false, allow, endOfArgsMarker);
-				if(i>0) _slashCmds.setPropertyIsEnumerable(n, false);
-			}
+			_slashCmds.push(new SlashCommand(n, callback, desc, false, allow, endOfArgsMarker));
 		}
 		public function addSlashCommand(n:String, callback:Function, desc:String = "", alwaysAvailable:Boolean = true, endOfArgsMarker:String = ";"):void{
-			n = n.replace(/[^\w]*/g, "");
-			if(_slashCmds[n] != null){
-				var prev:SlashCommand = _slashCmds[n];
+			//n = n.replace(/[^\w]*/g, "");
+			var prev:SlashCommand = getSlashCommandWithName(n);
+			if(prev != null){
 				if(!prev.user) {
 					throw new Error("Can not alter build-in slash command ["+n+"]");
 				}
+				removeSlashCommand(prev);
 			}
-			if(callback == null) delete _slashCmds[n];
-			else _slashCmds[n] = new SlashCommand(n, callback, LogReferences.EscHTML(desc), true, alwaysAvailable, endOfArgsMarker);
+			_slashCmds.push(new SlashCommand(n, callback, LogReferences.EscHTML(desc), true, alwaysAvailable, endOfArgsMarker));
 		}
 		public function run(str:String, saves:Object = null):* {
 			if(!str) return;
@@ -218,16 +212,22 @@ package com.junkbyte.console.core
 			}
 		}
 		private function execCommand(str:String):void{
-			var brk:int = str.search(/[^\w]/); 
-			var cmd:String = str.substring(0, brk>0?brk:str.length);
-			if(cmd == ""){
+			if(str.search(/[^\s]/) < 0){
 				setReturned(_saved.get(Executer.RETURNED), true);
+				
 				return;
 			}
-			var param:String = brk>0?str.substring(brk+1):"";
-			if(_slashCmds[cmd] != null){
+			var slashcmd:SlashCommand;
+			for each(var cmd:SlashCommand in _slashCmds)
+			{
+				if(str.indexOf(cmd.n) == 0 && (str.length == cmd.n.length || str.charAt(cmd.n.length) == " "))
+				{
+					slashcmd = cmd;
+				}
+			}
+			if(slashcmd != null){
 				try{
-					var slashcmd:SlashCommand = _slashCmds[cmd];
+					var param:String = str.substring(slashcmd.n.length+1);
 					if(!config.commandLineAllowed && !slashcmd.allow)
 					{
 						report(DISABLED, 9);
@@ -307,6 +307,26 @@ package com.junkbyte.console.core
 				if(p>6) p--;
 			}
 			report(parts.join("\n"), 9);
+		}
+		
+		private function getSlashCommandWithName(name:String):SlashCommand
+		{
+			for each(var cmd:SlashCommand in _slashCmds)
+			{
+				if(cmd.n.indexOf(name) == 0)
+				{
+					return cmd;
+				}
+			}
+			return null;
+		}
+		private function removeSlashCommand(cmd:SlashCommand):void
+		{
+			var index:int = _slashCmds.indexOf(cmd);
+			if(index >= 0)
+			{
+				_slashCmds.splice(index, 1);
+			}
 		}
 		private function saveCmd(param:String = null):void{
 			store(param, _scope, false);
