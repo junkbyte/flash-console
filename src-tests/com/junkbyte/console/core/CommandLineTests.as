@@ -3,6 +3,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	
+	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	
@@ -131,9 +132,39 @@ package com.junkbyte.console.core
 		{
 			assertEquals(this.console, run("this.console"));
 			assertEquals(console.name, run("$C.name;"));
+			
 			console.alpha = 0.5;
 			assertEquals(console.alpha, run("$C.alpha;"));
 			assertEquals(console.config.maxLines, run("$C.config.maxLines;"));
+			
+			
+			assertEquals(22, run("new Array(11,22,33).1"));
+			assertEquals(1, run("new Array(11,22,33);/;1"));
+			assertEquals(22, run("new Array(11,22,33);/;this.1"));
+		}
+		
+		[Test]
+		public function testNewObject():void
+		{
+			assertTrue(run("new String()") is String);
+			assertEquals("ABCD", run("new String('ABCD')"));
+			assertTrue(run("new flash.display.Sprite()") is Sprite);
+			
+			var array:Array = run("new Array(11, 22, 33, 44);");
+			assertTrue(array is Array);
+			assertEquals(4, array.length);
+			assertEquals(11, array[0]);
+			assertEquals(22, array[1]);
+			assertEquals(33, array[2]);
+			assertEquals(44, array[3]);
+			
+			var xml:XML = run('new XML("<t a=\\"A\\"><b>B</b></t>")');
+			assertTrue(xml is XML);
+			assertEquals("t", xml.name());
+			assertEquals("A", xml.attribute("a").toString());
+			assertEquals("B", xml.b.toString());
+			
+			assertEquals("A", run('new XML("<t a=\\"A\\"></t>").attribute("a")'));
 		}
 		
 		[Test]
@@ -141,7 +172,15 @@ package com.junkbyte.console.core
 		{
 			assertEquals(String(this), run("toString()"));
 			assertEquals(console.getChildAt(0), run("$C.getChildAt(0)"));
-			assertEquals(DisplayObjectContainer(container.getChildByName("Console")).getChildAt(0), run("container.getChildByName(\"Console\").getChildAt(0)"));
+			var result:DisplayObject = DisplayObjectContainer(container.getChildByName("Console")).getChildAt(0);
+			assertEquals(result, run("container.getChildByName(\"Console\").getChildAt(0)"));
+		}
+		
+		[Test]
+		public function testNestedCallFunction():void
+		{
+			var result:DisplayObject = container.getChildByName(new String(console.name) + "");
+			assertEquals(result, run("container.getChildByName(new String(console.name) + \"\")"));
 		}
 		
 		[Test]
