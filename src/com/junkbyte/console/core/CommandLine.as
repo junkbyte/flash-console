@@ -177,7 +177,7 @@ package com.junkbyte.console.core
 			var v:* = null;
 			try{
 				if(str.charAt(0) == "/"){
-					execCommand(str.substring(1));
+					v = execCommand(str.substring(1));
 				}else{
 					if(!config.commandLineAllowed) {
 						report(DISABLED, 9);
@@ -211,12 +211,13 @@ package com.junkbyte.console.core
 				setReturned(exe.scope, true);
 			}
 		}
-		private function execCommand(str:String):void{
+		private function execCommand(str:String):*{
 			if(str.search(/[^\s]/) < 0){
-				setReturned(_saved.get(Executer.RETURNED), true);
-				
-				return;
+				var returned:* = _saved.get(Executer.RETURNED);
+				setReturned(returned, true);
+				return returned;
 			}
+			var result:*;
 			var slashcmd:SlashCommand;
 			for each(var cmd:SlashCommand in _slashCmds)
 			{
@@ -234,7 +235,7 @@ package com.junkbyte.console.core
 					if(!config.commandLineAllowed && !slashcmd.allow)
 					{
 						report(DISABLED, 9);
-						return;
+						return result;
 					}
 					var restStr:String;
 					if(slashcmd.endMarker){
@@ -245,12 +246,13 @@ package com.junkbyte.console.core
 						}
 					}
 					if(param.length == 0){
-						slashcmd.f();
+						result = slashcmd.f();
 					} else {
-						slashcmd.f(param);
+						result = slashcmd.f(param);
 					}
-					if(restStr){
-						run(restStr);
+					if(restStr)
+					{
+						result = run(restStr);
 					}
 				}catch(err:Error){
 					reportError(err);
@@ -258,6 +260,7 @@ package com.junkbyte.console.core
 			} else{
 				report("Undefined command <b>/commands</b> for list of all commands.",10);
 			}
+			return result;
 		}
 		public function setReturned(returned:*, changeScope:Boolean = false, say:Boolean = true):void{
 			if(!config.commandLineAllowed) {
