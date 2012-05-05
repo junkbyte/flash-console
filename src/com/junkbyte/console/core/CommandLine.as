@@ -222,7 +222,10 @@ package com.junkbyte.console.core
 			{
 				if(str.indexOf(cmd.n) == 0 && (str.length == cmd.n.length || str.charAt(cmd.n.length) == " "))
 				{
-					slashcmd = cmd;
+					if(slashcmd == null || slashcmd.n.length < cmd.n.length) // make sure newly found match has longer match.
+					{
+						slashcmd = cmd;
+					}
 				}
 			}
 			if(slashcmd != null){
