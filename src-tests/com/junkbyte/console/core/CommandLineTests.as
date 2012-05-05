@@ -3,13 +3,18 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	
+	import flash.display.Sprite;
+	
 	import org.flexunit.asserts.assertEquals;
+	import org.flexunit.asserts.assertStrictlyEquals;
+	import org.flexunit.asserts.assertTrue;
 
 	public class CommandLineTests
 	{
-		
+		private var container:Sprite;
 		private var console:Console;
 		private var commandLine:CommandLine;
+		private var saves:Object;
 		
 		[Before]
 		public function setUp():void
@@ -17,19 +22,47 @@ package com.junkbyte.console.core
 			console = new Console();
 			console.config.commandLineAllowed = true;
 			
+			container = new Sprite();
+			container.addChild(console);
+			
 			commandLine = console.cl;
 			commandLine.base = this;
+			
+			saves = null;
 		}
 		
-		private function run(str:String, saves:Object = null):*
+		private function run(str:String):*
 		{
-			return commandLine.run(str, saves);
+			return commandLine.run(str, saves, true);
 		}
 		
 		[Test]
 		public function testBasicCommands():void
 		{
+			// assertStrictlyEquals don't seem to pick up === cases.
+			assertTrue(null === run("null"));
+			assertTrue(undefined === run("undefined"));
+			assertTrue(true === run("true"));
+			assertTrue(false === run("false"));
+			
+			assertEquals(123, run("123"));
+			assertEquals(123.456, run("123.456"));
+			assertTrue(isNaN(run("NaN")));
+			assertTrue(Infinity === run("Infinity"));
+			
+			var text:String = "Abcd \"EFG\" hijk";
+			assertEquals(text, run("'"+text+"'"));
+			text = "Abcd 'EFG' hijk";
+			assertEquals(text, run("\""+text+"\""));
+			
 			assertEquals(this, run("this"));
+			
+			assertEquals(int, run("int"));
+			assertEquals(Array, run("Array"));
+			assertEquals(Function, run("Function"));
+			assertEquals(XML, run("XML"));
+			assertEquals(Sprite, run("flash.display.Sprite"));
+			assertEquals(Cc, run("com.junkbyte.console.Cc"));
 			assertEquals(console, run("$C"));
 		}
 		
@@ -47,6 +80,7 @@ package com.junkbyte.console.core
 		{
 			assertEquals(this, run("this;$C ; $base ")); // just tests that it returns the last value
 			assertEquals(console, run("$C; /; this"));
+			//assertEquals(this, run("$C; /; /base")); // tests mixing slash commands in multiline
 		}
 		
 		[Test]

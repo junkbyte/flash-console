@@ -170,7 +170,7 @@ package com.junkbyte.console.core
 			}
 			_slashCmds.push(new SlashCommand(n, callback, LogReferences.EscHTML(desc), true, alwaysAvailable, endOfArgsMarker));
 		}
-		public function run(str:String, saves:Object = null):* {
+		public function run(str:String, saves:Object = null, canThrowError:Boolean = false):* {
 			if(!str) return;
 			str = str.replace(/\s*/,"");
 			report("&gt; "+str, 4, false);
@@ -199,6 +199,10 @@ package com.junkbyte.console.core
 				}
 			}catch(e:Error){
 				reportError(e);
+				if(canThrowError)
+				{
+					throw e;
+				}
 			}
 			return v;
 		}
