@@ -3,6 +3,7 @@ package com.junkbyte.console.core
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.Console;
 	
+	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	
 	import org.flexunit.asserts.assertEquals;
@@ -11,8 +12,8 @@ package com.junkbyte.console.core
 
 	public class CommandLineTests
 	{
-		private var container:Sprite;
-		private var console:Console;
+		public var container:Sprite;
+		public var console:Console;
 		private var commandLine:CommandLine;
 		private var saves:Object;
 		
@@ -46,7 +47,9 @@ package com.junkbyte.console.core
 			assertTrue(false === run("false"));
 			
 			assertEquals(123, run("123"));
+			assertEquals(-123, run("-123"));
 			assertEquals(123.456, run("123.456"));
+			assertEquals(-123.456, run("-123.456"));
 			assertTrue(isNaN(run("NaN")));
 			assertTrue(Infinity === run("Infinity"));
 			
@@ -80,7 +83,7 @@ package com.junkbyte.console.core
 		{
 			assertEquals(this, run("this;$C ; $base ")); // just tests that it returns the last value
 			assertEquals(console, run("$C; /; this"));
-			//assertEquals(this, run("$C; /; /base")); // tests mixing slash commands in multiline
+			//assertEquals(this, run("$C; /; /base")); // tests mixing slash commands in multiline   // FAILING
 		}
 		
 		[Test]
@@ -121,6 +124,57 @@ package com.junkbyte.console.core
 			assertEquals("test 23:", run("/test 23 "));
 			assertEquals("test 23:abcd", run("/test 23 abcd"));
 			assertEquals("test 3:abcd", run("/test 3 abcd"));
+		}
+		
+		[Test]
+		public function testDot():void
+		{
+			assertEquals(this.console, run("this.console"));
+			assertEquals(console.name, run("$C.name;"));
+			console.alpha = 0.5;
+			assertEquals(console.alpha, run("$C.alpha;"));
+			assertEquals(console.config.maxLines, run("$C.config.maxLines;"));
+		}
+		
+		[Test]
+		public function testCallFunction():void
+		{
+			assertEquals(String(this), run("toString()"));
+			assertEquals(console.getChildAt(0), run("$C.getChildAt(0)"));
+			assertEquals(DisplayObjectContainer(container.getChildByName("Console")).getChildAt(0), run("container.getChildByName(\"Console\").getChildAt(0)"));
+		}
+		
+		[Test]
+		public function testBasicOperators():void
+		{
+			assertEquals(11, run("5 + 6"));
+			assertEquals(-1, run("5 - 6"));
+			assertEquals(15, run("3 * 5"));
+			assertEquals(3/5, run("3 / 5"));
+			assertEquals(3.44/5.22, run("3.44 / 5.22"));
+			
+			assertEquals("abcdefg", run("'abcd' + \"efg\""));
+		}
+		
+		[Test]
+		public function testAssignmentOperators():void
+		{
+			run("$C.alpha = 0.5");
+			assertEquals(0.5, console.alpha);
+			run("$C.alpha += 0.25");
+			assertEquals(0.75, console.alpha);
+			run("$C.alpha -= 0.5");
+			assertEquals(0.25, console.alpha);
+		}
+		
+		[Test]
+		public function testMixedOperators():void
+		{
+			assertEquals(5 + 6 - 30, run("5 + 6 - 30"));
+			assertEquals(5 * 3 + 2, run("5 * 3 + 2"));
+			//assertEquals(2 + 5 * 3, run("2 + 5 * 3")); // FAILING
+			assertEquals(5 * 3 / 2, run("5 * 3 / 2"));
+			assertEquals(2 / 5 * 3, run(" 2 / 5 * 3"));
 		}
 	}
 }
