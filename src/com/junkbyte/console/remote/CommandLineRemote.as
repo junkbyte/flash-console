@@ -16,8 +16,7 @@ package com.junkbyte.console.remote
 		
 		override public function sendCmdScope2Remote(e:Event = null):void{
 		}
-
-		override public function run(str:String, saves:Object = null):*
+		override public function run(str:String, saves:Object = null, canThrowError:Boolean = false):*
 		{
 			if (!str)
 			{

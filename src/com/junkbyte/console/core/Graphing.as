@@ -258,7 +258,7 @@ package com.junkbyte.console.core
 			}
 		}
 
-		public function update(timeDelta:uint, fps:Number = 0):void
+		public function update(timeDelta:uint):void
 		{
 			for each (var group:GraphGroup in _groups)
 			{

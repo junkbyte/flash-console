@@ -32,7 +32,7 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.7 DEV ===
+===2.7 ALPHA ===
 
   * Allows slash commands with space and any other characters.
   * Ruler becomes an addon that you have to add to console menu.

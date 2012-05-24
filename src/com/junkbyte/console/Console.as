@@ -60,9 +60,9 @@ package com.junkbyte.console
 	public class Console extends Sprite {
 
 		public static const VERSION:Number = 2.7;
-		public static const VERSION_STAGE:String = "DEV";
-		public static const BUILD:int = 612;
-		public static const BUILD_DATE:String = "2012/03/01 01:08";
+		public static const VERSION_STAGE:String = "ALPHA";
+		public static const BUILD:int = 613;
+		public static const BUILD_DATE:String = "2012/05/24 23:15";
 		
 		//
 		protected var _config:ConsoleConfig;
@@ -407,7 +407,7 @@ package com.junkbyte.console
 			_refs.update(time);
 			
 			_mm.update();
-			_graphing.update(timeDelta, stage?stage.frameRate:0);
+			_graphing.update(timeDelta);
 			_remoter.update();
 			
 			// VIEW UPDATES ONLY

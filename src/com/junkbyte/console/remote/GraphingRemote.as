@@ -35,7 +35,7 @@ package com.junkbyte.console.remote
 			_closingFromRemoter = false;
 		}
 
-		override public function update(timeDelta:uint, fps:Number = 0):void
+		override public function update(timeDelta:uint):void
 		{
 
 		}

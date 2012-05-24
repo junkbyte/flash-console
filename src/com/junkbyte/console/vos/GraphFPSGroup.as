@@ -9,22 +9,26 @@ package com.junkbyte.console.vos
 	{
 		public static const NAME:String = "consoleFPSGraph";
 
-		public var historyLength:uint = 5;
 		public var maxLag:uint = 60;
 
-		private var _numFrames:uint;
-
 		private var _console:Console;
-
+		
+		private var _historyLength:uint;
 		private var _history:Array = new Array();
 		private var _historyIndex:uint;
 		private var _historyTotal:Number = 0;
 
-		public function GraphFPSGroup(console:Console)
+		public function GraphFPSGroup(console:Console, historyLength:uint = 5)
 		{
 			_console = console;
+			_historyLength = historyLength;
 
 			super(NAME);
+			
+			for (var i:uint = 0; i < historyLength; i++)
+			{
+				_history.push(0);
+			}
 
 			rect.x = 170;
 			rect.y = 15;
@@ -32,7 +36,6 @@ package com.junkbyte.console.vos
 
 			var graph:GraphInterest = new GraphInterest("fps");
 			graph.col = 0xFF3333;
-			graph.setGetValueCallback(getNumFrames);
 
 			interests.push(graph);
 
@@ -40,10 +43,15 @@ package com.junkbyte.console.vos
 
 			freq = 200;
 			fixedMin = 0;
+			numberDisplayPrecision = 2;
 		}
 
 		override public function tick(timeDelta:uint):void
 		{
+			if(timeDelta == 0)
+			{
+				return;
+			}
 			var fps:Number = 1000 / timeDelta;
 			
 			var frames:uint;
@@ -51,7 +59,7 @@ package com.junkbyte.console.vos
 			{
 				fixedMax = _console.stage.frameRate;
 				
-				frames = fixedMax / fps / historyLength;
+				frames = fixedMax / fps / _historyLength;
 				if (frames > maxLag)
 				{
 					frames = maxLag;
@@ -71,22 +79,18 @@ package com.junkbyte.console.vos
 
 		private function dispatchFPS(fps:Number):void
 		{
-			var prevHistory:Number = _history[_historyIndex];
-			if (prevHistory > 0)
-			{
-				_historyTotal -= prevHistory
-			}
+			_historyTotal -= _history[_historyIndex];
 			
 			_historyTotal += fps;
 			_history[_historyIndex] = fps;
 			
 			_historyIndex++;
-			if (_historyIndex >= historyLength)
+			if (_historyIndex >= _historyLength)
 			{
 				_historyIndex = 0;
 			}
-
-			fps = _historyTotal / historyLength;
+			
+			fps = _historyTotal / _historyLength;
 			if (fps > fixedMax)
 			{
 				fps = fixedMax;
@@ -94,11 +98,6 @@ package com.junkbyte.console.vos
 			_updateArgs[0] = Math.round(fps);
 
 			applyUpdateDispather(_updateArgs);
-		}
-
-		private function getNumFrames(graph:GraphInterest):Number
-		{
-			return _numFrames;
 		}
 	}
 }

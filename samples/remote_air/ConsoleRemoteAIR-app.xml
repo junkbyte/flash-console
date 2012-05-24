@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?> 
-<application xmlns="http://ns.adobe.com/air/application/2.0">
+<application xmlns="http://ns.adobe.com/air/application/3.1">
     <id>com.junkbyte.console.ConsoleRemoteAIR</id> 
-    <version>2.7</version> 
+    <versionNumber>2.7</versionNumber> 
     <filename>Console Remote</filename> 
     <name>Console Remote</name> 
     <description> 
