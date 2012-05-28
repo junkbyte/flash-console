@@ -142,25 +142,38 @@ package com.junkbyte.console.core
 		public function remove(n:String, obj:Object = null, prop:String = null):void
 		{
 			var group:GraphGroup = _map[n];
-			if (obj == null && prop == null)
+			if(group)
 			{
-				group.close();
-			}
-			else if (group)
-			{
-				var interests:Array = group.interests;
-				for (var i:int = interests.length - 1; i >= 0; i--)
-				{
-					var interest:GraphInterest = interests[i];
-					if ((obj == null || interest.obj == obj) && (prop == null || interest.prop == prop))
-					{
-						interests.splice(i, 1);
-					}
-				}
-				if (interests.length == 0)
+				if (obj == null && prop == null)
 				{
 					group.close();
 				}
+				else
+				{
+					var interests:Array = group.interests;
+					for (var i:int = interests.length - 1; i >= 0; i--)
+					{
+						var interest:GraphInterest = interests[i];
+						if ((obj == null || interest.obj == obj) && (prop == null || interest.prop == prop))
+						{
+							interests.splice(i, 1);
+						}
+					}
+					if (interests.length == 0)
+					{
+						group.close();
+					}
+				}
+			}
+		}
+		
+		public function fixRange(name:String, min:Number = NaN, max:Number = NaN):void
+		{
+			var group:GraphGroup = _map[name];
+			if(group)
+			{
+				group.fixedMin = min;
+				group.fixedMax = max;
 			}
 		}
 		

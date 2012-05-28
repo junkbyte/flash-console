@@ -121,13 +121,13 @@ package com.junkbyte.console.core
 				// err.getStackTrace() is not supported in non-debugger players...
 				var stackstr:String = err.hasOwnProperty("getStackTrace")?err.getStackTrace():err.toString();		
 				if(stackstr){
-					return stackstr;
+					txt = stackstr;
 				}
-				return err.toString();
+				txt = err.toString();
 			}else if(v is XML || v is XMLList){
-				return shortenString(EscHTML(v.toXMLString()), maxlen, o, prop);
+				txt = shortenString(EscHTML(v.toXMLString()), maxlen, o, prop);
 			}else if(v is QName){
-				return String(v);
+				txt = String(v);
 			}else if(v is Array || getQualifiedClassName(v).indexOf("__AS3__.vec::Vector.") == 0){
 				// note: using getQualifiedClassName for vector for backward compatibility
 				// Need to specifically cast to string in array to produce correct results
@@ -161,10 +161,10 @@ package com.junkbyte.console.core
 				{
 					txt = shortenString(EscHTML(txt), maxlen, o, prop);
 				}
-				if(!(v is String))
-				{
-					txt = "<type>"+txt+"</type>";
-				}
+			}
+			if(!(v is String))
+			{
+				txt = "<type>"+txt+"</type>";
 			}
 			return txt;
 		}
