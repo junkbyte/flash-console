@@ -28,13 +28,16 @@ package com.junkbyte.console {
 	public class ConsoleStyle {
 		
 		/** Font for menus and almost all others */
-		public var menuFont:String = "Arial";
+		public var menuFont:String = "Arial, Verdana";
 		
 		/** Default font size */
 		public var menuFontSize:int = 12;
 		
 		/** Font for trace field */
-		public var traceFont:String = "Verdana";
+		public var traceFont:String = "Verdana, Arial";
+		
+		/** Font for non-string trace  */
+		public var traceTypedFont:String = "Courier New, Arial";
 		
 		/** Font size for trace field */
 		public var traceFontSize:int = 11;
@@ -200,6 +203,7 @@ package com.junkbyte.console {
 			_css.setStyle("p-1",{color:hesh(priorityC1), display:'inline'});
 			_css.setStyle("p-2",{color:hesh(priorityC2), display:'inline'});
 			_css.setStyle("logs",{color:hesh(logHeaderColor), display:'inline'});
+			_css.setStyle("type",{fontFamily:traceTypedFont, display:'inline'});
 		}
 		/**
 		 * Style sheet used by Console.

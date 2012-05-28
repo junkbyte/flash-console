@@ -39,8 +39,9 @@ package com.junkbyte.console {
 	 * and all other calls through Cc will stop working silently.
 	 * </p>
 	 * @author  Lu Aye Oo
-	 * @version 2.4
+	 * @version 2.7
 	 * @see http://code.google.com/p/flash-console/
+	 * @see http://junkbyte.com
 	 * @see #start()
 	 * @see #startOnStage()
 	 */

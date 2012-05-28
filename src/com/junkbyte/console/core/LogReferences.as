@@ -152,10 +152,18 @@ package com.junkbyte.console.core
 				else if(v is DisplayObject && v.name) add = " "+v.name;
 				txt = "{"+genLinkString(o, prop, ShortClassName(v))+EscHTML(add)+"}";
 			}else{
-				if(v is ByteArray) txt = "[ByteArray position:"+ByteArray(v).position+" length:"+ByteArray(v).length+"]";
-				else txt = String(v);
-				if(!html){
-					return shortenString(EscHTML(txt), maxlen, o, prop);
+				if(v is ByteArray) 
+				{
+					txt = "[ByteArray position:"+ByteArray(v).position+" length:"+ByteArray(v).length+"]";
+				}
+				txt = String(v);
+				if(!html)
+				{
+					txt = shortenString(EscHTML(txt), maxlen, o, prop);
+				}
+				if(!(v is String))
+				{
+					txt = "<type>"+txt+"</type>";
 				}
 			}
 			return txt;
