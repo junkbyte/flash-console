@@ -121,7 +121,13 @@
 			<param name="output" value="${samples.dir}/remote_air/ConsoleRemoteAIR.swf" />
 			<param name="config" value="air" />
 		</antcall>
-		<exec executable="${FLEX_HOME}/bin/adt.bat" failonerror="true">
+		<condition property="adt.executable" value="adt.bat">
+			<os family="windows"/>
+		</condition>
+		<condition property="adt.executable" value="adt">
+			<os family="mac"/>
+		</condition>
+		<exec executable="${FLEX_HOME}/bin/${adt.executable}" failonerror="true">
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore build/ConsoleRemote.p12" />
