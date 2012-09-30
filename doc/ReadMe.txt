@@ -6,7 +6,7 @@
 
 ==Flash Console==
 
-  * Version 2.6 (Feb 2012)
+  * Version 2.7 (Sept 2012)
   * Project home page: http://code.google.com/p/flash-console/
   * Author: Lu Aye Oo, http://www.junkbyte.com
   * Required: `ActionScript 3.0`, Flash player 9 or above
@@ -32,8 +32,9 @@ http://code.google.com/p/flash-console/issues/
 
 == Change Log ==
 
-===2.7 ALPHA ===
+===2.7 BETA ===
 
+  * Graphing uses bitmap draw for faster performance.
   * Allows slash commands with space and any other characters.
   * Ruler becomes an addon that you have to add to console menu.
   * Clears logs in remote air app on new connections. Can be toggled by clicking on 'auto-clear' top menu.
