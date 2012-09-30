@@ -73,6 +73,10 @@ menu{
 	
 	function convertChannelsListToMap(channels)
 	{
+		if(channels == null || channels.length == 0)
+		{
+			return null;
+		}
 		var object = {};
 		for (var X in channels)
 		{
