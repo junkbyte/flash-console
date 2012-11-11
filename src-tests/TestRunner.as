@@ -1,7 +1,6 @@
 package
 {
 	import com.junkbyte.console.ConsoleTestSuite;
-	import com.junkbyte.eval.EvalTestSuite;
 
 	import org.flexunit.internals.TraceListener;
 	import org.flexunit.runner.FlexUnitCore;
@@ -16,7 +15,7 @@ package
 
 			core.addListener(new TraceListener());
 
-			core.run(ConsoleTestSuite, EvalTestSuite);
+			core.run(ConsoleTestSuite);
 		}
 	}
 }
