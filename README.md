@@ -5,7 +5,7 @@ Console overlays on top of your flash application. Remote logging feature is als
 
 <wiki:gadget url="http://console.junkbyte.com/external/wikigadget_fb_twitter.xml" height="64" width="600" border="0"/>
 
-==Main features==
+#Main features
   * *Channels*
   * *Priorities* aka levels with colour code
   * *Object linking* where you can click on objects in log to inspect aka introspection
@@ -15,7 +15,7 @@ Console overlays on top of your flash application. Remote logging feature is als
   * Super fast!
   * *[Addons]* adds specialized features
 
-===Other features===
+#Other features
   * *filtering*/searching via exact match or regular expression 
   * *Roller tool* _Ro_ - shows display map of what's under your mouse pointer
   * *Graph reporting* numeric values (such as FPS, memory, user definable)
@@ -28,23 +28,21 @@ Console overlays on top of your flash application. Remote logging feature is als
 
 Console adds 50KB to your SWF.
 
-===Controls===
-[logo]: http://console.junkbyte.com/2.5/console_controls.png
+#Controls
+<img src="http://console.junkbyte.com/2.5/console_controls.png">img</img>
 
-===Demo===
+#Demo
   * Demo Console: http://console.junkbyte.com/sample.html
   * Advanced features: http://console.junkbyte.com/advanced.html
-
   * Demo Remote Console: http://console.junkbyte.com/remote.html
   * To test the remote, open the normal console link and send messages to console to see that remote console also recieve the updates.
-
   * Custom style: http://console.junkbyte.com/style.html
 
 See ReadMe for requirements and changes log.
 
 See GettingStarted wiki for basic usages.
 
-Any bugs or feature requests, please use Issues tab: [http://code.google.com/p/flash-console/issues/list Issues]
+Any bugs or feature requests, please use Issues tab: https://github.com/junkbyte/flash-console/issues
 
 Any comments (good / bad / feature requests) after using Console?
 Please email luaye (@at) junkbyte(.dot) com
